@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverterConfig;
+import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.GeoPosition;
 import fi.fmi.avi.model.taf.TAF;
@@ -29,7 +29,7 @@ import fi.fmi.avi.model.taf.impl.TAFImpl;
  * Created by rinne on 19/07/17.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = IWXXMConverterConfig.class, loader = AnnotationConfigContextLoader.class)
+@ContextConfiguration(classes = IWXXMConverter.class, loader = AnnotationConfigContextLoader.class)
 public class TAFIWXXMSerializerTest {
 
     @Autowired
@@ -37,7 +37,7 @@ public class TAFIWXXMSerializerTest {
 
     @Test
     public void testStringSerialization() throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverterConfig.TAF_POJO_TO_IWXXM21_STRING));
+        assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         TAF t = readFromJSON("taf12.json");
         Aerodrome airport = new Aerodrome();
 
@@ -63,7 +63,7 @@ public class TAFIWXXMSerializerTest {
                 "BECMG 3104/3106 21016G30KT=");
         t.setTranslationTime(ZonedDateTime.now());
         
-        ConversionResult<String> result = converter.convertMessage(t, IWXXMConverterConfig.TAF_POJO_TO_IWXXM21_STRING);
+        ConversionResult<String> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING);
         System.out.println(result.getConversionIssues());
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
         
