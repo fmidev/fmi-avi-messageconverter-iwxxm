@@ -29,7 +29,7 @@ import fi.fmi.avi.model.taf.impl.TAFImpl;
  * Created by rinne on 19/07/17.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = IWXXMConverter.class, loader = AnnotationConfigContextLoader.class)
+@ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
 public class TAFIWXXMSerializerTest {
 
     @Autowired

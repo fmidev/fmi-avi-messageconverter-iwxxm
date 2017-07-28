@@ -1,12 +1,11 @@
 package fi.fmi.avi.converter.iwxxm.conf;
 
-import javax.xml.bind.JAXBException;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.w3c.dom.Document;
 
-import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionSpecification;
 import fi.fmi.avi.converter.iwxxm.TAFIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.TAFIWXXMStringSerializer;
@@ -33,11 +32,14 @@ public class IWXXMConverter {
 
 
     @Bean
-    public AviMessageConverter aviMessageConverter() throws JAXBException {
-        AviMessageConverter p = new AviMessageConverter();
-        p.setMessageSpecificConverter(TAF_POJO_TO_IWXXM21_DOM,new TAFIWXXMDOMSerializer());
-        p.setMessageSpecificConverter(TAF_POJO_TO_IWXXM21_STRING,new TAFIWXXMStringSerializer());
-        return p;
+    public AviMessageSpecificConverter<TAF, Document> tafIWXXMDOMSerializer() {
+        return new TAFIWXXMDOMSerializer();
     }
+    
+    @Bean
+    public AviMessageSpecificConverter<TAF, String> tafIWXXMStringSerializer() {
+        return new TAFIWXXMStringSerializer();
+    }
+    
 
 }
