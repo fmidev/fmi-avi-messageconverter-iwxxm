@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <parent>
+    <groupId>fi.fmi</groupId>
+    <artifactId>fmi-os-parent-pom</artifactId>
+    <version>0.7.3</version>
+  </parent>
+  
+  <modelVersion>4.0.0</modelVersion>
+
+  <description>Aviation weather message conversions - IWXXM module</description>
+  <groupId>fi.fmi.avi.converter</groupId>
+  <artifactId>fmi-avi-messageconverter-iwxxm</artifactId>
+  <version>1.7.1-SNAPSHOT</version>
+
+  <dependencies>
+    <dependency>
+      <groupId>fi.fmi.avi.converter</groupId>
+      <artifactId>fmi-avi-messageconverter</artifactId>
+      <version>1.7.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>fi.fmi.xmlmodel</groupId>
+      <artifactId>fmi-avi-xmlmodel-iwxxm21</artifactId>
+      <version>1.0</version>
+    </dependency>
+    
+    <!-- Need for exposing the com.sum internal NamespacePrefixMapper classes -->
+    <dependency>
+      <groupId>com.googlecode.jaxb-namespaceprefixmapper-interfaces</groupId>
+      <artifactId>JAXBNamespacePrefixMapper</artifactId>
+      <version>2.2.4</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
+    </dependency>
+    
+     <!-- For JUnit tests -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.unitils</groupId>
+      <artifactId>unitils-core</artifactId>
+      <version>3.4.6</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>2.8.9</version>
+      <scope>test</scope>
+    </dependency>
+     <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib</artifactId>
+      <version>3.1</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+</project>
