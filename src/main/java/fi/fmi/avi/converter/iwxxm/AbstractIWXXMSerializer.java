@@ -3,7 +3,6 @@ package fi.fmi.avi.converter.iwxxm;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URL;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBException;
@@ -29,7 +28,6 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AerodromeMessageIWXXMSerializerBase.ConverterValidationEventHandler;
-import fi.fmi.avi.converter.iwxxm.AerodromeMessageIWXXMSerializerBase.IWXXMNamespaceMapper;
 import fi.fmi.avi.converter.iwxxm.AerodromeMessageIWXXMSerializerBase.IWXXMSchemaResourceResolver;
 import icao.iwxxm21.TAFType;
 

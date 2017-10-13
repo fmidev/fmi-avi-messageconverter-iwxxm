@@ -21,11 +21,13 @@ public abstract class IWXXMConverterBase {
     /**
      * Singleton for accessing the shared JAXBContext for IWXXM JAXB handling.
      *
+     * NOTE: this can take several seconds when done for the first time after JVM start,
+     * needs to scan all the jars in classpath.
+     *
      * @return the context
      */
     protected static synchronized JAXBContext getJAXBContext() throws JAXBException {
         if (jaxbCtx == null) {
-            // NOTE: this can take several seconds, needs to scan all the jars in classpath!!
             jaxbCtx = JAXBContext.newInstance("icao.iwxxm21:aero.aixm511:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
                     + ".iso19139.ogc2007.gss:org.iso19139.ogc2007.gts:org.iso19139.ogc2007.gsr:net.opengis.om20:net.opengis.sampling:net.opengis.sampling"
                     + ".spatial:wmo.metce2013:wmo.opm2013:org.w3c.xlink11");
