@@ -46,7 +46,7 @@ public class TAFIWXXMSerializerTest {
     private AviMessageConverter converter;
 
     @Test
-    public void testDOMSerialization() throws Exception {
+    public void testTAFDOMSerialization() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         TAF t = readFromJSON("taf12.json");
         Aerodrome airport = new Aerodrome();
@@ -80,6 +80,7 @@ public class TAFIWXXMSerializerTest {
 
         Element docElement = result.getConvertedMessage().getDocumentElement();
 
+
         XPathExpression expr = xpath.compile("/iwxxm:TAF/iwxxm:issueTime/gml:TimeInstant/@gml:id");
         String issueTimeId = expr.evaluate(docElement);
         assertNotNull(issueTimeId);
@@ -97,7 +98,7 @@ public class TAFIWXXMSerializerTest {
         expr = xpath.compile("/iwxxm:TAF/iwxxm:validTime/gml:TimePeriod/gml:endPosition");
         assertEquals("validTime end position does not match", "2017-07-31T12:00:00Z", expr.evaluate(docElement));
 
-        //Base forecast:
+        //Base forecast: EETN 301130Z 3012/3112 14016G26KT 8000 BKN010 OVC015 TXM02/3015Z TNM10/3103Z
 
         //Type:
         expr = xpath.compile("/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:type/@xlink:href");
@@ -302,8 +303,8 @@ public class TAFIWXXMSerializerTest {
                         + ":AerodromeAirTemperatureForecast/iwxxm:minimumAirTemperatureTime");
         assertEquals("Min air temperature time does not match", "2017-07-31T03:00:00Z", expr.evaluate(docElement));
 
-        //Change forecast 1:
 
+        //Change forecast 1: TEMPO 3012/3018 3000 RADZ BR OVC004
 
         //Type:
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:type/@xlink:href");
@@ -329,13 +330,13 @@ public class TAFIWXXMSerializerTest {
 
         //Procedure:
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:procedure/@xlink:href");
-        assertEquals("Procedure does not refer to base forecast procedure",
+        assertEquals("Change forecast 1 Procedure does not refer to base forecast procedure",
                 "#" + procedureId,
                 expr.evaluate(docElement));
 
         //Observed property:
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:observedProperty/@xlink:href");
-        assertEquals("Observed properties does not match", "http://codes.wmo.int/49-2/observable-property/MeteorologicalAerodromeForecast",
+        assertEquals("Change forecast 1 Observed properties does not match", "http://codes.wmo.int/49-2/observable-property/MeteorologicalAerodromeForecast",
                 expr.evaluate(docElement));
 
         //FOI reference:
@@ -349,18 +350,18 @@ public class TAFIWXXMSerializerTest {
 
         //CAVOK:
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/@cloudAndVisibilityOK");
-        assertEquals("CAVOK does not match", "false", expr.evaluate(docElement));
+        assertEquals("Change forecast 1 CAVOK does not match", "false", expr.evaluate(docElement));
 
         //Forecast properties:
 
         //Visibility:
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:prevailingVisibility");
-        assertTrue("Visibility does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 3000.0) < 0.00001);
+        assertTrue("Change forecast 1 Visibility does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 3000.0) < 0.00001);
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:prevailingVisibility/@uom");
-        assertEquals("Visibility uom does not match", "m", expr.evaluate(docElement));
+        assertEquals("Change forecast 1 visibility uom does not match", "m", expr.evaluate(docElement));
 
         //Weather:
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:weather[1]"
@@ -395,41 +396,308 @@ public class TAFIWXXMSerializerTest {
 
 
 
-        //Change forecast 2:
+        //Change forecast 2: BECMG 3018/3020 BKN008 SCT015CB
 
-        //Change forecast 3:
+        //Type:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:type/@xlink:href");
+        assertEquals("Change forecast 2 type does not match", "http://codes.wmo" + ".int/49-2/observation-type/iwxxm/2.1/MeteorologicalAerodromeForecast",
+                expr.evaluate(docElement));
 
-        //Change forecast 4:
+        //Temporals:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:phenomenonTime/gml:TimePeriod/gml:beginPosition");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 2 phenomenonTime begin pos does not match", "2017-07-30T18:00:00Z", timeRef);
 
-    }
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:phenomenonTime/gml:TimePeriod/gml:endPosition");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 2 phenomenonTime end pos does not match", "2017-07-30T20:00:00Z", timeRef);
 
-    @Before
-    public void testStringSerialization() throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
-        TAF t = readFromJSON("taf12.json");
-        Aerodrome airport = new Aerodrome();
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:resultTime/@xlink:href");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 2 resultTime does not refer to msg issueTime", timeRef, "#" + issueTimeId);
 
-        airport.setDesignator("EETN");
-        airport.setName("Tallinn Airport");
-        airport.setFieldElevation(40.0);
-        airport.setLocationIndicatorICAO("EETN");
-        GeoPosition refPoint = new GeoPosition("http://www.opengis.net/def/crs/EPSG/0/4326", 24.8325, 59.413333);
-        refPoint.setElevationValue(40.0);
-        refPoint.setElevationUom("m");
-        airport.setReferencePoint(refPoint);
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:validTime/@xlink:href");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 2 validTime does not refer to msg validTime", timeRef, "#" + validTimeId);
 
-        t.amendAerodromeInfo(airport);
+        //Procedure:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:procedure/@xlink:href");
+        assertEquals("Change forecast 2 Procedure does not refer to base forecast procedure",
+                "#" + procedureId,
+                expr.evaluate(docElement));
 
-        //Partial: 301130Z
-        ZonedDateTime refTime = ZonedDateTime.of(2017, 7, 29, 21, 0, 0, 0, ZoneId.of("Z"));
-        t.amendTimeReferences(refTime);
+        //Observed property:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:observedProperty/@xlink:href");
+        assertEquals("Change forecast 2 observed properties does not match", "http://codes.wmo.int/49-2/observable-property/MeteorologicalAerodromeForecast",
+                expr.evaluate(docElement));
 
-        t.setTranslatedTAC("EETN 301130Z 3012/3112 14016G26KT 8000 BKN010 OVC015 TXM02/3015Z TNM10/3103Z " + "TEMPO 3012/3018 3000 RADZ BR OVC004 "
-                + "BECMG 3018/3020 BKN008 SCT015CB " + "TEMPO 3102/3112 3000 SHRASN BKN006 BKN015CB " + "BECMG 3104/3106 21016G30KT=");
-        t.setTranslationTime(ZonedDateTime.now());
+        //FOI reference:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:featureOfInterest/@xlink:href");
+        assertEquals("Change forecast 2 FOI reference does not point to base forecast FOI", "#" + foiId, expr.evaluate(docElement));
 
-        ConversionResult<String> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING);
-        System.out.print(result.getConvertedMessage());
+        //Change indicator:
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/@changeIndicator");
+        assertEquals("Change forecast 2 change indicator does not match", "BECOMING", expr.evaluate(docElement));
+
+        //CAVOK:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord"
+                + "/@cloudAndVisibilityOK");
+        assertEquals("CAVOK does not match", "false", expr.evaluate(docElement));
+
+        //Forecast properties:
+
+        //Clouds:
+        expr = xpath.compile(
+                "count(/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer)");
+        assertEquals("Change Forecast 2 cloud layer count does not match", "2", expr.evaluate(docElement));
+
+        //BKN008
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
+                        + ":CloudLayer/iwxxm:amount/@xlink:href");
+        assertEquals("Change Forecast 2 cloud layer 1 amount does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-008/3", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
+                        + ":CloudLayer/iwxxm:base/@uom");
+        assertEquals("Change Forecast 2 cloud layer 1 base uom does not match", "[ft_i]", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
+                        + ":CloudLayer/iwxxm:base");
+        assertTrue("Change Forecast 2 cloud layer 1 base does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 800.0) < 0.00001);
+
+        //SCT015CB
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm"
+                        + ":CloudLayer/iwxxm:amount/@xlink:href");
+        assertEquals("Change Forecast 2 cloud layer 2 amount does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-008/2", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm"
+                        + ":CloudLayer/iwxxm:base/@uom");
+        assertEquals("Change Forecast 2 cloud layer 2 base uom does not match", "[ft_i]", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm"
+                        + ":CloudLayer/iwxxm:base");
+        assertTrue("Change Forecast 2 cloud layer 2 base does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 1500.0) < 0.00001);
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm"
+                        + ":CloudLayer/iwxxm:cloudType/@xlink:href");
+        assertEquals("Change Forecast 2 cloud layer 2 type does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-012/9", expr.evaluate(docElement));
+
+
+        //Change forecast 3: TEMPO 3102/3112 3000 SHRASN BKN006 BKN015CB
+
+        //Type:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:type/@xlink:href");
+        assertEquals("Change forecast 3 type does not match", "http://codes.wmo" + ".int/49-2/observation-type/iwxxm/2.1/MeteorologicalAerodromeForecast",
+                expr.evaluate(docElement));
+
+        //Temporals:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:phenomenonTime/gml:TimePeriod/gml:beginPosition");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 3 phenomenonTime begin pos does not match", "2017-07-31T02:00:00Z", timeRef);
+
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:phenomenonTime/gml:TimePeriod/gml:endPosition");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 3 phenomenonTime end pos does not match", "2017-07-31T12:00:00Z", timeRef);
+
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:resultTime/@xlink:href");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 3 resultTime does not refer to msg issueTime", timeRef, "#" + issueTimeId);
+
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:validTime/@xlink:href");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 3 validTime does not refer to msg validTime", timeRef, "#" + validTimeId);
+
+        //Procedure:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:procedure/@xlink:href");
+        assertEquals("Change forecast 3 procedure does not refer to base forecast procedure",
+                "#" + procedureId,
+                expr.evaluate(docElement));
+
+        //Observed property:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:observedProperty/@xlink:href");
+        assertEquals("Change forecast 3 observed properties does not match", "http://codes.wmo.int/49-2/observable-property/MeteorologicalAerodromeForecast",
+                expr.evaluate(docElement));
+
+        //FOI reference:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:featureOfInterest/@xlink:href");
+        assertEquals("Change forecast 3 FOI reference does not point to base forecast FOI", "#" + foiId, expr.evaluate(docElement));
+
+        //Change indicator:
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/@changeIndicator");
+        assertEquals("Change forecast 3 change indicator does not match", "TEMPORARY_FLUCTUATIONS", expr.evaluate(docElement));
+
+        //CAVOK:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord"
+                + "/@cloudAndVisibilityOK");
+        assertEquals("Change forecast 3 CAVOK does not match", "false", expr.evaluate(docElement));
+
+        //Forecast properties:
+
+        //Visibility:
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:prevailingVisibility");
+        assertTrue("Change forecast 3 Visibility does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 3000.0) < 0.00001);
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:prevailingVisibility/@uom");
+        assertEquals("Change forecast 3 visibility uom does not match", "m", expr.evaluate(docElement));
+
+        //Weather:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:weather[1]"
+                + "/@xlink:href");
+        assertEquals("Change forecast 3 weather 1 does not match", "http://codes.wmo.int/306/4678/SHRASN" , expr.evaluate(docElement));
+
+        //Cloud:
+
+        //BKN006
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
+                        + ":CloudLayer/iwxxm:amount/@xlink:href");
+        assertEquals("Change Forecast 3 cloud layer 1 amount does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-008/3", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
+                        + ":CloudLayer/iwxxm:base/@uom");
+        assertEquals("Change Forecast 3 cloud layer 1 base uom does not match", "[ft_i]", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
+                        + ":CloudLayer/iwxxm:base");
+        assertTrue("Change Forecast 3 cloud layer 1 base does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 600.0) < 0.00001);
+
+        //BKN015CB
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm"
+                        + ":CloudLayer/iwxxm:amount/@xlink:href");
+        assertEquals("Change Forecast 3 cloud layer 2 amount does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-008/3", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm"
+                        + ":CloudLayer/iwxxm:base/@uom");
+        assertEquals("Change Forecast 3 cloud layer 2 base uom does not match", "[ft_i]", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm"
+                        + ":CloudLayer/iwxxm:base");
+        assertTrue("Change Forecast 3 cloud layer 2 base does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 1500.0) < 0.00001);
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                        + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm"
+                        + ":CloudLayer/iwxxm:cloudType/@xlink:href");
+        assertEquals("Change Forecast 3 cloud layer 2 type does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-012/9", expr.evaluate(docElement));
+
+
+        //Change forecast 4: BECMG 3104/3106 21016G30KT=
+
+        //Type:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:type/@xlink:href");
+        assertEquals("Change forecast 4 type does not match", "http://codes.wmo" + ".int/49-2/observation-type/iwxxm/2.1/MeteorologicalAerodromeForecast",
+                expr.evaluate(docElement));
+
+        //Temporals:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:phenomenonTime/gml:TimePeriod/gml:beginPosition");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 4 phenomenonTime begin pos does not match", "2017-07-31T04:00:00Z", timeRef);
+
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:phenomenonTime/gml:TimePeriod/gml:endPosition");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 4 phenomenonTime end pos does not match", "2017-07-31T06:00:00Z", timeRef);
+
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:resultTime/@xlink:href");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 4 resultTime does not refer to msg issueTime", timeRef, "#" + issueTimeId);
+
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:validTime/@xlink:href");
+        timeRef = expr.evaluate(docElement);
+        assertEquals("Change forecast 4 validTime does not refer to msg validTime", timeRef, "#" + validTimeId);
+
+        //Procedure:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:procedure/@xlink:href");
+        assertEquals("Change forecast 4 procedure does not refer to base forecast procedure",
+                "#" + procedureId,
+                expr.evaluate(docElement));
+
+        //Observed property:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:observedProperty/@xlink:href");
+        assertEquals("Change forecast 4 observed properties does not match", "http://codes.wmo.int/49-2/observable-property/MeteorologicalAerodromeForecast",
+                expr.evaluate(docElement));
+
+        //FOI reference:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:featureOfInterest/@xlink:href");
+        assertEquals("Change forecast 4 FOI reference does not point to base forecast FOI", "#" + foiId, expr.evaluate(docElement));
+
+        //Change indicator:
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/@changeIndicator");
+        assertEquals("Change forecast 4 change indicator does not match", "BECOMING", expr.evaluate(docElement));
+
+        //CAVOK:
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord"
+                + "/@cloudAndVisibilityOK");
+        assertEquals("Change forecast 4 CAVOK does not match", "false", expr.evaluate(docElement));
+
+        //Forecast properties:
+
+        //Wind: 21016G30KT
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
+                        + "/@variableWindDirection");
+        assertEquals("Variable wind not match", "false", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
+                        + "/iwxxm:meanWindDirection/@uom");
+        assertEquals("Mean wind direction uom does not match", "deg", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
+                        + "/iwxxm:meanWindDirection");
+        assertTrue("Mean wind direction does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 210.0) < 0.00001);
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
+                        + "/iwxxm:meanWindSpeed/@uom");
+        assertEquals("Mean wind speed uom does not match", "[kn_i]", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
+                        + "/iwxxm:meanWindSpeed");
+        assertTrue("Mean wind speed does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 16.0) < 0.00001);
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
+                        + "/iwxxm:windGustSpeed/@uom");
+        assertEquals("Wind gust speed uom does not match", "[kn_i]", expr.evaluate(docElement));
+
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
+                        + "/iwxxm:windGustSpeed");
+        assertTrue("Wind gust speed does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 30.0) < 0.00001);
+
+
     }
 
     protected TAF readFromJSON(String fileName) throws IOException {
