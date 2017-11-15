@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -62,9 +63,10 @@ public class TAFIWXXMSerializerTest {
 
         t.amendAerodromeInfo(airport);
 
-        //Partial: 301130Z
-        ZonedDateTime refTime = ZonedDateTime.of(2017, 7, 29, 21, 0, 0, 0, ZoneId.of("Z"));
-        t.amendTimeReferences(refTime);
+        //Partial issue time: 301130Z
+        t.completeIssueTime(YearMonth.of(2017,7));
+
+        t.completeForecastTimeReferences(2017, 7, 30,11, ZoneId.of("Z"));
 
         t.setTranslatedTAC("EETN 301130Z 3012/3112 14016G26KT 8000 BKN010 OVC015 TXM02/3015Z TNM10/3103Z\n" + "TEMPO 3012/3018 3000 RADZ BR OVC004\n"
                 + "BECMG 3018/3020 BKN008 SCT015CB\n" + "TEMPO 3102/3112 3000 SHRASN BKN006 BKN015CB\n" + "BECMG 3104/3106 21016G30KT=");

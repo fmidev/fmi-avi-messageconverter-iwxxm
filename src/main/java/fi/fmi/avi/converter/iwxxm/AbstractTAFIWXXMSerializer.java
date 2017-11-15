@@ -75,7 +75,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
     @Override
     public ConversionResult<T> convertMessage(TAF input, ConversionHints hints) {
         ConversionResult<T> result = new ConversionResult<T>();
-        if (!input.isAerodromeInfoResolved() || !input.areTimeReferencesResolved()) {
+        if (!input.isAerodromeInfoResolved() || !input.isIssueTimeComplete() || !input.areForecastTimeReferencesComplete()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
                     "Aerodrome info and time references must be resolved before converting " + "to IWXXM"));
             return result;
