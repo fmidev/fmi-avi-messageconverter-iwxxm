@@ -30,6 +30,7 @@ import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
 import fi.fmi.avi.model.taf.TAFBaseForecast;
 import fi.fmi.avi.model.taf.TAFChangeForecast;
 import fi.fmi.avi.model.taf.TAFForecast;
+import fi.fmi.avi.model.taf.TAFReference;
 import fi.fmi.avi.model.taf.TAFSurfaceWind;
 import icao.iwxxm21.AerodromeAirTemperatureForecastPropertyType;
 import icao.iwxxm21.AerodromeAirTemperatureForecastType;
@@ -445,7 +446,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
     protected void updatePreviousReportReferences(final TAF source, final TAFType target, String aerodromeId, final ConversionResult<?> result) {
         if (TAFReportStatusType.CANCELLATION == target.getStatus() || TAFReportStatusType.CORRECTION == target.getStatus()
                 || TAFReportStatusType.AMENDMENT == target.getStatus()) {
-            TAF prevReport = source.getReferredReport();
+            TAFReference prevReport = source.getReferredReport();
             if (prevReport != null) {
                 target.setPreviousReportAerodrome(create(AirportHeliportPropertyType.class, (prop) -> {
                     if (source.getAerodrome().equals(prevReport.getAerodrome())) {
