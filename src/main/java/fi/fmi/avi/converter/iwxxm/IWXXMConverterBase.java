@@ -25,6 +25,7 @@ public abstract class IWXXMConverterBase {
      * needs to scan all the jars in classpath.
      *
      * @return the context
+     * @throws JAXBException if the context cannot be created
      */
     protected static synchronized JAXBContext getJAXBContext() throws JAXBException {
         if (jaxbCtx == null) {
