@@ -19,12 +19,36 @@
     <url>https://github.com/fmidev/fmi-avi-messageconverter-iwxxm</url>
     <tag>HEAD</tag>
   </scm>
-  
+   <repositories>
+<!-- 
+   <repository>
+    <id>fmi-os-mvn-snapshot-repo</id>
+    <url>https://raw.githubusercontent.com/fmidev/fmi-os-mvn-snapshot-repo/master</url>
+    <snapshots>
+      <enabled>true</enabled>
+      <updatePolicy>always</updatePolicy>
+    </snapshots>
+    <releases>
+      <enabled>false</enabled>
+    </releases>
+  </repository> -->
+  <repository>
+    <id>fmi-os-mvn-release-repo</id>
+    <url>https://raw.githubusercontent.com/fmidev/fmi-os-mvn-repo/master</url>
+    <snapshots>
+      <enabled>false</enabled>
+    </snapshots>
+    <releases>
+      <enabled>true</enabled>
+      <updatePolicy>daily</updatePolicy>
+    </releases>
+  </repository>
+ </repositories>  
   <dependencies>
     <dependency>
       <groupId>fi.fmi.avi.converter</groupId>
       <artifactId>fmi-avi-messageconverter</artifactId>
-      <version>1.2.0</version>
+      <version>1.3.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>fi.fmi.xmlmodel</groupId>
