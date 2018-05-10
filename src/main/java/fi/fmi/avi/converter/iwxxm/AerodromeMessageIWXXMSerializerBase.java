@@ -8,10 +8,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.ValidationEvent;
@@ -21,8 +18,6 @@ import javax.xml.namespace.QName;
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
-
-import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
 
 import aero.aixm511.AirportHeliportTimeSlicePropertyType;
 import aero.aixm511.AirportHeliportTimeSliceType;
@@ -96,12 +91,15 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
                 if (input.getReferencePoint() != null) {
                     samsFeature.setShape(create(ShapeType.class, (shape) -> {
                         JAXBElement<?> wrapped = wrap(create(PointType.class, (point) -> {
-                            GeoPosition inputPos = input.getReferencePoint();
-                            point.setId("point-" + UUID.randomUUID().toString());
-                            point.setSrsName(inputPos.getCoordinateReferenceSystemId());
-                            if (inputPos.getCoordinates() != null) {
-                                point.setSrsDimension(BigInteger.valueOf(inputPos.getCoordinates().length));
-                                point.setPos(create(DirectPositionType.class, (pos) -> pos.getValue().addAll(Arrays.asList(inputPos.getCoordinates()))));
+                            Optional<GeoPosition> inputPos = input.getReferencePoint();
+                            if (inputPos.isPresent()) {
+                                point.setId("point-" + UUID.randomUUID().toString());
+
+                                point.setSrsName(inputPos.get().getCoordinateReferenceSystemId());
+                                if (inputPos.get().getCoordinates() != null) {
+                                    point.setSrsDimension(BigInteger.valueOf(inputPos.get().getCoordinates().length));
+                                    point.setPos(create(DirectPositionType.class, (pos) -> pos.getValue().addAll(Arrays.asList(inputPos.get().getCoordinates()))));
+                                }
                             }
                         }), PointType.class);
 
@@ -135,43 +133,44 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
                 timeSlice.setDesignator(create(CodeAirportHeliportDesignatorType.class, (designator) -> {
                     designator.setValue(input.getDesignator());
                 }));
-                if (input.getName() != null) {
-                    timeSlice.setPortName(create(TextNameType.class, (name) -> name.setValue(input.getName().toUpperCase())));
+                if (input.getName().isPresent()) {
+                    timeSlice.setPortName(create(TextNameType.class, (name) -> name.setValue(input.getName().get().toUpperCase())));
                 }
-                if (input.getLocationIndicatorICAO() != null) {
-                    timeSlice.setLocationIndicatorICAO(create(CodeICAOType.class, (locator) -> locator.setValue(input.getLocationIndicatorICAO())));
+                if (input.getLocationIndicatorICAO().isPresent()) {
+                    timeSlice.setLocationIndicatorICAO(create(CodeICAOType.class, (locator) -> locator.setValue(input.getLocationIndicatorICAO().get())));
                 }
 
-                if (input.getDesignatorIATA() != null) {
-                    timeSlice.setDesignatorIATA(create(CodeIATAType.class, (designator) -> designator.setValue(input.getDesignatorIATA())));
+                if (input.getDesignatorIATA().isPresent()) {
+                    timeSlice.setDesignatorIATA(create(CodeIATAType.class, (designator) -> designator.setValue(input.getDesignatorIATA().get())));
                 }
-                if (input.getFieldElevationValue() != null) {
+                if (input.getFieldElevationValue().isPresent()) {
                     timeSlice.setFieldElevation(create(ValDistanceVerticalType.class, (elevation) -> {
-                        elevation.setValue(String.format("%.00f", input.getFieldElevationValue()));
+                        elevation.setValue(String.format("%.00f", input.getFieldElevationValue().get()));
                         elevation.setUom("M");
                     }));
                 }
 
-                if (input.getReferencePoint() != null) {
+                if (input.getReferencePoint().isPresent()) {
                     timeSlice.setARP(create(ElevatedPointPropertyType.class, (pointProp) -> {
                         pointProp.setElevatedPoint(create(ElevatedPointType.class, (point) -> {
-                            GeoPosition inputPos = input.getReferencePoint();
-                            point.setId("point-" + UUID.randomUUID().toString());
-                            point.setSrsName(inputPos.getCoordinateReferenceSystemId());
-                            if (inputPos.getCoordinates() != null) {
-                                point.setSrsDimension(BigInteger.valueOf(inputPos.getCoordinates().length));
-                                point.setPos(create(DirectPositionType.class, (pos) -> pos.getValue().addAll(Arrays.asList(inputPos.getCoordinates()))));
-                            }
-                            if (inputPos.getElevationValue() != null) {
-                                point.setElevation(create(ValDistanceVerticalType.class, (dist) -> {
-                                    dist.setValue(String.format("%.00f", inputPos.getElevationValue().doubleValue()));
-                                    dist.setUom(inputPos.getElevationUom().toUpperCase());
-                                }));
+                            Optional<GeoPosition> inputPos = input.getReferencePoint();
+                            if (inputPos.isPresent()) {
+                                point.setId("point-" + UUID.randomUUID().toString());
+                                point.setSrsName(inputPos.get().getCoordinateReferenceSystemId());
+                                if (inputPos.get().getCoordinates() != null) {
+                                    point.setSrsDimension(BigInteger.valueOf(inputPos.get().getCoordinates().length));
+                                    point.setPos(create(DirectPositionType.class, (pos) -> pos.getValue().addAll(Arrays.asList(inputPos.get().getCoordinates()))));
+                                }
+                                if (inputPos.get().getElevationValue().isPresent() && inputPos.get().getElevationUom().isPresent()) {
+                                    point.setElevation(create(ValDistanceVerticalType.class, (dist) -> {
+                                        dist.setValue(String.format("%.00f", inputPos.get().getElevationValue().get().doubleValue()));
+                                        dist.setUom(inputPos.get().getElevationUom().get().toUpperCase());
+                                    }));
+                                }
                             }
                         }));
                     }));
                 }
-
             }));
         }));
     }
@@ -210,20 +209,20 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
     protected void updateForecastClouds(final CloudForecast source, final AerodromeCloudForecastType target, final ConversionResult<?> result) {
         if (source != null) {
             target.setId("cfct-" + UUID.randomUUID().toString());
-            NumericMeasure measure = source.getVerticalVisibility();
-            if (measure != null) {
-                target.setVerticalVisibility(wrap(asMeasure(measure, LengthWithNilReasonType.class), LengthWithNilReasonType.class));
+            Optional<NumericMeasure> measure = source.getVerticalVisibility();
+            if (measure.isPresent()) {
+                target.setVerticalVisibility(wrap(asMeasure(measure.get(), LengthWithNilReasonType.class), LengthWithNilReasonType.class));
             }
-            if (source.getLayers().size() > 0) {
-                if (source.getLayers().size() <= MAX_CLOUD_LAYERS) {
-                    for (CloudLayer layer : source.getLayers()) {
+            if (source.getLayers().isPresent()) {
+                if (source.getLayers().get().size() <= MAX_CLOUD_LAYERS) {
+                    for (CloudLayer layer : source.getLayers().get()) {
                         target.getLayer().add(create(AerodromeCloudForecastType.Layer.class, (l) -> {
                             l.setCloudLayer(create(CloudLayerType.class, (cl) -> this.setCloudLayerData(cl, layer)));
                         }));
                     }
                 } else {
                     result.addIssue(new ConversionIssue(ConversionIssue.Type.SYNTAX_ERROR,
-                            "Found " + source.getLayers().size() + " cloud forecast " + "layers, the maximum number in IWXXM is " + MAX_CLOUD_LAYERS));
+                            "Found " + source.getLayers().get().size() + " cloud forecast " + "layers, the maximum number in IWXXM is " + MAX_CLOUD_LAYERS));
                 }
             }
         }
@@ -232,17 +231,19 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
 
     protected void setCloudLayerData(final CloudLayerType target, final CloudLayer source) {
         if (source != null) {
-            target.setBase(asMeasure(source.getBase(), DistanceWithNilReasonType.class));
+            if (source.getBase().isPresent()) {
+                target.setBase(asMeasure(source.getBase().get(), DistanceWithNilReasonType.class));
+            }
             target.setAmount(create(CloudAmountReportedAtAerodromeType.class, (amount) -> {
                 amount.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + source.getAmount().getCode());
                 amount.setTitle(source.getAmount().name() + ", from codelist " + AviationCodeListUser.CODELIST_CLOUD_AMOUNT_REPORTED_AT_AERODROME);
             }));
-            AviationCodeListUser.CloudType type = source.getCloudType();
-            if (type != null) {
+            Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
+            if (type.isPresent()) {
                 QName eName = new QName("http://icao.int/iwxxm/2.1", "cloudType");
                 SigConvectiveCloudTypeType cloudType = create(SigConvectiveCloudTypeType.class, (convCloud) -> {
-                    convCloud.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + type.getCode());
-                    convCloud.setTitle(type.name() + ", from codelist " + AviationCodeListUser.CODELIST_SIGNIFICANT_CONVECTIVE_CLOUD_TYPE);
+                    convCloud.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + type.get().getCode());
+                    convCloud.setTitle(type.get().name() + ", from codelist " + AviationCodeListUser.CODELIST_SIGNIFICANT_CONVECTIVE_CLOUD_TYPE);
                 });
                 target.setCloudType(new JAXBElement<SigConvectiveCloudTypeType>(eName, SigConvectiveCloudTypeType.class, cloudType));
             }
@@ -260,7 +261,7 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
             return instance;
         }
         
-        private Map<String, LSInput> cache = new HashMap<String, LSInput>();
+        private static Map<String, LSInput> cache = new HashMap<String, LSInput>();
         
         private IWXXMSchemaResourceResolver() {
         }
@@ -268,9 +269,9 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
         @Override
         public LSInput resolveResource(final String type, final String namespaceURI, final String publicId, final String systemId, final String baseURI) {
             String cacheKey = namespaceURI + ":" + normalizeSystemId(systemId);
-            synchronized(this.cache) {
-                if (this.cache.containsKey(cacheKey)) {
-                    return this.cache.get(cacheKey);
+            synchronized(cache) {
+                if (cache.containsKey(cacheKey)) {
+                    return cache.get(cacheKey);
                 }
             }
 
@@ -339,9 +340,9 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
 
             }
             if (path != null) {
-                synchronized(this.cache) {
-                    this.cache.put(cacheKey, new ClassLoaderResourceInput(cls, path, publicId, systemId, baseURI));
-                    return this.cache.get(cacheKey);
+                synchronized(cache) {
+                    cache.put(cacheKey, new ClassLoaderResourceInput(cls, path, publicId, systemId, baseURI));
+                    return cache.get(cacheKey);
                 }
             } else {
                 return null;
