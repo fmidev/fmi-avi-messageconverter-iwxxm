@@ -15,8 +15,8 @@ import javax.xml.bind.JAXBException;
  */
 public abstract class IWXXMConverterBase {
     private static JAXBContext jaxbCtx = null;
-    private static Map<String, Object> classToObjectFactory = new HashMap<>();
-    private static Map<String, Object> objectFactoryMap = new HashMap<>();
+    private final static Map<String, Object> classToObjectFactory = new HashMap<>();
+    private final static Map<String, Object> objectFactoryMap = new HashMap<>();
 
     /**
      * Singleton for accessing the shared JAXBContext for IWXXM JAXB handling.
