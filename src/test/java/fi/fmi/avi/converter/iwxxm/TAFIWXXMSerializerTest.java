@@ -48,6 +48,7 @@ public class TAFIWXXMSerializerTest {
     @Autowired
     private AviMessageConverter converter;
 
+
     @Test
     public void testTAFDOMSerialization() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
@@ -82,8 +83,8 @@ public class TAFIWXXMSerializerTest {
         NamespaceContext ctx = new IWXXMNamespaceMapper();
         xpath.setNamespaceContext(ctx);
 
-        Element docElement = result.getConvertedMessage().getDocumentElement();
-
+        Element docElement = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
+        assertNotNull(docElement);
 
         XPathExpression expr = xpath.compile("/iwxxm:TAF/iwxxm:issueTime/gml:TimeInstant/@gml:id");
         String issueTimeId = expr.evaluate(docElement);
