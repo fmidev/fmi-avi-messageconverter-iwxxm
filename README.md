@@ -94,7 +94,7 @@ Converting from TAF object to IWXXM TAF Report as String:
 TAF pojo = getTAF();
 ConversionResult<String> result = converter.convertMessage(pojo, IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING);
 if (ConversionResult.Status.SUCCESS == result.getStatus()) {
-    System.out.println(result.getConvertedMessage());
+    System.out.println(result.getConvertedMessage().get());
 } else {
     for (ConversionIssue issue:result.getConversionIssues()) {
         System.err.println(issue);
