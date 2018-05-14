@@ -137,8 +137,8 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
                 || AviationCodeListUser.TAFStatus.AMENDMENT == status) {
             this.updatePreviousReportReferences(input, taf, aerodromeId, result);
         } else {
-            //TAF: previousReportValidPeriod must be null unless this cancels, corrects or amends a previous report
-            if (input.getReferredReport() != null) {
+            //TAF: previousReportValidPeriod must not be present unless this cancels, corrects or amends a previous report
+            if (input.getReferredReport().isPresent()) {
                 result.addIssue(new ConversionIssue(Type.LOGICAL_ERROR,
                         "TAF contains reference to the previous report even if its type is " + "not amendment, cancellation or correction"));
             }
