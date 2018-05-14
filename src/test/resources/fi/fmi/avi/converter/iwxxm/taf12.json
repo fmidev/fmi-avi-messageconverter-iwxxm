@@ -1,10 +1,21 @@
 {
   "status": "NORMAL",
-  "partialIssueTime": "301130Z",
+  "issueTime": {
+    "partialTime": "301130Z"
+  },
   "aerodrome": {
      "designator": "EETN"
   },
-  "partialValidityTimePeriod": "3012/3112",
+  "validityTime": {
+    "startTime": {
+      "partialTime": "3012",
+      "partialTimePattern": "DayHour"
+    },
+    "endTime": {
+      "partialTime": "3112",
+      "partialTimePattern": "DayHour"
+    }
+  },
   "baseForecast": {
     "surfaceWind": {
 	  "variableDirection": false,
@@ -33,14 +44,18 @@
 	      "value": -2.0,
 	      "uom": "degC"
 	    },
-	    "maxTemperatureDayOfMonth": 30,
-	    "maxTemperatureHour": 15,
+        "maxTemperatureTime": {
+          "partialTime": "3015",
+          "partialTimePattern": "DayHour"
+        },
 	    "minTemperature": {
 	      "value": -10.0,
 	      "uom": "degC"
 	    },
-	    "minTemperatureDayOfMonth": 31,
-	    "minTemperatureHour": 3
+        "minTemperatureTime": {
+          "partialTime": "3103",
+          "partialTimePattern": "DayHour"
+        }
 	  }
 	],
 	
@@ -67,7 +82,16 @@
   "changeForecasts": [
     {
       "changeIndicator": "TEMPORARY_FLUCTUATIONS",
-      "partialValidityTimePeriod": "3012/3018",
+      "periodOfChange": {
+        "startTime": {
+          "partialTime": "3012",
+          "partialTimePattern": "DayHour"
+        },
+        "endTime": {
+          "partialTime": "3018",
+          "partialTimePattern": "DayHour"
+        }
+      },
       "prevailingVisibility": {
 	    "value": 3000.0,
 	    "uom": "m"
@@ -98,7 +122,16 @@
     },
     {
       "changeIndicator": "BECOMING",
-      "partialValidityTimePeriod": "3018/3020",
+      "periodOfChange": {
+        "startTime": {
+          "partialTime": "3018",
+          "partialTimePattern": "DayHour"
+        },
+        "endTime": {
+          "partialTime": "3020",
+          "partialTimePattern": "DayHour"
+        }
+      },
       "cloud": {
         "layers": [
           {
@@ -121,7 +154,16 @@
     },
     {
       "changeIndicator": "TEMPORARY_FLUCTUATIONS",
-      "partialValidityTimePeriod": "3102/3112",
+      "periodOfChange": {
+        "startTime": {
+          "partialTime": "3102",
+          "partialTimePattern": "DayHour"
+        },
+        "endTime": {
+          "partialTime": "3112",
+          "partialTimePattern": "DayHour"
+        }
+      },
       "prevailingVisibility": {
 	    "value": 3000.0,
 	    "uom": "m"
@@ -156,7 +198,16 @@
     },
     {
       "changeIndicator": "BECOMING",
-      "partialValidityTimePeriod": "3104/3106",
+      "periodOfChange": {
+        "startTime": {
+          "partialTime": "3104",
+          "partialTimePattern": "DayHour"
+        },
+        "endTime": {
+          "partialTime": "3106",
+          "partialTimePattern": "DayHour"
+        }
+      },
       "surfaceWind": {
 	    "variableDirection": false,
 	    "meanWindDirection": {
@@ -173,6 +224,6 @@
 	    }
 	  }
     }
-  ]
-  
+  ],
+  "translatedTAC": "EETN 301130Z 3012/3112 14016G26KT 8000 BKN010 OVC015 TXM02/3015Z TNM10/3103Z\nTEMPO 3012/3018 3000 RADZ BR OVC004\nBECMG 3018/3020 BKN008 SCT015CB\nTEMPO 3102/3112 3000 SHRASN BKN006 BKN015CB\nBECMG 3104/3106 21016G30KT="
 }

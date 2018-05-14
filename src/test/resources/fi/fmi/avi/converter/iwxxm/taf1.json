@@ -1,10 +1,21 @@
 {
   "status": "NORMAL",
-  "partialIssueTime": "271137Z",
+  "issueTime": {
+    "partialTime": "271137Z"
+  },
   "aerodrome": {
     "designator": "EFVA"
   },
-  "partialValidityTimePeriod": "2712/2812",
+  "validityTime": {
+    "startTime" : {
+      "partialTime": "2712",
+      "partialTimePattern": "DayHour"
+    },
+    "endTime": {
+      "partialTime": "2812",
+      "partialTimePattern": "DayHour"
+    }
+  },
   "baseForecast": {
     "forecastWeather": [
       {
@@ -58,7 +69,16 @@
         }
       ],
       "changeIndicator": "BECOMING",
-      "partialValidityTimePeriod": "2715/2717",
+      "periodOfChange": {
+        "startTime": {
+          "partialTime": "2715",
+          "partialTimePattern": "DayHour"
+        },
+        "endTime": {
+          "partialTime": "2717",
+          "partialTimePattern": "DayHour"
+        }
+      },
       "prevailingVisibility": {
         "value": 5000.0,
         "uom": "m"
@@ -83,7 +103,16 @@
         }
       ],
       "changeIndicator": "PROBABILITY_40",
-      "partialValidityTimePeriod": "2715/2720",
+      "periodOfChange": {
+        "startTime": {
+          "partialTime": "2715",
+          "partialTimePattern": "DayHour"
+        },
+        "endTime": {
+          "partialTime": "2720",
+          "partialTimePattern": "DayHour"
+        }
+      },
       "prevailingVisibility": {
         "value": 4000.0,
         "uom": "m"
@@ -92,7 +121,16 @@
     {
       "forecastWeather": [],
       "changeIndicator": "BECOMING",
-      "partialValidityTimePeriod": "2720/2722",
+      "periodOfChange": {
+        "startTime": {
+          "partialTime": "2720",
+          "partialTimePattern": "DayHour"
+        },
+        "endTime": {
+          "partialTime": "2722",
+          "partialTimePattern": "DayHour"
+        }
+      },
       "surfaceWind": {
         "meanWindDirection": {
           "value": 160.0,
@@ -106,7 +144,16 @@
     },
     {
       "changeIndicator": "TEMPORARY_FLUCTUATIONS",
-      "partialValidityTimePeriod": "2720/2724",
+      "periodOfChange": {
+        "startTime": {
+          "partialTime": "2720",
+          "partialTimePattern": "DayHour"
+        },
+        "endTime": {
+          "partialTime": "2724",
+          "partialTimePattern": "DayHour"
+        }
+      },
       "prevailingVisibility": {
         "value": 8000.0,
         "uom": "m"
@@ -120,7 +167,16 @@
         }
       ],
       "changeIndicator": "PROBABILITY_40",
-      "partialValidityTimePeriod": "2802/2806",
+      "periodOfChange": {
+        "startTime": {
+          "partialTime": "2802",
+          "partialTimePattern": "DayHour"
+        },
+        "endTime": {
+          "partialTime": "2806",
+          "partialTimePattern": "DayHour"
+        }
+      },
       "prevailingVisibility": {
         "value": 3000.0,
         "uom": "m"
@@ -137,5 +193,6 @@
         ]
       }
     }
-  ]
+  ],
+  "translatedTAC": "EFVA 271137Z 2712/2812 14015G25KT 8000 -RA SCT020 OVC050\nBECMG 2715/2717 5000 -RA BKN007\nPROB40 2715/2720 4000 RASN\nBECMG 2720/2722 16012KT\nTEMPO 2720/2724 8000\nPROB40 2802/2806 3000 RASN BKN004="
 }

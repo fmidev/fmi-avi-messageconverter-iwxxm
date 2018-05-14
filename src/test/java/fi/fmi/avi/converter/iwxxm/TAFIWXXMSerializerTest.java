@@ -16,7 +16,11 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
-import org.junit.Before;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import fi.fmi.avi.model.immutable.AerodromeImpl;
+import fi.fmi.avi.model.immutable.GeoPositionImpl;
+import fi.fmi.avi.model.taf.immutable.TAFImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +35,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.Aerodrome;
-import fi.fmi.avi.model.GeoPosition;
 import fi.fmi.avi.model.taf.TAF;
-import fi.fmi.avi.model.taf.impl.TAFImpl;
+
 
 /**
  * Created by rinne on 19/07/17.
@@ -46,32 +48,33 @@ public class TAFIWXXMSerializerTest {
     @Autowired
     private AviMessageConverter converter;
 
+
     @Test
     public void testTAFDOMSerialization() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         TAF t = readFromJSON("taf12.json");
-        Aerodrome airport = new Aerodrome();
+        AerodromeImpl.Builder airportBuilder = new AerodromeImpl.Builder()
+                .setDesignator("EETN")
+                .setName("Tallinn Airport")
+                .setFieldElevationValue(40.0)
+                .setLocationIndicatorICAO("EETN")
+                .setReferencePoint(new GeoPositionImpl.Builder()
+                        .setCoordinateReferenceSystemId("http://www.opengis.net/def/crs/EPSG/0/4326")
+                        .setCoordinates(new Double[]{24.8325, 59.413333})
+                        .setElevationValue(40.0)
+                        .setElevationUom("m")
+                        .build()
+                );
+        TAFImpl.Builder tafBuilder = TAFImpl.immutableCopyOf(t).toBuilder();
+        tafBuilder
+                .setAerodrome(airportBuilder.build())
+                .withCompleteIssueTime(YearMonth.of(2017,7))
+                .withCompleteForecastTimes(YearMonth.of(2017,7),30,11,ZoneId.of("Z"))
+                .setTranslatedTAC("EETN 301130Z 3012/3112 14016G26KT 8000 BKN010 OVC015 TXM02/3015Z TNM10/3103Z\n" + "TEMPO 3012/3018 3000 RADZ BR OVC004\n"
+                    + "BECMG 3018/3020 BKN008 SCT015CB\n" + "TEMPO 3102/3112 3000 SHRASN BKN006 BKN015CB\n" + "BECMG 3104/3106 21016G30KT=")
+                .setTranslationTime(ZonedDateTime.now());
 
-        airport.setDesignator("EETN");
-        airport.setName("Tallinn Airport");
-        airport.setFieldElevation(40.0);
-        airport.setLocationIndicatorICAO("EETN");
-        GeoPosition refPoint = new GeoPosition("http://www.opengis.net/def/crs/EPSG/0/4326", 24.8325, 59.413333);
-        refPoint.setElevationValue(40.0);
-        refPoint.setElevationUom("m");
-        airport.setReferencePoint(refPoint);
-
-        t.amendAerodromeInfo(airport);
-
-        //Partial issue time: 301130Z
-        t.completeIssueTime(YearMonth.of(2017,7));
-
-        t.completeForecastTimeReferences(2017, 7, 30,11, ZoneId.of("Z"));
-
-        t.setTranslatedTAC("EETN 301130Z 3012/3112 14016G26KT 8000 BKN010 OVC015 TXM02/3015Z TNM10/3103Z\n" + "TEMPO 3012/3018 3000 RADZ BR OVC004\n"
-                + "BECMG 3018/3020 BKN008 SCT015CB\n" + "TEMPO 3102/3112 3000 SHRASN BKN006 BKN015CB\n" + "BECMG 3104/3106 21016G30KT=");
-        t.setTranslationTime(ZonedDateTime.now());
-
+        t = tafBuilder.build();
         ConversionResult<Document> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM);
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
 
@@ -80,8 +83,8 @@ public class TAFIWXXMSerializerTest {
         NamespaceContext ctx = new IWXXMNamespaceMapper();
         xpath.setNamespaceContext(ctx);
 
-        Element docElement = result.getConvertedMessage().getDocumentElement();
-
+        Element docElement = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
+        assertNotNull(docElement);
 
         XPathExpression expr = xpath.compile("/iwxxm:TAF/iwxxm:issueTime/gml:TimeInstant/@gml:id");
         String issueTimeId = expr.evaluate(docElement);
@@ -154,6 +157,7 @@ public class TAFIWXXMSerializerTest {
                 + ":AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:locationIndicatorICAO");
         assertEquals("Airport ICAO code does not match", "EETN", expr.evaluate(docElement));
 
+
         expr = xpath.compile("/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm"
                 + ":AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:fieldElevation");
         assertEquals("Airport elevation value does not match", "40", expr.evaluate(docElement));
@@ -169,6 +173,7 @@ public class TAFIWXXMSerializerTest {
         expr = xpath.compile("/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm"
                 + ":AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/gml:pos");
         assertEquals("Airport reference point position value does not match", "24.8325 59.413333", expr.evaluate(docElement));
+
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm"
                 + ":AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/aixm:elevation");
@@ -704,6 +709,8 @@ public class TAFIWXXMSerializerTest {
 
     protected TAF readFromJSON(String fileName) throws IOException {
         ObjectMapper om = new ObjectMapper();
+        om.registerModule(new Jdk8Module());
+        om.registerModule(new JavaTimeModule());
         InputStream is = TAFIWXXMSerializerTest.class.getResourceAsStream(fileName);
         if (is != null) {
             return om.readValue(is, TAFImpl.class);

@@ -20,7 +20,7 @@ public class IWXXMTestConfiguration {
     
     @Autowired
     private AviMessageSpecificConverter<TAF, String> tafIWXXMStringSerializer;
-    
+
     @Bean
     public AviMessageConverter aviMessageConverter() {
         AviMessageConverter p = new AviMessageConverter();
