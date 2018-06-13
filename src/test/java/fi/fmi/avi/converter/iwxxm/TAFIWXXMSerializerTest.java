@@ -16,11 +16,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import fi.fmi.avi.model.immutable.AerodromeImpl;
-import fi.fmi.avi.model.immutable.GeoPositionImpl;
-import fi.fmi.avi.model.taf.immutable.TAFImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +26,16 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.immutable.AerodromeImpl;
+import fi.fmi.avi.model.immutable.GeoPositionImpl;
 import fi.fmi.avi.model.taf.TAF;
+import fi.fmi.avi.model.taf.immutable.TAFImpl;
 
 
 /**
@@ -616,8 +616,7 @@ public class TAFIWXXMSerializerTest {
                         + ":CloudLayer/iwxxm:cloudType/@xlink:href");
         assertEquals("Change Forecast 3 cloud layer 2 type does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-012/9", expr.evaluate(docElement));
 
-
-        //Change forecast 4: BECMG 3104/3106 21016G30KT=
+        //Change forecast 4: BECMG 3104/3106 21016G30KT VV001=
 
         //Type:
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:type/@xlink:href");
@@ -672,38 +671,46 @@ public class TAFIWXXMSerializerTest {
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/@variableWindDirection");
-        assertEquals("Variable wind not match", "false", expr.evaluate(docElement));
+        assertEquals("Change forecast 4 variable wind not match", "false", expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:meanWindDirection/@uom");
-        assertEquals("Mean wind direction uom does not match", "deg", expr.evaluate(docElement));
+        assertEquals("Change forecast 4 Mean wind direction uom does not match", "deg", expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:meanWindDirection");
-        assertTrue("Mean wind direction does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 210.0) < 0.00001);
+        assertTrue("Change forecast 4 Mean wind direction does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 210.0) < 0.00001);
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:meanWindSpeed/@uom");
-        assertEquals("Mean wind speed uom does not match", "[kn_i]", expr.evaluate(docElement));
+        assertEquals("Change forecast 4 Mean wind speed uom does not match", "[kn_i]", expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:meanWindSpeed");
-        assertTrue("Mean wind speed does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 16.0) < 0.00001);
+        assertTrue("Change forecast 4 Mean wind speed does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 16.0) < 0.00001);
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:windGustSpeed/@uom");
-        assertEquals("Wind gust speed uom does not match", "[kn_i]", expr.evaluate(docElement));
+        assertEquals("Change forecast 4 Wind gust speed uom does not match", "[kn_i]", expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:windGustSpeed");
-        assertTrue("Wind gust speed does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 30.0) < 0.00001);
+        assertTrue("Change forecast 4 Wind gust speed does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 30.0) < 0.00001);
 
+        //VV001
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                + ":AerodromeCloudForecast/iwxxm:verticalVisibility");
+        assertTrue("Change Forecast 4 cloud vertical visibility value does not match", Math.abs(Double.parseDouble(expr.evaluate(docElement)) - 100) < 0.00001);
+
+        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
+                + ":AerodromeCloudForecast/iwxxm:verticalVisibility/@uom");
+        assertEquals("Change Forecast 4 cloud vertical visibility uom does not match", "[ft_i]", expr.evaluate(docElement));
 
     }
 

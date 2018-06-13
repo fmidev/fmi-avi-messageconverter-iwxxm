@@ -12,6 +12,23 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
+import net.opengis.gml32.AbstractTimeObjectType;
+import net.opengis.gml32.AngleType;
+import net.opengis.gml32.FeaturePropertyType;
+import net.opengis.gml32.LengthType;
+import net.opengis.gml32.ReferenceType;
+import net.opengis.gml32.SpeedType;
+import net.opengis.gml32.StringOrRefType;
+import net.opengis.gml32.TimeInstantPropertyType;
+import net.opengis.gml32.TimeInstantType;
+import net.opengis.gml32.TimePeriodPropertyType;
+import net.opengis.gml32.TimePeriodType;
+import net.opengis.gml32.TimePositionType;
+import net.opengis.om20.OMObservationPropertyType;
+import net.opengis.om20.OMObservationType;
+import net.opengis.om20.OMProcessPropertyType;
+import net.opengis.om20.TimeObjectPropertyType;
+
 import aero.aixm511.AirportHeliportType;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
@@ -20,8 +37,14 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionIssue.Type;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
-import fi.fmi.avi.model.*;
+import fi.fmi.avi.model.Aerodrome;
+import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationCodeListUser.TAFStatus;
+import fi.fmi.avi.model.CloudForecast;
+import fi.fmi.avi.model.NumericMeasure;
+import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
+import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.Weather;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
 import fi.fmi.avi.model.taf.TAFBaseForecast;
@@ -45,22 +68,6 @@ import icao.iwxxm21.PermissibleUsageType;
 import icao.iwxxm21.RelationalOperatorType;
 import icao.iwxxm21.TAFReportStatusType;
 import icao.iwxxm21.TAFType;
-import net.opengis.gml32.AbstractTimeObjectType;
-import net.opengis.gml32.AngleType;
-import net.opengis.gml32.FeaturePropertyType;
-import net.opengis.gml32.LengthType;
-import net.opengis.gml32.ReferenceType;
-import net.opengis.gml32.SpeedType;
-import net.opengis.gml32.StringOrRefType;
-import net.opengis.gml32.TimeInstantPropertyType;
-import net.opengis.gml32.TimeInstantType;
-import net.opengis.gml32.TimePeriodPropertyType;
-import net.opengis.gml32.TimePeriodType;
-import net.opengis.gml32.TimePositionType;
-import net.opengis.om20.OMObservationPropertyType;
-import net.opengis.om20.OMObservationType;
-import net.opengis.om20.OMProcessPropertyType;
-import net.opengis.om20.TimeObjectPropertyType;
 import wmo.metce2013.ProcessType;
 
 public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXXMSerializerBase<T> implements AviMessageSpecificConverter<TAF, T> {
@@ -139,7 +146,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
         } else {
             //TAF: previousReportValidPeriod must not be present unless this cancels, corrects or amends a previous report
             if (input.getReferredReport().isPresent()) {
-                result.addIssue(new ConversionIssue(Type.LOGICAL_ERROR,
+                result.addIssue(new ConversionIssue(Type.LOGICAL,
                         "TAF contains reference to the previous report even if its type is " + "not amendment, cancellation or correction"));
             }
         }
@@ -230,7 +237,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
 
         Optional<List<TAFChangeForecast>> fcts = source.getChangeForecasts();
         if (!source.getValidityTime().isPresent() || !source.getValidityTime().get().isComplete()) {
-            result.addIssue(new ConversionIssue(Type.SYNTAX_ERROR, "TAF validity time is not complete"));
+            result.addIssue(new ConversionIssue(Type.SYNTAX, "TAF validity time is not complete"));
             return;
         }
         ZonedDateTime tafValidityStart = source.getValidityTime().get().getStartTime().get().getCompleteTime().get();
@@ -250,12 +257,12 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
                     ZonedDateTime startTime = start.get().getCompleteTime().get();
                     ZonedDateTime endTime = end.get().getCompleteTime().get();
                     if (startTime.isBefore(tafValidityStart)) {
-                        result.addIssue(new ConversionIssue(Type.LOGICAL_ERROR,
+                        result.addIssue(new ConversionIssue(Type.LOGICAL,
                                 "Change group start time '" + startTime.toString() + "'" + " is before TAF validity start time "
                                         + tafValidityStart.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
                     }
                     if (endTime.isAfter(tafValidityEnd)) {
-                        result.addIssue(new ConversionIssue(Type.LOGICAL_ERROR,
+                        result.addIssue(new ConversionIssue(Type.LOGICAL,
                                 "Change group end time '" + endTime.toString() + "' is " + " after TAF validity end time "
                                         + tafValidityEnd.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
                     }
@@ -458,7 +465,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
 
                 PartialOrCompleteTimePeriod validity = prevReport.get().getValidityTime();
                 if (!validity.isComplete()) {
-                    result.addIssue(new ConversionIssue(Type.SYNTAX_ERROR,"Previous report TAF validity time is not complete"));
+                    result.addIssue(new ConversionIssue(Type.SYNTAX, "Previous report TAF validity time is not complete"));
                     return;
                 }
                 Optional<PartialOrCompleteTimeInstant> from = validity.getStartTime();

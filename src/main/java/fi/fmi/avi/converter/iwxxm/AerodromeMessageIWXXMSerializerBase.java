@@ -8,12 +8,30 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.namespace.QName;
+
+import net.opengis.gml32.AbstractGeometryType;
+import net.opengis.gml32.AngleType;
+import net.opengis.gml32.DirectPositionType;
+import net.opengis.gml32.FeaturePropertyType;
+import net.opengis.gml32.LengthType;
+import net.opengis.gml32.MeasureType;
+import net.opengis.gml32.PointType;
+import net.opengis.gml32.ReferenceType;
+import net.opengis.gml32.SpeedType;
+import net.opengis.gml32.TimePrimitivePropertyType;
+import net.opengis.om20.OMObservationType;
+import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
+import net.opengis.sampling.spatial.ShapeType;
 
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.ls.LSInput;
@@ -45,20 +63,6 @@ import icao.iwxxm21.CloudLayerType;
 import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
 import icao.iwxxm21.SigConvectiveCloudTypeType;
-
-import net.opengis.gml32.DirectPositionType;
-import net.opengis.gml32.FeaturePropertyType;
-import net.opengis.gml32.LengthType;
-import net.opengis.gml32.MeasureType;
-import net.opengis.gml32.AbstractGeometryType;
-import net.opengis.gml32.AngleType;
-import net.opengis.gml32.PointType;
-import net.opengis.gml32.ReferenceType;
-import net.opengis.gml32.SpeedType;
-import net.opengis.gml32.TimePrimitivePropertyType;
-import net.opengis.om20.OMObservationType;
-import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
-import net.opengis.sampling.spatial.ShapeType;
 
 /**
  * Created by rinne on 20/07/17.
@@ -211,7 +215,12 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
             target.setId("cfct-" + UUID.randomUUID().toString());
             Optional<NumericMeasure> measure = source.getVerticalVisibility();
             if (measure.isPresent()) {
-                target.setVerticalVisibility(wrap(asMeasure(measure.get(), LengthWithNilReasonType.class), LengthWithNilReasonType.class));
+                QName eName = new QName("http://icao.int/iwxxm/2.1", "verticalVisibility");
+                LengthWithNilReasonType vvValue = create(LengthWithNilReasonType.class, (vv) -> {
+                    vv.setValue(measure.get().getValue());
+                    vv.setUom(measure.get().getUom());
+                });
+                target.setVerticalVisibility(new JAXBElement<LengthWithNilReasonType>(eName, LengthWithNilReasonType.class, vvValue));
             }
             if (source.getLayers().isPresent()) {
                 if (source.getLayers().get().size() <= MAX_CLOUD_LAYERS) {
@@ -221,7 +230,7 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
                         }));
                     }
                 } else {
-                    result.addIssue(new ConversionIssue(ConversionIssue.Type.SYNTAX_ERROR,
+                    result.addIssue(new ConversionIssue(ConversionIssue.Type.SYNTAX,
                             "Found " + source.getLayers().get().size() + " cloud forecast " + "layers, the maximum number in IWXXM is " + MAX_CLOUD_LAYERS));
                 }
             }
@@ -370,7 +379,7 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
             } else if (event.getSeverity() == ValidationEvent.FATAL_ERROR) {
                 this.fatalErrorsFound = true;
             }
-            this.result.addIssue(new ConversionIssue(Type.SYNTAX_ERROR, "XML Schema validation issue: " + event.getMessage()));
+            this.result.addIssue(new ConversionIssue(Type.SYNTAX, "XML Schema validation issue: " + event.getMessage()));
             return true;
         }
 
