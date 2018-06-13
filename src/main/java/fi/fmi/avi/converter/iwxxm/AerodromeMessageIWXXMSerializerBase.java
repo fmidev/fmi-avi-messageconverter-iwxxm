@@ -18,11 +18,23 @@ import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.namespace.QName;
 
+import net.opengis.gml32.AbstractGeometryType;
+import net.opengis.gml32.AngleType;
+import net.opengis.gml32.DirectPositionType;
+import net.opengis.gml32.FeaturePropertyType;
+import net.opengis.gml32.LengthType;
+import net.opengis.gml32.MeasureType;
+import net.opengis.gml32.PointType;
+import net.opengis.gml32.ReferenceType;
+import net.opengis.gml32.SpeedType;
+import net.opengis.gml32.TimePrimitivePropertyType;
+import net.opengis.om20.OMObservationType;
+import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
+import net.opengis.sampling.spatial.ShapeType;
+
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
-
-import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
 
 import aero.aixm511.AirportHeliportTimeSlicePropertyType;
 import aero.aixm511.AirportHeliportTimeSliceType;
@@ -50,20 +62,6 @@ import icao.iwxxm21.CloudLayerType;
 import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
 import icao.iwxxm21.SigConvectiveCloudTypeType;
-
-import net.opengis.gml32.DirectPositionType;
-import net.opengis.gml32.FeaturePropertyType;
-import net.opengis.gml32.LengthType;
-import net.opengis.gml32.MeasureType;
-import net.opengis.gml32.AbstractGeometryType;
-import net.opengis.gml32.AngleType;
-import net.opengis.gml32.PointType;
-import net.opengis.gml32.ReferenceType;
-import net.opengis.gml32.SpeedType;
-import net.opengis.gml32.TimePrimitivePropertyType;
-import net.opengis.om20.OMObservationType;
-import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
-import net.opengis.sampling.spatial.ShapeType;
 
 /**
  * Created by rinne on 20/07/17.
@@ -212,9 +210,14 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
             target.setId("cfct-" + UUID.randomUUID().toString());
             NumericMeasure measure = source.getVerticalVisibility();
             if (measure != null) {
-                target.setVerticalVisibility(wrap(asMeasure(measure, LengthWithNilReasonType.class), LengthWithNilReasonType.class));
+                QName eName = new QName("http://icao.int/iwxxm/2.1", "verticalVisibility");
+                LengthWithNilReasonType vvValue = create(LengthWithNilReasonType.class, (vv) -> {
+                    vv.setValue(measure.getValue());
+                    vv.setUom(measure.getUom());
+                });
+                target.setVerticalVisibility(new JAXBElement<LengthWithNilReasonType>(eName, LengthWithNilReasonType.class, vvValue));
             }
-            if (source.getLayers().size() > 0) {
+            if (source.getLayers() != null && source.getLayers().size() > 0) {
                 if (source.getLayers().size() <= MAX_CLOUD_LAYERS) {
                     for (CloudLayer layer : source.getLayers()) {
                         target.getLayer().add(create(AerodromeCloudForecastType.Layer.class, (l) -> {
@@ -250,7 +253,7 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
     }
 
     protected static class IWXXMSchemaResourceResolver implements LSResourceResolver {
-        
+
         //Singleton
         private static IWXXMSchemaResourceResolver instance;
         public synchronized static IWXXMSchemaResourceResolver getInstance() {
@@ -259,12 +262,12 @@ public abstract class AerodromeMessageIWXXMSerializerBase<T> extends AbstractIWX
             }
             return instance;
         }
-        
+
         private Map<String, LSInput> cache = new HashMap<String, LSInput>();
-        
+
         private IWXXMSchemaResourceResolver() {
         }
-        
+
         @Override
         public LSInput resolveResource(final String type, final String namespaceURI, final String publicId, final String systemId, final String baseURI) {
             String cacheKey = namespaceURI + ":" + normalizeSystemId(systemId);

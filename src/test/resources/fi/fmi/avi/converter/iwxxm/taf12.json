@@ -171,7 +171,13 @@
 	      "value": 30.0,
 	      "uom": "[kn_i]"
 	    }
-	  }
+      },
+      "cloud": {
+        "verticalVisibility": {
+          "value": 100.0,
+          "uom": "[ft_i]"
+        }
+      }
     }
   ]
   
