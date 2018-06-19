@@ -84,7 +84,7 @@ modules for them as maven dependencies and add the required converters to the Av
 See [fmi-avi-messageconverter](https://github.com/fmidev/fmi-avi-messageconverter) for more information.
 
 
-##Supported message conversions
+## Supported message conversions
 
 Identifier                                                          | Input                             | Output
 --------------------------------------------------------------------|-----------------------------------|-------
