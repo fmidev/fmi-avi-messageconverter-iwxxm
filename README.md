@@ -60,13 +60,21 @@ public class MyMessageConverterConfig {
     @Autowired
     private AviMessageSpecificConverter<TAF, String> tafIWXXMStringSerializer;
     
+    @Autowired
+    private AviMessageSpecificConverter<Document, TAF> tafIWXXMDOMParser;
+   
+    @Autowired
+    private AviMessageSpecificConverter<String, TAF> tafIWXXMStringParser;
+   
     @Bean
     public AviMessageConverter aviMessageConverter() {
         AviMessageConverter p = new AviMessageConverter();
-        p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM, tafIWXXMDOMSerializer);
-        p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING, tafIWXXMStringSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM,tafIWXXMDOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING,tafIWXXMStringSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, tafIWXXMStringParser);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, tafIWXXMDOMParser);
         return p;
-    }
+     }
 
 }
 ```
@@ -82,8 +90,10 @@ Identifier                                                          | Input     
 --------------------------------------------------------------------|-----------------------------------|-------
 fi.fmi.avi.converter.iwxxm.IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING | instance of fi.fmi.avi.model.TAF | IWXXM TAF report as a String
 fi.fmi.avi.converter.iwxxm.IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM | instance of fi.fmi.avi.model.TAF | IWXXM TAF report as a DOM Document
+fi.fmi.avi.converter.iwxxm.IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO | IWXXM TAF report as a String | instance of fi.fmi.avi.model.TAF
+fi.fmi.avi.converter.iwxxm.IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO | IWXXM TAF report as a DOM Document | instance of fi.fmi.avi.model.TAF 
 
-Currently only the serialization from Java TAF object to IWXXM 2.1 TAF message type is supported, but it's expected that the METAR, 
+Currently only conversions between TAF Java objects and the IWXXM 2.1 TAF messages are supported, but it's expected that the METAR, 
 SPECI, SIGMET and AIRMET support will be added as the project becomes more mature.
 
 ## Examples

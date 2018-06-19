@@ -9,13 +9,14 @@ import javax.xml.namespace.NamespaceContext;
 
 import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
 
-/**
- * Created by rinne on 11/10/17.
- */
-class IWXXMNamespaceMapper extends NamespacePrefixMapper implements NamespaceContext {
-    private static Map<String, String> mapping = new HashMap<>();
 
-    IWXXMNamespaceMapper() {
+/**
+ * Helper for using per-defined XML Schema namespace prefixes in IWXXM documents.
+ */
+public class IWXXMNamespaceContext extends NamespacePrefixMapper implements NamespaceContext {
+    private final static Map<String, String> mapping = new HashMap<>();
+
+    static {
         mapping.put("http://www.w3.org/2001/XMLSchema-instance", "xsi");
         mapping.put("http://www.w3.org/1999/xlink", "xlink");
         mapping.put("http://www.opengis.net/gml/3.2", "gml");
@@ -29,6 +30,7 @@ class IWXXMNamespaceMapper extends NamespacePrefixMapper implements NamespaceCon
         mapping.put("http://www.opengis.net/om/2.0", "om");
         mapping.put("http://www.opengis.net/sampling/2.0", "sam");
         mapping.put("http://www.opengis.net/samplingSpatial/2.0", "sams");
+        mapping.put("http://purl.oclc.org/dsdl/svrl", "svrl");
     }
 
     @Override
@@ -36,14 +38,17 @@ class IWXXMNamespaceMapper extends NamespacePrefixMapper implements NamespaceCon
         return mapping.getOrDefault(namespace, prefix);
     }
 
+    @Override
     public String getNamespaceURI(final String prefix) {
         return mapping.entrySet().stream().filter(entry -> entry.getValue().equals(prefix)).map(Map.Entry::getKey).findAny().orElse(null);
     };
 
+    @Override
     public String getPrefix(final String uri) {
         return mapping.get(uri);
     }
 
+    @Override
     public Iterator<?> getPrefixes(final String uri) {
         ArrayList<String> retval = new ArrayList<>(1);
         String value = this.getPrefix(uri);

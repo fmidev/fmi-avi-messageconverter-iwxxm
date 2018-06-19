@@ -3,8 +3,7 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:gml="http://www.opengis.net/gml/3.2"
   xmlns:om="http://www.opengis.net/om/2.0"
-  xmlns:iwxxm="http://icao.int/iwxxm/2.1"
-  version="1.0">
+  version="2.0">
     <xsl:template match="node()|@*">
         <xsl:copy>
             <xsl:apply-templates select="node()|@*"/>

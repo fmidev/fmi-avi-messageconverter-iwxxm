@@ -1,16 +1,23 @@
-package fi.fmi.avi.converter.iwxxm;
+package fi.fmi.avi.converter.iwxxm.taf;
 
+import static fi.fmi.avi.model.AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE;
+
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.transform.dom.DOMSource;
 
 import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.AngleType;
@@ -29,6 +36,9 @@ import net.opengis.om20.OMObservationType;
 import net.opengis.om20.OMProcessPropertyType;
 import net.opengis.om20.TimeObjectPropertyType;
 
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import aero.aixm511.AirportHeliportType;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
@@ -37,6 +47,7 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionIssue.Type;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationCodeListUser.TAFStatus;
@@ -70,21 +81,37 @@ import icao.iwxxm21.TAFReportStatusType;
 import icao.iwxxm21.TAFType;
 import wmo.metce2013.ProcessType;
 
-public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXXMSerializerBase<T> implements AviMessageSpecificConverter<TAF, T> {
+/**
+ * Common functionality for conversions related to producing IWXXM TAF messages.
+ *
+ * @param <T>
+ *         the type of the
+ */
+public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSerializer implements AviMessageSpecificConverter<TAF, T> {
 
     protected abstract T render(final TAFType taf, final ConversionHints hints) throws ConversionException;
 
+    /**
+     * Converts a TAF object into another format.
+     *
+     * @param input
+     *         input message
+     * @param hints
+     *         parsing hints
+     *
+     * @return the conversion result.
+     */
     @Override
     public ConversionResult<T> convertMessage(TAF input, ConversionHints hints) {
-        ConversionResult<T> result = new ConversionResult<T>();
+        ConversionResult<T> result = new ConversionResult<>();
         if (!input.areAllTimeReferencesComplete()) {
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "All time references must be completed before converting to IWXXM"));
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "All time references must be completed before converting to IWXXM"));
             return result;
         }
-        if (!input.allAerodromeReferencesContainPositionAndElevation()) {
+
+        if (!input.allAerodromeReferencesContainPosition()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "All aerodrome references must contain field elevation and reference point before converting to IWXXM"));
+                    "All aerodrome references must contain a reference point location before converting to IWXXM"));
             return result;
         }
 
@@ -140,23 +167,23 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
         }
         this.updateBaseForecast(input, taf, issueTimeId, validTimeId, foiId, processId, aerodromeId, result);
 
-        if (AviationCodeListUser.TAFStatus.CORRECTION == status || AviationCodeListUser.TAFStatus.CANCELLATION == status
-                || AviationCodeListUser.TAFStatus.AMENDMENT == status) {
+        if (AviationCodeListUser.TAFStatus.CORRECTION == status || AviationCodeListUser.TAFStatus.CANCELLATION == status || AviationCodeListUser.TAFStatus.AMENDMENT == status) {
             this.updatePreviousReportReferences(input, taf, aerodromeId, result);
         } else {
             //TAF: previousReportValidPeriod must not be present unless this cancels, corrects or amends a previous report
             if (input.getReferredReport().isPresent()) {
-                result.addIssue(new ConversionIssue(Type.LOGICAL,
-                        "TAF contains reference to the previous report even if its type is " + "not amendment, cancellation or correction"));
+                result.addIssue(new ConversionIssue(Type.LOGICAL, "TAF contains reference to the previous report even if its type is " + "not amendment, cancellation or correction"));
             }
         }
         try {
             result.setStatus(Status.SUCCESS);
             this.updateMessageMetadata(input, result, taf);
-            if (this.validateDocument(taf, hints, result)) {
-                result.setConvertedMessage(this.render(taf, hints));
-            } else {
+            ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
+            validateDocument(taf, TAFType.class, hints, eventHandler);
+            if (eventHandler.errorsFound()) {
                 result.setStatus(Status.FAIL);
+            } else {
+                result.setConvertedMessage(this.render(taf, hints));
             }
         } catch (ConversionException e) {
             result.setStatus(Status.FAIL);
@@ -174,7 +201,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
             baseFct.setId("bfct-" + UUID.randomUUID().toString());
 
             baseFct.setType(create(ReferenceType.class, (ref) -> {
-                ref.setHref("http://codes.wmo.int/49-2/observation-type/iwxxm/2.1/MeteorologicalAerodromeForecast");
+                ref.setHref(AviationCodeListUser.MET_AERODROME_FORECAST_TYPE);
                 ref.setTitle("Aerodrome Base Forecast");
 
             }));
@@ -205,14 +232,13 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
                 prop.setAny(createAndWrap(ProcessType.class, (process) -> {
                     process.setId(processId);
                     process.setDescription(create(StringOrRefType.class, (descr) -> {
-                        descr.setValue(
-                                "WMO No. 49 Volume 2 Meteorological Service for International Air Navigation APPENDIX 5 TECHNICAL SPECIFICATIONS RELATED TO FORECASTS");
+                        descr.setValue(AviationCodeListUser.TAF_PROCEDURE_DESCRIPTION);
                     }));
                 }));
             }));
 
             baseFct.setObservedProperty(create(ReferenceType.class, (ref) -> {
-                ref.setHref("http://codes.wmo.int/49-2/observable-property/MeteorologicalAerodromeForecast");
+                ref.setHref(AviationCodeListUser.MET_AERODROME_FORECAST_PROPERTIES);
                 ref.setTitle("TAF forecast properties");
             }));
 
@@ -247,7 +273,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
                 final OMObservationType changeFct = create(OMObservationType.class);
                 changeFct.setId("chfct-" + UUID.randomUUID().toString());
                 changeFct.setType(create(ReferenceType.class, (ref) -> {
-                    ref.setHref("http://codes.wmo.int/49-2/observation-type/IWXXM/1.0/MeteorologicalAerodromeForecast");
+                    ref.setHref(AviationCodeListUser.MET_AERODROME_FORECAST_TYPE);
                     ref.setTitle("Aerodrome Forecast");
                 }));
                 Optional<PartialOrCompleteTimeInstant> start = fctInput.getPeriodOfChange().getStartTime();
@@ -295,13 +321,8 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
                         procProp.setTitle("WMO 49-2 TAF");
                     }));
 
-                    changeFct.setType(create(ReferenceType.class, (ref) -> {
-                        ref.setHref("http://codes.wmo.int/49-2/observation-type/iwxxm/2.1/MeteorologicalAerodromeForecast");
-                        ref.setTitle("Aerodrome Change Forecast");
-                    }));
-
                     changeFct.setObservedProperty(create(ReferenceType.class, (ref) -> {
-                        ref.setHref("http://codes.wmo.int/49-2/observable-property/MeteorologicalAerodromeForecast");
+                        ref.setHref(AviationCodeListUser.MET_AERODROME_FORECAST_PROPERTIES);
                         ref.setTitle("TAF forecast properties");
                     }));
 
@@ -331,7 +352,6 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
 
         if (TAFStatus.MISSING == taf.getStatus()) {
             if (source instanceof TAFBaseForecast) {
-                //TODO nilReason="missing"?
                 target.setResult(null);
             } else {
                 throw new IllegalArgumentException(
@@ -358,14 +378,37 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
                             }
                         }));
                     }
+                } else if (source.isNoSignificantWeather()) {
+                    //The expected end of occurrence of weather phenomena shall be indicated by a nil "forecastWeather"
+                    // with a nil reason of "http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"
+                    fctRecord.getWeather().add(create(AerodromeForecastWeatherType.class, (w) -> {
+                        w.getNilReason().add(CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
+                    }));
                 }
                 Optional<CloudForecast> cFct = source.getCloud();
                 if (cFct.isPresent()) {
-                    final AerodromeCloudForecastType acFct = create(AerodromeCloudForecastType.class);
-                    this.updateForecastClouds(cFct.get(), acFct, result);
-                    fctRecord.setCloud(create(AerodromeCloudForecastPropertyType.class, (prop) -> {
-                        prop.setAerodromeCloudForecast(acFct);
-                    }));
+                    AerodromeCloudForecastPropertyType cloudProp = create(AerodromeCloudForecastPropertyType.class);
+                    if (cFct.get().isNoSignificantCloud() && !source.isCeilingAndVisibilityOk()) {
+                        //NOTE: iwxxm:cloud is not nillable, so cannot set xsi:nil="true"
+                        cloudProp.getNilReason().add(CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
+                    } else {
+                        final AerodromeCloudForecastType acFct = create(AerodromeCloudForecastType.class);
+                        this.updateForecastClouds(cFct.get(), acFct, result);
+                        cloudProp.setAerodromeCloudForecast(acFct);
+                    }
+                    fctRecord.setCloud(cloudProp);
+                }
+            } else {
+               //When CAVOK conditions apply, the appropriate Record type shall have "cloudAndVisibilityOK" set to true
+                // and visibility, runway visual range, weather, and cloud information shall be missing
+                if (source.getPrevailingVisibility().isPresent() || source.getPrevailingVisibilityOperator().isPresent()) {
+                    result.addIssue(new ConversionIssue(ConversionIssue.Severity.WARNING, Type.LOGICAL, "Visibility included with CAVOK, ignoring"));
+                }
+                if (source.getForecastWeather().isPresent()) {
+                    result.addIssue(new ConversionIssue(ConversionIssue.Severity.WARNING, Type.LOGICAL, "Weather included with CAVOK, ignoring"));
+                }
+                if (source.getCloud().isPresent()) {
+                    result.addIssue(new ConversionIssue(ConversionIssue.Severity.WARNING, Type.LOGICAL, "Cloud included with CAVOK, ignoring"));
                 }
             }
             if (source.getSurfaceWind().isPresent()) {
@@ -504,6 +547,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
                 }
             } else {
                 target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+                target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
             }
             if (source.isTranslated()) {
                 if (source.getTranslatedBulletinID().isPresent()) {
@@ -532,10 +576,18 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AerodromeMessageIWXX
     }
     
     @Override
-    protected Source getCleanupTransformationStylesheet(ConversionHints hints) {
-        return new StreamSource(this.getClass().getResourceAsStream("2.1/TAFCleanup.xsl"));
+    protected Source getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        try {
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(this.getClass().getResourceAsStream("TAFCleanup.xsl"));
+            return new DOMSource(doc);
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            throw new ConversionException("Unexpected problem in reading the cleanup XSL sheet", e);
+        }
+
     }
-
-   
-
+    
 }

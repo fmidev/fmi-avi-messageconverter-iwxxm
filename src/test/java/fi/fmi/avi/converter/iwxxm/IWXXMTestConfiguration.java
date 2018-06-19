@@ -21,11 +21,19 @@ public class IWXXMTestConfiguration {
     @Autowired
     private AviMessageSpecificConverter<TAF, String> tafIWXXMStringSerializer;
 
+    @Autowired
+    private AviMessageSpecificConverter<Document, TAF> tafIWXXMDOMParser;
+
+    @Autowired
+    private AviMessageSpecificConverter<String, TAF> tafIWXXMStringParser;
+
     @Bean
     public AviMessageConverter aviMessageConverter() {
         AviMessageConverter p = new AviMessageConverter();
         p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM,tafIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING,tafIWXXMStringSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, tafIWXXMStringParser);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, tafIWXXMDOMParser);
         return p;
     }
 

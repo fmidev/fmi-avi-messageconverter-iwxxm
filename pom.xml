@@ -11,7 +11,7 @@
   <description>Aviation weather message conversions - IWXXM module</description>
   <groupId>fi.fmi.avi.converter</groupId>
   <artifactId>fmi-avi-messageconverter-iwxxm</artifactId>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>0.8.0-SNAPSHOT</version>
 
   <scm>
     <connection>scm:git:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm.git</connection>
@@ -26,12 +26,20 @@
       <artifactId>fmi-avi-messageconverter</artifactId>
       <version>2.0.0-SNAPSHOT</version>
     </dependency>
+
     <dependency>
       <groupId>fi.fmi.xmlmodel</groupId>
       <artifactId>fmi-avi-xmlmodel-iwxxm21</artifactId>
       <version>1.0</version>
     </dependency>
-    
+
+    <dependency>
+      <groupId>net.sf.saxon</groupId>
+      <artifactId>Saxon-HE</artifactId>
+      <version>9.8.0-12</version>
+    </dependency>
+
+
     <!-- Need for exposing the com.sum internal NamespacePrefixMapper classes -->
     <dependency>
       <groupId>com.googlecode.jaxb-namespaceprefixmapper-interfaces</groupId>
@@ -72,5 +80,43 @@
     </dependency>
 
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+      <!--
+        this can be used to generate Schematron validation the XSL transformation file from .sch
+          Disabled, because the on-the-fly generation caused complication problems as the JUnit tests
+          would fail without the xsl file in place.
+
+        <plugin>
+            <groupId>com.helger.maven</groupId>
+            <artifactId>ph-sch2xslt-maven-plugin</artifactId>
+            <version>5.0.4</version>
+            <configuration>
+                <schematronDirectory>${basedir}/src/main/resources/schematron/sch</schematronDirectory>
+                <schematronPattern>**/*.sch</schematronPattern>
+                <xsltDirectory>${build.outputDirectory}/schematron/xslt</xsltDirectory>
+                <xsltExtension>.xsl</xsltExtension>
+            </configuration>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>convert</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        -->
+    </plugins>
+  </build>
 
 </project>

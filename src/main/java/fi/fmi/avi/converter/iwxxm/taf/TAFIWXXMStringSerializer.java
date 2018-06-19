@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm;
+package fi.fmi.avi.converter.iwxxm.taf;
 
 import java.io.StringWriter;
 
@@ -16,10 +16,10 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import icao.iwxxm21.TAFType;
 
+/**
+ * Specialization of {@link AbstractTAFIWXXMSerializer} for String output.
+ */
 public class TAFIWXXMStringSerializer extends AbstractTAFIWXXMSerializer<String> {
-
-    public TAFIWXXMStringSerializer() {
-    }
 
     @Override
     protected String render(TAFType taf, ConversionHints hints) throws ConversionException {
@@ -45,7 +45,7 @@ public class TAFIWXXMStringSerializer extends AbstractTAFIWXXMSerializer<String>
                 transformer.transform(dsource, output);
                 retval = sw.toString();
             } catch (TransformerException e) {
-              throw new ConversionException("Exception in rendering to String", e);
+                throw new ConversionException("Exception in rendering to String", e);
             }
         }
         return retval;
