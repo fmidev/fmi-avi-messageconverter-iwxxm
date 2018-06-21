@@ -38,7 +38,7 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
         AIXM51("http://www.aixm.aero/schema/5.1.1", "aero/aixm/schema/5.1.1/", aero.aixm511.CodeICAOType.class),
         METCE12("http://def.wmo.int/metce/2013", "int/wmo/metce/1.2/", wmo.metce2013.ProcessType.class),
         OPM12("http://def.wmo.int/opm/2013", "int/wmo/opm/1.2/", wmo.opm2013.AbstractObservablePropertyPropertyType.class),
-        IWXXM21("http://icao.int/iwxxm/2.1", "int/icao/iwxxm/2.1/", icao.iwxxm21.TAFType.class);
+        IWXXM21("http://icao.int/iwxxm/2.1", "int/icao/iwxxm/2.1.1/", icao.iwxxm21.TAFType.class);
 
         private final String namespaceURI;
         private String pathPrefix;

@@ -21,7 +21,6 @@ import org.w3c.dom.NodeList;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.taf.AbstractTAFIWXXMParser;
 import fi.fmi.avi.model.AviationCodeListUser;
 import icao.iwxxm21.ReportType;
 
@@ -33,7 +32,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
     private static Templates iwxxmTemplates;
 
     /**
-     * Checks ther DOM Document against the official IWXXM 2.1.0 Schematron validation rules.
+     * Checks ther DOM Document against the official IWXXM 2.1.1 Schematron validation rules.
      * Uses a pre-generated XLS transformation file producing the Schematron SVRL report.
      *
      * @param input
@@ -105,9 +104,11 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             TransformerFactory tFactory = TransformerFactory.newInstance();
 
             try {
-                iwxxmTemplates = tFactory.newTemplates(new StreamSource(AbstractTAFIWXXMParser.class.getClassLoader().getResourceAsStream("schematron/xslt/iwxxm.xsl")));
+                iwxxmTemplates = tFactory.newTemplates(
+                        new StreamSource(ReportType.class.getClassLoader().getResourceAsStream("schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl")));
             } catch (Exception e) {
-                throw new RuntimeException("Unable to read XSL file for IWXXM 2.1 Schematron validation, make sure the the file exists in " + " classpath location 'schematron/xslt/iwxxm.xsl' ");
+                throw new RuntimeException("Unable to read XSL file for IWXXM 2.1.1 Schematron validation, make sure the the file exists in " + " classpath "
+                        + "location 'schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl' ");
             }
         }
         return iwxxmTemplates;

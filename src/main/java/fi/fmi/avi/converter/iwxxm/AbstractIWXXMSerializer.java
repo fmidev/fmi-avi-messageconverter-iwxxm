@@ -89,12 +89,13 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
             schemaFactory.setResourceResolver(resolver);
             //Secure processing does not allow "file" protocol loading for schemas:
             schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
-            Schema iwxxmSchema = schemaFactory.newSchema(ReportType.class.getResource("/int/icao/iwxxm/2.1/iwxxm.xsd"));
+            Schema iwxxmSchema = schemaFactory.newSchema(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
             Marshaller marshaller = getJAXBContext().createMarshaller();
 
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
             marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
-                    "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1/iwxxm.xsd http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
+                    "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd http://def.wmo.int/metce/2013 http://schemas.wmo"
+                            + ".int/metce/1.2/metce.xsd http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
 
             marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
 
@@ -114,7 +115,8 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
             Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
             marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
-                    "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1/iwxxm.xsd http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
+                    "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd http://def.wmo.int/metce/2013 http://schemas.wmo"
+                            + ".int/metce/1.2/metce.xsd http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
             marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
             marshaller.marshal(wrap(input, (Class<S>)input.getClass()), sw);
             return asCleanedUpXML(sw, hints);

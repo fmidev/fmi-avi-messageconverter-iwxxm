@@ -29,8 +29,8 @@
 
     <dependency>
       <groupId>fi.fmi.xmlmodel</groupId>
-      <artifactId>fmi-avi-xmlmodel-iwxxm21</artifactId>
-      <version>1.0</version>
+      <artifactId>fmi-avi-xmlmodel-iwxxm211</artifactId>
+      <version>1.1</version>
     </dependency>
 
     <dependency>
@@ -92,30 +92,7 @@
           <target>1.8</target>
         </configuration>
       </plugin>
-      <!--
-        this can be used to generate Schematron validation the XSL transformation file from .sch
-          Disabled, because the on-the-fly generation caused complication problems as the JUnit tests
-          would fail without the xsl file in place.
 
-        <plugin>
-            <groupId>com.helger.maven</groupId>
-            <artifactId>ph-sch2xslt-maven-plugin</artifactId>
-            <version>5.0.4</version>
-            <configuration>
-                <schematronDirectory>${basedir}/src/main/resources/schematron/sch</schematronDirectory>
-                <schematronPattern>**/*.sch</schematronPattern>
-                <xsltDirectory>${build.outputDirectory}/schematron/xslt</xsltDirectory>
-                <xsltExtension>.xsl</xsltExtension>
-            </configuration>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>convert</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
-        -->
     </plugins>
   </build>
 
