@@ -11,8 +11,6 @@ import java.util.UUID;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -74,8 +72,6 @@ import icao.iwxxm21.AerodromeSurfaceWindForecastType;
 import icao.iwxxm21.AirportHeliportPropertyType;
 import icao.iwxxm21.MeteorologicalAerodromeForecastRecordPropertyType;
 import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
-import icao.iwxxm21.PermissibleUsageReasonType;
-import icao.iwxxm21.PermissibleUsageType;
 import icao.iwxxm21.RelationalOperatorType;
 import icao.iwxxm21.TAFReportStatusType;
 import icao.iwxxm21.TAFType;
@@ -534,46 +530,6 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
         }
     }
 
-    protected void updateMessageMetadata(final TAF source, final ConversionResult<?> results, final TAFType target) throws ConversionException {
-        try {
-            DatatypeFactory f = DatatypeFactory.newInstance();
-            if (source.getPermissibleUsage().isPresent()) {
-                target.setPermissibleUsage(PermissibleUsageType.valueOf(source.getPermissibleUsage().get().name()));
-                if (source.getPermissibleUsageReason().isPresent()) {
-                    target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
-                }
-                if (source.getPermissibleUsageSupplementary().isPresent()) {
-                    target.setPermissibleUsageSupplementary(source.getPermissibleUsageSupplementary().get());
-                }
-            } else {
-                target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
-                target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
-            }
-            if (source.isTranslated()) {
-                if (source.getTranslatedBulletinID().isPresent()) {
-                    target.setTranslatedBulletinID(source.getTranslatedBulletinID().get());
-                }
-                if (source.getTranslatedBulletinReceptionTime().isPresent()) {
-                    target.setTranslatedBulletinReceptionTime(f.newXMLGregorianCalendar(source.getTranslatedBulletinReceptionTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (source.getTranslationCentreDesignator().isPresent()) {
-                    target.setTranslationCentreDesignator(source.getTranslationCentreDesignator().get());
-                }
-                if (source.getTranslationCentreName().isPresent()) {
-                    target.setTranslationCentreName(source.getTranslationCentreName().get());
-                }
-                if (source.getTranslationTime().isPresent()) {
-                    target.setTranslationTime(f.newXMLGregorianCalendar(source.getTranslationTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (results.getStatus() != Status.SUCCESS && source.getTranslatedTAC().isPresent()) {
-                    target.setTranslationFailedTAC(source.getTranslatedTAC().get());
-                }
-            }
-        } catch (DatatypeConfigurationException e) {
-            throw new ConversionException("Exception in setting the translation time", e);
-        }
-        
-    }
     
     @Override
     protected Source getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,6 +15,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -62,6 +65,7 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
 import fi.fmi.avi.model.GeoPosition;
@@ -72,8 +76,11 @@ import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
 import icao.iwxxm21.CloudLayerType;
 import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
+import icao.iwxxm21.PermissibleUsageReasonType;
+import icao.iwxxm21.PermissibleUsageType;
 import icao.iwxxm21.ReportType;
 import icao.iwxxm21.SigConvectiveCloudTypeType;
+import icao.iwxxm21.TAFType;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM.
@@ -142,6 +149,49 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
         } catch (ParserConfigurationException|SAXException|IOException|TransformerException e) {
             throw new ConversionException("Exception in cleaning up", e);
         }
+    }
+
+    protected void updateMessageMetadata(final AviationWeatherMessage source, final ConversionResult<?> results, final TAFType target)
+            throws ConversionException {
+        try {
+            DatatypeFactory f = DatatypeFactory.newInstance();
+            if (source.getPermissibleUsage().isPresent()) {
+                target.setPermissibleUsage(PermissibleUsageType.valueOf(source.getPermissibleUsage().get().name()));
+                if (source.getPermissibleUsageReason().isPresent()) {
+                    target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
+                }
+                if (source.getPermissibleUsageSupplementary().isPresent()) {
+                    target.setPermissibleUsageSupplementary(source.getPermissibleUsageSupplementary().get());
+                }
+            } else {
+                target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+                target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
+            }
+            if (source.isTranslated()) {
+                if (source.getTranslatedBulletinID().isPresent()) {
+                    target.setTranslatedBulletinID(source.getTranslatedBulletinID().get());
+                }
+                if (source.getTranslatedBulletinReceptionTime().isPresent()) {
+                    target.setTranslatedBulletinReceptionTime(
+                            f.newXMLGregorianCalendar(source.getTranslatedBulletinReceptionTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+                }
+                if (source.getTranslationCentreDesignator().isPresent()) {
+                    target.setTranslationCentreDesignator(source.getTranslationCentreDesignator().get());
+                }
+                if (source.getTranslationCentreName().isPresent()) {
+                    target.setTranslationCentreName(source.getTranslationCentreName().get());
+                }
+                if (source.getTranslationTime().isPresent()) {
+                    target.setTranslationTime(f.newXMLGregorianCalendar(source.getTranslationTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+                }
+                if (results.getStatus() != ConversionResult.Status.SUCCESS && source.getTranslatedTAC().isPresent()) {
+                    target.setTranslationFailedTAC(source.getTranslatedTAC().get());
+                }
+            }
+        } catch (DatatypeConfigurationException e) {
+            throw new ConversionException("Exception in setting the translation time", e);
+        }
+
     }
 
     protected abstract Source getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException;
