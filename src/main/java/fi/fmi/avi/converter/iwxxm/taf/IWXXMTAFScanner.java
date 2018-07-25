@@ -21,6 +21,8 @@ import net.opengis.om20.OMObservationType;
 import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
 import net.opengis.sampling.spatial.ShapeType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import aero.aixm511.AirportHeliportTimeSlicePropertyType;
@@ -74,6 +76,8 @@ import wmo.metce2013.ProcessType;
  * Carries out detailed validation and property value collecting for IWXXM TAF messages.
  */
 public class IWXXMTAFScanner extends AbstractIWXXMScanner {
+
+    private static final Logger LOG = LoggerFactory.getLogger(IWXXMTAFScanner.class);
 
     public static List<ConversionIssue> collectTAFProperties(final TAFType input, final ReferredObjectRetrievalContext refCtx, final TAFProperties properties,
             final ConversionHints hints) {
@@ -516,6 +520,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
                 if (pointProp != null && pointProp.getNilReason() == null) {
                     Optional<ElevatedPointType> elPoint = resolveProperty(pointProp, ElevatedPointType.class, refCtx);
                     if (elPoint.isPresent()) {
+                        String srsName = elPoint.get().getSrsName();
                         GeoPositionImpl.Builder posBuilder = new GeoPositionImpl.Builder();
                         boolean canBuildPos = true;
                         //use ref point elevation as fallback for the aerodrome elevation
@@ -531,18 +536,21 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
                         if (elPoint.get().getPos() != null) {
                             DirectPositionType dp = elPoint.get().getPos();
                             if (dp.getSrsName() != null) {
-                                posBuilder.setCoordinateReferenceSystemId(dp.getSrsName());
+                                srsName = dp.getSrsName();
+                            }
+                            if (srsName != null) {
+                                posBuilder.setCoordinateReferenceSystemId(srsName);
                             } else {
                                 canBuildPos = false;
                                 retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                        "No SRS " + "name for ARP elevated point position"));
+                                        "No SRS name for ARP elevated point position"));
                             }
                             if (dp.getValue() != null) {
                                 posBuilder.setCoordinates(dp.getValue().toArray(new Double[] {}));
                             } else {
                                 canBuildPos = false;
                                 retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                        "No value " + "for ARP elevated point position"));
+                                        "No value for ARP elevated point position"));
                             }
 
                             if (canBuildPos) {
@@ -551,7 +559,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
                         } else if (elPoint.get().getCoordinates() != null) {
                             retval.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
-                                    "Found elevated " + "position defined using the deprecated GML CoordinatesType, skipping elevated position info"));
+                                    "Found elevated position defined using the deprecated GML CoordinatesType, skipping elevated position info"));
                         }
                     }
                 }
@@ -561,7 +569,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
                         aerodromeBuilder.setFieldElevationValue(Double.parseDouble(elevation.getValue()));
                     } else {
                         retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                                "Field elevation unit " + "is '" + elevation.getUom() + "', 'M' is required"));
+                                "Field elevation unit is '" + elevation.getUom() + "', 'M' is required"));
                     }
                 }
             }
@@ -689,7 +697,8 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
                     JAXBElement<MeteorologicalAerodromeForecastRecordType> record = refCtx.getJAXBBinder().unmarshal(recordNode, MeteorologicalAerodromeForecastRecordType.class);
                     return Optional.of(record.getValue());
                 } catch (JAXBException e) {
-                    e.printStackTrace();
+                    LOG.error("Strange, could not unmarshall MeteorologicalAerodromeForecastRecord DOM Node into MeteorologicalAerodromeForecastRecordType "
+                            + "JAXElement, returning an empty Optional", e);
                 }
             }
         }
