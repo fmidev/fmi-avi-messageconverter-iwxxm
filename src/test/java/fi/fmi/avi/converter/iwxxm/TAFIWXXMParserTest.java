@@ -99,6 +99,24 @@ public class TAFIWXXMParserTest {
         assertTrue(result.getConversionIssues().isEmpty());
     }
 
+    @Test
+    public void testTAFParsingWithTemperature() throws Exception {
+        Document toValidate = readDocument("taf-with_temperature_fct.xml");
+        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        assertTrue(result.getConversionIssues().isEmpty());
+        assertTrue(result.getConvertedMessage().get().getBaseForecast().get().getTemperatures().isPresent());
+    }
+
+    @Test
+    public void testTAFParsingWithARP() throws Exception {
+        Document toValidate = readDocument("taf-with_airport_ARP.xml");
+        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        assertTrue(result.getConversionIssues().isEmpty());
+        assertTrue(result.getConvertedMessage().get().getAerodrome().getFieldElevationValue().isPresent());
+    }
+
 
 
     private Document readDocument(final String name) throws Exception {
