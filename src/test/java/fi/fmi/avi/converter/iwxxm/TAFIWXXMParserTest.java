@@ -2,11 +2,12 @@ package fi.fmi.avi.converter.iwxxm;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
+
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import com.google.common.base.Preconditions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +17,13 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 
+import com.google.common.base.Preconditions;
+
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.taf.TAF;
-
-import java.io.InputStream;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -88,6 +89,14 @@ public class TAFIWXXMParserTest {
         Document toValidate = readDocument("taf-illegal-weather-code.xml");
         ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
         assertTrue(result.getConversionIssues().size() > 0);
+    }
+
+    @Test
+    public void testCancelledTAFParsing() throws Exception {
+        Document toValidate = readDocument("taf-A5-2.xml");
+        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        assertTrue(result.getConversionIssues().isEmpty());
     }
 
 

@@ -32,6 +32,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.GeoPositionImpl;
 import fi.fmi.avi.model.taf.TAF;
@@ -73,6 +74,19 @@ public class TAFIWXXMSerializerTest {
 
         return tafBuilder.build();
     }
+
+    @Test
+    public void testCancelledTAFSerialisation() throws Exception {
+        assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
+        TAF t = readFromJSON("taf-A5-2.json");
+        assertTrue(AviationCodeListUser.TAFStatus.CANCELLATION == t.getStatus());
+        ConversionResult<String> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING);
+        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+    }
+
     @Test
     public void testTAFStringSerialization() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
