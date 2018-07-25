@@ -2,7 +2,6 @@ package fi.fmi.avi.converter.iwxxm;
 
 import net.opengis.om20.OMObservationType;
 
-import fi.fmi.avi.converter.iwxxm.taf.ForecastRecordProperties;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.GeoPosition;
 import fi.fmi.avi.model.PartialOrCompleteTime;
@@ -23,8 +22,7 @@ public class OMObservationProperties extends AbstractPropertyContainer<OMObserva
         PROCEDURE(ProcessType.class),
         OBSERVED_PROPERTY(String.class),
         AERODROME(Aerodrome.class),
-        SAMPLING_POINT(GeoPosition.class),
-        RESULT(ForecastRecordProperties.class);
+        SAMPLING_POINT(GeoPosition.class), RESULT(Object.class);
 
         private Class<?> acceptedType;
 
@@ -46,7 +44,7 @@ public class OMObservationProperties extends AbstractPropertyContainer<OMObserva
         if (Name.class.isAssignableFrom(key.getClass())) {
             return ((Name) key).getAcceptedType();
         } else {
-            throw new IllegalArgumentException("Key for base forecast must be of type " + Name.class.getCanonicalName());
+            throw new IllegalArgumentException("Key must be of type " + Name.class.getCanonicalName());
         }
     }
 }
