@@ -36,6 +36,7 @@ import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
+import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.CloudLayer;
 import fi.fmi.avi.model.NumericMeasure;
@@ -139,7 +140,14 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
         if (TAFReportStatusType.CORRECTION == status || TAFReportStatusType.CANCELLATION == status || TAFReportStatusType.AMENDMENT == status) {
             if (input.getPreviousReportValidPeriod() != null && input.getPreviousReportAerodrome() != null) {
-                properties.set(TAFProperties.Name.PREV_REPORT_AERODROME, input.getPreviousReportAerodrome());
+                Optional<AirportHeliportType> airport = resolveProperty(input.getPreviousReportAerodrome(), AirportHeliportType.class, refCtx);
+                airport.ifPresent((p) -> {
+                    Optional<Aerodrome> drome = buildAerodrome(p, retval, refCtx);
+                    drome.ifPresent((d) -> {
+                        properties.set(TAFProperties.Name.PREV_REPORT_AERODROME, d);
+                    });
+                });
+
                 Optional<PartialOrCompleteTimePeriod> validTime = getCompleteTimePeriod(input.getPreviousReportValidPeriod(), refCtx);
                 if (!validTime.isPresent()) {
                     retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX, "TAF previous report valid time is not valid"));
@@ -408,7 +416,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         if (fct.getFeatureOfInterest() != null) {
             Optional<SFSpatialSamplingFeatureType> sft = resolveProperty(fct.getFeatureOfInterest(), "abstractFeature", SFSpatialSamplingFeatureType.class, refCtx);
             if (sft.isPresent()) {
-                AerodromeImpl.Builder aerodromeBuilder = new AerodromeImpl.Builder();
+
                 List<FeaturePropertyType> sampledFeatures = sft.get().getSampledFeature();
                 if (sampledFeatures.isEmpty()) {
                     retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
@@ -417,92 +425,20 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
                     retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "More than one sampled feature in TAF"));
                 } else {
                     Optional<AirportHeliportType> airport = resolveProperty(sampledFeatures.get(0), "abstractFeature", AirportHeliportType.class, refCtx);
-                    if (airport.isPresent()) {
-                        List<AirportHeliportTimeSlicePropertyType> slices = airport.get().getTimeSlice();
-                        if (slices.isEmpty()) {
-                            retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                    "No time slice (for aerodrome) in TAF"));
-                        } else if (slices.size() != 1) {
-                            retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                    "More than one time slice (for aerodrome) in TAF"));
-                        } else {
-                            Optional<AirportHeliportTimeSliceType> slice = resolveProperty(slices.get(0), AirportHeliportTimeSliceType.class, refCtx);
-                            if (slice.isPresent()) {
-                                if (slice.get().getDesignator().getNilReason() == null) {
-                                    aerodromeBuilder.setDesignator(slice.get().getDesignator().getValue());
-                                } else {
-                                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No designator for " + "aerodrome"));
-                                }
-                                if (slice.get().getLocationIndicatorICAO() != null) {
-                                    aerodromeBuilder.setLocationIndicatorICAO(slice.get().getLocationIndicatorICAO().getValue());
-                                }
-                                if (slice.get().getDesignatorIATA() != null) {
-                                    aerodromeBuilder.setDesignatorIATA(slice.get().getDesignatorIATA().getValue());
-                                }
-                                if (slice.get().getPortName() != null) {
-                                    aerodromeBuilder.setName(slice.get().getPortName().getValue());
-                                }
-
-                                ValDistanceVerticalType elevation = slice.get().getFieldElevation();
-                                ElevatedPointPropertyType pointProp = slice.get().getARP();
-                                if (pointProp != null && pointProp.getNilReason() == null) {
-                                    Optional<ElevatedPointType> elPoint = resolveProperty(pointProp, ElevatedPointType.class, refCtx);
-                                    if (elPoint.isPresent()) {
-                                        GeoPositionImpl.Builder posBuilder = new GeoPositionImpl.Builder();
-                                        boolean canBuildPos = true;
-                                        //use ref point elevation as fallback for the aerodrome elevation
-                                        if (elevation == null && elPoint.get().getElevation() != null) {
-                                            elevation = elPoint.get().getElevation();
-                                            if (elevation.getNilReason() == null) {
-                                                posBuilder.setNullableElevationUom(elevation.getUom());
-                                                if (elevation.getValue() != null) {
-                                                    posBuilder.setElevationValue(Double.parseDouble(elevation.getValue()));
-                                                }
-                                            }
-                                        }
-                                        if (elPoint.get().getPos() != null) {
-                                            DirectPositionType dp = elPoint.get().getPos();
-                                            if (dp.getSrsName() != null) {
-                                                posBuilder.setCoordinateReferenceSystemId(dp.getSrsName());
-                                            } else {
-                                                canBuildPos = false;
-                                                retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No SRS " + "name for ARP elevated point position"));
-                                            }
-                                            if (dp.getValue() != null) {
-                                                posBuilder.setCoordinates(dp.getValue().toArray(new Double[] {}));
-                                            } else {
-                                                canBuildPos = false;
-                                                retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No value " + "for ARP elevated point position"));
-                                            }
-
-                                            if (canBuildPos) {
-                                                aerodromeBuilder.setReferencePoint(posBuilder.build());
-                                            }
-
-                                        } else if (elPoint.get().getCoordinates() != null) {
-                                            retval.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX, "Found elevated " + "position defined using the deprecated GML CoordinatesType, skipping elevated position info"));
-                                        }
-                                    }
-                                }
-
-                                if (elevation != null && elevation.getNilReason() == null) {
-                                    if ("M".equals(elevation.getUom())) {
-                                        aerodromeBuilder.setFieldElevationValue(Double.parseDouble(elevation.getValue()));
-                                    } else {
-                                        retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                                                "Field elevation unit " + "is '" + elevation.getUom() + "', 'M' is required"));
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    airport.ifPresent((p) -> {
+                        Optional<Aerodrome> drome = buildAerodrome(p, retval, refCtx);
+                        drome.ifPresent((d) -> {
+                            properties.set(OMObservationProperties.Name.AERODROME, d);
+                        });
+                    });
                 }
-                properties.set(OMObservationProperties.Name.AERODROME, aerodromeBuilder.build());
+
                 ShapeType shape = sft.get().getShape();
                 if (shape != null) {
                     Optional<PointType> point = resolveProperty(shape, "abstractGeometry", PointType.class, refCtx);
                     if (!point.isPresent()) {
-                        retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "The spatial sampling feature shape is not a Point in " + contextPath));
+                        retval.add(
+                                new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "The spatial sampling feature shape is not a Point in " + contextPath));
                     } else {
                         GeoPositionImpl.Builder posBuilder = new GeoPositionImpl.Builder();
                         boolean canBuildPos = true;
@@ -532,17 +468,105 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
                             }
 
                         } else if (point.get().getCoordinates() != null) {
-                            retval.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX, "Found elevated " + "position defined using the deprecated GML CoordinatesType, skipping elevated position info"));
+                            retval.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
+                                    "Found elevated " + "position defined using the deprecated GML CoordinatesType, skipping elevated position info"));
                         }
                     }
                 } else {
                     retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No shape in spatial sampling feature in " + contextPath));
                 }
             } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Could not find feature of interest of type SFSpatialSamplingFeature in " + contextPath));
+                retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                        "Could not find feature of interest of type SFSpatialSamplingFeature in " + contextPath));
             }
         }
         return retval;
+    }
+
+    private static Optional<Aerodrome> buildAerodrome(final AirportHeliportType airport, final IssueList retval, final ReferredObjectRetrievalContext refCtx) {
+        AerodromeImpl.Builder aerodromeBuilder = new AerodromeImpl.Builder();
+        List<AirportHeliportTimeSlicePropertyType> slices = airport.getTimeSlice();
+        if (slices.isEmpty()) {
+            retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No time slice (for aerodrome) in TAF"));
+            return Optional.empty();
+        } else if (slices.size() != 1) {
+            retval.add(
+                    new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "More than one time slice (for aerodrome) in TAF"));
+            return Optional.empty();
+        } else {
+            Optional<AirportHeliportTimeSliceType> slice = resolveProperty(slices.get(0), AirportHeliportTimeSliceType.class, refCtx);
+            if (slice.isPresent()) {
+                if (slice.get().getDesignator().getNilReason() == null) {
+                    aerodromeBuilder.setDesignator(slice.get().getDesignator().getValue());
+                } else {
+                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No designator for " + "aerodrome"));
+                }
+                if (slice.get().getLocationIndicatorICAO() != null) {
+                    aerodromeBuilder.setLocationIndicatorICAO(slice.get().getLocationIndicatorICAO().getValue());
+                }
+                if (slice.get().getDesignatorIATA() != null) {
+                    aerodromeBuilder.setDesignatorIATA(slice.get().getDesignatorIATA().getValue());
+                }
+                if (slice.get().getPortName() != null) {
+                    aerodromeBuilder.setName(slice.get().getPortName().getValue());
+                }
+
+                ValDistanceVerticalType elevation = slice.get().getFieldElevation();
+                ElevatedPointPropertyType pointProp = slice.get().getARP();
+                if (pointProp != null && pointProp.getNilReason() == null) {
+                    Optional<ElevatedPointType> elPoint = resolveProperty(pointProp, ElevatedPointType.class, refCtx);
+                    if (elPoint.isPresent()) {
+                        GeoPositionImpl.Builder posBuilder = new GeoPositionImpl.Builder();
+                        boolean canBuildPos = true;
+                        //use ref point elevation as fallback for the aerodrome elevation
+                        if (elevation == null && elPoint.get().getElevation() != null) {
+                            elevation = elPoint.get().getElevation();
+                            if (elevation.getNilReason() == null) {
+                                posBuilder.setNullableElevationUom(elevation.getUom());
+                                if (elevation.getValue() != null) {
+                                    posBuilder.setElevationValue(Double.parseDouble(elevation.getValue()));
+                                }
+                            }
+                        }
+                        if (elPoint.get().getPos() != null) {
+                            DirectPositionType dp = elPoint.get().getPos();
+                            if (dp.getSrsName() != null) {
+                                posBuilder.setCoordinateReferenceSystemId(dp.getSrsName());
+                            } else {
+                                canBuildPos = false;
+                                retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                                        "No SRS " + "name for ARP elevated point position"));
+                            }
+                            if (dp.getValue() != null) {
+                                posBuilder.setCoordinates(dp.getValue().toArray(new Double[] {}));
+                            } else {
+                                canBuildPos = false;
+                                retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                                        "No value " + "for ARP elevated point position"));
+                            }
+
+                            if (canBuildPos) {
+                                aerodromeBuilder.setReferencePoint(posBuilder.build());
+                            }
+
+                        } else if (elPoint.get().getCoordinates() != null) {
+                            retval.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
+                                    "Found elevated " + "position defined using the deprecated GML CoordinatesType, skipping elevated position info"));
+                        }
+                    }
+                }
+
+                if (elevation != null && elevation.getNilReason() == null) {
+                    if ("M".equals(elevation.getUom())) {
+                        aerodromeBuilder.setFieldElevationValue(Double.parseDouble(elevation.getValue()));
+                    } else {
+                        retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                                "Field elevation unit " + "is '" + elevation.getUom() + "', 'M' is required"));
+                    }
+                }
+            }
+        }
+        return Optional.of(aerodromeBuilder.build());
     }
 
     private static IssueList collectCommonForecastRecordProperties(final MeteorologicalAerodromeForecastRecordType record, final ReferredObjectRetrievalContext refCtx, final ForecastRecordProperties properties, final String contextPath, final ConversionHints hints) {
