@@ -45,7 +45,7 @@ public class TAFProperties extends AbstractPropertyContainer<TAFType> {
         if (Name.class.isAssignableFrom(key.getClass())) {
             return ((Name) key).getAcceptedType();
         } else {
-            throw new IllegalArgumentException("Key for TAF must be of type " + Name.class.getCanonicalName());
+            throw new IllegalArgumentException("Key must be of type " + Name.class.getCanonicalName());
         }
     }
 
