@@ -198,7 +198,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         IssueList retval = collectBaseFctObsMetadata(baseFct, issueTime, tafValidityTime, refCtx, properties, hints);
         Optional<MeteorologicalAerodromeForecastRecordType> baseRecord = getAerodromeForecastRecordResult(baseFct, refCtx);
         if (baseRecord.isPresent()) {
-            ForecastRecordProperties baseProps = new ForecastRecordProperties(baseRecord.get());
+            TAFForecastRecordProperties baseProps = new TAFForecastRecordProperties(baseRecord.get());
 
             retval.addAll(collectCommonForecastRecordProperties(baseRecord.get(), refCtx, baseProps, "base forecast", hints));
 
@@ -210,28 +210,28 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             //air temperatures
             for (AerodromeAirTemperatureForecastPropertyType prop : baseRecord.get().getTemperature()) {
                 withTAFAirTempForecastBuilderFor(prop, refCtx, (builder) -> {
-                    baseProps.addToList(ForecastRecordProperties.Name.TEMPERATURE, builder.build());
+                    baseProps.addToList(TAFForecastRecordProperties.Name.TEMPERATURE, builder.build());
                 }, retval::addAll);
             }
 
             //prevailing visibility & operator is mandatory
             Optional<NumericMeasure> visibility = asNumericMeasure(baseRecord.get().getPrevailingVisibility());
             if (visibility.isPresent()) {
-                baseProps.set(ForecastRecordProperties.Name.PREVAILING_VISIBILITY, visibility.get());
+                baseProps.set(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY, visibility.get());
             } else {
                 retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Missing visibility in base forecast"));
             }
 
             Optional<AviationCodeListUser.RelationalOperator> visibilityOperator = asRelationalOperator(baseRecord.get().getPrevailingVisibilityOperator());
             if (visibilityOperator.isPresent()) {
-                baseProps.set(ForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, visibilityOperator.get());
+                baseProps.set(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, visibilityOperator.get());
             }
 
             //surface wind is mandatory
             AerodromeSurfaceWindForecastPropertyType windProp = baseRecord.get().getSurfaceWind();
             if (windProp != null) {
                 withTAFSurfaceWindBuilderFor(windProp, refCtx, (builder) -> {
-                    baseProps.set(ForecastRecordProperties.Name.SURFACE_WIND, builder.build());
+                    baseProps.set(TAFForecastRecordProperties.Name.SURFACE_WIND, builder.build());
                 }, retval::add);
             } else {
                 retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Surface wind missing in base forecast"));
@@ -248,13 +248,14 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         IssueList retval = collectChangeFctObsMetadata(changeFct, issueTime, tafValidityTime, refCtx, properties, "change forecast " + changeFct.getId(), hints);
         Optional<MeteorologicalAerodromeForecastRecordType> changeRecord = getAerodromeForecastRecordResult(changeFct, refCtx);
         if (changeRecord.isPresent()) {
-            ForecastRecordProperties changeProps = new ForecastRecordProperties(changeRecord.get());
+            TAFForecastRecordProperties changeProps = new TAFForecastRecordProperties(changeRecord.get());
             retval.addAll(collectCommonForecastRecordProperties(changeRecord.get(), refCtx, changeProps, "change forecast " + changeFct.getId(), hints));
 
             //changeIndicator
             Optional<AerodromeForecastChangeIndicatorType> changeIndicator = Optional.ofNullable(changeRecord.get().getChangeIndicator());
             if (changeIndicator.isPresent()) {
-                changeProps.set(ForecastRecordProperties.Name.CHANGE_INDICATOR, AviationCodeListUser.TAFChangeIndicator.valueOf(changeIndicator.get().name()));
+                changeProps.set(TAFForecastRecordProperties.Name.CHANGE_INDICATOR,
+                        AviationCodeListUser.TAFChangeIndicator.valueOf(changeIndicator.get().name()));
             } else {
                 retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX, "Change forecast record must contain a change indicator in " + changeFct.getId()));
             }
@@ -267,9 +268,10 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             //prevailing visibility & operator if given
             Optional<NumericMeasure> visibility = asNumericMeasure(changeRecord.get().getPrevailingVisibility());
             if (visibility.isPresent()) {
-                changeProps.set(ForecastRecordProperties.Name.PREVAILING_VISIBILITY, visibility.get());
+                changeProps.set(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY, visibility.get());
                 if (changeRecord.get().getPrevailingVisibilityOperator() != null) {
-                    changeProps.set(ForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, AviationCodeListUser.RelationalOperator.valueOf(changeRecord.get().getPrevailingVisibilityOperator().name()));
+                    changeProps.set(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR,
+                            AviationCodeListUser.RelationalOperator.valueOf(changeRecord.get().getPrevailingVisibilityOperator().name()));
                 }
             }
 
@@ -277,7 +279,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             AerodromeSurfaceWindForecastPropertyType windProp = changeRecord.get().getSurfaceWind();
             if (windProp != null) {
                 withTAFSurfaceWindBuilderFor(windProp, refCtx, (builder) -> {
-                    changeProps.set(ForecastRecordProperties.Name.SURFACE_WIND, builder.build());
+                    changeProps.set(TAFForecastRecordProperties.Name.SURFACE_WIND, builder.build());
                 }, retval::add);
             }
             properties.set(OMObservationProperties.Name.RESULT, changeProps);
@@ -577,12 +579,13 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         return Optional.of(aerodromeBuilder.build());
     }
 
-    private static IssueList collectCommonForecastRecordProperties(final MeteorologicalAerodromeForecastRecordType record, final ReferredObjectRetrievalContext refCtx, final ForecastRecordProperties properties, final String contextPath, final ConversionHints hints) {
+    private static IssueList collectCommonForecastRecordProperties(final MeteorologicalAerodromeForecastRecordType record,
+            final ReferredObjectRetrievalContext refCtx, final TAFForecastRecordProperties properties, final String contextPath, final ConversionHints hints) {
         IssueList retval = new IssueList();
 
         //cavok
         if (record.isCloudAndVisibilityOK()) {
-            properties.set(ForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.TRUE);
+            properties.set(TAFForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.TRUE);
         }
 
         //weather
@@ -595,10 +598,10 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
                 }
             }
             if (nswFound) {
-                properties.set(ForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.TRUE);
+                properties.set(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.TRUE);
             } else {
                 withWeatherBuilderFor(weather, hints, (builder) -> {
-                    properties.addToList(ForecastRecordProperties.Name.WEATHER, builder.build());
+                    properties.addToList(TAFForecastRecordProperties.Name.WEATHER, builder.build());
                 }, retval::add);
             }
         }
@@ -679,7 +682,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
                     }
                 }
             }
-            properties.set(ForecastRecordProperties.Name.CLOUD, cloudBuilder.build());
+            properties.set(TAFForecastRecordProperties.Name.CLOUD, cloudBuilder.build());
         }
 
         return retval;

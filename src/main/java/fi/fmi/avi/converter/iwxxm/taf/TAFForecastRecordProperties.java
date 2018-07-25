@@ -12,7 +12,7 @@ import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
 /**
  * Container class for properties parsed from an IWXXM MeteorologicalAerodromeForecastRecord.
  */
-public class ForecastRecordProperties extends AbstractPropertyContainer<MeteorologicalAerodromeForecastRecordType> {
+public class TAFForecastRecordProperties extends AbstractPropertyContainer<MeteorologicalAerodromeForecastRecordType> {
 
     public enum Name {
         PREVAILING_VISIBILITY(NumericMeasure.class),
@@ -36,7 +36,7 @@ public class ForecastRecordProperties extends AbstractPropertyContainer<Meteorol
         }
     }
 
-    public ForecastRecordProperties(final MeteorologicalAerodromeForecastRecordType record) {
+    public TAFForecastRecordProperties(final MeteorologicalAerodromeForecastRecordType record) {
         super(record);
     }
 
@@ -45,7 +45,7 @@ public class ForecastRecordProperties extends AbstractPropertyContainer<Meteorol
         if (Name.class.isAssignableFrom(key.getClass())) {
             return ((Name) key).getAcceptedType();
         } else {
-            throw new IllegalArgumentException("Key for forecast record must be of type " + Name.class.getCanonicalName());
+            throw new IllegalArgumentException("Key must be of type " + Name.class.getCanonicalName());
         }
     }
 }
