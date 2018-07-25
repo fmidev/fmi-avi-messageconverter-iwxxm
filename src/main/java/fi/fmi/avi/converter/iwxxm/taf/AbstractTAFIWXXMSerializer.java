@@ -110,9 +110,8 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
         }
 
         if (!input.allAerodromeReferencesContainPosition()) {
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "All aerodrome references must contain a reference point location before converting to IWXXM"));
-            return result;
+            result.addIssue(new ConversionIssue(ConversionIssue.Severity.INFO, ConversionIssue.Type.MISSING_DATA,
+                    "At least one of the Aerodrome references does not contain reference point location"));
         }
 
         TAFType taf = create(TAFType.class);
@@ -176,7 +175,6 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
             }
         }
         try {
-            result.setStatus(Status.SUCCESS);
             this.updateMessageMetadata(input, result, taf);
             ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
             validateDocument(taf, TAFType.class, hints, eventHandler);
@@ -495,7 +493,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
             Optional<TAFReference> prevReport = source.getReferredReport();
             if (prevReport.isPresent()) {
                 target.setPreviousReportAerodrome(create(AirportHeliportPropertyType.class, (prop) -> {
-                    if (source.getAerodrome().equals(prevReport.get().getAerodrome())) {
+                    if (source.getBaseForecast().isPresent() && source.getAerodrome().equals(prevReport.get().getAerodrome())) {
                         prop.setHref("#" + aerodromeId);
                         prop.setTitle("Same aerodrome as the in the base forecast");
                     } else {
