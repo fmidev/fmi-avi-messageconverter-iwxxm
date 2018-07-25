@@ -24,8 +24,6 @@ import net.opengis.om20.TimeObjectPropertyType;
 
 import org.springframework.util.StringUtils;
 
-import com.google.common.base.Preconditions;
-
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 
@@ -135,7 +133,9 @@ public abstract class IWXXMConverterBase {
 
     @SuppressWarnings("unchecked")
     public static <T> Optional<T> resolveProperty(final Object prop, final String propertyName, final Class<T> clz, final ReferredObjectRetrievalContext refCtx) {
-        Preconditions.checkNotNull(prop);
+        if (prop == null) {
+            return Optional.empty();
+        }
         try {
             //First try resolving the href reference (if it exists):
             try {
