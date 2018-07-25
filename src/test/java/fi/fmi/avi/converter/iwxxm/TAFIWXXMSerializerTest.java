@@ -96,7 +96,6 @@ public class TAFIWXXMSerializerTest {
 
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
-        //TODO: test the result properly
     }
     @Test
     public void testTAFDOMSerialization() throws Exception {
