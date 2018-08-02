@@ -48,7 +48,7 @@ public class ReferredObjectRetrievalContext {
             SimpleNamespaceContext namespaces = new SimpleNamespaceContext(prefMap);
             xpath.setNamespaceContext(namespaces);
             //Find the elements with gml:id which have actually been internally referred to within this document:
-            XPathExpression expr = xpath.compile("//*[//*/@xlink:href=concat('#',@gml:id)]");
+            XPathExpression expr = xpath.compile("//*[@gml:id and //*/@xlink:href=concat('#',@gml:id)]");
             NodeList hits = (NodeList) expr.evaluate(dom.getDocumentElement(), XPathConstants.NODESET);
             for (int i = 0; i < hits.getLength(); i++) {
                 Node hit = hits.item(i);
