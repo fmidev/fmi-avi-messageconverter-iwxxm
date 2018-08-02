@@ -9,28 +9,11 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 
-import net.opengis.gml32.DirectPositionType;
-import net.opengis.gml32.FeaturePropertyType;
-import net.opengis.gml32.MeasureType;
-import net.opengis.gml32.PointType;
-import net.opengis.gml32.ReferenceType;
 import net.opengis.om20.OMObservationPropertyType;
 import net.opengis.om20.OMObservationType;
-import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
-import net.opengis.sampling.spatial.ShapeType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
-
-import aero.aixm511.AirportHeliportTimeSlicePropertyType;
-import aero.aixm511.AirportHeliportTimeSliceType;
 import aero.aixm511.AirportHeliportType;
-import aero.aixm511.ElevatedPointPropertyType;
-import aero.aixm511.ElevatedPointType;
-import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
@@ -44,11 +27,8 @@ import fi.fmi.avi.model.CloudLayer;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
-import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.CloudForecastImpl;
 import fi.fmi.avi.model.immutable.CloudLayerImpl;
-import fi.fmi.avi.model.immutable.GeoPositionImpl;
-import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.WeatherImpl;
 import fi.fmi.avi.model.taf.immutable.TAFAirTemperatureForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFSurfaceWindImpl;
@@ -66,18 +46,14 @@ import icao.iwxxm21.CloudLayerType;
 import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
 import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
-import icao.iwxxm21.RelationalOperatorType;
 import icao.iwxxm21.SigConvectiveCloudTypeType;
 import icao.iwxxm21.TAFReportStatusType;
 import icao.iwxxm21.TAFType;
-import wmo.metce2013.ProcessType;
 
 /**
  * Carries out detailed validation and property value collecting for IWXXM TAF messages.
  */
 public class IWXXMTAFScanner extends AbstractIWXXMScanner {
-
-    private static final Logger LOG = LoggerFactory.getLogger(IWXXMTAFScanner.class);
 
     public static List<ConversionIssue> collectTAFProperties(final TAFType input, final ReferredObjectRetrievalContext refCtx, final TAFProperties properties,
             final ConversionHints hints) {
@@ -178,16 +154,6 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         // report metadata
         GenericReportProperties meta = new GenericReportProperties(input);
         retval.addAll(collectReportMetadata(input, meta, hints));
-        if (!meta.contains(GenericReportProperties.Name.TRANSLATION_TIME)) {
-            if (hints != null && hints.containsKey(ConversionHints.KEY_TRANSLATION_TIME)) {
-                Object value = hints.get(ConversionHints.KEY_TRANSLATION_TIME);
-                if (ConversionHints.VALUE_TRANSLATION_TIME_AUTO.equals(value)) {
-                    meta.set(GenericReportProperties.Name.TRANSLATION_TIME, ZonedDateTime.now());
-                } else if (value instanceof ZonedDateTime) {
-                    meta.set(GenericReportProperties.Name.TRANSLATION_TIME, (ZonedDateTime) value);
-                }
-            }
-        }
         properties.set(TAFProperties.Name.REPORT_METADATA, meta);
         return retval;
     }
@@ -289,7 +255,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
     private static IssueList collectBaseFctObsMetadata(final OMObservationType fct, final ZonedDateTime issueTime, final PartialOrCompleteTimePeriod tafValidityTime, final ReferredObjectRetrievalContext refCtx,
             final OMObservationProperties properties, final ConversionHints hints) {
-        IssueList retval = collectCommonObsMetadata(fct, issueTime, tafValidityTime, refCtx, properties, "base forecast", hints);
+        IssueList retval = collectAndCheckCommonObsMetadata(fct, issueTime, tafValidityTime, refCtx, properties, "base forecast", hints);
 
         //phenomenonTime
         if (fct.getPhenomenonTime() != null) {
@@ -310,7 +276,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
     private static IssueList collectChangeFctObsMetadata(final OMObservationType fct, final ZonedDateTime issueTime, final PartialOrCompleteTimePeriod tafValidityTime, final ReferredObjectRetrievalContext refCtx, final OMObservationProperties properties,
             final String contextPath, final ConversionHints hints) {
-        IssueList retval = collectCommonObsMetadata(fct, issueTime, tafValidityTime, refCtx, properties, contextPath, hints);
+        IssueList retval = collectAndCheckCommonObsMetadata(fct, issueTime, tafValidityTime, refCtx, properties, contextPath, hints);
 
         //phenomenonTime
         if (fct.getPhenomenonTime() != null) {
@@ -344,239 +310,34 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         return retval;
     }
 
-    private static IssueList collectCommonObsMetadata(final OMObservationType fct, final ZonedDateTime issueTime, final PartialOrCompleteTimePeriod tafValidityTime,
-            final ReferredObjectRetrievalContext refCtx, final OMObservationProperties properties, final String contextPath, final ConversionHints hints) {
-        IssueList retval = new IssueList();
-        //forecast type is correct
-        if (fct.getType() != null) {
-            ReferenceType type = fct.getType();
-            if (AviationCodeListUser.MET_AERODROME_FORECAST_TYPE.equals(type.getHref())) {
-                properties.set(OMObservationProperties.Name.TYPE, type.getHref());
-            } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                        "Observation type for IWXXM 2.1 aerodrome forecast Observation is invalid " + "in " + contextPath + ", expected '" + AviationCodeListUser.MET_AERODROME_FORECAST_TYPE + "'"));
-            }
-        } else {
-            retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "Observation type for IWXXM 2.1 aerodrome forecast Observation type is missing in " + contextPath));
+    private static IssueList collectAndCheckCommonObsMetadata(final OMObservationType fct, final ZonedDateTime issueTime,
+            final PartialOrCompleteTimePeriod tafValidityTime, final ReferredObjectRetrievalContext refCtx, final OMObservationProperties properties,
+            final String contextPath, final ConversionHints hints) {
+        IssueList retval = collectCommonObsMetadata(fct, refCtx, properties, contextPath, hints);
+
+        Optional<String> type = properties.get(OMObservationProperties.Name.TYPE, String.class);
+        if (type.isPresent() && !AviationCodeListUser.MET_AERODROME_FORECAST_TYPE.equals(type.get())) {
+            retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
+                    "Observation type for IWXXM 2.1 aerodrome forecast Observation is invalid " + "in " + contextPath + ", expected '"
+                            + AviationCodeListUser.MET_AERODROME_FORECAST_TYPE + "'"));
         }
 
-        //result time
-        if (fct.getResultTime() != null) {
-            Optional<PartialOrCompleteTimeInstant> resultTime = getCompleteTimeInstant(fct.getResultTime(), refCtx);
-            if (resultTime.isPresent() && resultTime.get().getCompleteTime().isPresent()) {
-                properties.set(OMObservationProperties.Name.RESULT_TIME, resultTime.get());
-                if (issueTime != null && !resultTime.get().getCompleteTime().get().equals(issueTime)) {
-                    retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL, "Result time in forecast is not equal to the TAF message issue time " + "in " + contextPath));
-                }
-            } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX, "Result time is not valid or cannot be resolved in " + contextPath));
-            }
-        } else {
-            retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Result time is missing in " + contextPath));
+        Optional<PartialOrCompleteTimeInstant> resultTime = properties.get(OMObservationProperties.Name.RESULT_TIME, PartialOrCompleteTimeInstant.class);
+        if (issueTime != null && resultTime.isPresent() && resultTime.get().getCompleteTime().isPresent() && !resultTime.get()
+                .getCompleteTime()
+                .get()
+                .equals(issueTime)) {
+            retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL,
+                    "Result time in forecast is not equal to the TAF message issue time " + "in " + contextPath));
         }
 
-        //validTime
-        if (fct.getValidTime() != null) {
-            Optional<PartialOrCompleteTimePeriod> validTime = getCompleteTimePeriod(fct.getValidTime(), refCtx);
-            if (validTime.isPresent()) {
-                properties.set(OMObservationProperties.Name.VALID_TIME, validTime.get());
-                if (!validTime.get().equals(tafValidityTime)) {
-                    retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL,
-                            "Valid time of the base forecast is not equal to the valid time of " + "the entire TAF in " + contextPath));
-                }
-            }
+        Optional<PartialOrCompleteTimePeriod> validTime = properties.get(OMObservationProperties.Name.VALID_TIME, PartialOrCompleteTimePeriod.class);
+        if (validTime.isPresent() && !validTime.get().equals(tafValidityTime)) {
+            retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL,
+                    "Valid time of the base forecast is not equal to the valid time of " + "the entire TAF in " + contextPath));
         }
-
-        //procedure
-        if (fct.getProcedure() != null) {
-            Optional<ProcessType> process = resolveProperty(fct.getProcedure(), ProcessType.class, refCtx);
-
-            if (process.isPresent()) {
-                //Note: Checking against the exact String match of the description is probably too strict:
-                /*
-                if (!AviationCodeListUser.TAF_PROCEDURE_DESCRIPTION.equals(process.get().getDescription().getValue())) {
-                    retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX, "Process description is not "));
-                }
-                */
-                properties.set(OMObservationProperties.Name.PROCEDURE, process.get());
-            } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Could not resolve the process property value in " + contextPath));
-            }
-        } else {
-            retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No process given in " + contextPath));
-        }
-
-        //observed property
-        if (fct.getObservedProperty() != null) {
-            ReferenceType obsProp = fct.getObservedProperty();
-            if (AviationCodeListUser.MET_AERODROME_FORECAST_PROPERTIES.equals(obsProp.getHref())) {
-                properties.set(OMObservationProperties.Name.OBSERVED_PROPERTY, obsProp.getHref());
-            } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                        "Observed property does not match " + AviationCodeListUser.MET_AERODROME_FORECAST_PROPERTIES + " in " + contextPath));
-            }
-        }
-
-        //foi
-        if (fct.getFeatureOfInterest() != null) {
-            Optional<SFSpatialSamplingFeatureType> sft = resolveProperty(fct.getFeatureOfInterest(), "abstractFeature", SFSpatialSamplingFeatureType.class, refCtx);
-            if (sft.isPresent()) {
-
-                List<FeaturePropertyType> sampledFeatures = sft.get().getSampledFeature();
-                if (sampledFeatures.isEmpty()) {
-                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                            "No sampled feature (for aerodrome) in TAF"));
-                } else if (sampledFeatures.size() != 1) {
-                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "More than one sampled feature in TAF"));
-                } else {
-                    Optional<AirportHeliportType> airport = resolveProperty(sampledFeatures.get(0), "abstractFeature", AirportHeliportType.class, refCtx);
-                    airport.ifPresent((p) -> {
-                        Optional<Aerodrome> drome = buildAerodrome(p, retval, refCtx);
-                        drome.ifPresent((d) -> {
-                            properties.set(OMObservationProperties.Name.AERODROME, d);
-                        });
-                    });
-                }
-
-                ShapeType shape = sft.get().getShape();
-                if (shape != null) {
-                    Optional<PointType> point = resolveProperty(shape, "abstractGeometry", PointType.class, refCtx);
-                    if (!point.isPresent()) {
-                        retval.add(
-                                new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "The spatial sampling feature shape is not a Point in " + contextPath));
-                    } else {
-                        GeoPositionImpl.Builder posBuilder = new GeoPositionImpl.Builder();
-                        boolean canBuildPos = true;
-                        if (point.get().getPos() != null) {
-                            DirectPositionType dp = point.get().getPos();
-                            if (dp.getSrsName() != null) {
-                                posBuilder.setCoordinateReferenceSystemId(dp.getSrsName());
-                            } else {
-                                if (point.get().getSrsName() != null) {
-                                    posBuilder.setCoordinateReferenceSystemId(point.get().getSrsName());
-                                } else {
-                                    canBuildPos = false;
-                                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                            "No SRS name for sampling point position"));
-                                }
-                            }
-                            if (dp.getValue() != null) {
-                                posBuilder.setCoordinates(dp.getValue().toArray(new Double[] {}));
-                            } else {
-                                canBuildPos = false;
-                                retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                        "No value for sampling point position"));
-                            }
-
-                            if (canBuildPos) {
-                                properties.set(OMObservationProperties.Name.SAMPLING_POINT, posBuilder.build());
-                            }
-
-                        } else if (point.get().getCoordinates() != null) {
-                            retval.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
-                                    "Found elevated " + "position defined using the deprecated GML CoordinatesType, skipping elevated position info"));
-                        }
-                    }
-                } else {
-                    retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No shape in spatial sampling feature in " + contextPath));
-                }
-            } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                        "Could not find feature of interest of type SFSpatialSamplingFeature in " + contextPath));
-            }
-        }
+        //Note: Checking against the exact String match of the process description is probably too strict
         return retval;
-    }
-
-    private static Optional<Aerodrome> buildAerodrome(final AirportHeliportType airport, final IssueList retval, final ReferredObjectRetrievalContext refCtx) {
-        AerodromeImpl.Builder aerodromeBuilder = new AerodromeImpl.Builder();
-        List<AirportHeliportTimeSlicePropertyType> slices = airport.getTimeSlice();
-        if (slices.isEmpty()) {
-            retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No time slice (for aerodrome) in TAF"));
-            return Optional.empty();
-        } else if (slices.size() != 1) {
-            retval.add(
-                    new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "More than one time slice (for aerodrome) in TAF"));
-            return Optional.empty();
-        } else {
-            Optional<AirportHeliportTimeSliceType> slice = resolveProperty(slices.get(0), AirportHeliportTimeSliceType.class, refCtx);
-            if (slice.isPresent()) {
-                if (slice.get().getDesignator().getNilReason() == null) {
-                    aerodromeBuilder.setDesignator(slice.get().getDesignator().getValue());
-                } else {
-                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No designator for " + "aerodrome"));
-                }
-                if (slice.get().getLocationIndicatorICAO() != null) {
-                    aerodromeBuilder.setLocationIndicatorICAO(slice.get().getLocationIndicatorICAO().getValue());
-                }
-                if (slice.get().getDesignatorIATA() != null) {
-                    aerodromeBuilder.setDesignatorIATA(slice.get().getDesignatorIATA().getValue());
-                }
-                if (slice.get().getPortName() != null) {
-                    aerodromeBuilder.setName(slice.get().getPortName().getValue());
-                }
-
-                ValDistanceVerticalType elevation = slice.get().getFieldElevation();
-                ElevatedPointPropertyType pointProp = slice.get().getARP();
-                if (pointProp != null && pointProp.getNilReason() == null) {
-                    Optional<ElevatedPointType> elPoint = resolveProperty(pointProp, ElevatedPointType.class, refCtx);
-                    if (elPoint.isPresent()) {
-                        String srsName = elPoint.get().getSrsName();
-                        GeoPositionImpl.Builder posBuilder = new GeoPositionImpl.Builder();
-                        boolean canBuildPos = true;
-                        //use ref point elevation as fallback for the aerodrome elevation
-                        if (elevation == null && elPoint.get().getElevation() != null) {
-                            elevation = elPoint.get().getElevation();
-                            if (elevation.getNilReason() == null) {
-                                posBuilder.setNullableElevationUom(elevation.getUom());
-                                if (elevation.getValue() != null) {
-                                    posBuilder.setElevationValue(Double.parseDouble(elevation.getValue()));
-                                }
-                            }
-                        }
-                        if (elPoint.get().getPos() != null) {
-                            DirectPositionType dp = elPoint.get().getPos();
-                            if (dp.getSrsName() != null) {
-                                srsName = dp.getSrsName();
-                            }
-                            if (srsName != null) {
-                                posBuilder.setCoordinateReferenceSystemId(srsName);
-                            } else {
-                                canBuildPos = false;
-                                retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                        "No SRS name for ARP elevated point position"));
-                            }
-                            if (dp.getValue() != null) {
-                                posBuilder.setCoordinates(dp.getValue().toArray(new Double[] {}));
-                            } else {
-                                canBuildPos = false;
-                                retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                        "No value for ARP elevated point position"));
-                            }
-
-                            if (canBuildPos) {
-                                aerodromeBuilder.setReferencePoint(posBuilder.build());
-                            }
-
-                        } else if (elPoint.get().getCoordinates() != null) {
-                            retval.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
-                                    "Found elevated position defined using the deprecated GML CoordinatesType, skipping elevated position info"));
-                        }
-                    }
-                }
-
-                if (elevation != null && elevation.getNilReason() == null) {
-                    if ("M".equals(elevation.getUom())) {
-                        aerodromeBuilder.setFieldElevationValue(Double.parseDouble(elevation.getValue()));
-                    } else {
-                        retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                                "Field elevation unit is '" + elevation.getUom() + "', 'M' is required"));
-                    }
-                }
-            }
-        }
-        return Optional.of(aerodromeBuilder.build());
     }
 
     private static IssueList collectCommonForecastRecordProperties(final MeteorologicalAerodromeForecastRecordType record,
@@ -689,24 +450,6 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
     }
 
     //Helpers
-
-    private static Optional<MeteorologicalAerodromeForecastRecordType> getAerodromeForecastRecordResult(final OMObservationType fct, final ReferredObjectRetrievalContext refCtx) {
-        Object o = fct.getResult();
-        if (o instanceof Node) {
-            Node resultNode = ((Node) o);
-            Node recordNode = resultNode.getFirstChild();
-            if (recordNode != null && "MeteorologicalAerodromeForecastRecord".equals(recordNode.getLocalName()) && "http://icao.int/iwxxm/2.1".equals(recordNode.getNamespaceURI())) {
-                try {
-                    JAXBElement<MeteorologicalAerodromeForecastRecordType> record = refCtx.getJAXBBinder().unmarshal(recordNode, MeteorologicalAerodromeForecastRecordType.class);
-                    return Optional.of(record.getValue());
-                } catch (JAXBException e) {
-                    LOG.error("Strange, could not unmarshall MeteorologicalAerodromeForecastRecord DOM Node into MeteorologicalAerodromeForecastRecordType "
-                            + "JAXElement, returning an empty Optional", e);
-                }
-            }
-        }
-        return Optional.empty();
-    }
 
     private static void withTAFSurfaceWindBuilderFor(final AerodromeSurfaceWindForecastPropertyType windProp, final ReferredObjectRetrievalContext refCtx, final Consumer<TAFSurfaceWindImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
@@ -826,20 +569,6 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         if (issue != null) {
             issueHandler.accept(issue);
         }
-    }
-
-    private static Optional<NumericMeasure> asNumericMeasure(final MeasureType source) {
-        if (source == null) {
-            return Optional.empty();
-        }
-        return Optional.of(new NumericMeasureImpl.Builder().setValue(source.getValue()).setUom(source.getUom()).build());
-    }
-
-    private static Optional<AviationCodeListUser.RelationalOperator> asRelationalOperator(final RelationalOperatorType source) {
-        if (source == null) {
-            return Optional.empty();
-        }
-        return Optional.of(AviationCodeListUser.RelationalOperator.valueOf(source.name()));
     }
 
 }

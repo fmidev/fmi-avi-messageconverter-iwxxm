@@ -21,8 +21,7 @@ public class OMObservationProperties extends AbstractPropertyContainer<OMObserva
         VALID_TIME(PartialOrCompleteTimePeriod.class),
         PROCEDURE(ProcessType.class),
         OBSERVED_PROPERTY(String.class),
-        AERODROME(Aerodrome.class),
-        SAMPLING_POINT(GeoPosition.class), RESULT(Object.class);
+        AERODROME(Aerodrome.class), SAMPLING_POINT(GeoPosition.class), RESULT(Object.class);
 
         private Class<?> acceptedType;
 

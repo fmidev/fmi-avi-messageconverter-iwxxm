@@ -18,6 +18,7 @@ import icao.iwxxm21.MeteorologicalAerodromeObservationRecordType;
 public class ObservationRecordProperties extends AbstractPropertyContainer<MeteorologicalAerodromeObservationRecordType> {
 
     public enum Name {
+        CLOUD_AND_VISIBILITY_OK(Boolean.class),
         SURFACE_WIND(ObservedSurfaceWind.class),
         VISIBILITY(HorizontalVisibility.class),
         RUNWAY_VISUAL_RANGE(RunwayVisualRange.class),
