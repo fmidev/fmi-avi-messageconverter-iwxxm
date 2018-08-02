@@ -3,6 +3,7 @@ package fi.fmi.avi.converter.iwxxm;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
+import java.util.Objects;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -16,8 +17,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
-
-import com.google.common.base.Preconditions;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
@@ -35,7 +34,7 @@ public class TAFIWXXMParserTest {
     @Test
     public void testStringParser() throws Exception {
         InputStream is = TAFIWXXMParserTest.class.getResourceAsStream("taf-A5-1.xml");
-        Preconditions.checkNotNull(is);
+        Objects.requireNonNull(is);
         String input = IOUtils.toString(is,"UTF-8");
         is.close();
         ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, ConversionHints.EMPTY);

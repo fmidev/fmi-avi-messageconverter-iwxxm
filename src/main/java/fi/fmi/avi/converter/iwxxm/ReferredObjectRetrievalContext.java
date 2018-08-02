@@ -3,6 +3,7 @@ package fi.fmi.avi.converter.iwxxm;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.xml.bind.Binder;
@@ -17,8 +18,6 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Provides functionality for resolving internal GML (xlink) references within the document.
@@ -37,8 +36,8 @@ public class ReferredObjectRetrievalContext {
      *         binder used to reference between DOM Elements and their JAXB Element counterparts.
      */
     public ReferredObjectRetrievalContext(final org.w3c.dom.Document dom, final Binder<Node> jaxbBinder) {
-        Preconditions.checkNotNull(dom, "DOM document cannot be null");
-        Preconditions.checkNotNull(jaxbBinder, "Binder cannot be null");
+        Objects.requireNonNull(dom, "DOM document cannot be null");
+        Objects.requireNonNull(jaxbBinder, "Binder cannot be null");
         this.binder = jaxbBinder;
         try {
             XPathFactory factory = XPathFactory.newInstance();
