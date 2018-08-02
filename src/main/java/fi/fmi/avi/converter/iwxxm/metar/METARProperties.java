@@ -5,17 +5,16 @@ import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import icao.iwxxm21.METARType;
+import icao.iwxxm21.MeteorologicalAerodromeObservationReportType;
 
 /**
  * Created by rinne on 25/07/2018.
  */
-public class METARProperties extends AbstractPropertyContainer<METARType> {
+public class METARProperties extends AbstractPropertyContainer<MeteorologicalAerodromeObservationReportType> {
 
     public enum Name {
         STATUS(AviationCodeListUser.MetarStatus.class),
-        ISSUE_TIME(PartialOrCompleteTimeInstant.class),
-        AUTOMATED(Boolean.class),
+        AUTOMATED(Boolean.class), SPECI(Boolean.class), ISSUE_TIME(PartialOrCompleteTimeInstant.class),
         OBSERVATION(OMObservationProperties.class),
         TREND_FORECAST(OMObservationProperties.class),
         REPORT_METADATA(GenericReportProperties.class);
@@ -31,7 +30,7 @@ public class METARProperties extends AbstractPropertyContainer<METARType> {
         }
     }
 
-    public METARProperties(final METARType metar) {
+    public METARProperties(final MeteorologicalAerodromeObservationReportType metar) {
         super(metar);
     }
 

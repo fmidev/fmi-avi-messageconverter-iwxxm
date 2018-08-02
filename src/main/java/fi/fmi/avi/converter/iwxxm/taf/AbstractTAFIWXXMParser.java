@@ -3,11 +3,10 @@ package fi.fmi.avi.converter.iwxxm.taf;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.xml.bind.JAXBElement;
-
-import com.google.common.base.Preconditions;
 
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -45,7 +44,7 @@ public abstract class AbstractTAFIWXXMParser<T> extends AbstractIWXXMParser<T, T
 
     protected TAF createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx, final ConversionResult<TAF> result,
             final ConversionHints hints) {
-        Preconditions.checkNotNull(source, "source cannot be null");
+        Objects.requireNonNull(source, "source cannot be null");
         TAFType input;
         if (TAFType.class.isAssignableFrom(source.getClass())) {
             input = (TAFType) source;

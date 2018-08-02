@@ -3,10 +3,7 @@ package fi.fmi.avi.converter.iwxxm;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.Objects;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,8 +14,6 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 
-import com.google.common.base.Preconditions;
-
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
@@ -27,7 +22,7 @@ import fi.fmi.avi.model.taf.TAF;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class TAFIWXXMParserTest {
+public class TAFIWXXMParserTest extends DOMParsingTestBase {
 
     @Autowired
     private AviMessageConverter converter;
@@ -35,7 +30,7 @@ public class TAFIWXXMParserTest {
     @Test
     public void testStringParser() throws Exception {
         InputStream is = TAFIWXXMParserTest.class.getResourceAsStream("taf-A5-1.xml");
-        Preconditions.checkNotNull(is);
+        Objects.requireNonNull(is);
         String input = IOUtils.toString(is,"UTF-8");
         is.close();
         ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
@@ -117,14 +112,5 @@ public class TAFIWXXMParserTest {
         assertTrue(result.getConvertedMessage().get().getAerodrome().getFieldElevationValue().isPresent());
     }
 
-
-
-    private Document readDocument(final String name) throws Exception {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        return db.parse(TAFIWXXMParserTest.class.getResourceAsStream(name));
-    }
 
 }

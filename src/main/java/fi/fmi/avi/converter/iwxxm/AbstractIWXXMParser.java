@@ -1,5 +1,6 @@
 package fi.fmi.avi.converter.iwxxm;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,8 @@ import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -43,11 +46,26 @@ public abstract class AbstractIWXXMParser<T, S extends AviationWeatherMessage> e
 
     private static Templates iwxxmTemplates;
 
+    protected static Document parseStringToDOM(final String input) throws ConversionException {
+        Document retval = null;
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        try {
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            ByteArrayInputStream bais = new ByteArrayInputStream(input.getBytes());
+            retval = db.parse(bais);
+        } catch (Exception e) {
+            throw new ConversionException("Error in parsing input as to an XML document", e);
+        }
+        return retval;
+    }
+
     /**
      * Returns the TAF input message as A DOM Document.
      *
      * @param input
-     *         the raw input format
+     *         the XML Document input as a String
      *
      * @return the input parsed as DOM
      *
@@ -87,6 +105,7 @@ public abstract class AbstractIWXXMParser<T, S extends AviationWeatherMessage> e
 
         try {
             Document dom = parseAsDom(input);
+
             SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
             schemaFactory.setResourceResolver(resolver);

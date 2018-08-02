@@ -7,14 +7,15 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
-import icao.iwxxm21.METARType;
+import icao.iwxxm21.MeteorologicalAerodromeObservationReportType;
 
 /**
  * Created by rinne on 25/07/2018.
  */
 public class IWXXMMETARScanner extends AbstractIWXXMScanner {
 
-    public static List<ConversionIssue> collectMETARProperties(final METARType input, final ReferredObjectRetrievalContext refCtx,
+    public static List<ConversionIssue> collectMETARProperties(final MeteorologicalAerodromeObservationReportType input,
+            final ReferredObjectRetrievalContext refCtx,
             final METARProperties properties, final ConversionHints hints) {
         IssueList retval = new IssueList();
 

@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.taf;
+package fi.fmi.avi.converter.iwxxm.metar;
 
 import org.w3c.dom.Document;
 
@@ -6,11 +6,12 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
 
 /**
- * Specialization of {@link AbstractTAFIWXXMParser} for String input.
+ * Specialization of {@link AbstractSPECIIWXXMParser} for String input.
  */
-public class TAFIWXXMStringParser extends AbstractTAFIWXXMParser<String> {
+public class SPECIIWXXMStringParser extends AbstractSPECIIWXXMParser<String> {
+
     /**
-     * Returns the TAF input message as A DOM Document.
+     * Returns the SPECI input message as A DOM Document.
      *
      * @param input
      *         the XML Document input as a String

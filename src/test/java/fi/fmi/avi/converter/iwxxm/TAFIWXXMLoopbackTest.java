@@ -4,10 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
@@ -33,18 +30,10 @@ import fi.fmi.avi.model.taf.TAF;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class TAFIWXXMLoopbackTest {
+public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
 
     @Autowired
     private AviMessageConverter converter;
-
-    private Document readDocument(final String name) throws Exception {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        return db.parse(TAFIWXXMParserTest.class.getResourceAsStream(name));
-    }
 
     @Test
     public void testTAFParsingAndSerialization() throws Exception {
