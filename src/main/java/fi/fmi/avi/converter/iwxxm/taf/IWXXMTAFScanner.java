@@ -457,25 +457,15 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         if (windFct.isPresent()) {
             TAFSurfaceWindImpl.Builder windBuilder = new TAFSurfaceWindImpl.Builder();
             windBuilder.setMeanWindDirection(asNumericMeasure(windFct.get().getMeanWindDirection()));
-            if (windFct.get().isVariableWindDirection()) {
-                windBuilder.setVariableDirection(true);
-            } else {
-                windBuilder.setVariableDirection(false);
-            }
+            windBuilder.setVariableDirection(windFct.get().isVariableWindDirection());
             if (windFct.get().getMeanWindSpeed() != null) {
                 windBuilder.setMeanWindSpeed(asNumericMeasure(windFct.get().getMeanWindSpeed()).get());
             } else {
                 issue = new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Mean wind speed missing from TAF surface wind forecast");
             }
-            Optional<AviationCodeListUser.RelationalOperator> speedOperator = asRelationalOperator(windFct.get().getMeanWindSpeedOperator());
-            speedOperator.ifPresent(windBuilder::setMeanWindSpeedOperator);
-
-            Optional<NumericMeasure> gustSpeed = asNumericMeasure(windFct.get().getWindGustSpeed());
-            gustSpeed.ifPresent(windBuilder::setWindGust);
-
-            Optional<AviationCodeListUser.RelationalOperator> gustOperator = asRelationalOperator(windFct.get().getWindGustSpeedOperator());
-            gustOperator.ifPresent(windBuilder::setWindGustOperator);
-
+            windBuilder.setMeanWindSpeedOperator(asRelationalOperator(windFct.get().getMeanWindSpeedOperator()));
+            windBuilder.setWindGust(asNumericMeasure(windFct.get().getWindGustSpeed()));
+            windBuilder.setWindGustOperator(asRelationalOperator(windFct.get().getWindGustSpeedOperator()));
             resultHandler.accept(windBuilder);
         } else {
             issue = new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Could not find AerodromeSurfaceWindForecastType value within " + "AerodromeSurfaceWindForecastTypePropertyType or by reference");
