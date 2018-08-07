@@ -15,8 +15,10 @@ import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.NumericMeasure;
+import fi.fmi.avi.model.metar.immutable.HorizontalVisibilityImpl;
 import fi.fmi.avi.model.metar.immutable.ObservedSurfaceWindImpl;
+import icao.iwxxm21.AerodromeHorizontalVisibilityPropertyType;
+import icao.iwxxm21.AerodromeHorizontalVisibilityType;
 import icao.iwxxm21.AerodromeSurfaceWindPropertyType;
 import icao.iwxxm21.AerodromeSurfaceWindType;
 import icao.iwxxm21.MeteorologicalAerodromeObservationRecordType;
@@ -183,33 +185,17 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         if (wind.isPresent()) {
             ObservedSurfaceWindImpl.Builder windBuilder = new ObservedSurfaceWindImpl.Builder();
             windBuilder.setMeanWindDirection(asNumericMeasure(wind.get().getMeanWindDirection()));
-            if (wind.get().isVariableWindDirection()) {
-                windBuilder.setVariableDirection(true);
-            } else {
-                windBuilder.setVariableDirection(false);
-            }
+            windBuilder.setVariableDirection(wind.get().isVariableWindDirection());
             if (wind.get().getMeanWindSpeed() != null) {
                 windBuilder.setMeanWindSpeed(asNumericMeasure(wind.get().getMeanWindSpeed()).get());
             } else {
                 issue = new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Mean wind speed missing from METAR surface wind observation");
             }
-            Optional<AviationCodeListUser.RelationalOperator> speedOperator = asRelationalOperator(wind.get().getMeanWindSpeedOperator());
-            speedOperator.ifPresent(windBuilder::setMeanWindSpeedOperator);
-
-            Optional<NumericMeasure> gustSpeed = asNumericMeasure(wind.get().getWindGustSpeed());
-            gustSpeed.ifPresent(windBuilder::setWindGust);
-
-            Optional<AviationCodeListUser.RelationalOperator> gustOperator = asRelationalOperator(wind.get().getWindGustSpeedOperator());
-            gustOperator.ifPresent(windBuilder::setWindGustOperator);
-
-            if (wind.get().getExtremeClockwiseWindDirection() != null) {
-                windBuilder.setExtremeClockwiseWindDirection(asNumericMeasure(wind.get().getExtremeClockwiseWindDirection()).get());
-            }
-
-            if (wind.get().getExtremeCounterClockwiseWindDirection() != null) {
-                windBuilder.setExtremeCounterClockwiseWindDirection(asNumericMeasure(wind.get().getExtremeCounterClockwiseWindDirection()).get());
-            }
-
+            windBuilder.setMeanWindSpeedOperator(asRelationalOperator(wind.get().getMeanWindSpeedOperator()));
+            windBuilder.setWindGust(asNumericMeasure(wind.get().getWindGustSpeed()));
+            windBuilder.setWindGustOperator(asRelationalOperator(wind.get().getWindGustSpeedOperator()));
+            windBuilder.setExtremeClockwiseWindDirection(asNumericMeasure(wind.get().getExtremeClockwiseWindDirection()));
+            windBuilder.setExtremeCounterClockwiseWindDirection(asNumericMeasure(wind.get().getExtremeCounterClockwiseWindDirection()));
             resultHandler.accept(windBuilder);
         } else {
             issue = new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
@@ -217,6 +203,21 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         }
         if (issue != null) {
             issueHandler.accept(issue);
+        }
+    }
+
+    private static void withVisibilityBuilderFor(final AerodromeHorizontalVisibilityPropertyType visProp, final ReferredObjectRetrievalContext refCtx,
+            final Consumer<HorizontalVisibilityImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
+        ConversionIssue issue = null;
+        Optional<AerodromeHorizontalVisibilityType> visibility = resolveProperty(visProp, AerodromeHorizontalVisibilityType.class, refCtx);
+        if (visibility.isPresent()) {
+            HorizontalVisibilityImpl.Builder visBuilder = new HorizontalVisibilityImpl.Builder();
+            if (visibility.get().getPrevailingVisibility() != null) {
+                visBuilder.setPrevailingVisibility(asNumericMeasure(visibility.get().getPrevailingVisibility()).get());
+            } else {
+                issue = new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Prevailing visibility missing from METAR horizontal visibility observation");
+            }
+
         }
     }
 }
