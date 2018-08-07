@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import icao.iwxxm21.*;
 import net.opengis.om20.OMObservationPropertyType;
 import net.opengis.om20.OMObservationType;
 
@@ -17,13 +18,6 @@ import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.metar.immutable.ObservedSurfaceWindImpl;
-import icao.iwxxm21.AerodromeSurfaceWindPropertyType;
-import icao.iwxxm21.AerodromeSurfaceWindType;
-import icao.iwxxm21.MeteorologicalAerodromeObservationRecordType;
-import icao.iwxxm21.MeteorologicalAerodromeObservationReportType;
-import icao.iwxxm21.MeteorologicalAerodromeReportStatusType;
-import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
-import icao.iwxxm21.SPECIType;
 
 ;
 
@@ -113,13 +107,32 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Surface wind is missing in non-missing METAR Observation");
             }
 
-            //TODO:air temp (M)
+            Optional<NumericMeasure> airTemp = asNumericMeasure(obsRecord.get().getAirTemperature());
+            if (airTemp.isPresent()) {
+                obsProps.set(ObservationRecordProperties.Name.AIR_TEMPERATURE, airTemp.get());
+            } else {
+                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Air temperature is missing in non-missing METAR Observation");
+            }
 
-            //TODO:dewpoint temp (M)
+            Optional<NumericMeasure> dewpointTemp = asNumericMeasure(obsRecord.get().getDewpointTemperature());
+            if (dewpointTemp.isPresent()) {
+                obsProps.set(ObservationRecordProperties.Name.DEWPOINT_TEMPERATURE, dewpointTemp.get());
+            } else {
+                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Dewpoint temperature is missing in non-missing METAR Observation");
+            }
 
-            //TODO:QNH (M)
+            Optional<NumericMeasure> qnh = asNumericMeasure(obsRecord.get().getQnh());
+            if (qnh.isPresent()) {
+                obsProps.set(ObservationRecordProperties.Name.QNH, qnh.get());
+            } else {
+                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "QNH is missing in non-missing METAR Observation");
+            }
 
-            //TODO:recent weather (C)
+            for (AerodromeRecentWeatherType weather:obsRecord.get().getRecentWeather()) {
+                withWeatherBuilderFor(weather, hints, (builder) -> {
+                    obsProps.addToList(ObservationRecordProperties.Name.RECENT_WEATHER, builder.build());
+                }, retval::add);
+            }
 
             //TODO:wind shear (C)  (in own method?)
 
@@ -132,7 +145,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
             if (obsRecord.get().isCloudAndVisibilityOK()) {
                 // visibility, rvr,  present weather, cloud must not be given with CAVOK
                 if (obsRecord.get().getVisibility() != null && obsRecord.get().getVisibility().getAerodromeHorizontalVisibility() != null) {
-                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Visbility is not empty with CAVOK");
+                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Visibility is not empty with CAVOK");
                 }
 
                 if (!obsRecord.get().getRvr().isEmpty()) {
@@ -152,7 +165,11 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
 
                 //TODO:RVR (C)  (in own method)
 
-                //TODO:Present weather (C)
+                for (AerodromePresentWeatherType weather:obsRecord.get().getPresentWeather()) {
+                    withWeatherBuilderFor(weather, hints, (builder) -> {
+                        obsProps.addToList(ObservationRecordProperties.Name.PRESENT_WEATHER, builder.build());
+                    }, retval::add);
+                }
 
                 //TODO:Cloud (M)  (in own method)
 
