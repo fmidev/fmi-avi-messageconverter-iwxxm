@@ -1,7 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.taf;
 
-import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
-
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +27,6 @@ import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.immutable.CloudForecastImpl;
 import fi.fmi.avi.model.immutable.CloudLayerImpl;
-import fi.fmi.avi.model.immutable.WeatherImpl;
 import fi.fmi.avi.model.taf.immutable.TAFAirTemperatureForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFSurfaceWindImpl;
 import icao.iwxxm21.AerodromeAirTemperatureForecastPropertyType;
@@ -525,49 +522,6 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         }
         if (!issues.isEmpty()) {
             issueHandler.accept(issues);
-        }
-    }
-
-    private static void withWeatherBuilderFor(final AerodromeForecastWeatherType weather, final ConversionHints hints, final Consumer<WeatherImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
-        ConversionIssue issue = null;
-        String codeListValue = weather.getHref();
-        if (codeListValue != null && codeListValue.startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER)) {
-            String code = codeListValue.substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER.length());
-            String description = weather.getTitle();
-            WeatherImpl.Builder wBuilder = new WeatherImpl.Builder();
-            boolean codeOk = false;
-            if (hints == null || hints.isEmpty() || !hints.containsKey(ConversionHints.KEY_WEATHER_CODES) || ConversionHints.VALUE_WEATHER_CODES_STRICT_WMO_4678
-                    .equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                // Only the official codes allowed by default
-                if (WEATHER_CODES.containsKey(code)) {
-                    wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
-                    codeOk = true;
-                } else {
-                    issue = new ConversionIssue(ConversionIssue.Type.SYNTAX, "Illegal weather code " + code + " found with strict WMO 4678 " + "checking");
-                }
-            } else {
-                if (ConversionHints.VALUE_WEATHER_CODES_ALLOW_ANY.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                    wBuilder.setCode(code);
-                    if (description != null) {
-                        wBuilder.setDescription(description);
-                    } else if (WEATHER_CODES.containsKey(code)) {
-                        wBuilder.setDescription(WEATHER_CODES.get(code));
-                    }
-                } else if (ConversionHints.VALUE_WEATHER_CODES_IGNORE_NON_WMO_4678.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                    if (WEATHER_CODES.containsKey(code)) {
-                        wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
-                        codeOk = true;
-                    }
-                }
-            }
-            if (codeOk) {
-                resultHandler.accept(wBuilder);
-            }
-        } else {
-            issue = new ConversionIssue(ConversionIssue.Type.SYNTAX, "Weather codelist value does not begin with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER);
-        }
-        if (issue != null) {
-            issueHandler.accept(issue);
         }
     }
 

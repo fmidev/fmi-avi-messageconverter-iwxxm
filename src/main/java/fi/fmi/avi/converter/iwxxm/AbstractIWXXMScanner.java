@@ -3,11 +3,13 @@ package fi.fmi.avi.converter.iwxxm;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import fi.fmi.avi.model.immutable.WeatherImpl;
 import net.opengis.gml32.DirectPositionType;
 import net.opengis.gml32.FeaturePropertyType;
 import net.opengis.gml32.MeasureType;
@@ -44,6 +46,8 @@ import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
 import icao.iwxxm21.RelationalOperatorType;
 import icao.iwxxm21.ReportType;
 import wmo.metce2013.ProcessType;
+
+import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
 
 /**
  * Common functionality for parsing validation of IWXXM messages.
@@ -86,7 +90,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                 if (ConversionHints.VALUE_TRANSLATION_TIME_AUTO.equals(value)) {
                     properties.set(GenericReportProperties.Name.TRANSLATION_TIME, ZonedDateTime.now());
                 } else if (value instanceof ZonedDateTime) {
-                    properties.set(GenericReportProperties.Name.TRANSLATION_TIME, (ZonedDateTime) value);
+                    properties.set(GenericReportProperties.Name.TRANSLATION_TIME, value);
                 }
             }
         }
@@ -385,5 +389,48 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             return Optional.empty();
         }
         return Optional.of(AviationCodeListUser.RelationalOperator.valueOf(source.name()));
+    }
+
+    protected static void withWeatherBuilderFor(final ReferenceType weather, final ConversionHints hints, final Consumer<WeatherImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
+        ConversionIssue issue = null;
+        String codeListValue = weather.getHref();
+        if (codeListValue != null && codeListValue.startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER)) {
+            String code = codeListValue.substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER.length());
+            String description = weather.getTitle();
+            WeatherImpl.Builder wBuilder = new WeatherImpl.Builder();
+            boolean codeOk = false;
+            if (hints == null || hints.isEmpty() || !hints.containsKey(ConversionHints.KEY_WEATHER_CODES) || ConversionHints.VALUE_WEATHER_CODES_STRICT_WMO_4678
+                    .equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
+                // Only the official codes allowed by default
+                if (WEATHER_CODES.containsKey(code)) {
+                    wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
+                    codeOk = true;
+                } else {
+                    issue = new ConversionIssue(ConversionIssue.Type.SYNTAX, "Illegal weather code " + code + " found with strict WMO 4678 " + "checking");
+                }
+            } else {
+                if (ConversionHints.VALUE_WEATHER_CODES_ALLOW_ANY.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
+                    wBuilder.setCode(code);
+                    if (description != null) {
+                        wBuilder.setDescription(description);
+                    } else if (WEATHER_CODES.containsKey(code)) {
+                        wBuilder.setDescription(WEATHER_CODES.get(code));
+                    }
+                } else if (ConversionHints.VALUE_WEATHER_CODES_IGNORE_NON_WMO_4678.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
+                    if (WEATHER_CODES.containsKey(code)) {
+                        wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
+                        codeOk = true;
+                    }
+                }
+            }
+            if (codeOk) {
+                resultHandler.accept(wBuilder);
+            }
+        } else {
+            issue = new ConversionIssue(ConversionIssue.Type.SYNTAX, "Weather codelist value does not begin with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER);
+        }
+        if (issue != null) {
+            issueHandler.accept(issue);
+        }
     }
 }
