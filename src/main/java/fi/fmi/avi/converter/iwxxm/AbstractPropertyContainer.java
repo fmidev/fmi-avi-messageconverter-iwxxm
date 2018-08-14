@@ -75,6 +75,16 @@ public abstract class AbstractPropertyContainer<T> {
     }
 
     /**
+     * Removes the value for this key is one has previously been set.
+     *
+     * @param key
+     *         the property to unset
+     */
+    public void unset(final Object key) {
+        this.properties.remove(key);
+    }
+
+    /**
      * Adds a new value for the list of values for the given key.
      *
      * @param key

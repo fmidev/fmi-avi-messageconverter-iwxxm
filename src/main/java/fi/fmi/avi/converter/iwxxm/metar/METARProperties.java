@@ -17,6 +17,7 @@ public class METARProperties extends AbstractPropertyContainer<MeteorologicalAer
         AUTOMATED(Boolean.class),//
         OBSERVATION(OMObservationProperties.class),//
         TREND_FORECAST(OMObservationProperties.class),//
+        SNOW_CLOSURE(Boolean.class),//
         REPORT_METADATA(GenericReportProperties.class);
 
         private Class<?> acceptedType;

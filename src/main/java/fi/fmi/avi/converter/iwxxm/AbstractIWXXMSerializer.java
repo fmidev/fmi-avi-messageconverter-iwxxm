@@ -302,22 +302,25 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
             if (source.getLayers().isPresent()) {
                 for (CloudLayer layer : source.getLayers().get()) {
                     target.getLayer().add(create(AerodromeCloudForecastType.Layer.class, (l) -> {
-                        l.setCloudLayer(create(CloudLayerType.class, (cl) -> this.setCloudLayerData(cl, layer)));
+                        l.setCloudLayer(create(CloudLayerType.class, (cl) -> this.setForecastCloudLayerData(cl, layer)));
                     }));
                 }
             }
         }
     }
 
-    protected void setCloudLayerData(final CloudLayerType target, final CloudLayer source) {
+    protected void setForecastCloudLayerData(final CloudLayerType target, final CloudLayer source) {
         if (source != null) {
             if (source.getBase().isPresent()) {
                 target.setBase(asMeasure(source.getBase().get(), DistanceWithNilReasonType.class));
             }
-            target.setAmount(create(CloudAmountReportedAtAerodromeType.class, (amount) -> {
-                amount.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + source.getAmount().getCode());
-                amount.setTitle(source.getAmount().name() + ", from codelist " + AviationCodeListUser.CODELIST_CLOUD_AMOUNT_REPORTED_AT_AERODROME);
-            }));
+            Optional<AviationCodeListUser.CloudAmount> amount = source.getAmount();
+            if (amount.isPresent()) {
+                target.setAmount(create(CloudAmountReportedAtAerodromeType.class, (amt) -> {
+                    amt.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + amount.get().getCode());
+                    amt.setTitle(amount.get().name() + ", from codelist " + AviationCodeListUser.CODELIST_CLOUD_AMOUNT_REPORTED_AT_AERODROME);
+                }));
+            }
             Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
             if (type.isPresent()) {
                 QName eName = new QName("http://icao.int/iwxxm/2.1", "cloudType");
