@@ -33,6 +33,9 @@ public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T,
         METARImpl.Builder metarBuilder = new METARImpl.Builder();
         metarBuilder.setStatus(status.get());
 
+        METARProperties metarProperties = new METARProperties(input);
+        result.addIssue(IWXXMMETARScanner.collectMETARProperties(input, refCtx, metarProperties, hints));
+
         //TODO: build from properties
 
         return metarBuilder;
