@@ -1,16 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.taf;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-
-import javax.xml.bind.JAXBElement;
-
-import net.opengis.om20.OMObservationPropertyType;
-import net.opengis.om20.OMObservationType;
-
 import aero.aixm511.AirportHeliportType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -19,33 +8,20 @@ import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
-import fi.fmi.avi.model.Aerodrome;
-import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.CloudLayer;
-import fi.fmi.avi.model.NumericMeasure;
-import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.*;
 import fi.fmi.avi.model.immutable.CloudForecastImpl;
-import fi.fmi.avi.model.immutable.CloudLayerImpl;
 import fi.fmi.avi.model.taf.immutable.TAFAirTemperatureForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFSurfaceWindImpl;
-import icao.iwxxm21.AerodromeAirTemperatureForecastPropertyType;
-import icao.iwxxm21.AerodromeAirTemperatureForecastType;
-import icao.iwxxm21.AerodromeCloudForecastPropertyType;
-import icao.iwxxm21.AerodromeCloudForecastType;
-import icao.iwxxm21.AerodromeForecastChangeIndicatorType;
-import icao.iwxxm21.AerodromeForecastWeatherType;
-import icao.iwxxm21.AerodromeSurfaceWindForecastPropertyType;
-import icao.iwxxm21.AerodromeSurfaceWindForecastType;
-import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
-import icao.iwxxm21.CloudLayerPropertyType;
-import icao.iwxxm21.CloudLayerType;
-import icao.iwxxm21.DistanceWithNilReasonType;
-import icao.iwxxm21.LengthWithNilReasonType;
-import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
-import icao.iwxxm21.SigConvectiveCloudTypeType;
-import icao.iwxxm21.TAFReportStatusType;
-import icao.iwxxm21.TAFType;
+import icao.iwxxm21.*;
+import net.opengis.om20.OMObservationPropertyType;
+import net.opengis.om20.OMObservationType;
+
+import javax.xml.bind.JAXBElement;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Carries out detailed validation and property value collecting for IWXXM TAF messages.
@@ -348,14 +324,8 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
         //weather
         for (AerodromeForecastWeatherType weather : record.getWeather()) {
-            boolean nswFound = false;
-            for (String nilReason : weather.getNilReason()) {
-                if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE.equals(nilReason)) {
-                    nswFound = true;
-                    break;
-                }
-            }
-            if (nswFound) {
+            if (weather.getNilReason().stream()
+                    .anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE::equals)) {
                 properties.set(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.TRUE);
             } else {
                 withWeatherBuilderFor(weather, hints, (builder) -> {
@@ -369,86 +339,48 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         if (cloudProp != null) {
             CloudForecastImpl.Builder cloudBuilder = new CloudForecastImpl.Builder();
             //NSC
-            boolean nscFound = false;
-            for (String nilReason : cloudProp.getNilReason()) {
-                if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE.equals(nilReason)) {
-                    nscFound = true;
-                    break;
-                }
-            }
+            cloudBuilder.setNoSignificantCloud(cloudProp.getNilReason().stream()
+                    .anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE::equals));
 
-            cloudBuilder.setNoSignificantCloud(nscFound);
-            if (!nscFound) {
-                Optional<AerodromeCloudForecastType> cloud = resolveProperty(cloudProp, AerodromeCloudForecastType.class, refCtx);
-                if (cloud.isPresent()) {
-                    if (record.isCloudAndVisibilityOK()) {
-                        retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL, "Forecast features CAVOK but cloud forecast exists in " + contextPath));
-                    }
-                    JAXBElement<LengthWithNilReasonType> vv = cloud.get().getVerticalVisibility();
-                    if (vv != null && vv.getValue() != null) {
+            Optional<AerodromeCloudForecastType> cloudForecast = resolveProperty(cloudProp, AerodromeCloudForecastType.class, refCtx);
+            if (cloudForecast.isPresent()) {
+                if (record.isCloudAndVisibilityOK()) {
+                    retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL, "Forecast features CAVOK but cloud forecast exists in " + contextPath));
+                }
+                JAXBElement<LengthWithNilReasonType> vv = cloudForecast.get().getVerticalVisibility();
+                if (vv != null) {
+                    if (vv.getValue() != null) {
                         cloudBuilder.setVerticalVisibility(asNumericMeasure(vv.getValue()));
+                    } else if (vv.isNil()) {
+                        cloudBuilder.setVerticalVisibilityMissing(true);
+                    }
+                } else {
+                    List<CloudLayer> layers = new ArrayList<>();
+                    for (CloudLayerPropertyType layerProp : cloudForecast.get().getLayer()) {
+                        withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
+                            layers.add(layerBuilder.build());
+                        }, retval::add, contextPath + " / cloud forecast");
+                    }
+                    if (!layers.isEmpty()) {
+                        cloudBuilder.setLayers(layers);
                     } else {
-                        List<CloudLayer> layers = new ArrayList<>();
-                        for (CloudLayerPropertyType layerProp : cloud.get().getLayer()) {
-                            Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
-                            if (layer.isPresent()) {
-                                CloudAmountReportedAtAerodromeType amount = layer.get().getAmount();
-                                DistanceWithNilReasonType base = layer.get().getBase();
-                                JAXBElement<SigConvectiveCloudTypeType> type = layer.get().getCloudType();
-                                CloudLayerImpl.Builder layerBuilder = new CloudLayerImpl.Builder();
-
-                                if (base.getNilReason().isEmpty()) {
-                                    layerBuilder.setBase(asNumericMeasure(base));
-                                }
-                                if (amount.getHref() != null && amount.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
-                                    String amountCode = amount.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME.length());
-                                    try {
-                                        layerBuilder.setAmount(AviationCodeListUser.CloudAmount.fromInt(Integer.parseInt(amountCode)));
-                                    } catch (NumberFormatException e) {
-                                        retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                                                "Could not parse code list value '" + amountCode + "' as an integer for code list " + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME));
-                                    }
-
-                                } else {
-                                    retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                                            "Cloud amount code '" + amount.getHref() + "' does not start with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
-                                }
-
-                                if (type != null && type.getValue() != null) {
-                                    if (type.getValue().getHref() != null && type.getValue().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
-                                        String typeCode = type.getValue().getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
-                                        try {
-                                            layerBuilder.setCloudType(AviationCodeListUser.CloudType.fromInt(Integer.parseInt(typeCode)));
-                                        } catch (NumberFormatException e) {
-                                            retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                                                    "Could not parse code list value '" + typeCode + "' as an integer for code list " + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE));
-                                        }
-                                    }
-                                }
-                                layers.add(layerBuilder.build());
-                            } else {
-                                retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                                        "Could not resolve cloud layer " + cloudProp.getHref() + "" + " in " + contextPath));
-                            }
-                        }
-                        if (!layers.isEmpty()) {
-                            cloudBuilder.setLayers(layers);
-                        } else {
-                            retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                                    "No NSC, vertical visibility or cloud layers in cloud forecast in " + contextPath));
-                        }
+                        retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                                "No vertical visibility or cloud layers in " + contextPath + " / cloud forecast"));
                     }
                 }
             }
+
             properties.set(TAFForecastRecordProperties.Name.CLOUD, cloudBuilder.build());
         }
 
         return retval;
     }
-
     //Helpers
 
-    private static void withTAFSurfaceWindBuilderFor(final AerodromeSurfaceWindForecastPropertyType windProp, final ReferredObjectRetrievalContext refCtx, final Consumer<TAFSurfaceWindImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
+
+    private static void withTAFSurfaceWindBuilderFor(final AerodromeSurfaceWindForecastPropertyType windProp, final ReferredObjectRetrievalContext refCtx,
+                                                     final Consumer<TAFSurfaceWindImpl.Builder> resultHandler,
+                                                     final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
         Optional<AerodromeSurfaceWindForecastType> windFct = resolveProperty(windProp, AerodromeSurfaceWindForecastType.class, refCtx);
         if (windFct.isPresent()) {

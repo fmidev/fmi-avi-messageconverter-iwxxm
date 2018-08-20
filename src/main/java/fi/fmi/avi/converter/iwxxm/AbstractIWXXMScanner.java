@@ -1,51 +1,29 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
+import aero.aixm511.*;
+import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
+import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.model.*;
+import fi.fmi.avi.model.immutable.*;
+import icao.iwxxm21.*;
+import net.opengis.gml32.*;
+import net.opengis.gml32.PointType;
+import net.opengis.om20.OMObservationType;
+import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
+import net.opengis.sampling.spatial.ShapeType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
+import wmo.metce2013.ProcessType;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.XMLGregorianCalendar;
-
-import fi.fmi.avi.model.immutable.WeatherImpl;
-import net.opengis.gml32.DirectPositionType;
-import net.opengis.gml32.FeaturePropertyType;
-import net.opengis.gml32.MeasureType;
-import net.opengis.gml32.PointType;
-import net.opengis.gml32.ReferenceType;
-import net.opengis.om20.OMObservationType;
-import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
-import net.opengis.sampling.spatial.ShapeType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
-
-import aero.aixm511.AirportHeliportTimeSlicePropertyType;
-import aero.aixm511.AirportHeliportTimeSliceType;
-import aero.aixm511.AirportHeliportType;
-import aero.aixm511.ElevatedPointPropertyType;
-import aero.aixm511.ElevatedPointType;
-import aero.aixm511.ValDistanceVerticalType;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.model.Aerodrome;
-import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.NumericMeasure;
-import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
-import fi.fmi.avi.model.immutable.AerodromeImpl;
-import fi.fmi.avi.model.immutable.GeoPositionImpl;
-import fi.fmi.avi.model.immutable.NumericMeasureImpl;
-import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
-import icao.iwxxm21.MeteorologicalAerodromeObservationRecordType;
-import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
-import icao.iwxxm21.RelationalOperatorType;
-import icao.iwxxm21.ReportType;
-import wmo.metce2013.ProcessType;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
 
@@ -430,6 +408,55 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             issue = new ConversionIssue(ConversionIssue.Type.SYNTAX, "Weather codelist value does not begin with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER);
         }
         if (issue != null) {
+            issueHandler.accept(issue);
+        }
+    }
+
+    protected static void withCloudLayerBuilderFor(final CloudLayerPropertyType layerProp, final ReferredObjectRetrievalContext refCtx,
+                                                   final Consumer<CloudLayerImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler,
+                                                   final String contextPath) {
+        IssueList issues = new IssueList();
+        Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
+        if (layer.isPresent()) {
+            CloudAmountReportedAtAerodromeType amount = layer.get().getAmount();
+            DistanceWithNilReasonType base = layer.get().getBase();
+            JAXBElement<SigConvectiveCloudTypeType> type = layer.get().getCloudType();
+            CloudLayerImpl.Builder layerBuilder = new CloudLayerImpl.Builder();
+
+            if (base.getNilReason().isEmpty()) {
+                layerBuilder.setBase(asNumericMeasure(base));
+            }
+            if (amount.getHref() != null && amount.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
+                String amountCode = amount.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME.length());
+                try {
+                    layerBuilder.setAmount(AviationCodeListUser.CloudAmount.fromInt(Integer.parseInt(amountCode)));
+                } catch (NumberFormatException e) {
+                    issues.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
+                            "Could not parse code list value '" + amountCode + "' as an integer for code list " + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME));
+                }
+
+            } else {
+                issues.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
+                        "Cloud amount code '" + amount.getHref() + "' does not start with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
+            }
+
+            if (type != null && type.getValue() != null) {
+                if (type.getValue().getHref() != null && type.getValue().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
+                    String typeCode = type.getValue().getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
+                    try {
+                        layerBuilder.setCloudType(AviationCodeListUser.CloudType.fromInt(Integer.parseInt(typeCode)));
+                    } catch (NumberFormatException e) {
+                        issues.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
+                                "Could not parse code list value '" + typeCode + "' as an integer for code list " + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE));
+                    }
+                }
+            }
+            resultHandler.accept(layerBuilder);
+        } else {
+            issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                    "Could not resolve cloud layer in " + contextPath));
+        }
+        for (ConversionIssue issue:issues) {
             issueHandler.accept(issue);
         }
     }

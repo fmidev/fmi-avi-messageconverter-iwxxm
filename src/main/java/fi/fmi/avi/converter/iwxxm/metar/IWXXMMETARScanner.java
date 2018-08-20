@@ -1,16 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.metar;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-
-import javax.xml.bind.JAXBElement;
-
-import net.opengis.om20.OMObservationPropertyType;
-import net.opengis.om20.OMObservationType;
-
 import aero.aixm511.RunwayDirectionTimeSlicePropertyType;
 import aero.aixm511.RunwayDirectionTimeSliceType;
 import aero.aixm511.RunwayDirectionType;
@@ -21,39 +10,20 @@ import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
-import fi.fmi.avi.model.Aerodrome;
-import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.NumericMeasure;
-import fi.fmi.avi.model.RunwayDirection;
+import fi.fmi.avi.model.*;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.RunwayDirectionImpl;
-import fi.fmi.avi.model.metar.immutable.HorizontalVisibilityImpl;
-import fi.fmi.avi.model.metar.immutable.ObservedCloudsImpl;
-import fi.fmi.avi.model.metar.immutable.ObservedSurfaceWindImpl;
-import fi.fmi.avi.model.metar.immutable.RunwayStateImpl;
-import fi.fmi.avi.model.metar.immutable.RunwayVisualRangeImpl;
-import fi.fmi.avi.model.metar.immutable.SeaStateImpl;
-import fi.fmi.avi.model.metar.immutable.WindShearImpl;
-import icao.iwxxm21.AerodromeHorizontalVisibilityPropertyType;
-import icao.iwxxm21.AerodromeHorizontalVisibilityType;
-import icao.iwxxm21.AerodromePresentWeatherType;
-import icao.iwxxm21.AerodromeRecentWeatherType;
-import icao.iwxxm21.AerodromeRunwayStatePropertyType;
-import icao.iwxxm21.AerodromeRunwayStateType;
-import icao.iwxxm21.AerodromeRunwayVisualRangePropertyType;
-import icao.iwxxm21.AerodromeSeaStatePropertyType;
-import icao.iwxxm21.AerodromeSeaStateType;
-import icao.iwxxm21.AerodromeSurfaceWindPropertyType;
-import icao.iwxxm21.AerodromeSurfaceWindType;
-import icao.iwxxm21.AerodromeWindShearPropertyType;
-import icao.iwxxm21.AerodromeWindShearType;
-import icao.iwxxm21.DistanceWithNilReasonType;
-import icao.iwxxm21.MeteorologicalAerodromeObservationRecordType;
-import icao.iwxxm21.MeteorologicalAerodromeObservationReportType;
-import icao.iwxxm21.MeteorologicalAerodromeReportStatusType;
-import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
-import icao.iwxxm21.RunwayDirectionPropertyType;
-import icao.iwxxm21.SPECIType;
+import fi.fmi.avi.model.metar.immutable.*;
+import icao.iwxxm21.*;
+import net.opengis.om20.OMObservationPropertyType;
+import net.opengis.om20.OMObservationType;
+
+import javax.xml.bind.JAXBElement;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 ;
 
@@ -259,7 +229,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                 // Cloud (M)
                 JAXBElement<MeteorologicalAerodromeObservationRecordType.Cloud> cloudElement = obsRecord.get().getCloud();
                 if (cloudElement != null) {
-                    withCloudBuilderFor(cloudElement, refCtx, (cloudBuilder) -> {
+                    withObservedCloudBuilderFor(cloudElement, refCtx, (cloudBuilder) -> {
                         obsProps.set(ObservationRecordProperties.Name.CLOUD, cloudBuilder.build());
                     }, retval::add);
                 }
@@ -505,17 +475,17 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                         }
                     }
 
-                    //friction/breaking action
+                    //friction/braking action
                     if (runwayState.get().getEstimatedSurfaceFrictionOrBrakingAction() != null
                             && runwayState.get().getEstimatedSurfaceFrictionOrBrakingAction().getHref() != null) {
                         if (runwayState.get()
                                 .getEstimatedSurfaceFrictionOrBrakingAction()
                                 .getHref()
-                                .startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_SURFACE_FRICTION_OR_BREAKING_ACTION)) {
+                                .startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_SURFACE_FRICTION_OR_BRAKING_ACTION)) {
                             String code = runwayState.get()
                                     .getEstimatedSurfaceFrictionOrBrakingAction()
                                     .getHref()
-                                    .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_SURFACE_FRICTION_OR_BREAKING_ACTION.length());
+                                    .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_SURFACE_FRICTION_OR_BRAKING_ACTION.length());
                             AviationCodeListUser.BrakingAction ba = AviationCodeListUser.BrakingAction.fromInt(Integer.parseInt(code));
                             if (ba == null) {
                                 //not one of the BA codes, must be surface friction
@@ -565,16 +535,49 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         }
     }
 
-    private static void withCloudBuilderFor(final JAXBElement<MeteorologicalAerodromeObservationRecordType.Cloud> cloudElement,
+    private static void withObservedCloudBuilderFor(final JAXBElement<MeteorologicalAerodromeObservationRecordType.Cloud> cloudElement,
             final ReferredObjectRetrievalContext refCtx, final Consumer<ObservedCloudsImpl.Builder> resultHandler,
             final Consumer<ConversionIssue> issueHandler) {
         IssueList issues = new IssueList();
         if (cloudElement != null && cloudElement.getValue() != null) {
             MeteorologicalAerodromeObservationRecordType.Cloud cloud = cloudElement.getValue();
-            for ()
+            if (cloud != null) {
+                ObservedCloudsImpl.Builder cloudBuilder = new ObservedCloudsImpl.Builder();
+                AerodromeObservedCloudsType obsClouds = cloud.getAerodromeObservedClouds();
+                if (!cloud.getNilReason().isEmpty() && obsClouds != null) {
+                    if (obsClouds.getVerticalVisibility() != null) {
+                        JAXBElement<LengthWithNilReasonType> vv = obsClouds.getVerticalVisibility();
+                        if (vv != null) {
+                            if (vv.getValue() != null) {
+                                LengthWithNilReasonType length = vv.getValue();
+                                if (length.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE::equals)) {
+                                    cloudBuilder.setVerticalVisibilityUnobservableByAutoSystem(true);
+                                } else {
+                                    cloudBuilder.setVerticalVisibility(asNumericMeasure(vv.getValue()));
+                                }
+                            } else {
+                               issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.MISSING_DATA, "No value for vertical visibility element, strange");
+                            }
+                        }
+                    } else if (!obsClouds.getLayer().isEmpty()) {
+                        List<CloudLayer> layers = new ArrayList<>();
+                        for (CloudLayerPropertyType layerProp: obsClouds.getLayer()) {
+                            withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
+                                    layers.add(layerBuilder.build());
+                                }, issues::add, "observed cloud");
+                        }
+                        cloudBuilder.setLayers(layers);
+                    } else {
+                        issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.MISSING_DATA, "ObservedClouds contains neither vertical visibility nor any cloud layers");
+                    }
+                } else {
+                    cloudBuilder.setNoCloudsDetectedByAutoSystem(cloud.getNilReason().stream()
+                            .anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM::equals));
+                    cloudBuilder.setNoSignificantCloud(cloud.getNilReason().stream()
+                            .anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE::equals));
+                }
+            }
         }
-        //TODO
-
         for (ConversionIssue issue : issues) {
             issueHandler.accept(issue);
         }
