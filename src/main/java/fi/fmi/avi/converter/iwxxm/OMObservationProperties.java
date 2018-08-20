@@ -15,13 +15,15 @@ import wmo.metce2013.ProcessType;
 public class OMObservationProperties extends AbstractPropertyContainer<OMObservationType> {
 
     public enum Name {
-        TYPE(String.class),
-        PHENOMENON_TIME(PartialOrCompleteTime.class),
-        RESULT_TIME(PartialOrCompleteTimeInstant.class),
-        VALID_TIME(PartialOrCompleteTimePeriod.class),
-        PROCEDURE(ProcessType.class),
-        OBSERVED_PROPERTY(String.class),
-        AERODROME(Aerodrome.class), SAMPLING_POINT(GeoPosition.class), RESULT(Object.class);
+        TYPE(String.class),//
+        PHENOMENON_TIME(PartialOrCompleteTime.class),//
+        RESULT_TIME(PartialOrCompleteTimeInstant.class),//
+        VALID_TIME(PartialOrCompleteTimePeriod.class),//
+        PROCEDURE(ProcessType.class),//
+        OBSERVED_PROPERTY(String.class),//
+        AERODROME(Aerodrome.class),//
+        SAMPLING_POINT(GeoPosition.class),//
+        RESULT(Object.class);
 
         private Class<?> acceptedType;
 
