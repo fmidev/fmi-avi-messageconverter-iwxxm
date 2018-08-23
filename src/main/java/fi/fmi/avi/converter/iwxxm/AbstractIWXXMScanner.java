@@ -1,31 +1,59 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import aero.aixm511.*;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.model.*;
-import fi.fmi.avi.model.immutable.*;
-import icao.iwxxm21.*;
-import net.opengis.gml32.*;
-import net.opengis.gml32.PointType;
-import net.opengis.om20.OMObservationType;
-import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
-import net.opengis.sampling.spatial.ShapeType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
-import wmo.metce2013.ProcessType;
+import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import net.opengis.gml32.DirectPositionType;
+import net.opengis.gml32.FeaturePropertyType;
+import net.opengis.gml32.MeasureType;
+import net.opengis.gml32.PointType;
+import net.opengis.gml32.ReferenceType;
+import net.opengis.om20.OMObservationType;
+import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
+import net.opengis.sampling.spatial.ShapeType;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Node;
+
+import aero.aixm511.AirportHeliportTimeSlicePropertyType;
+import aero.aixm511.AirportHeliportTimeSliceType;
+import aero.aixm511.AirportHeliportType;
+import aero.aixm511.ElevatedPointPropertyType;
+import aero.aixm511.ElevatedPointType;
+import aero.aixm511.ValDistanceVerticalType;
+import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
+import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.model.Aerodrome;
+import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.NumericMeasure;
+import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
+import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.immutable.AerodromeImpl;
+import fi.fmi.avi.model.immutable.CloudLayerImpl;
+import fi.fmi.avi.model.immutable.GeoPositionImpl;
+import fi.fmi.avi.model.immutable.NumericMeasureImpl;
+import fi.fmi.avi.model.immutable.WeatherImpl;
+import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
+import icao.iwxxm21.CloudLayerPropertyType;
+import icao.iwxxm21.CloudLayerType;
+import icao.iwxxm21.DistanceWithNilReasonType;
+import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
+import icao.iwxxm21.MeteorologicalAerodromeObservationRecordType;
+import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
+import icao.iwxxm21.RelationalOperatorType;
+import icao.iwxxm21.ReportType;
+import icao.iwxxm21.SigConvectiveCloudTypeType;
+import wmo.metce2013.ProcessType;
 
 /**
  * Common functionality for parsing validation of IWXXM messages.
@@ -172,8 +200,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         if (observation.getType() != null) {
             properties.set(OMObservationProperties.Name.TYPE, observation.getType().getHref());
         } else {
-            retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "Observation type for IWXXM 2.1 aerodrome forecast Observation type is missing in " + contextPath));
+            retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Observation type is missing in " + contextPath));
         }
         //result time
         if (observation.getResultTime() != null) {
@@ -212,11 +239,10 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         //observed property
         if (observation.getObservedProperty() != null) {
             ReferenceType obsProp = observation.getObservedProperty();
-            if (AviationCodeListUser.MET_AERODROME_FORECAST_PROPERTIES.equals(obsProp.getHref())) {
+            if (obsProp != null) {
                 properties.set(OMObservationProperties.Name.OBSERVED_PROPERTY, obsProp.getHref());
             } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                        "Observed property does not match " + AviationCodeListUser.MET_AERODROME_FORECAST_PROPERTIES + " in " + contextPath));
+                retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No observedProperty given in " + contextPath));
             }
         }
 
@@ -234,12 +260,14 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                     retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "More than one sampled feature in TAF"));
                 } else {
                     Optional<AirportHeliportType> airport = resolveProperty(sampledFeatures.get(0), "abstractFeature", AirportHeliportType.class, refCtx);
-                    airport.ifPresent((p) -> {
-                        Optional<Aerodrome> drome = buildAerodrome(p, retval, refCtx);
+                    if (airport.isPresent()) {
+                        Optional<Aerodrome> drome = buildAerodrome(airport.get(), retval, refCtx);
                         drome.ifPresent((d) -> {
                             properties.set(OMObservationProperties.Name.AERODROME, d);
                         });
-                    });
+                    } else {
+                        retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Aerodrome info not resolvable from FOI");
+                    }
                 }
 
                 ShapeType shape = sft.get().getShape();
@@ -319,7 +347,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         if (o instanceof Node) {
             Node resultNode = ((Node) o);
             Node recordNode = resultNode.getFirstChild();
-            if (recordNode != null && "MeteorologicalAerodromeTrendForecastRecordType".equals(recordNode.getLocalName()) && "http://icao.int/iwxxm/2.1".equals(
+            if (recordNode != null && "MeteorologicalAerodromeTrendForecastRecord".equals(recordNode.getLocalName()) && "http://icao.int/iwxxm/2.1".equals(
                     recordNode.getNamespaceURI())) {
                 try {
                     JAXBElement<MeteorologicalAerodromeTrendForecastRecordType> record = refCtx.getJAXBBinder()

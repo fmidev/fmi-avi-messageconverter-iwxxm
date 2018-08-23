@@ -29,6 +29,7 @@ import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.RunwayDirection;
+import fi.fmi.avi.model.immutable.CloudForecastImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.RunwayDirectionImpl;
 import fi.fmi.avi.model.metar.immutable.HorizontalVisibilityImpl;
@@ -39,6 +40,8 @@ import fi.fmi.avi.model.metar.immutable.RunwayVisualRangeImpl;
 import fi.fmi.avi.model.metar.immutable.SeaStateImpl;
 import fi.fmi.avi.model.metar.immutable.TrendForecastSurfaceWindImpl;
 import fi.fmi.avi.model.metar.immutable.WindShearImpl;
+import icao.iwxxm21.AerodromeCloudForecastPropertyType;
+import icao.iwxxm21.AerodromeCloudForecastType;
 import icao.iwxxm21.AerodromeForecastWeatherType;
 import icao.iwxxm21.AerodromeHorizontalVisibilityPropertyType;
 import icao.iwxxm21.AerodromeHorizontalVisibilityType;
@@ -154,6 +157,21 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
     private static IssueList collectObservationProperties(final OMObservationType obs, final ReferredObjectRetrievalContext refCtx,
             final METARProperties metarProps, final OMObservationProperties properties, final ConversionHints hints) {
         IssueList retval = collectCommonObsMetadata(obs, refCtx, properties, "METAR Observation", hints);
+        //check type & observedProperty:
+        Optional<String> type = properties.get(OMObservationProperties.Name.TYPE, String.class);
+        if (type.isPresent()) {
+            if (!AviationCodeListUser.MET_AERODROME_OBSERVATION_TYPE.equals(type.get())) {
+                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                        "Invalid observation type '" + type.get() + "', expected '" + AviationCodeListUser.MET_AERODROME_OBSERVATION_TYPE + "'");
+            }
+        }
+        Optional<String> observedProperty = properties.get(OMObservationProperties.Name.OBSERVED_PROPERTY, String.class);
+        if (observedProperty.isPresent()) {
+            if (!AviationCodeListUser.MET_AERODROME_OBSERVATION_PROPERTIES.equals(observedProperty.get())) {
+                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                        "Invalid observation type '" + observedProperty + "', expected '" + AviationCodeListUser.MET_AERODROME_OBSERVATION_PROPERTIES + "'");
+            }
+        }
         if (obs.getPhenomenonTime() != null) {
             Optional<PartialOrCompleteTimeInstant> phenomenonTime = getCompleteTimeInstant(obs.getPhenomenonTime(), refCtx);
             if (phenomenonTime.isPresent()) {
@@ -239,12 +257,15 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
             // runway state (C)
             boolean snoclo = false;
             for (AerodromeRunwayStatePropertyType rvsProp : obsRecord.get().getRunwayState()) {
-                if (rvsProp.getAerodromeRunwayState().isSnowClosure()) {
-                    snoclo = true;
+                Optional<AerodromeRunwayStateType> rvs = resolveProperty(rvsProp, AerodromeRunwayStateType.class, refCtx);
+                if (rvs.isPresent()) {
+                    if (rvs.get().isSnowClosure() != null && rvs.get().isSnowClosure()) {
+                        snoclo = true;
+                    }
+                    withRunwayStateBuilderFor(rvsProp, aerodrome, refCtx, (rvsBuilder) -> {
+                        obsProps.addToList(ObservationRecordProperties.Name.RUNWAY_STATE, rvsBuilder.build());
+                    }, retval::add);
                 }
-                withRunwayStateBuilderFor(rvsProp, aerodrome, refCtx, (rvsBuilder) -> {
-                    obsProps.addToList(ObservationRecordProperties.Name.RUNWAY_STATE, rvsBuilder.build());
-                }, retval::add);
             }
             if (snoclo) {
                 if (!obsProps.getList(ObservationRecordProperties.Name.RUNWAY_STATE, RunwayDirection.class).isEmpty()) {
@@ -317,6 +338,21 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
     private static IssueList collectTrendProperties(final OMObservationType trend, final ReferredObjectRetrievalContext refCtx,
             final OMObservationProperties properties, final ConversionHints hints) {
         IssueList retval = collectCommonObsMetadata(trend, refCtx, properties, "METAR Trend", hints);
+        //check type & observedProperty:
+        Optional<String> type = properties.get(OMObservationProperties.Name.TYPE, String.class);
+        if (type.isPresent()) {
+            if (!AviationCodeListUser.TREND_FORECAST_OBSERVATION_TYPE.equals(type.get())) {
+                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                        "Invalid observation type '" + type.get() + "', expected '" + AviationCodeListUser.TREND_FORECAST_OBSERVATION_TYPE + "'");
+            }
+        }
+        Optional<String> observedProperty = properties.get(OMObservationProperties.Name.OBSERVED_PROPERTY, String.class);
+        if (observedProperty.isPresent()) {
+            if (!AviationCodeListUser.TREND_FORECAST_PROPERTIES.equals(observedProperty.get())) {
+                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                        "Invalid observation type '" + observedProperty + "', expected '" + AviationCodeListUser.TREND_FORECAST_PROPERTIES + "'");
+            }
+        }
         //phenomenonTime (C)
         if (trend.getPhenomenonTime() != null) {
             Optional<PartialOrCompleteTimePeriod> phenomenonTime = getCompleteTimePeriod(trend.getPhenomenonTime(), refCtx);
@@ -358,9 +394,14 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                 }
             } else {
                 //prevailing visibility (C)
-                trendProps.set(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY, asNumericMeasure(trendRecord.get().getPrevailingVisibility()));
-                trendProps.set(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR,
-                        asRelationalOperator(trendRecord.get().getPrevailingVisibilityOperator()));
+                if (trendRecord.get().getPrevailingVisibility() != null) {
+                    trendProps.set(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY,
+                            asNumericMeasure(trendRecord.get().getPrevailingVisibility()).get());
+                }
+                if (trendRecord.get().getPrevailingVisibilityOperator() != null) {
+                    trendProps.set(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR,
+                            asRelationalOperator(trendRecord.get().getPrevailingVisibilityOperator()).get());
+                }
 
                 //forecast weather (C) (incl. NSW)
                 boolean nswFound = false;
@@ -370,7 +411,9 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                             trendProps.addToList(TrendForecastRecordProperties.Name.FORECAST_WEATHER, builder.build());
                         }, retval::add);
                     } else {
-                        if (weather.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NO_SIGNIFICANT_CHANGE::equals)) {
+                        if (weather.getNilReason()
+                                .stream()
+                                .anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE::equals)) {
                             nswFound = true;
                         }
                     }
@@ -382,7 +425,11 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                                 + "weather phenomena, NSW must be the only forecastWeather property if given");
                     }
                 }
-                //TODO: cloud (C) (incl. NSC)
+                //cloud (C) (incl. NSC)
+                JAXBElement<AerodromeCloudForecastPropertyType> cloudElem = trendRecord.get().getCloud();
+                withTrendCloudBuilderFor(cloudElem, refCtx, (cloudBuilder) -> {
+                    trendProps.set(TrendForecastRecordProperties.Name.CLOUD, cloudBuilder.build());
+                }, retval::add);
             }
             properties.set(OMObservationProperties.Name.RESULT, trendProps);
         } else {
@@ -554,17 +601,18 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         Optional<AerodromeRunwayStateType> runwayState = resolveProperty(rwsProp, AerodromeRunwayStateType.class, refCtx);
         if (runwayState.isPresent()) {
             RunwayStateImpl.Builder rwsBuilder = new RunwayStateImpl.Builder();
-            if (runwayState.get().isSnowClosure()) {
+            if (runwayState.get().isSnowClosure() != null && runwayState.get().isSnowClosure()) {
                 //none of the other RVS parameters are allowed
                 //runway direction not allowed
-                if (runwayState.get().getRunway() != null || runwayState.get().isCleared() || runwayState.get().getDepositType() != null
+                if (runwayState.get().getRunway() != null || (runwayState.get().isCleared() != null && runwayState.get().isCleared())
+                        || runwayState.get().getDepositType() != null
                         || runwayState.get().getContamination() != null || runwayState.get().getEstimatedSurfaceFrictionOrBrakingAction() != null
                         || runwayState.get().getDepthOfDeposit() != null) {
                     issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL, "No runwayDirection, cleared, deposit, contamination, surface "
                             + "friction / braking action or depth of deposit allowed with snow closure flag");
                 }
             } else {
-                if (runwayState.get().isAllRunways()) {
+                if (runwayState.get().isAllRunways() != null && runwayState.get().isAllRunways()) {
                     rwsBuilder.setAppliedToAllRunways(true);
                     if (runwayState.get().getRunway() != null) {
                         issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
@@ -581,15 +629,13 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                                 "Runway designator must be given in RunwayState unless " + "'allRunways' flag is given");
                     }
                 }
-                rwsBuilder.setCleared(runwayState.get().isCleared());
-                if (runwayState.get().isCleared()) {
-                    //no other properties allowed
+                if (runwayState.get().isCleared() != null && runwayState.get().isCleared()) {
+                    rwsBuilder.setCleared(true);
                     if (runwayState.get().getDepositType() != null || runwayState.get().getContamination() != null
                             || runwayState.get().getEstimatedSurfaceFrictionOrBrakingAction() != null || runwayState.get().getDepthOfDeposit() != null) {
                         issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
                                 "No deposit, contamination, surface friction / braking " + "action or depth of deposit allowed with cleared flag");
                     }
-
                 } else {
                     //deposit
                     if (runwayState.get().getDepositType() != null && runwayState.get().getDepositType().getHref() != null) {
@@ -633,9 +679,6 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                                         rwsBuilder.setDepthInsignificant(true);
                                     } else if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE.equals(nilReason)) {
                                         rwsBuilder.setDepthNotMeasurable(true);
-                                    } else {
-                                        issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
-                                                "Unknown nilReason codelist reference '" + nilReason + "'");
                                     }
                                 }
                             }
@@ -773,6 +816,62 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                             cloud.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM::equals));
                     cloudBuilder.setNoSignificantCloud(
                             cloud.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE::equals));
+                }
+                resultHandler.accept(cloudBuilder);
+            }
+        }
+        for (ConversionIssue issue : issues) {
+            issueHandler.accept(issue);
+        }
+    }
+
+    private static void withTrendCloudBuilderFor(final JAXBElement<AerodromeCloudForecastPropertyType> cloudElement,
+            final ReferredObjectRetrievalContext refCtx, final Consumer<CloudForecastImpl.Builder> resultHandler,
+            final Consumer<ConversionIssue> issueHandler) {
+        IssueList issues = new IssueList();
+        if (cloudElement != null && cloudElement.getValue() != null) {
+            AerodromeCloudForecastPropertyType cloudProp = cloudElement.getValue();
+            if (cloudProp != null) {
+                CloudForecastImpl.Builder cloudBuilder = new CloudForecastImpl.Builder();
+                if (cloudProp.getNilReason().isEmpty()) {
+                    Optional<AerodromeCloudForecastType> cloudFct = resolveProperty(cloudProp, AerodromeCloudForecastType.class, refCtx);
+                    if (cloudFct.isPresent()) {
+                        if (cloudFct.get().getVerticalVisibility() != null) {
+                            JAXBElement<LengthWithNilReasonType> vv = cloudFct.get().getVerticalVisibility();
+                            if (vv != null) {
+                                if (vv.getValue() != null) {
+                                    LengthWithNilReasonType length = vv.getValue();
+                                    if (length.getNilReason() == null) {
+                                        cloudBuilder.setVerticalVisibility(asNumericMeasure(vv.getValue()));
+                                    } else {
+                                        issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
+                                                "Vertical visibility given with " + "nilReason in Trend cloud forecast, ignoring");
+                                    }
+                                } else {
+                                    issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.MISSING_DATA,
+                                            "No value for vertical visibility element, strange");
+                                }
+                            }
+                        } else if (!cloudFct.get().getLayer().isEmpty()) {
+                            List<CloudLayer> layers = new ArrayList<>();
+                            for (CloudLayerPropertyType layerProp : cloudFct.get().getLayer()) {
+                                withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
+                                    layers.add(layerBuilder.build());
+                                }, issues::add, "observed cloud");
+                            }
+                            cloudBuilder.setLayers(layers);
+                        } else {
+                            issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.MISSING_DATA,
+                                    "Trend cloud forecast contains neither vertical visibility nor any cloud layers");
+                        }
+                    } else {
+                        issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                                "Cloud forecast property contains neither a nilReason nor an " + "AerodromeCloudForecastType child");
+                    }
+                } else {
+                    cloudBuilder.setNoSignificantCloud(cloudProp.getNilReason()
+                            .stream()
+                            .anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE::equals));
                 }
                 resultHandler.accept(cloudBuilder);
             }
