@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -18,6 +19,7 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 
 /**
  * Provides functionality for resolving internal GML (xlink) references within the document.
@@ -45,16 +47,27 @@ public class ReferredObjectRetrievalContext {
             HashMap<String, String> prefMap = new HashMap<>();
             prefMap.put("gml", "http://www.opengis.net/gml/3.2");
             prefMap.put("xlink", "http://www.w3.org/1999/xlink");
+            prefMap.put("om", "http://www.opengis.net/om/2.0");
             SimpleNamespaceContext namespaces = new SimpleNamespaceContext(prefMap);
             xpath.setNamespaceContext(namespaces);
-            //Find the elements with gml:id which have actually been internally referred to within this document:
-            XPathExpression expr = xpath.compile("//*[@gml:id and //*/@xlink:href=concat('#',@gml:id)]");
+
+            // Force identifying om:result elements in the Node <-> JAXElemement mapping by unmarshalling them explicitly
+            // (this are not bound to JAXBElements by default, due to being inside an anyType containing element).
+            XPathExpression expr = xpath.compile("//om:result/*[@gml:id]");
             NodeList hits = (NodeList) expr.evaluate(dom.getDocumentElement(), XPathConstants.NODESET);
+            for (int i = 0; i < hits.getLength(); i++) {
+                Node hit = hits.item(i);
+                binder.unmarshal(hit);
+            }
+
+            //Find the elements with gml:id which have actually been internally referred to within this document:
+            expr = xpath.compile("//*[@gml:id and //*/@xlink:href=concat('#',@gml:id)]");
+            hits = (NodeList) expr.evaluate(dom.getDocumentElement(), XPathConstants.NODESET);
             for (int i = 0; i < hits.getLength(); i++) {
                 Node hit = hits.item(i);
                 NamedNodeMap attrs = hit.getAttributes();
                 Node idNode = attrs.getNamedItem("gml:id");
-                Object elem = jaxbBinder.getJAXBNode(hit);
+                Object elem = binder.getJAXBNode(hit);
                 if (elem != null) {
                     if (elem instanceof JAXBElement) {
                         elem = ((JAXBElement) elem).getValue();
@@ -62,7 +75,7 @@ public class ReferredObjectRetrievalContext {
                     identifiedObjects.put(idNode.getNodeValue(), elem);
                 }
             }
-        } catch (XPathExpressionException e) {
+        } catch (XPathExpressionException | JAXBException e) {
             throw new RuntimeException("Unexpected exception in finding identified GML objects", e);
         }
     }
