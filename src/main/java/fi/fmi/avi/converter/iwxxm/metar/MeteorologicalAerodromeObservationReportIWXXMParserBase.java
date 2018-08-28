@@ -142,7 +142,9 @@ public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T,
                 }
                 trends.add(trendBuilder.build());
             }
-            metarBuilder.setTrends(trends);
+            if (!trends.isEmpty()) {
+                metarBuilder.setTrends(trends);
+            }
         }
 
         properties.get(METARProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent((metaProps) -> {
