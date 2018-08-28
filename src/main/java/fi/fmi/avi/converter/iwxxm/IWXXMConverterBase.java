@@ -168,10 +168,12 @@ public abstract class IWXXMConverterBase {
                         return (Optional<T>) Optional.ofNullable(getObject.invoke(prop, (Object[]) null));
                     } else if (JAXBElement.class.isAssignableFrom(getObject.getReturnType())) {
                         JAXBElement<?> wrapped = (JAXBElement<?>) getObject.invoke(prop, (Object[]) null);
-                        Object value = wrapped.getValue();
-                        if (value != null) {
-                            if (clz.isAssignableFrom(value.getClass())) {
-                                return (Optional<T>) Optional.of(value);
+                        if (wrapped != null) {
+                            Object value = wrapped.getValue();
+                            if (value != null) {
+                                if (clz.isAssignableFrom(value.getClass())) {
+                                    return (Optional<T>) Optional.of(value);
+                                }
                             }
                         }
                     }
