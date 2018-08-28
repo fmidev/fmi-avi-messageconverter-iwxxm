@@ -149,7 +149,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                     retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No Observation in METAR");
                 }
             } else {
-                if (obsProp.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE::equals)) {
+                if (obsProp.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NO_SIGNIFICANT_CHANGE::equals)) {
                     nosigFound = true;
                 }
             }
@@ -180,7 +180,8 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         if (observedProperty.isPresent()) {
             if (!AviationCodeListUser.MET_AERODROME_OBSERVATION_PROPERTIES.equals(observedProperty.get())) {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                        "Invalid observation type '" + observedProperty + "', expected '" + AviationCodeListUser.MET_AERODROME_OBSERVATION_PROPERTIES + "'");
+                        "Invalid observed property '" + observedProperty.get() + "', expected '" + AviationCodeListUser.MET_AERODROME_OBSERVATION_PROPERTIES
+                                + "'");
             }
         }
         if (obs.getPhenomenonTime() != null) {
@@ -361,7 +362,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         if (observedProperty.isPresent()) {
             if (!AviationCodeListUser.TREND_FORECAST_PROPERTIES.equals(observedProperty.get())) {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                        "Invalid observation type '" + observedProperty + "', expected '" + AviationCodeListUser.TREND_FORECAST_PROPERTIES + "'");
+                        "Invalid observed property '" + observedProperty.get() + "', expected '" + AviationCodeListUser.TREND_FORECAST_PROPERTIES + "'");
             }
         }
         //phenomenonTime (C)
@@ -474,7 +475,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                 windBuilder.setMeanWindSpeed(asNumericMeasure(wind.get().getMeanWindSpeed()).get());
             } else {
                 issue = new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                        "Mean wind speed missing from METAR surface " + "wind observation");
+                        "Mean wind speed missing from METAR surface wind observation");
             }
             windBuilder.setMeanWindSpeedOperator(asRelationalOperator(wind.get().getMeanWindSpeedOperator()));
             windBuilder.setWindGust(asNumericMeasure(wind.get().getWindGustSpeed()));
@@ -486,7 +487,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
             }
         } else {
             issue = new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                    "Could not find AerodromeSurfaceWindType value within " + "AerodromeSurfaceWindPropertyType or by reference");
+                    "Could not find AerodromeSurfaceWindType value within AerodromeSurfaceWindPropertyType or by reference");
         }
         if (issue != null) {
             issueHandler.accept(issue);
@@ -540,7 +541,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
             }
         } else {
             issue = new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                    "Could not find AerodromeHorizontalVisibilityType value within " + "AerodromeHorizontalVisibilityPropertyType or by reference");
+                    "Could not find AerodromeHorizontalVisibilityType value within AerodromeHorizontalVisibilityPropertyType or by reference");
         }
         if (issue != null) {
             issueHandler.accept(issue);
