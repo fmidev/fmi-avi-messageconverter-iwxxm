@@ -10,6 +10,9 @@ import javax.xml.bind.JAXBElement;
 import net.opengis.om20.OMObservationPropertyType;
 import net.opengis.om20.OMObservationType;
 
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
 import aero.aixm511.RunwayDirectionTimeSlicePropertyType;
 import aero.aixm511.RunwayDirectionTimeSliceType;
 import aero.aixm511.RunwayDirectionType;
@@ -70,7 +73,6 @@ import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
 import icao.iwxxm21.RunwayDirectionPropertyType;
 import icao.iwxxm21.SPECIType;
 
-;
 
 /**
  * Created by rinne on 25/07/2018.
@@ -98,11 +100,20 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
 
         if (MeteorologicalAerodromeReportStatusType.MISSING == status) {
             boolean missingFound = false;
-            for (String nilReason : input.getObservation().getNilReason()) {
-                if ("missing".equals(nilReason)) {
-                    missingFound = true;
+            if (input.getObservation() != null && input.getObservation().getOMObservation() != null) {
+                Object result = input.getObservation().getOMObservation().getResult();
+                if (result instanceof Node) {
+                    Node resultNode = (Node) result;
+                    NamedNodeMap attrs = resultNode.getAttributes();
+                    Node nilReasonAttr = attrs.getNamedItem("nilReason");
+                    if (nilReasonAttr != null) {
+                        if ("missing".equals(nilReasonAttr.getNodeValue())) {
+                            missingFound = true;
+                        }
+                    }
                 }
             }
+
             if (!missingFound) {
                 retval.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.MISSING_DATA,
                         "No nilReason 'missing' was found in result for " + "a missing METAR");
@@ -111,7 +122,6 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
             if (!input.getTrendForecast().isEmpty()) {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Missing METARs may not contain Trend forecasts");
             }
-            return retval;
         }
 
         properties.set(METARProperties.Name.AUTOMATED, input.isAutomatedStation());
@@ -120,7 +130,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         Optional<OMObservationType> observation = resolveProperty(input.getObservation(), OMObservationType.class, refCtx);
         if (observation.isPresent()) {
             OMObservationProperties obsProps = new OMObservationProperties(observation.get());
-            retval.addAll(collectObservationProperties(observation.get(), refCtx, properties, obsProps, hints));
+            retval.addAll(collectObservationProperties(observation.get(), status, refCtx, properties, obsProps, hints));
             properties.set(METARProperties.Name.OBSERVATION, obsProps);
         } else {
             retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No Observation in METAR");
@@ -154,7 +164,8 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         return retval;
     }
 
-    private static IssueList collectObservationProperties(final OMObservationType obs, final ReferredObjectRetrievalContext refCtx,
+    private static IssueList collectObservationProperties(final OMObservationType obs, final MeteorologicalAerodromeReportStatusType metarStatus,
+            final ReferredObjectRetrievalContext refCtx,
             final METARProperties metarProps, final OMObservationProperties properties, final ConversionHints hints) {
         IssueList retval = collectCommonObsMetadata(obs, refCtx, properties, "METAR Observation", hints);
         //check type & observedProperty:
@@ -329,7 +340,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                 }
             }
             properties.set(OMObservationProperties.Name.RESULT, obsProps);
-        } else {
+        } else if (MeteorologicalAerodromeReportStatusType.MISSING != metarStatus) {
             retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No observation result record in METAR Observation");
         }
         return retval;
@@ -356,7 +367,20 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         //phenomenonTime (C)
         if (trend.getPhenomenonTime() != null) {
             Optional<PartialOrCompleteTimePeriod> phenomenonTime = getCompleteTimePeriod(trend.getPhenomenonTime(), refCtx);
-            phenomenonTime.ifPresent((time) -> properties.set(OMObservationProperties.Name.PHENOMENON_TIME, time));
+            if (phenomenonTime.isPresent()) {
+                Optional<PartialOrCompleteTimeInstant> start = phenomenonTime.get().getStartTime();
+                Optional<PartialOrCompleteTimeInstant> end = phenomenonTime.get().getEndTime();
+                if (start.isPresent() && end.isPresent() && start.get().equals(end.get())) {
+                    // zero-length period, silently convert to an instant:
+                    properties.set(OMObservationProperties.Name.PHENOMENON_TIME, start.get());
+                } else {
+                    properties.set(OMObservationProperties.Name.PHENOMENON_TIME, phenomenonTime.get());
+                }
+            } else {
+                Optional<PartialOrCompleteTimeInstant> phenomenonTimeInstant = getCompleteTimeInstant(trend.getPhenomenonTime(), refCtx);
+                phenomenonTimeInstant.ifPresent((time) -> properties.set(OMObservationProperties.Name.PHENOMENON_TIME, time));
+            }
+
         }
         Optional<MeteorologicalAerodromeTrendForecastRecordType> trendRecord = getAerodromeTrendRecordResult(trend, refCtx);
         if (trendRecord.isPresent()) {
