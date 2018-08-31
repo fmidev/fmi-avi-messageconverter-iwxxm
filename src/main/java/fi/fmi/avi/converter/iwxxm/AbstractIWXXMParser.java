@@ -172,8 +172,8 @@ public abstract class AbstractIWXXMParser<T, S extends AviationWeatherMessage> e
             NodeList failedAsserts = (NodeList) xPath.evaluate("//svrl:failed-assert/svrl:text", schematronOutput.getNode(), XPathConstants.NODESET);
             if (failedAsserts != null) {
                 for (int i = 0; i < failedAsserts.getLength(); i++) {
-                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                            "Failed Schematron assertation: " + failedAsserts.item(i).getNodeValue());
+                    Node node = failedAsserts.item(i).getFirstChild();
+                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Failed Schematron assertation: " + node.getNodeValue());
                 }
             }
         } catch (TransformerException | XPathExpressionException e) {

@@ -273,10 +273,11 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                 if (rvs.isPresent()) {
                     if (rvs.get().isSnowClosure() != null && rvs.get().isSnowClosure()) {
                         snoclo = true;
+                    } else {
+                        withRunwayStateBuilderFor(rvsProp, aerodrome, refCtx, (rvsBuilder) -> {
+                            obsProps.addToList(ObservationRecordProperties.Name.RUNWAY_STATE, rvsBuilder.build());
+                        }, retval::add);
                     }
-                    withRunwayStateBuilderFor(rvsProp, aerodrome, refCtx, (rvsBuilder) -> {
-                        obsProps.addToList(ObservationRecordProperties.Name.RUNWAY_STATE, rvsBuilder.build());
-                    }, retval::add);
                 }
             }
             if (snoclo) {
@@ -554,7 +555,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         Optional<AerodromeWindShearType> windShear = resolveProperty(shearProp, AerodromeWindShearType.class, refCtx);
         if (windShear.isPresent()) {
             WindShearImpl.Builder wsBuilder = new WindShearImpl.Builder();
-            if (windShear.get().isAllRunways()) {
+            if (windShear.get().isAllRunways() != null && windShear.get().isAllRunways()) {
                 wsBuilder.setAppliedToAllRunways(windShear.get().isAllRunways());
                 if (!windShear.get().getRunway().isEmpty()) {
                     issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
@@ -601,7 +602,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                                     + AviationCodeListUser.CODELIST_VALUE_PREFIX_SEA_SURFACE_STATE);
                 }
                 if (seaState.get().getSignificantWaveHeight() != null) {
-                    issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
+                    issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
                             "Significant wave height not allowed with sea surface state in " + "SeaState");
                 }
             } else if (seaState.get().getSignificantWaveHeight() != null) {
