@@ -1,5 +1,16 @@
 package fi.fmi.avi.converter.iwxxm.taf;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+
+import javax.xml.bind.JAXBElement;
+
+import net.opengis.om20.OMObservationPropertyType;
+import net.opengis.om20.OMObservationType;
+
 import aero.aixm511.AirportHeliportType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -8,20 +19,30 @@ import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
-import fi.fmi.avi.model.*;
+import fi.fmi.avi.model.Aerodrome;
+import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.CloudForecast;
+import fi.fmi.avi.model.CloudLayer;
+import fi.fmi.avi.model.NumericMeasure;
+import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
+import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.immutable.CloudForecastImpl;
+import fi.fmi.avi.model.taf.TAFSurfaceWind;
 import fi.fmi.avi.model.taf.immutable.TAFAirTemperatureForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFSurfaceWindImpl;
-import icao.iwxxm21.*;
-import net.opengis.om20.OMObservationPropertyType;
-import net.opengis.om20.OMObservationType;
-
-import javax.xml.bind.JAXBElement;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
+import icao.iwxxm21.AerodromeAirTemperatureForecastPropertyType;
+import icao.iwxxm21.AerodromeAirTemperatureForecastType;
+import icao.iwxxm21.AerodromeCloudForecastPropertyType;
+import icao.iwxxm21.AerodromeCloudForecastType;
+import icao.iwxxm21.AerodromeForecastChangeIndicatorType;
+import icao.iwxxm21.AerodromeForecastWeatherType;
+import icao.iwxxm21.AerodromeSurfaceWindForecastPropertyType;
+import icao.iwxxm21.AerodromeSurfaceWindForecastType;
+import icao.iwxxm21.CloudLayerPropertyType;
+import icao.iwxxm21.LengthWithNilReasonType;
+import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
+import icao.iwxxm21.TAFReportStatusType;
+import icao.iwxxm21.TAFType;
 
 /**
  * Carries out detailed validation and property value collecting for IWXXM TAF messages.
@@ -220,6 +241,23 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
                 withTAFSurfaceWindBuilderFor(windProp, refCtx, (builder) -> {
                     changeProps.set(TAFForecastRecordProperties.Name.SURFACE_WIND, builder.build());
                 }, retval::add);
+            }
+
+            //Check for existence of all the mandatory properties in the From case:
+            Optional<AviationCodeListUser.TAFChangeIndicator> changeIndicator2 = changeProps.get(TAFForecastRecordProperties.Name.CHANGE_INDICATOR,
+                    AviationCodeListUser.TAFChangeIndicator.class);
+            if (changeIndicator2.isPresent() && AviationCodeListUser.TAFChangeIndicator.FROM == changeIndicator2.get()) {
+                if (!changeProps.get(TAFForecastRecordProperties.Name.SURFACE_WIND, TAFSurfaceWind.class).isPresent()) {
+                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Surface wind is missing in the From type change forecast");
+                }
+
+                if (!changeProps.get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class).isPresent()) {
+                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Visibility is missing in the From type change forecast");
+                }
+
+                if (!changeProps.get(TAFForecastRecordProperties.Name.CLOUD, CloudForecast.class).isPresent()) {
+                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Cloud is missing in the From type change forecast");
+                }
             }
             properties.set(OMObservationProperties.Name.RESULT, changeProps);
         }
