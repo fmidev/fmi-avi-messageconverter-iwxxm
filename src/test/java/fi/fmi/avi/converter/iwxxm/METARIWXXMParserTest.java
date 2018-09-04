@@ -123,6 +123,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         Document toValidate = readDocument("metar-A3-1_with-cavok-conflicts.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
+        assertFalse(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().contains("Schema validation issue")));
         assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("RVR")));
         assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("VISIBILITY")));
         assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("CLOUD")));
@@ -136,7 +137,17 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
-    //TODO: trend CAVOK with conflicts
+    @Test
+    public void testCatchesTrendCavokConflicts() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-trend-cavok-conflicts.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
+        assertFalse(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().contains("Schema validation issue")));
+        assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("VISIBILITY")));
+        assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("CLOUD")));
+        assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("WEATHER")));
+    }
+
     //TODO: trend cloud (with NSC)
     //TODO: RWS with snow closure conflicts
     //TODO: RWS with all runways flag
