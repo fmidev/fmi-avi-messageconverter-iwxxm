@@ -1,113 +1,102 @@
 {
   "status": "NORMAL",
   "issueTime": {
-    "partialTime": "301130Z"
+    "partialTime": "--30T11:30Z"
   },
   "aerodrome": {
-     "designator": "EETN"
+    "designator": "EETN"
   },
   "validityTime": {
     "startTime": {
-      "partialTime": "3012",
-      "partialTimePattern": "DayHour"
+      "partialTime": "--30T12:"
     },
     "endTime": {
-      "partialTime": "3112",
-      "partialTimePattern": "DayHour"
+      "partialTime": "--31T12:"
     }
   },
   "baseForecast": {
     "surfaceWind": {
-	  "variableDirection": false,
-	  "meanWindDirection": {
-	    "value": 140.0,
-	    "uom": "deg"
-	  },
-	  "meanWindSpeed": {
-	    "value": 16.0,
-	    "uom": "[kn_i]"
-	  },
-	  "windGust": {
-	    "value": 26.0,
-	    "uom": "[kn_i]"
-	  }
-	},
-	
+      "variableDirection": false,
+      "meanWindDirection": {
+        "value": 140.0,
+        "uom": "deg"
+      },
+      "meanWindSpeed": {
+        "value": 16.0,
+        "uom": "[kn_i]"
+      },
+      "windGust": {
+        "value": 26.0,
+        "uom": "[kn_i]"
+      }
+    },
     "prevailingVisibility": {
-	  "value": 8000.0,
-	  "uom": "m"
-	},
-	
-	"temperatures": [
-	  {
-	    "maxTemperature": {
-	      "value": -2.0,
-	      "uom": "degC"
-	    },
-        "maxTemperatureTime": {
-          "partialTime": "3015",
-          "partialTimePattern": "DayHour"
+      "value": 8000.0,
+      "uom": "m"
+    },
+    "temperatures": [
+      {
+        "maxTemperature": {
+          "value": -2.0,
+          "uom": "degC"
         },
-	    "minTemperature": {
-	      "value": -10.0,
-	      "uom": "degC"
-	    },
+        "maxTemperatureTime": {
+          "partialTime": "--30T15:"
+        },
+        "minTemperature": {
+          "value": -10.0,
+          "uom": "degC"
+        },
         "minTemperatureTime": {
-          "partialTime": "3103",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--31T03:"
         }
-	  }
-	],
-	
-	"cloud": {
-	  "layers": [
-	    {
-	      "amount": "BKN",
+      }
+    ],
+    "cloud": {
+      "layers": [
+        {
+          "amount": "BKN",
           "base": {
             "value": 1000.0,
             "uom": "[ft_i]"
           }
-	    },
-	    {
-	      "amount": "OVC",
+        },
+        {
+          "amount": "OVC",
           "base": {
             "value": 1500.0,
             "uom": "[ft_i]"
           }
-	    }
-	  ]
-	}
+        }
+      ]
+    }
   },
-  
+
   "changeForecasts": [
     {
       "changeIndicator": "TEMPORARY_FLUCTUATIONS",
       "periodOfChange": {
         "startTime": {
-          "partialTime": "3012",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--30T12:"
         },
         "endTime": {
-          "partialTime": "3018",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--30T18:"
         }
       },
       "prevailingVisibility": {
-	    "value": 3000.0,
-	    "uom": "m"
-	  },
-	  
-	  "forecastWeather": [
-	    {
+        "value": 3000.0,
+        "uom": "m"
+      },
+      "forecastWeather": [
+        {
           "code": "RADZ",
           "description": "Precipitation of rain and drizzle"
-	    },
-	    {
+        },
+        {
           "code": "BR",
           "description": "Mist"
-	    }
-	  ],
-	
+        }
+      ],
       "cloud": {
         "layers": [
           {
@@ -124,12 +113,10 @@
       "changeIndicator": "BECOMING",
       "periodOfChange": {
         "startTime": {
-          "partialTime": "3018",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--30T18:"
         },
         "endTime": {
-          "partialTime": "3020",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--30T20:"
         }
       },
       "cloud": {
@@ -156,26 +143,22 @@
       "changeIndicator": "TEMPORARY_FLUCTUATIONS",
       "periodOfChange": {
         "startTime": {
-          "partialTime": "3102",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--31T02:"
         },
         "endTime": {
-          "partialTime": "3112",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--31T12:"
         }
       },
       "prevailingVisibility": {
-	    "value": 3000.0,
-	    "uom": "m"
-	  },
-	  
-	  "forecastWeather": [
-	    {
+        "value": 3000.0,
+        "uom": "m"
+      },
+      "forecastWeather": [
+        {
           "code": "SHRASN",
           "description": "Showery precipitation of rain and snow"
-	    }
-	  ],
-	
+        }
+      ],
       "cloud": {
         "layers": [
           {
@@ -200,28 +183,26 @@
       "changeIndicator": "BECOMING",
       "periodOfChange": {
         "startTime": {
-          "partialTime": "3104",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--31T04:"
         },
         "endTime": {
-          "partialTime": "3106",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--31T06:"
         }
       },
       "surfaceWind": {
-	    "variableDirection": false,
-	    "meanWindDirection": {
-	      "value": 210.0,
-	      "uom": "deg"
-	    },
-	    "meanWindSpeed": {
-	      "value": 16.0,
-	      "uom": "[kn_i]"
-	    },
-	    "windGust": {
-	      "value": 30.0,
-	      "uom": "[kn_i]"
-	    }
+        "variableDirection": false,
+        "meanWindDirection": {
+          "value": 210.0,
+          "uom": "deg"
+        },
+        "meanWindSpeed": {
+          "value": 16.0,
+          "uom": "[kn_i]"
+        },
+        "windGust": {
+          "value": 30.0,
+          "uom": "[kn_i]"
+        }
       },
       "cloud": {
         "verticalVisibility": {
