@@ -35,7 +35,9 @@ import fi.fmi.avi.model.RunwayDirection;
 import fi.fmi.avi.model.immutable.CloudForecastImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.RunwayDirectionImpl;
+import fi.fmi.avi.model.metar.ObservedCloudLayer;
 import fi.fmi.avi.model.metar.immutable.HorizontalVisibilityImpl;
+import fi.fmi.avi.model.metar.immutable.ObservedCloudLayerImpl;
 import fi.fmi.avi.model.metar.immutable.ObservedCloudsImpl;
 import fi.fmi.avi.model.metar.immutable.ObservedSurfaceWindImpl;
 import fi.fmi.avi.model.metar.immutable.RunwayStateImpl;
@@ -63,7 +65,9 @@ import icao.iwxxm21.AerodromeSurfaceWindTrendForecastType;
 import icao.iwxxm21.AerodromeSurfaceWindType;
 import icao.iwxxm21.AerodromeWindShearPropertyType;
 import icao.iwxxm21.AerodromeWindShearType;
+import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
 import icao.iwxxm21.CloudLayerPropertyType;
+import icao.iwxxm21.CloudLayerType;
 import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
 import icao.iwxxm21.MeteorologicalAerodromeObservationRecordType;
@@ -72,7 +76,7 @@ import icao.iwxxm21.MeteorologicalAerodromeReportStatusType;
 import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
 import icao.iwxxm21.RunwayDirectionPropertyType;
 import icao.iwxxm21.SPECIType;
-
+import icao.iwxxm21.SigConvectiveCloudTypeType;
 
 /**
  * Created by rinne on 25/07/2018.
@@ -822,9 +826,9 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                                 }
                             }
                         } else if (!obsClouds.getLayer().isEmpty()) {
-                            List<CloudLayer> layers = new ArrayList<>();
-                            for (CloudLayerPropertyType layerProp : obsClouds.getLayer()) {
-                                withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
+                            List<ObservedCloudLayer> layers = new ArrayList<>();
+                            for (AerodromeObservedCloudsType.Layer layerProp : obsClouds.getLayer()) {
+                                withObservedCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
                                     layers.add(layerBuilder.build());
                                 }, issues::add, "observed cloud");
                             }
@@ -867,7 +871,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                             if (vv != null) {
                                 if (vv.getValue() != null) {
                                     LengthWithNilReasonType length = vv.getValue();
-                                    if (length.getNilReason() == null) {
+                                    if (length.getNilReason().isEmpty()) {
                                         cloudBuilder.setVerticalVisibility(asNumericMeasure(vv.getValue()));
                                     } else {
                                         issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
@@ -952,4 +956,79 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
             issueHandler.accept(issue);
         }
     }
+
+    protected static void withObservedCloudLayerBuilderFor(final AerodromeObservedCloudsType.Layer layerProp, final ReferredObjectRetrievalContext refCtx,
+            final Consumer<ObservedCloudLayerImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
+        IssueList issues = new IssueList();
+        ObservedCloudLayerImpl.Builder layerBuilder = new ObservedCloudLayerImpl.Builder();
+        if (layerProp == null) {
+            //Most likely caused by attribute xsi:nil="true".
+            // Unfortunately no way to get to the nilReason attribute values in this case, assuming "notObservable" for both amount & height:
+            layerBuilder.setHeightUnobservableByAutoSystem(true);
+            layerBuilder.setAmountUnobservableByAutoSystem(true);
+            resultHandler.accept(layerBuilder);
+            return;
+        }
+
+        Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
+        if (layer.isPresent()) {
+            CloudAmountReportedAtAerodromeType amount = layer.get().getAmount();
+            DistanceWithNilReasonType base = layer.get().getBase();
+            JAXBElement<SigConvectiveCloudTypeType> type = layer.get().getCloudType();
+            if (base != null) {
+                if (base.getNilReason().isEmpty()) {
+                    layerBuilder.setBase(asNumericMeasure(base));
+                } else {
+                    if (base.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE::equals)) {
+                        layerBuilder.setHeightUnobservableByAutoSystem(true);
+                    }
+                    if (base.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM::equals)) {
+                        layerBuilder.setHeightNotDetectedByAutoSystem(true);
+                    }
+                }
+            }
+            if (amount != null) {
+                if (amount.getNilReason().isEmpty()) {
+                    withCloudAmount(amount, layerBuilder::setAmount, issues::add, contextPath);
+                } else {
+                    if (amount.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE::equals)) {
+                        layerBuilder.setAmountUnobservableByAutoSystem(true);
+                    }
+                    if (amount.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM::equals)) {
+                        layerBuilder.setAmountNotDetectedByAutoSystem(true);
+                    }
+                }
+            }
+
+            if (type != null) {
+                if (type.getValue() != null) {
+                    if (type.getValue().getNilReason().isEmpty()) {
+                        withCloudType(type.getValue(), layerBuilder::setCloudType, issues::add, contextPath);
+                    } else {
+                        if (type.getValue().getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE::equals)) {
+                            layerBuilder.setCloudTypeUnobservableByAutoSystem(true);
+                        }
+                    }
+                }
+            }
+            resultHandler.accept(layerBuilder);
+        } else if (!layerProp.getNilReason().isEmpty()) {
+            if (layerProp.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE::equals)) {
+                layerBuilder.setAmountUnobservableByAutoSystem(true);
+                layerBuilder.setHeightUnobservableByAutoSystem(true);
+            }
+            if (layerProp.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM::equals)) {
+                layerBuilder.setAmountNotDetectedByAutoSystem(true);
+                layerBuilder.setHeightNotDetectedByAutoSystem(true);
+            }
+            resultHandler.accept(layerBuilder);
+        } else {
+            issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Could not resolve cloud layer in " + contextPath));
+        }
+
+        for (ConversionIssue issue : issues) {
+            issueHandler.accept(issue);
+        }
+    }
+
 }

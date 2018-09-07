@@ -148,14 +148,29 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("WEATHER")));
     }
 
-    //TODO: trend cloud (with NSC)
+    @Test
+    public void testTrendCloudForecast() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-trend-cloud-and-nsc.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+    }
+
+    @Test
+    public void testMissingCloudObservations() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-missing-cloud-obs.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+
+        toValidate = readDocument("metar-A3-1_with-missing-cloud-obs2.xml");
+        result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+    }
+
     //TODO: RWS with snow closure conflicts
     //TODO: RWS with all runways flag
     //TODO: RWS with cleared flag conflicts
     //TODO: RWS with depth of deposit
     //TODO: RWS with braking action special values 99 and 127
-    //TODO: observed cloud with nilReasons
-    //TODO: trend cloud
 
 
 

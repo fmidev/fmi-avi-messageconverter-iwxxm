@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
  */
 public class ReferredObjectRetrievalContext {
     private Map<String, Object> identifiedObjects = new HashMap<>();
-
+    private Map<Object, String> nilReasons = new HashMap<>();
     private Binder<Node> binder;
 
     /**
@@ -48,6 +48,8 @@ public class ReferredObjectRetrievalContext {
             prefMap.put("gml", "http://www.opengis.net/gml/3.2");
             prefMap.put("xlink", "http://www.w3.org/1999/xlink");
             prefMap.put("om", "http://www.opengis.net/om/2.0");
+            prefMap.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            prefMap.put("iwxxm", "http://icao.int/iwxxm/2.1");
             SimpleNamespaceContext namespaces = new SimpleNamespaceContext(prefMap);
             xpath.setNamespaceContext(namespaces);
 
@@ -75,6 +77,26 @@ public class ReferredObjectRetrievalContext {
                     identifiedObjects.put(idNode.getNodeValue(), elem);
                 }
             }
+
+            expr = xpath.compile("//*[@xsi:nil='true' and @nilReason]");
+            hits = (NodeList) expr.evaluate(dom.getDocumentElement(), XPathConstants.NODESET);
+            for (int i = 0; i < hits.getLength(); i++) {
+                Node hit = hits.item(i);
+                NamedNodeMap attrs = hit.getAttributes();
+                Node nilReason = attrs.getNamedItem("nilReason");
+                Object elem = binder.getJAXBNode(hit);
+                if (elem == null) {
+                    this.binder.unmarshal(hit);
+                    elem = binder.getJAXBNode(hit);
+                }
+                if (elem != null) {
+                    if (elem instanceof JAXBElement) {
+                        elem = ((JAXBElement) elem).getValue();
+                    }
+                    nilReasons.put(elem, nilReason.getNodeValue());
+                }
+            }
+
         } catch (XPathExpressionException | JAXBException e) {
             throw new RuntimeException("Unexpected exception in finding identified GML objects", e);
         }
@@ -110,6 +132,10 @@ public class ReferredObjectRetrievalContext {
         } else {
             return Optional.empty();
         }
+    }
+
+    public Optional<String> getNilReason(final Object jaxbElement) {
+        return Optional.ofNullable(this.nilReasons.get(jaxbElement));
     }
 
     /**
