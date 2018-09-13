@@ -90,13 +90,64 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConversionIssues().stream().filter(issue -> issue.getMessage().contains("METAR observation phenomenonTime")).count() == 1);
     }
 
-    //TODO: recent weather
-    //TODO: wind shear
-    //TODO: sea state
-    //TODO: snow closure (RWS)
-    //TODO: CAVOK with conflicting data
-    //TODO: trend wind
-    //TODO: trend CAVOK with conflicts
+    @Test
+    public void testRecentWeather() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-recent-weather.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+    }
+
+    @Test
+    public void testWindShear() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-wind-shear.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+    }
+
+    @Test
+    public void testSeaState() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-sea-state.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+    }
+
+    @Test
+    public void testSnowClosure() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-snow-closure.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+    }
+
+    @Test
+    public void testCatchesCavokConflicts() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-cavok-conflicts.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
+        assertFalse(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().contains("Schema validation issue")));
+        assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("RVR")));
+        assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("VISIBILITY")));
+        assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("CLOUD")));
+        assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("WEATHER")));
+    }
+
+    @Test
+    public void testTrendSurfaceWindForecast() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-trend-wind.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+    }
+
+    @Test
+    public void testCatchesTrendCavokConflicts() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-trend-cavok-conflicts.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
+        assertFalse(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().contains("Schema validation issue")));
+        assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("VISIBILITY")));
+        assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("CLOUD")));
+        assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("WEATHER")));
+    }
+
     //TODO: trend cloud (with NSC)
     //TODO: RWS with snow closure conflicts
     //TODO: RWS with all runways flag
