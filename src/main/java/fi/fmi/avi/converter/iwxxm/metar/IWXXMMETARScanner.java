@@ -827,10 +827,25 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                             }
                         } else if (!obsClouds.getLayer().isEmpty()) {
                             List<ObservedCloudLayer> layers = new ArrayList<>();
-                            for (AerodromeObservedCloudsType.Layer layerProp : obsClouds.getLayer()) {
-                                withObservedCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
-                                    layers.add(layerBuilder.build());
-                                }, issues::add, "observed cloud");
+                            AerodromeObservedCloudsType.Layer layerProp;
+                            for (int i = 0; i < obsClouds.getLayer().size(); i++) {
+                                layerProp = obsClouds.getLayer().get(i);
+                                if (layerProp == null) {
+                                    //null jaxbElement due to xsi:nil="true" attribute
+                                    //Need to fetch the nilReason parsed from DOM previously:
+                                    Optional<String> nilReason = refCtx.getNilReasonForNthChild(obsClouds, "http://icao.int/iwxxm/2.1:layer", i);
+                                    if (nilReason.isPresent()) {
+                                        ObservedCloudLayerImpl.Builder layerBuilder = new ObservedCloudLayerImpl.Builder();
+                                        if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE.equals(nilReason.get())) {
+                                            //TODO: check the right codelist values and set the missing layer propoerties accordingly
+                                        }
+
+                                    }
+                                } else {
+                                    withObservedCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
+                                        layers.add(layerBuilder.build());
+                                    }, issues::add, "observed cloud");
+                                }
                             }
                             cloudBuilder.setLayers(layers);
                         } else {
@@ -961,15 +976,6 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
             final Consumer<ObservedCloudLayerImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         IssueList issues = new IssueList();
         ObservedCloudLayerImpl.Builder layerBuilder = new ObservedCloudLayerImpl.Builder();
-        if (layerProp == null) {
-            //Most likely caused by attribute xsi:nil="true".
-            // Unfortunately no way to get to the nilReason attribute values in this case, assuming "notObservable" for both amount & height:
-            layerBuilder.setHeightUnobservableByAutoSystem(true);
-            layerBuilder.setAmountUnobservableByAutoSystem(true);
-            resultHandler.accept(layerBuilder);
-            return;
-        }
-
         Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
         if (layer.isPresent()) {
             CloudAmountReportedAtAerodromeType amount = layer.get().getAmount();
