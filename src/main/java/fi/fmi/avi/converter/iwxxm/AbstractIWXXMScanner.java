@@ -441,8 +441,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
     }
 
     protected static void withCloudLayerBuilderFor(final CloudLayerPropertyType layerProp, final ReferredObjectRetrievalContext refCtx,
-                                                   final Consumer<CloudLayerImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler,
-                                                   final String contextPath) {
+                                                   final Consumer<CloudLayerImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         IssueList issues = new IssueList();
         Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
         if (layer.isPresent()) {
@@ -451,41 +450,67 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             JAXBElement<SigConvectiveCloudTypeType> type = layer.get().getCloudType();
             CloudLayerImpl.Builder layerBuilder = new CloudLayerImpl.Builder();
 
-            if (base.getNilReason().isEmpty()) {
+            if (base != null && base.getNilReason().isEmpty()) {
                 layerBuilder.setBase(asNumericMeasure(base));
             }
-            if (amount.getHref() != null && amount.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
-                String amountCode = amount.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME.length());
-                try {
-                    layerBuilder.setAmount(AviationCodeListUser.CloudAmount.fromInt(Integer.parseInt(amountCode)));
-                } catch (NumberFormatException e) {
-                    issues.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                            "Could not parse code list value '" + amountCode + "' as an integer for code list " + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME));
-                }
 
-            } else {
-                issues.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                        "Cloud amount code '" + amount.getHref() + "' does not start with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
+            if (amount != null && amount.getNilReason().isEmpty() && amount.getHref() != null) {
+                withCloudAmount(amount, layerBuilder::setAmount, issues::add, contextPath);
             }
 
-            if (type != null && type.getValue() != null) {
-                if (type.getValue().getHref() != null && type.getValue().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
-                    String typeCode = type.getValue().getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
-                    try {
-                        layerBuilder.setCloudType(AviationCodeListUser.CloudType.fromInt(Integer.parseInt(typeCode)));
-                    } catch (NumberFormatException e) {
-                        issues.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                                "Could not parse code list value '" + typeCode + "' as an integer for code list " + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE));
-                    }
-                }
+            if (type != null && type.getValue() != null && type.getValue().getHref() != null) {
+                withCloudType(type.getValue(), layerBuilder::setCloudType, issues::add, contextPath);
             }
             resultHandler.accept(layerBuilder);
         } else {
-            issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "Could not resolve cloud layer in " + contextPath));
+            issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Could not resolve cloud layer in " + contextPath));
         }
-        for (ConversionIssue issue:issues) {
+        for (ConversionIssue issue : issues) {
             issueHandler.accept(issue);
+        }
+    }
+
+    protected static void withCloudAmount(final CloudAmountReportedAtAerodromeType amount, final Consumer<AviationCodeListUser.CloudAmount> resultHandler,
+            final Consumer<ConversionIssue> issueHandler, final String contextPath) {
+        if (amount != null) {
+            if (amount.getHref() != null && amount.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
+                String amountCode = amount.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME.length());
+                try {
+                    AviationCodeListUser.CloudAmount amountValue = AviationCodeListUser.CloudAmount.fromInt(Integer.parseInt(amountCode));
+                    resultHandler.accept(amountValue);
+                } catch (NumberFormatException e) {
+                    issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                            "Could not parse code list value '" + amountCode + "' as an integer for code list "
+                                    + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
+                }
+
+            } else {
+                issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                        "Cloud amount code '" + amount.getHref() + "' does not start with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
+            }
+        }
+    }
+
+    protected static void withCloudType(final SigConvectiveCloudTypeType type, final Consumer<AviationCodeListUser.CloudType> resultHandler,
+            final Consumer<ConversionIssue> issueHandler, final String contextPath) {
+        if (type != null) {
+            if (type.getHref() != null) {
+                if (type.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
+                    String typeCode = type.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
+                    try {
+                        AviationCodeListUser.CloudType typeValue = AviationCodeListUser.CloudType.fromInt(Integer.parseInt(typeCode));
+                        resultHandler.accept(typeValue);
+                    } catch (NumberFormatException e) {
+                        issueHandler.accept(new ConversionIssue(ConversionIssue.Type.SYNTAX,
+                                "Could not parse code list value '" + typeCode + "' as an integer for code list "
+                                        + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + " in " + contextPath));
+                    }
+                } else {
+                    issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                            "Cloud amount code '" + type.getHref() + "' does not start with "
+                                    + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + " in " + contextPath));
+                }
+            }
         }
     }
 }

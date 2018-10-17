@@ -138,6 +138,7 @@ public abstract class AbstractIWXXMParser<T, S extends AviationWeatherMessage> e
                             new ConversionIssue(ConversionIssue.Type.SYNTAX, "XML Schema validation issue: " + evt.getMessage(), evt.getLinkedException()));
                 }
             }
+
         } catch (ConversionException ce) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.SYNTAX, "Unable to parse input as an XML document", ce));
             return result;

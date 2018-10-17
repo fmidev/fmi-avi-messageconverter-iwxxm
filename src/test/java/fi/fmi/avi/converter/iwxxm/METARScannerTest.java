@@ -26,8 +26,8 @@ import fi.fmi.avi.converter.iwxxm.metar.TrendForecastRecordProperties;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.GeoPosition;
+import fi.fmi.avi.model.PartialOrCompleteTime;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import icao.iwxxm21.METARType;
 import icao.iwxxm21.ReportType;
 import wmo.metce2013.ProcessType;
@@ -85,7 +85,7 @@ public class METARScannerTest extends DOMParsingTestBase {
             assertTrue(trends.size() == 2);
             for (OMObservationProperties trend : trends) {
                 assertTrue(trend.get(OMObservationProperties.Name.TYPE, String.class).isPresent());
-                assertTrue(trend.get(OMObservationProperties.Name.PHENOMENON_TIME, PartialOrCompleteTimePeriod.class).isPresent());
+                assertTrue(trend.get(OMObservationProperties.Name.PHENOMENON_TIME, PartialOrCompleteTime.class).isPresent());
                 assertTrue(trend.get(OMObservationProperties.Name.RESULT_TIME, PartialOrCompleteTimeInstant.class).isPresent());
                 assertFalse(trend.get(OMObservationProperties.Name.VALID_TIME, String.class).isPresent());
                 assertTrue(trend.get(OMObservationProperties.Name.PROCEDURE, ProcessType.class).isPresent());

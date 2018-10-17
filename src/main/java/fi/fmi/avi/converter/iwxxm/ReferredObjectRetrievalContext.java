@@ -1,22 +1,33 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.*;
-import java.util.*;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Provides functionality for resolving internal GML (xlink) references within the document.
  */
 public class ReferredObjectRetrievalContext {
     private Map<String, Object> identifiedObjects = new HashMap<>();
-
+    private Map<Object, Map<String, List<String>>> nilReasons = new HashMap<>();
     private Binder<Node> binder;
 
     /**
@@ -38,6 +49,8 @@ public class ReferredObjectRetrievalContext {
             prefMap.put("gml", "http://www.opengis.net/gml/3.2");
             prefMap.put("xlink", "http://www.w3.org/1999/xlink");
             prefMap.put("om", "http://www.opengis.net/om/2.0");
+            prefMap.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            prefMap.put("iwxxm", "http://icao.int/iwxxm/2.1");
             SimpleNamespaceContext namespaces = new SimpleNamespaceContext(prefMap);
             xpath.setNamespaceContext(namespaces);
 
@@ -65,6 +78,41 @@ public class ReferredObjectRetrievalContext {
                     identifiedObjects.put(idNode.getNodeValue(), elem);
                 }
             }
+
+            expr = xpath.compile("//*[*/@xsi:nil='true' and */@nilReason]");
+            hits = (NodeList) expr.evaluate(dom.getDocumentElement(), XPathConstants.NODESET);
+            for (int i = 0; i < hits.getLength(); i++) {
+                Node parent = hits.item(i);
+                Object parentElem = binder.getJAXBNode(parent);
+                Map<String, List<String>> reasonsForThisParent = new HashMap<>();
+                nilReasons.put(parentElem, reasonsForThisParent);
+                NodeList children = parent.getChildNodes();
+                for (int j = 0; j < children.getLength(); j++) {
+                    Node hit = children.item(j);
+                    if (Node.ELEMENT_NODE == hit.getNodeType()) {
+                        String key = hit.getNamespaceURI() + ':' + hit.getLocalName();
+                        List<String> reasonsForElement;
+                        if (reasonsForThisParent.containsKey(key)) {
+                            reasonsForElement = reasonsForThisParent.get(key);
+                        } else {
+                            reasonsForElement = new ArrayList<>();
+                            reasonsForThisParent.put(key, reasonsForElement);
+                        }
+                        NamedNodeMap attrs = hit.getAttributes();
+                        if (attrs != null) {
+                            Node nilReason = attrs.getNamedItem("nilReason");
+                            if (nilReason != null) {
+                                reasonsForElement.add(nilReason.getNodeValue());
+                            } else {
+                                reasonsForElement.add(null);
+                            }
+                        } else {
+                            reasonsForElement.add(null);
+                        }
+                    }
+                }
+            }
+
         } catch (XPathExpressionException | JAXBException e) {
             throw new RuntimeException("Unexpected exception in finding identified GML objects", e);
         }
@@ -96,6 +144,20 @@ public class ReferredObjectRetrievalContext {
                 return Optional.of((T) o);
             } else {
                 throw new IllegalArgumentException("The referred object is not of type " + clz);
+            }
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<String> getNilReasonForNthChild(final Object jaxbElement, final String elementName, int index) {
+        Map<String, List<String>> reasonsForParent = this.nilReasons.get(jaxbElement);
+        if (reasonsForParent != null) {
+            List<String> reasonsForElement = reasonsForParent.get(elementName);
+            if (reasonsForElement.size() > index) {
+                return Optional.of(reasonsForElement.get(index));
+            } else {
+                return Optional.empty();
             }
         } else {
             return Optional.empty();
