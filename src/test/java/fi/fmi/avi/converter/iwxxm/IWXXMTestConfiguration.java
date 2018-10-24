@@ -9,6 +9,7 @@ import org.w3c.dom.Document;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.taf.TAF;
 
 @Configuration
@@ -27,6 +28,12 @@ public class IWXXMTestConfiguration {
     @Autowired
     private AviMessageSpecificConverter<String, TAF> tafIWXXMStringParser;
 
+    @Autowired
+    private AviMessageSpecificConverter<SIGMET, Document> sigmetIWXXMDOMSerializer;
+
+    @Autowired
+    private AviMessageSpecificConverter<SIGMET, String> sigmetIWXXMStringSerializer;
+
     @Bean
     public AviMessageConverter aviMessageConverter() {
         AviMessageConverter p = new AviMessageConverter();
@@ -34,6 +41,8 @@ public class IWXXMTestConfiguration {
         p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING,tafIWXXMStringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, tafIWXXMStringParser);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, tafIWXXMDOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_DOM,sigmetIWXXMDOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING,sigmetIWXXMStringSerializer);
         return p;
     }
 
