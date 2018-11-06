@@ -2,22 +2,16 @@ package fi.fmi.avi.converter.iwxxm.taf;
 
 import static fi.fmi.avi.model.AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
 
 import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.AngleType;
@@ -35,9 +29,6 @@ import net.opengis.om20.OMObservationPropertyType;
 import net.opengis.om20.OMObservationType;
 import net.opengis.om20.OMProcessPropertyType;
 import net.opengis.om20.TimeObjectPropertyType;
-
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 import aero.aixm511.AirportHeliportType;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
@@ -185,7 +176,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
             }
         } catch (ConversionException e) {
             result.setStatus(Status.FAIL);
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message to String", e));
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message", e));
         }
         return result;
     }
@@ -574,18 +565,12 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
     }
     
     @Override
-    protected Source getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        try {
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(this.getClass().getResourceAsStream("TAFCleanup.xsl"));
-            return new DOMSource(doc);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new ConversionException("Unexpected problem in reading the cleanup XSL sheet", e);
+    protected InputStream getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
+        InputStream retval = this.getClass().getResourceAsStream("TAFCleanup.xsl");
+        if (retval == null) {
+            throw new ConversionException("Error accessing cleanup XSLT sheet file");
         }
-
+        return retval;
     }
     
 }

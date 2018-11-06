@@ -27,6 +27,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
         mapping.put("http://icao.int/iwxxm/2.1", "iwxxm");
         mapping.put("http://def.wmo.int/opm/2013", "opm");
         mapping.put("http://def.wmo.int/metce/2013", "metce");
+        mapping.put("http://def.wmo.int/collect/2014", "collect");
         mapping.put("http://www.opengis.net/om/2.0", "om");
         mapping.put("http://www.opengis.net/sampling/2.0", "sam");
         mapping.put("http://www.opengis.net/samplingSpatial/2.0", "sams");

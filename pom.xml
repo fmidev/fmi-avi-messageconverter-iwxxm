@@ -24,13 +24,18 @@
     <dependency>
       <groupId>fi.fmi.avi.converter</groupId>
       <artifactId>fmi-avi-messageconverter</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>3.0.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>fi.fmi.xmlmodel</groupId>
       <artifactId>fmi-avi-xmlmodel-iwxxm211</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>fi.fmi.xmlmodel</groupId>
+      <artifactId>fmi-avi-xmlmodel-wmo-collect2014</artifactId>
+      <version>1.2</version>
     </dependency>
 
     <dependency>
