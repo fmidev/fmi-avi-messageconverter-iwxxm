@@ -95,7 +95,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
 
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
             marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, //
-                    "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd" //
+                    "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd" //
                             + " http://def.wmo.int/metce/2013" //
                             + " http://schemas.wmo.int/metce/1.2/metce.xsd" //
                             + " http://www.opengis.net/samplingSpatial/2.0" //
@@ -119,7 +119,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
             final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
             marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, //
-                    "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd" //
+                    "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd" //
                             + " http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd" //
                             + " http://www.opengis.net/samplingSpatial/2.0" //
                             + " http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
@@ -357,6 +357,10 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
 
         public boolean fatalErrorsFound() {
             return this.fatalErrorsFound;
+        }
+
+        public ConversionResult<?>getResult() {
+            return result;
         }
     }
 }
