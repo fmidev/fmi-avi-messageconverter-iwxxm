@@ -49,9 +49,9 @@ import fi.fmi.avi.model.immutable.CloudForecastImpl;
 import fi.fmi.avi.model.immutable.CloudLayerImpl;
 import fi.fmi.avi.model.immutable.GeoPositionImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
+import fi.fmi.avi.model.immutable.SurfaceWindImpl;
 import fi.fmi.avi.model.immutable.WeatherImpl;
 import fi.fmi.avi.model.taf.immutable.TAFAirTemperatureForecastImpl;
-import fi.fmi.avi.model.taf.immutable.TAFSurfaceWindImpl;
 import icao.iwxxm21.AerodromeAirTemperatureForecastPropertyType;
 import icao.iwxxm21.AerodromeAirTemperatureForecastType;
 import icao.iwxxm21.AerodromeCloudForecastPropertyType;
@@ -705,11 +705,12 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         return Optional.empty();
     }
 
-    private static void withTAFSurfaceWindBuilderFor(final AerodromeSurfaceWindForecastPropertyType windProp, final ReferredObjectRetrievalContext refCtx, final Consumer<TAFSurfaceWindImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
+    private static void withTAFSurfaceWindBuilderFor(final AerodromeSurfaceWindForecastPropertyType windProp, final ReferredObjectRetrievalContext refCtx,
+            final Consumer<SurfaceWindImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
         Optional<AerodromeSurfaceWindForecastType> windFct = resolveProperty(windProp, AerodromeSurfaceWindForecastType.class, refCtx);
         if (windFct.isPresent()) {
-            TAFSurfaceWindImpl.Builder windBuilder = new TAFSurfaceWindImpl.Builder();
+            SurfaceWindImpl.Builder windBuilder = new SurfaceWindImpl.Builder();
             windBuilder.setMeanWindDirection(asNumericMeasure(windFct.get().getMeanWindDirection()));
             if (windFct.get().isVariableWindDirection()) {
                 windBuilder.setVariableDirection(true);
