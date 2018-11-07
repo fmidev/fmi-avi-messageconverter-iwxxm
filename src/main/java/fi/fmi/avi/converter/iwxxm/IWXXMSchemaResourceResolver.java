@@ -1,11 +1,10 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import java.io.BufferedReader;
+import java.io.CharArrayReader;
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,9 +15,9 @@ import org.w3c.dom.ls.LSResourceResolver;
 
 /**
  * Resolves the locations of the IWXXM XML Schema files within
- * the JAXB generated jar files using Java ClassLoader. Used a memory
+ * the JAXB generated jar files using Java ClassLoader. Uses a memory
  * cache internally to avoid repeated class path searches
- * (keeps the full XML Schema file contents in memory as Strings).
+ * (keeps the full XML Schema file contents in memory as char arrays).
  */
 public class IWXXMSchemaResourceResolver implements LSResourceResolver {
 
@@ -37,6 +36,7 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
                 net.opengis.sampling.spatial.SFSpatialSamplingFeatureType.class),
         AIXM51("http://www.aixm.aero/schema/5.1.1", "aero/aixm/schema/5.1.1/", aero.aixm511.CodeICAOType.class),
         METCE12("http://def.wmo.int/metce/2013", "int/wmo/metce/1.2/", wmo.metce2013.ProcessType.class),
+        COLLECT12("http://def.wmo.int/collect/2014", "int/wmo/collect/1.2/", wmo.collect2014.MeteorologicalBulletinType.class),
         OPM12("http://def.wmo.int/opm/2013", "int/wmo/opm/1.2/", wmo.opm2013.AbstractObservablePropertyPropertyType.class),
         IWXXM21("http://icao.int/iwxxm/2.1", "int/icao/iwxxm/2.1.1/", icao.iwxxm21.TAFType.class);
 
@@ -76,9 +76,6 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
         }
     }
 
-    ;
-
-
     //Singleton
     private static IWXXMSchemaResourceResolver instance;
 
@@ -116,7 +113,7 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
         private String publicId;
         private String systemId;
         private String baseURI;
-        private String cachedContent;
+        private char[] cachedContent;
 
         public ClassLoaderResourceInput(final Class<?> cls, final String path, final String publicId, final String systemId, final String baseURI)
                 throws IllegalArgumentException {
@@ -134,16 +131,26 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
         }
 
         @Override
+        //Only this method is implemented, as the LSParser is guaranteed to try this before the others
         public Reader getCharacterStream() {
-            if (this.url == null) {
+            if (this.cachedContent == null) {
+                if (this.url == null) {
+                    return null;
+                }
+                try {
+                    CharArrayWriter caw = new CharArrayWriter(1024);
+                    IOUtils.copy(url.openStream(), caw);
+                    this.cachedContent = caw.toCharArray();
+
+                } catch (IOException e) {
+                    //NOOP
+                }
+            }
+            if (this.cachedContent != null) {
+                return new CharArrayReader(this.cachedContent);
+            } else {
                 return null;
             }
-            try {
-                return new BufferedReader(new InputStreamReader(this.url.openStream()));
-            } catch (IOException e) {
-                //Noop
-            }
-            return null;
         }
 
         @Override
@@ -153,14 +160,6 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
 
         @Override
         public InputStream getByteStream() {
-            if (this.url == null) {
-                return null;
-            }
-            try {
-                return this.url.openStream();
-            } catch (IOException e) {
-                //NOOP
-            }
             return null;
         }
 
@@ -171,22 +170,7 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
 
         @Override
         public String getStringData() {
-            if (this.url == null) {
-                return null;
-            }
-            if (this.cachedContent == null) {
-                Reader input = this.getCharacterStream();
-                if (input != null) {
-                    try {
-                        StringWriter sw = new StringWriter();
-                        IOUtils.copy(input, sw);
-                        this.cachedContent = sw.toString();
-                    } catch (IOException e) {
-                        //NOOP
-                    }
-                }
-            }
-            return this.cachedContent;
+            return null;
         }
 
         @Override

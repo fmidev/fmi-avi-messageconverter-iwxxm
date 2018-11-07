@@ -10,6 +10,7 @@ import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.taf.TAF;
+import fi.fmi.avi.model.taf.TAFBulletin;
 
 @Configuration
 @Import(IWXXMConverter.class)
@@ -27,6 +28,12 @@ public class IWXXMTestConfiguration {
     @Autowired
     private AviMessageSpecificConverter<String, TAF> tafIWXXMStringParser;
 
+    @Autowired
+    private AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXMDOMSerializer;
+
+    @Autowired
+    private AviMessageSpecificConverter<TAFBulletin, String> tafBulletinIWXXMStringSerializer;
+
     @Bean
     public AviMessageConverter aviMessageConverter() {
         AviMessageConverter p = new AviMessageConverter();
@@ -34,6 +41,8 @@ public class IWXXMTestConfiguration {
         p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING,tafIWXXMStringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, tafIWXXMStringParser);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, tafIWXXMDOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM, tafBulletinIWXXMDOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_STRING, tafBulletinIWXXMStringSerializer);
         return p;
     }
 

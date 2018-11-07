@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.metar;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -60,18 +61,12 @@ public abstract class AbstractMETARIWXXMSerializer<T> extends AbstractIWXXMSeria
     }
 
     @Override
-    protected Source getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        try {
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(this.getClass().getResourceAsStream("METARCleanup.xsl"));
-            return new DOMSource(doc);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new ConversionException("Unexpected problem in reading the cleanup XSL sheet", e);
+    protected InputStream getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
+        InputStream retval = this.getClass().getResourceAsStream("METARCleanup.xsl");
+        if (retval == null) {
+            throw new ConversionException("Error accessing cleanup XSLT sheet file");
         }
-
+        return retval;
     }
 
 }

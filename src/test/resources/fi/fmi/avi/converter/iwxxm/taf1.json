@@ -1,19 +1,17 @@
 {
   "status": "NORMAL",
   "issueTime": {
-    "partialTime": "271137Z"
+    "partialTime": "--27T11:37Z"
   },
   "aerodrome": {
     "designator": "EFVA"
   },
   "validityTime": {
     "startTime" : {
-      "partialTime": "2712",
-      "partialTimePattern": "DayHour"
+      "partialTime": "--27T12:"
     },
     "endTime": {
-      "partialTime": "2812",
-      "partialTimePattern": "DayHour"
+      "partialTime": "--28T12:"
     }
   },
   "baseForecast": {
@@ -71,12 +69,10 @@
       "changeIndicator": "BECOMING",
       "periodOfChange": {
         "startTime": {
-          "partialTime": "2715",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--27T15:"
         },
         "endTime": {
-          "partialTime": "2717",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--27T17:"
         }
       },
       "prevailingVisibility": {
@@ -105,12 +101,10 @@
       "changeIndicator": "PROBABILITY_40",
       "periodOfChange": {
         "startTime": {
-          "partialTime": "2715",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--27T15:"
         },
         "endTime": {
-          "partialTime": "2720",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--27T20:"
         }
       },
       "prevailingVisibility": {
@@ -123,12 +117,10 @@
       "changeIndicator": "BECOMING",
       "periodOfChange": {
         "startTime": {
-          "partialTime": "2720",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--27T20:"
         },
         "endTime": {
-          "partialTime": "2722",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--27T22:"
         }
       },
       "surfaceWind": {
@@ -146,12 +138,10 @@
       "changeIndicator": "TEMPORARY_FLUCTUATIONS",
       "periodOfChange": {
         "startTime": {
-          "partialTime": "2720",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--27T20:"
         },
         "endTime": {
-          "partialTime": "2724",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--27T24:"
         }
       },
       "prevailingVisibility": {
@@ -169,12 +159,10 @@
       "changeIndicator": "PROBABILITY_40",
       "periodOfChange": {
         "startTime": {
-          "partialTime": "2802",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--28T02:"
         },
         "endTime": {
-          "partialTime": "2806",
-          "partialTimePattern": "DayHour"
+          "partialTime": "--28T06:"
         }
       },
       "prevailingVisibility": {

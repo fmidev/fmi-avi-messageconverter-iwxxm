@@ -2,20 +2,16 @@ package fi.fmi.avi.converter.iwxxm.taf;
 
 import static fi.fmi.avi.model.AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBElement;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 
 import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.AngleType;
@@ -34,9 +30,6 @@ import net.opengis.om20.OMObservationType;
 import net.opengis.om20.OMProcessPropertyType;
 import net.opengis.om20.TimeObjectPropertyType;
 
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
 import aero.aixm511.AirportHeliportType;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
@@ -53,6 +46,7 @@ import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.Weather;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
@@ -60,7 +54,6 @@ import fi.fmi.avi.model.taf.TAFBaseForecast;
 import fi.fmi.avi.model.taf.TAFChangeForecast;
 import fi.fmi.avi.model.taf.TAFForecast;
 import fi.fmi.avi.model.taf.TAFReference;
-import fi.fmi.avi.model.taf.TAFSurfaceWind;
 import icao.iwxxm21.AerodromeAirTemperatureForecastPropertyType;
 import icao.iwxxm21.AerodromeAirTemperatureForecastType;
 import icao.iwxxm21.AerodromeCloudForecastPropertyType;
@@ -106,9 +99,8 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
         }
 
         if (!input.allAerodromeReferencesContainPosition()) {
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "All aerodrome references must contain a reference point location before converting to IWXXM"));
-            return result;
+            result.addIssue(new ConversionIssue(ConversionIssue.Severity.INFO, ConversionIssue.Type.MISSING_DATA,
+                    "At least one of the Aerodrome references does not contain reference point location"));
         }
 
         TAFType taf = create(TAFType.class);
@@ -172,7 +164,6 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
             }
         }
         try {
-            result.setStatus(Status.SUCCESS);
             this.updateMessageMetadata(input, result, taf);
             ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
             validateDocument(taf, TAFType.class, hints, eventHandler);
@@ -183,7 +174,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
             }
         } catch (ConversionException e) {
             result.setStatus(Status.FAIL);
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message to String", e));
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message", e));
         }
         return result;
     }
@@ -440,7 +431,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
         }
     }
 
-    private void updateForecastSurfaceWind(final TAFSurfaceWind source, final AerodromeSurfaceWindForecastType target, final ConversionResult<?> result) {
+    private void updateForecastSurfaceWind(final SurfaceWind source, final AerodromeSurfaceWindForecastType target, final ConversionResult<?> result) {
         if (source != null) {
             target.setMeanWindSpeed(asMeasure(source.getMeanWindSpeed(), SpeedType.class));
             source.getMeanWindDirection().ifPresent(m -> target.setMeanWindDirection(asMeasure(m, AngleType.class)));
@@ -491,7 +482,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
             Optional<TAFReference> prevReport = source.getReferredReport();
             if (prevReport.isPresent()) {
                 target.setPreviousReportAerodrome(create(AirportHeliportPropertyType.class, (prop) -> {
-                    if (source.getAerodrome().equals(prevReport.get().getAerodrome())) {
+                    if (source.getBaseForecast().isPresent() && source.getAerodrome().equals(prevReport.get().getAerodrome())) {
                         prop.setHref("#" + aerodromeId);
                         prop.setTitle("Same aerodrome as the in the base forecast");
                     } else {
@@ -532,18 +523,12 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
 
     
     @Override
-    protected Source getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        try {
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(this.getClass().getResourceAsStream("TAFCleanup.xsl"));
-            return new DOMSource(doc);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new ConversionException("Unexpected problem in reading the cleanup XSL sheet", e);
+    protected InputStream getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
+        InputStream retval = this.getClass().getResourceAsStream("TAFCleanup.xsl");
+        if (retval == null) {
+            throw new ConversionException("Error accessing cleanup XSLT sheet file");
         }
-
+        return retval;
     }
     
 }
