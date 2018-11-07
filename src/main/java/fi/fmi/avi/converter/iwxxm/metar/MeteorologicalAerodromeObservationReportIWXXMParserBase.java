@@ -19,6 +19,7 @@ import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTime;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.Weather;
 import fi.fmi.avi.model.metar.HorizontalVisibility;
 import fi.fmi.avi.model.metar.MeteorologicalTerminalAirReport;
@@ -28,7 +29,6 @@ import fi.fmi.avi.model.metar.RunwayState;
 import fi.fmi.avi.model.metar.RunwayVisualRange;
 import fi.fmi.avi.model.metar.SeaState;
 import fi.fmi.avi.model.metar.TrendForecast;
-import fi.fmi.avi.model.metar.TrendForecastSurfaceWind;
 import fi.fmi.avi.model.metar.WindShear;
 import fi.fmi.avi.model.metar.immutable.METARImpl;
 import fi.fmi.avi.model.metar.immutable.TrendForecastImpl;
@@ -117,8 +117,7 @@ public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T,
                     trendRecord.get()
                             .get(TrendForecastRecordProperties.Name.CHANGE_INDICATOR, AviationCodeListUser.TrendForecastChangeIndicator.class)
                             .ifPresent(trendBuilder::setChangeIndicator);
-                    trendRecord.get()
-                            .get(TrendForecastRecordProperties.Name.SURFACE_WIND, TrendForecastSurfaceWind.class)
+                    trendRecord.get().get(TrendForecastRecordProperties.Name.SURFACE_WIND, SurfaceWind.class)
                             .ifPresent(trendBuilder::setSurfaceWind);
                     Optional<Boolean> cavok = trendRecord.get().get(TrendForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class);
                     if (cavok.isPresent() && cavok.get()) {

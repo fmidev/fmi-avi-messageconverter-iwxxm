@@ -4,9 +4,9 @@ import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.NumericMeasure;
+import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.Weather;
 import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
-import fi.fmi.avi.model.taf.TAFSurfaceWind;
 import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
 
 /**
@@ -16,8 +16,7 @@ public class TAFForecastRecordProperties extends AbstractPropertyContainer<Meteo
 
     public enum Name {
         PREVAILING_VISIBILITY(NumericMeasure.class),
-        PREVAILING_VISIBILITY_OPERATOR(AviationCodeListUser.RelationalOperator.class),
-        SURFACE_WIND(TAFSurfaceWind.class),
+        PREVAILING_VISIBILITY_OPERATOR(AviationCodeListUser.RelationalOperator.class), SURFACE_WIND(SurfaceWind.class),
         WEATHER(Weather.class),
         CLOUD(CloudForecast.class),
         TEMPERATURE(TAFAirTemperatureForecast.class),

@@ -4,8 +4,8 @@ import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.NumericMeasure;
+import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.Weather;
-import fi.fmi.avi.model.metar.TrendForecastSurfaceWind;
 import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
 
 /**
@@ -14,7 +14,7 @@ import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
 public class TrendForecastRecordProperties extends AbstractPropertyContainer<MeteorologicalAerodromeTrendForecastRecordType> {
 
     public enum Name {
-        SURFACE_WIND(TrendForecastSurfaceWind.class),
+        SURFACE_WIND(SurfaceWind.class),
         PREVAILING_VISIBILITY(NumericMeasure.class),
         PREVAILING_VISIBILITY_OPERATOR(AviationCodeListUser.RelationalOperator.class),
         FORECAST_WEATHER(Weather.class),

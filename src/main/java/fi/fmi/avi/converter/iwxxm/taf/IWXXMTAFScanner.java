@@ -26,10 +26,10 @@ import fi.fmi.avi.model.CloudLayer;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.immutable.CloudForecastImpl;
-import fi.fmi.avi.model.taf.TAFSurfaceWind;
+import fi.fmi.avi.model.immutable.SurfaceWindImpl;
 import fi.fmi.avi.model.taf.immutable.TAFAirTemperatureForecastImpl;
-import fi.fmi.avi.model.taf.immutable.TAFSurfaceWindImpl;
 import icao.iwxxm21.AerodromeAirTemperatureForecastPropertyType;
 import icao.iwxxm21.AerodromeAirTemperatureForecastType;
 import icao.iwxxm21.AerodromeCloudForecastPropertyType;
@@ -247,7 +247,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             Optional<AviationCodeListUser.TAFChangeIndicator> changeIndicator2 = changeProps.get(TAFForecastRecordProperties.Name.CHANGE_INDICATOR,
                     AviationCodeListUser.TAFChangeIndicator.class);
             if (changeIndicator2.isPresent() && AviationCodeListUser.TAFChangeIndicator.FROM == changeIndicator2.get()) {
-                if (!changeProps.get(TAFForecastRecordProperties.Name.SURFACE_WIND, TAFSurfaceWind.class).isPresent()) {
+                if (!changeProps.get(TAFForecastRecordProperties.Name.SURFACE_WIND, SurfaceWind.class).isPresent()) {
                     retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Surface wind is missing in the From type change forecast");
                 }
 
@@ -417,12 +417,12 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
 
     private static void withTAFSurfaceWindBuilderFor(final AerodromeSurfaceWindForecastPropertyType windProp, final ReferredObjectRetrievalContext refCtx,
-                                                     final Consumer<TAFSurfaceWindImpl.Builder> resultHandler,
+            final Consumer<SurfaceWindImpl.Builder> resultHandler,
                                                      final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
         Optional<AerodromeSurfaceWindForecastType> windFct = resolveProperty(windProp, AerodromeSurfaceWindForecastType.class, refCtx);
         if (windFct.isPresent()) {
-            TAFSurfaceWindImpl.Builder windBuilder = new TAFSurfaceWindImpl.Builder();
+            SurfaceWindImpl.Builder windBuilder = new SurfaceWindImpl.Builder();
             windBuilder.setMeanWindDirection(asNumericMeasure(windFct.get().getMeanWindDirection()));
             windBuilder.setVariableDirection(windFct.get().isVariableWindDirection());
             if (windFct.get().getMeanWindSpeed() != null) {

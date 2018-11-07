@@ -22,13 +22,13 @@ import fi.fmi.avi.model.GeoPosition;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.Weather;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
 import fi.fmi.avi.model.taf.TAFBaseForecast;
 import fi.fmi.avi.model.taf.TAFChangeForecast;
-import fi.fmi.avi.model.taf.TAFSurfaceWind;
 import fi.fmi.avi.model.taf.immutable.TAFBaseForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFChangeForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFImpl;
@@ -137,7 +137,7 @@ public abstract class AbstractTAFIWXXMParser<T> extends AbstractIWXXMParser<T, T
         source.get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class).ifPresent(builder::setPrevailingVisibility);
         source.get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, AviationCodeListUser.RelationalOperator.class)
                 .ifPresent(builder::setPrevailingVisibilityOperator);
-        source.get(TAFForecastRecordProperties.Name.SURFACE_WIND, TAFSurfaceWind.class).ifPresent(builder::setSurfaceWind);
+        source.get(TAFForecastRecordProperties.Name.SURFACE_WIND, SurfaceWind.class).ifPresent(builder::setSurfaceWind);
         Optional<Boolean> nsw = source.get(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class);
         List<Weather> weather = source.getList(TAFForecastRecordProperties.Name.WEATHER, Weather.class);
         if (nsw.isPresent() && nsw.get()) {
@@ -166,7 +166,7 @@ public abstract class AbstractTAFIWXXMParser<T> extends AbstractIWXXMParser<T, T
             recordProps.get()
                     .get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, AviationCodeListUser.RelationalOperator.class)
                     .ifPresent(builder::setPrevailingVisibilityOperator);
-            recordProps.get().get(TAFForecastRecordProperties.Name.SURFACE_WIND, TAFSurfaceWind.class).ifPresent(builder::setSurfaceWind);
+            recordProps.get().get(TAFForecastRecordProperties.Name.SURFACE_WIND, SurfaceWind.class).ifPresent(builder::setSurfaceWind);
             Optional<Boolean> nsw = recordProps.get().get(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class);
             List<Weather> weather = recordProps.get().getList(TAFForecastRecordProperties.Name.WEATHER, Weather.class);
             if (nsw.isPresent() && nsw.get()) {

@@ -35,6 +35,7 @@ import fi.fmi.avi.model.RunwayDirection;
 import fi.fmi.avi.model.immutable.CloudForecastImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.RunwayDirectionImpl;
+import fi.fmi.avi.model.immutable.SurfaceWindImpl;
 import fi.fmi.avi.model.metar.ObservedCloudLayer;
 import fi.fmi.avi.model.metar.immutable.HorizontalVisibilityImpl;
 import fi.fmi.avi.model.metar.immutable.ObservedCloudLayerImpl;
@@ -43,7 +44,6 @@ import fi.fmi.avi.model.metar.immutable.ObservedSurfaceWindImpl;
 import fi.fmi.avi.model.metar.immutable.RunwayStateImpl;
 import fi.fmi.avi.model.metar.immutable.RunwayVisualRangeImpl;
 import fi.fmi.avi.model.metar.immutable.SeaStateImpl;
-import fi.fmi.avi.model.metar.immutable.TrendForecastSurfaceWindImpl;
 import fi.fmi.avi.model.metar.immutable.WindShearImpl;
 import icao.iwxxm21.AerodromeCloudForecastPropertyType;
 import icao.iwxxm21.AerodromeCloudForecastType;
@@ -402,7 +402,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
 
             //wind (C)
             if (trendRecord.get().getSurfaceWind() != null) {
-                withTrendSurfaceWindBuilderFor(trendRecord.get().getSurfaceWind(), refCtx, (windBuilder) -> {
+                withForecastSurfaceWindBuilderFor(trendRecord.get().getSurfaceWind(), refCtx, (windBuilder) -> {
                     trendProps.set(TrendForecastRecordProperties.Name.SURFACE_WIND, windBuilder.build());
                 }, retval::add);
             }
@@ -499,13 +499,13 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         }
     }
 
-    private static void withTrendSurfaceWindBuilderFor(final AerodromeSurfaceWindTrendForecastPropertyType windProp,
-            final ReferredObjectRetrievalContext refCtx, final Consumer<TrendForecastSurfaceWindImpl.Builder> resultHandler,
+    private static void withForecastSurfaceWindBuilderFor(final AerodromeSurfaceWindTrendForecastPropertyType windProp,
+            final ReferredObjectRetrievalContext refCtx, final Consumer<SurfaceWindImpl.Builder> resultHandler,
             final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
         Optional<AerodromeSurfaceWindTrendForecastType> wind = resolveProperty(windProp, AerodromeSurfaceWindTrendForecastType.class, refCtx);
         if (wind.isPresent()) {
-            TrendForecastSurfaceWindImpl.Builder windBuilder = new TrendForecastSurfaceWindImpl.Builder();
+            SurfaceWindImpl.Builder windBuilder = new SurfaceWindImpl.Builder();
             windBuilder.setMeanWindDirection(asNumericMeasure(wind.get().getMeanWindDirection()).get());
             if (wind.get().getMeanWindSpeed() != null) {
                 windBuilder.setMeanWindSpeed(asNumericMeasure(wind.get().getMeanWindSpeed()).get());
