@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +28,7 @@ import org.w3c.dom.NodeList;
  */
 public class ReferredObjectRetrievalContext {
     private Map<String, Object> identifiedObjects = new HashMap<>();
-    private Map<Object, Map<String, List<String>>> nilReasons = new HashMap<>();
+    private Map<String, Map<String, List<String>>> nilReasons = new HashMap<>();
     private Binder<Node> binder;
 
     /**
@@ -83,9 +84,8 @@ public class ReferredObjectRetrievalContext {
             hits = (NodeList) expr.evaluate(dom.getDocumentElement(), XPathConstants.NODESET);
             for (int i = 0; i < hits.getLength(); i++) {
                 Node parent = hits.item(i);
-                Object parentElem = binder.getJAXBNode(parent);
                 Map<String, List<String>> reasonsForThisParent = new HashMap<>();
-                nilReasons.put(parentElem, reasonsForThisParent);
+                nilReasons.put(getNodeParentPath(parent), reasonsForThisParent);
                 NodeList children = parent.getChildNodes();
                 for (int j = 0; j < children.getLength(); j++) {
                     Node hit = children.item(j);
@@ -151,7 +151,9 @@ public class ReferredObjectRetrievalContext {
     }
 
     public Optional<String> getNilReasonForNthChild(final Object jaxbElement, final String elementName, int index) {
-        Map<String, List<String>> reasonsForParent = this.nilReasons.get(jaxbElement);
+        Node n = this.binder.getXMLNode(jaxbElement);
+        String pathKey = getNodeParentPath(n);
+        Map<String, List<String>> reasonsForParent = this.nilReasons.get(pathKey);
         if (reasonsForParent != null) {
             List<String> reasonsForElement = reasonsForParent.get(elementName);
             if (reasonsForElement.size() > index) {
@@ -164,6 +166,55 @@ public class ReferredObjectRetrievalContext {
         }
     }
 
+    private String getNodeParentPath(final Node n) {
+        Node parent = n.getParentNode();
+        if (parent == null) {
+            return null;
+        }
+        Node child = n;
+        List<String> path = new ArrayList<>();
+        StringBuilder sb;
+        NodeList children;
+        int childIndex = 0;
+        while (parent != null && Node.DOCUMENT_NODE != parent.getNodeType()) {
+            Node idAttr = child.getAttributes().getNamedItem("gml:id");
+            sb = new StringBuilder();
+            sb.append(child.getNamespaceURI());
+            sb.append(':');
+            sb.append(child.getLocalName());
+            sb.append('[');
+            if (idAttr != null) {
+                sb.append("gml:id=");
+                sb.append('\'');
+                sb.append(idAttr.getNodeValue());
+                sb.append('\'');
+            }
+            children = parent.getChildNodes();
+            childIndex = -1;
+            for (int i = 0; i < children.getLength(); i++) {
+                Node c = children.item(i);
+                if (Node.ELEMENT_NODE == c.getNodeType() && (c.getNamespaceURI() + c.getLocalName()).equals(child.getNamespaceURI() + child.getLocalName())) {
+                    childIndex++;
+                    if (c == child) {
+                        break;
+                    }
+                }
+            }
+            if (idAttr == null) {
+                sb.append(childIndex);
+            }
+            sb.append(']');
+            path.add(sb.toString());
+            child = parent;
+            if (idAttr != null) {
+                parent = null;
+            } else {
+                parent = parent.getParentNode();
+            }
+        }
+        Collections.reverse(path);
+        return String.join("/", path);
+    }
     /**
      * Get the JAXBinder object associated with this instance.
      *

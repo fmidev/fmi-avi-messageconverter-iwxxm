@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.metar;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -836,10 +837,14 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                                     Optional<String> nilReason = refCtx.getNilReasonForNthChild(obsClouds, "http://icao.int/iwxxm/2.1:layer", i);
                                     if (nilReason.isPresent()) {
                                         ObservedCloudLayerImpl.Builder layerBuilder = new ObservedCloudLayerImpl.Builder();
-                                        if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE.equals(nilReason.get())) {
-                                            //TODO: check the right codelist values and set the missing layer propoerties accordingly
+                                        if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE.equals(nilReason.get())) {
+                                            layerBuilder.setHeightUnobservableByAutoSystem(true);
+                                            layerBuilder.setAmountUnobservableByAutoSystem(true);
+                                        } else if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM.equals(nilReason.get())) {
+                                            layerBuilder.setHeightNotDetectedByAutoSystem(true);
+                                            layerBuilder.setAmountNotDetectedByAutoSystem(true);
                                         }
-
+                                        layers.add(layerBuilder.build());
                                     }
                                 } else {
                                     withObservedCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
@@ -899,10 +904,28 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                             }
                         } else if (!cloudFct.get().getLayer().isEmpty()) {
                             List<CloudLayer> layers = new ArrayList<>();
-                            for (CloudLayerPropertyType layerProp : cloudFct.get().getLayer()) {
-                                withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
-                                    layers.add(layerBuilder.build());
-                                }, issues::add, "observed cloud");
+                            CloudLayerPropertyType layerProp;
+                            List<AerodromeCloudForecastType.Layer> inputLayers = cloudFct.get().getLayer();
+                            for (int i = 0; i < inputLayers.size(); i++) {
+                                layerProp = inputLayers.get(i);
+                                if (layerProp == null) {
+                                    Optional<String> nilReason = refCtx.getNilReasonForNthChild(cloudFct.get(), "http://icao.int/iwxxm/2.1:layer", i);
+                                    if (nilReason.isPresent()) {
+                                        ObservedCloudLayerImpl.Builder layerBuilder = new ObservedCloudLayerImpl.Builder();
+                                        if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE.equals(nilReason.get())) {
+                                            layerBuilder.setHeightUnobservableByAutoSystem(true);
+                                            layerBuilder.setAmountUnobservableByAutoSystem(true);
+                                        } else if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM.equals(nilReason.get())) {
+                                            layerBuilder.setHeightNotDetectedByAutoSystem(true);
+                                            layerBuilder.setAmountNotDetectedByAutoSystem(true);
+                                        }
+                                        layers.add(layerBuilder.build());
+                                    }
+                                } else {
+                                    withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
+                                        layers.add(layerBuilder.build());
+                                    }, issues::add, "observed cloud");
+                                }
                             }
                             cloudBuilder.setLayers(layers);
                         } else {
@@ -982,25 +1005,29 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
             DistanceWithNilReasonType base = layer.get().getBase();
             JAXBElement<SigConvectiveCloudTypeType> type = layer.get().getCloudType();
             if (base != null) {
-                if (base.getNilReason().isEmpty()) {
-                    layerBuilder.setBase(asNumericMeasure(base));
-                } else {
-                    if (base.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE::equals)) {
+                layerBuilder.setBase(asNumericMeasure(base));
+            } else {
+                Optional<String> nilReason = refCtx.getNilReasonForNthChild(layer.get(), "http://icao.int/iwxxm/2.1:base", 0);
+                if (nilReason.isPresent()) {
+                    String[] reasons = nilReason.get().split("\\s");
+                    if (Arrays.asList(reasons).contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                         layerBuilder.setHeightUnobservableByAutoSystem(true);
                     }
-                    if (base.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM::equals)) {
+                    if (Arrays.asList(reasons).contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM)) {
                         layerBuilder.setHeightNotDetectedByAutoSystem(true);
                     }
                 }
             }
             if (amount != null) {
-                if (amount.getNilReason().isEmpty()) {
-                    withCloudAmount(amount, layerBuilder::setAmount, issues::add, contextPath);
-                } else {
-                    if (amount.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE::equals)) {
+                withCloudAmount(amount, layerBuilder::setAmount, issues::add, contextPath);
+            } else {
+                Optional<String> nilReason = refCtx.getNilReasonForNthChild(layer.get(), "http://icao.int/iwxxm/2.1:amount", 0);
+                if (nilReason.isPresent()) {
+                    String[] reasons = nilReason.get().split("\\s");
+                    if (Arrays.asList(reasons).contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                         layerBuilder.setAmountUnobservableByAutoSystem(true);
                     }
-                    if (amount.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM::equals)) {
+                    if (Arrays.asList(reasons).contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM)) {
                         layerBuilder.setAmountNotDetectedByAutoSystem(true);
                     }
                 }

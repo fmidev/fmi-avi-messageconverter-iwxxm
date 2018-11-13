@@ -450,12 +450,15 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             JAXBElement<SigConvectiveCloudTypeType> type = layer.get().getCloudType();
             CloudLayerImpl.Builder layerBuilder = new CloudLayerImpl.Builder();
 
-            if (base != null && base.getNilReason().isEmpty()) {
+            if (base != null) {
                 layerBuilder.setBase(asNumericMeasure(base));
+            } else {
+
             }
 
-            if (amount != null && amount.getNilReason().isEmpty() && amount.getHref() != null) {
+            if (amount != null) {
                 withCloudAmount(amount, layerBuilder::setAmount, issues::add, contextPath);
+            } else {
             }
 
             if (type != null && type.getValue() != null && type.getValue().getHref() != null) {
@@ -507,7 +510,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                     }
                 } else {
                     issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                            "Cloud amount code '" + type.getHref() + "' does not start with "
+                            "Cloud type code '" + type.getHref() + "' does not start with "
                                     + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + " in " + contextPath));
                 }
             }
