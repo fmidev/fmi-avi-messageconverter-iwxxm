@@ -73,6 +73,7 @@ import aero.aixm511.TextNameType;
 import aero.aixm511.UnitTimeSlicePropertyType;
 import aero.aixm511.UnitTimeSliceType;
 import aero.aixm511.UnitType;
+import aero.aixm511.ValDistanceType;
 import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
@@ -616,13 +617,33 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                                     pts.add(coord.y);
                                                     pts.add(coord.x);
                                                 }
+
                                                 JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
                                                     poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
-                                                        arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
-                                                            DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
-                                                                dpl.getValue().addAll(pts);
-                                                            });
-                                                            lrt.setPosList(dplt);
+                                                        arpt.setAbstractRing(createAndWrap(RingType.class, (rt) -> {
+                                                            rt.getCurveMember().add(create(CurvePropertyType.class, (curvept) -> {
+                                                                curvept.setAbstractCurve(createAndWrap(CurveType.class, (curvet) -> {
+                                                                    curvet.setId("curve-forecast-" + cnt + "-" + sigmetUUID);
+                                                                    curvet.setSegments(create(CurveSegmentArrayPropertyType.class, (curvesat) -> {
+                                                                        curvesat.getAbstractCurveSegment()
+                                                                                .add(createAndWrap(CircleByCenterPointType.class, (cbcpt) -> {
+/*
+                                                                                        cbcpt.setCoordinates(create(CoordinatesType.class, (coordt) -> {
+                                                                                            coordt.setValue("5 52.0");
+                                                                                        }));
+*/
+                                                                                    cbcpt.setPos(create(DirectPositionType.class, (dpt) -> {
+                                                                                        dpt.getValue().addAll(Arrays.asList(pts.toArray(new Double[0])));
+                                                                                    }));
+                                                                                    cbcpt.setNumArc(BigInteger.valueOf(1));
+                                                                                    cbcpt.setRadius(create(LengthType.class, (lt) -> {
+                                                                                        lt.setValue(0.0);
+                                                                                        lt.setUom("[nmi_i]");
+                                                                                    }));
+                                                                                }));
+                                                                    }));
+                                                                }));
+                                                            }));
                                                         }));
                                                     }));
                                                 });
@@ -640,6 +661,29 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                                 JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
                                                 spapt.getValue().getAbstractSurfacePatch().add(ppt);
                                                 */
+                                                sft.setPatches(spapt);
+                                            } else {
+                                                List<Double> pts = new ArrayList<Double>();
+                                                for (Coordinate coord : geom.getCoordinates()) {
+                                                    pts.add(coord.y);
+                                                    pts.add(coord.x);
+                                                }
+
+                                                JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
+                                                    poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
+                                                        arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
+                                                            DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
+                                                                dpl.getValue().addAll(pts);
+                                                            });
+                                                            lrt.setPosList(dplt);
+                                                        }));
+                                                    }));
+                                                });
+
+                                                SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
+                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
+                                                spapt.getValue().getAbstractSurfacePatch().add(ppt);
+
                                                 sft.setPatches(spapt);
                                             }
                                         } catch (Exception e) {
