@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.xml.XMLConstants;
@@ -83,6 +84,7 @@ import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysis;
@@ -233,7 +235,8 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
             input.getAnalysis().ifPresent((l) -> {
                 sigmet.setAnalysis(createAnalysis(l, input.getIssuingAirTrafficServicesUnit().getDesignator(),
                         input.getIssuingAirTrafficServicesUnit().getName(), issueTime, sigmetUuid));
-                if (!l.get(0).getMovingDirection().isPresent()) {
+      //          if (!l.get(0).getMovingDirection().isPresent()&&!l.get(0).getMovingSpeed().isPresent())||() {
+                if (l.get(0).getForecastTime().isPresent()) {
                     Debug.println("Creating FPA");
                     sigmet.setForecastPositionAnalysis(
                             createForecastPositionAnalysis(l, input.getIssuingAirTrafficServicesUnit().getDesignator(), issueTime,
@@ -557,6 +560,7 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                         SigmetAnalysis firstInput=inputs.get(0);
                         period.setId("time-"  + UUID.randomUUID().toString());
                         period.setTimePosition(create(TimePositionType.class, (tPos) -> {
+                            Object o=tPos.getValue();
                             tPos.getValue().add(firstInput.getForecastTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
                         }));
                     });
@@ -794,7 +798,7 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                 if (target.getPermissibleUsage().equals(PermissibleUsageType.NON_OPERATIONAL)) {
                     target.setPermissibleUsageReason(PermissibleUsageReasonType.EXERCISE);
                 }
-                if (source.getPermissibleUsageSupplementary() != null) {
+                if ((source.getPermissibleUsageSupplementary() != null)&&(source.getPermissibleUsageSupplementary().isPresent())) {
                     target.setPermissibleUsageSupplementary(source.getPermissibleUsageSupplementary().get());
                 }
             });

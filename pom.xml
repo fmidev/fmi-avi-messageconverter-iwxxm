@@ -20,6 +20,23 @@
     <tag>HEAD</tag>
   </scm>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <java.version>1.8</java.version>
+    <!-- Github site plugin for Github mvn repo deployment -->
+    <site-maven-plugin.version>0.12</site-maven-plugin.version>
+
+    <!-- Most of these SHOULD NOT be overriden in child POMs -->
+    <project.scm.id>github</project.scm.id>
+    <github-repo-owner>ernstdevreede</github-repo-owner>
+    <github.global.server>github</github.global.server>
+    <github-mvn-release-repo>knmi-mvn-repo</github-mvn-release-repo>
+    <github-mvn-snapshot-repo>knmi-mvn-snapshot-repo</github-mvn-snapshot-repo>
+    <scm-url>scm:https://github.com/${github-repo-owner}/${project.artifactId}.git/</scm-url>
+    <scm-web-url>https://github.com/${github-repo-owner}/${project.artifactId}</scm-web-url>
+  </properties>
+
   <repositories>
    <repository>
      <id>knmi-mvn-snapshot-repo</id>
@@ -139,8 +156,96 @@
           <target>1.8</target>
         </configuration>
       </plugin>
-
+		<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.8.1</version>
+				<configuration>
+					<altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.github.github</groupId>
+				<artifactId>site-maven-plugin</artifactId>
+				<version>${site-maven-plugin.version}</version>
+			</plugin>
     </plugins>
   </build>
+
+ 	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.github</groupId>
+						<artifactId>site-maven-plugin</artifactId>
+						<version>${site-maven-plugin.version}</version>
+						<configuration>
+							<message>Maven artifacts for ${project.version}</message>  <!-- git commit message -->
+							<noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
+							<outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
+							<branch>refs/heads/master</branch>                       <!-- remote branch name -->
+							<includes>
+								<include>**/*</include>
+							</includes>
+							<repositoryName>${github-mvn-release-repo}</repositoryName>      <!-- github repo name -->
+							<repositoryOwner>${github-repo-owner}</repositoryOwner>    <!-- github username -->
+							<merge>true</merge>
+						</configuration>
+						<executions>
+							<!-- run site-maven-plugin's 'site' target as part of the build's
+								normal 'release' phase -->
+							<execution>
+								<goals>
+									<goal>site</goal>
+								</goals>
+								<phase>deploy</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>snapshot</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>com.github.github</groupId>
+							<artifactId>site-maven-plugin</artifactId>
+							<version>${site-maven-plugin.version}</version>
+							<configuration>
+								<message>Maven artifacts for ${project.version}</message>  <!-- git commit message -->
+								<noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
+								<outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
+								<branch>refs/heads/master</branch>                       <!-- remote branch name -->
+								<includes>
+									<include>**/*</include>
+								</includes>
+								<repositoryName>${github-mvn-snapshot-repo}</repositoryName>      <!-- github repo name -->
+								<repositoryOwner>${github-repo-owner}</repositoryOwner>    <!-- github username -->
+								<merge>true</merge>
+							</configuration>
+							<executions>
+								<!-- run site-maven-plugin's 'site' target as part of the build's
+									normal 'deploy' phase -->
+								<execution>
+									<goals>
+										<goal>site</goal>
+									</goals>
+									<phase>deploy</phase>
+								</execution>
+							</executions>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+	</profiles>
 
 </project>
