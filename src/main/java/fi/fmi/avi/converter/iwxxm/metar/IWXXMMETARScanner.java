@@ -1,7 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.metar;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -66,7 +65,6 @@ import icao.iwxxm21.AerodromeSurfaceWindTrendForecastType;
 import icao.iwxxm21.AerodromeSurfaceWindType;
 import icao.iwxxm21.AerodromeWindShearPropertyType;
 import icao.iwxxm21.AerodromeWindShearType;
-import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
 import icao.iwxxm21.CloudLayerPropertyType;
 import icao.iwxxm21.CloudLayerType;
 import icao.iwxxm21.DistanceWithNilReasonType;
@@ -77,7 +75,6 @@ import icao.iwxxm21.MeteorologicalAerodromeReportStatusType;
 import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
 import icao.iwxxm21.RunwayDirectionPropertyType;
 import icao.iwxxm21.SPECIType;
-import icao.iwxxm21.SigConvectiveCloudTypeType;
 
 /**
  * Created by rinne on 25/07/2018.
@@ -1001,56 +998,37 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         ObservedCloudLayerImpl.Builder layerBuilder = new ObservedCloudLayerImpl.Builder();
         Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
         if (layer.isPresent()) {
-            CloudAmountReportedAtAerodromeType amount = layer.get().getAmount();
-            DistanceWithNilReasonType base = layer.get().getBase();
-            JAXBElement<SigConvectiveCloudTypeType> type = layer.get().getCloudType();
-            if (base != null) {
-                layerBuilder.setBase(asNumericMeasure(base));
-            } else {
-                Optional<String> nilReason = refCtx.getNilReasonForNthChild(layer.get(), "http://icao.int/iwxxm/2.1:base", 0);
-                if (nilReason.isPresent()) {
-                    String[] reasons = nilReason.get().split("\\s");
-                    if (Arrays.asList(reasons).contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
-                        layerBuilder.setHeightUnobservableByAutoSystem(true);
-                    }
-                    if (Arrays.asList(reasons).contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM)) {
-                        layerBuilder.setHeightNotDetectedByAutoSystem(true);
-                    }
+            withCloudBase(layer.get(), refCtx, layerBuilder::setBase, (nilReasons) -> {
+                if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
+                    layerBuilder.setHeightUnobservableByAutoSystem(true);
                 }
-            }
-            if (amount != null) {
-                withCloudAmount(amount, layerBuilder::setAmount, issues::add, contextPath);
-            } else {
-                Optional<String> nilReason = refCtx.getNilReasonForNthChild(layer.get(), "http://icao.int/iwxxm/2.1:amount", 0);
-                if (nilReason.isPresent()) {
-                    String[] reasons = nilReason.get().split("\\s");
-                    if (Arrays.asList(reasons).contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
-                        layerBuilder.setAmountUnobservableByAutoSystem(true);
-                    }
-                    if (Arrays.asList(reasons).contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM)) {
-                        layerBuilder.setAmountNotDetectedByAutoSystem(true);
-                    }
+                if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM)) {
+                    layerBuilder.setHeightNotDetectedByAutoSystem(true);
                 }
-            }
+            }, issues::add, contextPath);
 
-            if (type != null) {
-                if (type.getValue() != null) {
-                    if (type.getValue().getNilReason().isEmpty()) {
-                        withCloudType(type.getValue(), layerBuilder::setCloudType, issues::add, contextPath);
-                    } else {
-                        if (type.getValue().getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE::equals)) {
-                            layerBuilder.setCloudTypeUnobservableByAutoSystem(true);
-                        }
-                    }
+            withCloudAmount(layer.get(), refCtx, layerBuilder::setAmount, (nilReasons) -> {
+                if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
+                    layerBuilder.setAmountUnobservableByAutoSystem(true);
                 }
-            }
+                if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM)) {
+                    layerBuilder.setAmountNotDetectedByAutoSystem(true);
+                }
+            }, issues::add, contextPath);
+
+            withCloudType(layer.get(), refCtx, layerBuilder::setCloudType, (nilReasons) -> {
+                if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
+                    layerBuilder.setCloudTypeUnobservableByAutoSystem(true);
+                }
+            }, issues::add, contextPath);
+
             resultHandler.accept(layerBuilder);
         } else if (!layerProp.getNilReason().isEmpty()) {
-            if (layerProp.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE::equals)) {
+            if (layerProp.getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                 layerBuilder.setAmountUnobservableByAutoSystem(true);
                 layerBuilder.setHeightUnobservableByAutoSystem(true);
             }
-            if (layerProp.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM::equals)) {
+            if (layerProp.getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM)) {
                 layerBuilder.setAmountNotDetectedByAutoSystem(true);
                 layerBuilder.setHeightNotDetectedByAutoSystem(true);
             }

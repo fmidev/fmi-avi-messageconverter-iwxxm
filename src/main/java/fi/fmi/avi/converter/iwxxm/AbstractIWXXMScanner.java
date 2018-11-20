@@ -3,6 +3,7 @@ package fi.fmi.avi.converter.iwxxm;
 import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
 
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -445,25 +446,10 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         IssueList issues = new IssueList();
         Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
         if (layer.isPresent()) {
-            CloudAmountReportedAtAerodromeType amount = layer.get().getAmount();
-            DistanceWithNilReasonType base = layer.get().getBase();
-            JAXBElement<SigConvectiveCloudTypeType> type = layer.get().getCloudType();
             CloudLayerImpl.Builder layerBuilder = new CloudLayerImpl.Builder();
-
-            if (base != null) {
-                layerBuilder.setBase(asNumericMeasure(base));
-            } else {
-
-            }
-
-            if (amount != null) {
-                withCloudAmount(amount, layerBuilder::setAmount, issues::add, contextPath);
-            } else {
-            }
-
-            if (type != null && type.getValue() != null && type.getValue().getHref() != null) {
-                withCloudType(type.getValue(), layerBuilder::setCloudType, issues::add, contextPath);
-            }
+            withCloudBase(layer.get(), refCtx, layerBuilder::setBase, issues::add, contextPath);
+            withCloudAmount(layer.get(), refCtx, layerBuilder::setAmount, issues::add, contextPath);
+            withCloudType(layer.get(), refCtx, layerBuilder::setCloudType, issues::add, contextPath);
             resultHandler.accept(layerBuilder);
         } else {
             issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Could not resolve cloud layer in " + contextPath));
@@ -473,45 +459,125 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         }
     }
 
-    protected static void withCloudAmount(final CloudAmountReportedAtAerodromeType amount, final Consumer<AviationCodeListUser.CloudAmount> resultHandler,
+    protected static void withCloudBase(final CloudLayerType layer, final ReferredObjectRetrievalContext refCtx, final Consumer<NumericMeasure> resultHandler,
             final Consumer<ConversionIssue> issueHandler, final String contextPath) {
-        if (amount != null) {
-            if (amount.getHref() != null && amount.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
-                String amountCode = amount.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME.length());
-                try {
-                    AviationCodeListUser.CloudAmount amountValue = AviationCodeListUser.CloudAmount.fromInt(Integer.parseInt(amountCode));
-                    resultHandler.accept(amountValue);
-                } catch (NumberFormatException e) {
+        withCloudBase(layer, refCtx, resultHandler, null, issueHandler, contextPath);
+    }
+
+    protected static void withCloudBase(final CloudLayerType layer, final ReferredObjectRetrievalContext refCtx, final Consumer<NumericMeasure> resultHandler,
+            final Consumer<List<String>> nilReasonHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
+        if (layer != null) {
+            DistanceWithNilReasonType base = layer.getBase();
+            if (base != null && base.getNilReason().isEmpty()) {
+                resultHandler.accept(asNumericMeasure(base).get());
+            } else {
+                List<String> nilReasons = null;
+                if (base != null) {
+                    nilReasons = base.getNilReason();
+                } else {
+                    Optional<String> nilReason = refCtx.getNilReasonForNthChild(layer, "http://icao.int/iwxxm/2.1:base", 0);
+                    if (nilReason.isPresent()) {
+                        nilReasons = Arrays.asList(nilReason.get().split("\\s"));
+                    }
+                }
+                if (nilReasons != null) {
+                    if (nilReasonHandler != null) {
+                        nilReasonHandler.accept(nilReasons);
+                    }
+                }
+            }
+        }
+
+    }
+
+    protected static void withCloudAmount(final CloudLayerType layer, final ReferredObjectRetrievalContext refCtx,
+            final Consumer<AviationCodeListUser.CloudAmount> resultHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
+        withCloudAmount(layer, refCtx, resultHandler, null, issueHandler, contextPath);
+    }
+
+    protected static void withCloudAmount(final CloudLayerType layer, final ReferredObjectRetrievalContext refCtx,
+            final Consumer<AviationCodeListUser.CloudAmount> resultHandler, final Consumer<List<String>> nilReasonHandler,
+            final Consumer<ConversionIssue> issueHandler, final String contextPath) {
+        if (layer != null) {
+            CloudAmountReportedAtAerodromeType amount = layer.getAmount();
+            if (amount != null && amount.getNilReason().isEmpty()) {
+                if (amount.getHref() != null && amount.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
+                    String amountCode = amount.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME.length());
+                    try {
+                        AviationCodeListUser.CloudAmount amountValue = AviationCodeListUser.CloudAmount.fromInt(Integer.parseInt(amountCode));
+                        resultHandler.accept(amountValue);
+                    } catch (NumberFormatException e) {
+                        issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                                "Could not parse code list value '" + amountCode + "' as an integer for code list "
+                                        + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
+                    }
+
+                } else {
                     issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                            "Could not parse code list value '" + amountCode + "' as an integer for code list "
+                            "Cloud amount code '" + amount.getHref() + "' does not start with "
                                     + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
                 }
-
-            } else {
-                issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                        "Cloud amount code '" + amount.getHref() + "' does not start with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
+            } else if (nilReasonHandler != null) {
+                List<String> nilReasons = null;
+                if (amount != null) {
+                    nilReasons = amount.getNilReason();
+                } else {
+                    Optional<String> nilReason = refCtx.getNilReasonForNthChild(layer, "http://icao.int/iwxxm/2.1:amount", 0);
+                    if (nilReason.isPresent()) {
+                        nilReasons = Arrays.asList(nilReason.get().split("\\s"));
+                    }
+                }
+                if (nilReasons != null) {
+                    nilReasonHandler.accept(nilReasons);
+                }
             }
         }
     }
 
-    protected static void withCloudType(final SigConvectiveCloudTypeType type, final Consumer<AviationCodeListUser.CloudType> resultHandler,
+    protected static void withCloudType(final CloudLayerType layer, final ReferredObjectRetrievalContext refCtx,
+            final Consumer<AviationCodeListUser.CloudType> resultHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
+        withCloudType(layer, refCtx, resultHandler, null, issueHandler, contextPath);
+    }
+
+    protected static void withCloudType(final CloudLayerType layer, final ReferredObjectRetrievalContext refCtx,
+            final Consumer<AviationCodeListUser.CloudType> resultHandler, final Consumer<List<String>> nilReasonHandler,
             final Consumer<ConversionIssue> issueHandler, final String contextPath) {
-        if (type != null) {
-            if (type.getHref() != null) {
-                if (type.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
-                    String typeCode = type.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
-                    try {
-                        AviationCodeListUser.CloudType typeValue = AviationCodeListUser.CloudType.fromInt(Integer.parseInt(typeCode));
-                        resultHandler.accept(typeValue);
-                    } catch (NumberFormatException e) {
-                        issueHandler.accept(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                                "Could not parse code list value '" + typeCode + "' as an integer for code list "
-                                        + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + " in " + contextPath));
+        if (layer != null) {
+            JAXBElement<SigConvectiveCloudTypeType> type = layer.getCloudType();
+            if (type != null) {
+                if (type.getValue() != null && type.getValue().getNilReason().isEmpty()) {
+                    if (type.getValue().getHref() != null) {
+                        if (type.getValue().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
+                            String typeCode = type.getValue()
+                                    .getHref()
+                                    .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
+                            try {
+                                AviationCodeListUser.CloudType typeValue = AviationCodeListUser.CloudType.fromInt(Integer.parseInt(typeCode));
+                                resultHandler.accept(typeValue);
+                            } catch (NumberFormatException e) {
+                                issueHandler.accept(new ConversionIssue(ConversionIssue.Type.SYNTAX,
+                                        "Could not parse code list value '" + typeCode + "' as an integer for code list "
+                                                + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + " in " + contextPath));
+                            }
+                        } else {
+                            issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                                    "Cloud type code '" + type.getValue().getHref() + "' does not start with "
+                                            + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + " in " + contextPath));
+                        }
                     }
-                } else {
-                    issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                            "Cloud type code '" + type.getHref() + "' does not start with "
-                                    + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + " in " + contextPath));
+                } else if (nilReasonHandler != null) {
+                    List<String> nilReasons = null;
+                    if (type.getValue() != null) {
+                        nilReasons = type.getValue().getNilReason();
+                    } else {
+                        Optional<String> nilReason = refCtx.getNilReasonForNthChild(layer, "http://icao.int/iwxxm/2.1:cloudType", 0);
+                        if (nilReason.isPresent()) {
+                            nilReasons = Arrays.asList(nilReason.get().split("\\s"));
+                        }
+                    }
+                    if (nilReasons != null) {
+                        nilReasonHandler.accept(nilReasons);
+                    }
                 }
             }
         }
