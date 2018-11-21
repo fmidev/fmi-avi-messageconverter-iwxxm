@@ -117,5 +117,5 @@
       </om:result>
     </om:OM_Observation>
   </iwxxm:observation>
-  <iwxxm:trendForecast nilReason="http://codes.wmo.int/common/nil/noSignificantChange" />
+  <iwxxm:trendForecast xsi:nil="true" nilReason="http://codes.wmo.int/common/nil/noSignificantChange" />
 </iwxxm:METAR>

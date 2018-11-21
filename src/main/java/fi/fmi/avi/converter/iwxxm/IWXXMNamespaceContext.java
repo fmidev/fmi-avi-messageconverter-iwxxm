@@ -33,6 +33,10 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
         mapping.put("http://purl.oclc.org/dsdl/svrl", "svrl");
     }
 
+    public static String getURI(final String prefix) {
+        return mapping.entrySet().stream().filter(entry -> entry.getValue().equals(prefix)).map(Map.Entry::getKey).findAny().orElse(null);
+    }
+
     @Override
     public String getPreferredPrefix(final String namespace, final String prefix, final boolean required) {
         return mapping.getOrDefault(namespace, prefix);
@@ -40,7 +44,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
 
     @Override
     public String getNamespaceURI(final String prefix) {
-        return mapping.entrySet().stream().filter(entry -> entry.getValue().equals(prefix)).map(Map.Entry::getKey).findAny().orElse(null);
+        return getURI(prefix);
     };
 
     @Override

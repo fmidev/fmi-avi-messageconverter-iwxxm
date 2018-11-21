@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 
 import net.opengis.om20.OMObservationPropertyType;
 import net.opengis.om20.OMObservationType;
@@ -17,6 +18,7 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
+import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.model.Aerodrome;
@@ -361,26 +363,26 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         }
 
         //weather
-        for (AerodromeForecastWeatherType weather : record.getWeather()) {
-            if (weather.getNilReason().stream()
-                    .anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE::equals)) {
-                properties.set(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.TRUE);
-            } else {
-                withWeatherBuilderFor(weather, hints, (builder) -> {
-                    properties.addToList(TAFForecastRecordProperties.Name.WEATHER, builder.build());
-                }, retval::add);
-            }
-        }
+        withEachNillableChild(record, record.getWeather(), AerodromeForecastWeatherType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "weather"),
+                refCtx, (value) -> {
+                    withWeatherBuilderFor(value, hints, (builder) -> {
+                        properties.addToList(TAFForecastRecordProperties.Name.WEATHER, builder.build());
+                    }, retval::add);
+                }, (nilReasons) -> {
+                    if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
+                        properties.set(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.TRUE);
+                        if (record.getWeather().size() != 1) {
+                            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL, "'No significant weather' (NSW) was reported with other "
+                                    + "weather phenomena, NSW must be the only weather property if given");
+                        }
+                    }
+                });
 
         //cloud
-        AerodromeCloudForecastPropertyType cloudProp = record.getCloud();
-        if (cloudProp != null) {
+        withNillableChild(record, record.getCloud(), AerodromeCloudForecastPropertyType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "cloud"),
+                refCtx, (value) -> {
             CloudForecastImpl.Builder cloudBuilder = new CloudForecastImpl.Builder();
-            //NSC
-            cloudBuilder.setNoSignificantCloud(cloudProp.getNilReason().stream()
-                    .anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE::equals));
-
-            Optional<AerodromeCloudForecastType> cloudForecast = resolveProperty(cloudProp, AerodromeCloudForecastType.class, refCtx);
+                    Optional<AerodromeCloudForecastType> cloudForecast = resolveProperty(value, AerodromeCloudForecastType.class, refCtx);
             if (cloudForecast.isPresent()) {
                 if (record.isCloudAndVisibilityOK()) {
                     retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL, "Forecast features CAVOK but cloud forecast exists in " + contextPath));
@@ -409,7 +411,13 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             }
 
             properties.set(TAFForecastRecordProperties.Name.CLOUD, cloudBuilder.build());
-        }
+                }, (nilReasons) -> {
+                    if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
+                        properties.set(TAFForecastRecordProperties.Name.CLOUD, new CloudForecastImpl.Builder()//
+                                .setNoSignificantCloud(true)//
+                                .build());
+                    }
+                });
 
         return retval;
     }

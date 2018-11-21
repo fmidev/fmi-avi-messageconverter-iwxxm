@@ -16,7 +16,7 @@
   gml:id="metar-YUDO-20120822163000Z"
   permissibleUsage="OPERATIONAL"
   status="NORMAL"
-  automatedStation="false">
+  automatedStation="true">
 
   <iwxxm:observation>
     <om:OM_Observation gml:id="obs-03839-20120824T12Z">
@@ -63,7 +63,7 @@
       </om:featureOfInterest>
       <!-- The result of the observation -->
       <om:result>
-        <iwxxm:MeteorologicalAerodromeObservationRecord gml:id="or1" cloudAndVisibilityOK="true">
+        <iwxxm:MeteorologicalAerodromeObservationRecord gml:id="or1" cloudAndVisibilityOK="false">
           <iwxxm:airTemperature uom="Cel">17.0</iwxxm:airTemperature>
           <iwxxm:dewpointTemperature uom="Cel">16.0</iwxxm:dewpointTemperature>
           <iwxxm:qnh uom="hPa">1018</iwxxm:qnh>
@@ -96,74 +96,9 @@
           </iwxxm:rvr>
           <iwxxm:presentWeather xlink:href="http://codes.wmo.int/306/4678/DZ" />
           <iwxxm:presentWeather xlink:href="http://codes.wmo.int/306/4678/FG" />
-          <iwxxm:cloud>
-            <iwxxm:AerodromeObservedClouds>
-              <iwxxm:layer>
-                <iwxxm:CloudLayer>
-                  <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/2" />
-                  <iwxxm:base uom="[ft_i]">1000</iwxxm:base>
-                </iwxxm:CloudLayer>
-              </iwxxm:layer>
-              <iwxxm:layer>
-                <iwxxm:CloudLayer>
-                  <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/4" />
-                  <iwxxm:base uom="[ft_i]">2000</iwxxm:base>
-                </iwxxm:CloudLayer>
-              </iwxxm:layer>
-            </iwxxm:AerodromeObservedClouds>
-          </iwxxm:cloud>
-
+          <iwxxm:cloud xsi:nil="true" nilReason="http://codes.wmo.int/common/nil/notDetectedByAutoSystem" />
         </iwxxm:MeteorologicalAerodromeObservationRecord>
       </om:result>
     </om:OM_Observation>
   </iwxxm:observation>
-  <iwxxm:trendForecast>
-    <om:OM_Observation gml:id="trend-fcst-1">
-      <om:type xlink:href="http://codes.wmo.int/49-2/observation-type/iwxxm/2.1/MeteorologicalAerodromeTrendForecast" />
-      <!-- time at which the forecast conditions actually occur -->
-      <om:phenomenonTime>
-        <gml:TimePeriod gml:id="tp-201208221630Z-201208221700Z">
-          <gml:beginPosition>2012-08-22T16:30:00Z</gml:beginPosition>
-          <gml:endPosition>2012-08-22T17:00:00Z</gml:endPosition>
-        </gml:TimePeriod>
-      </om:phenomenonTime>
-      <!-- time at which the results of the observation were made available -->
-      <om:resultTime xlink:href="#ti-201208221630Z" />
-      <om:procedure xlink:href="#p-49-2-metar" />
-      <om:observedProperty xlink:href="http://codes.wmo.int/49-2/observable-property/MeteorologicalAerodromeTrendForecast" />
-      <om:featureOfInterest xlink:href="#sampling-point-03839" />
-      <om:result>
-        <iwxxm:MeteorologicalAerodromeTrendForecastRecord gml:id="trend-fcst-record-03839-201208221630Z-201208221700Z" changeIndicator="BECOMING"
-          cloudAndVisibilityOK="false">
-          <iwxxm:prevailingVisibility uom="m">800</iwxxm:prevailingVisibility>
-          <iwxxm:forecastWeather xlink:href="http://codes.wmo.int/306/4678/FG" />
-        </iwxxm:MeteorologicalAerodromeTrendForecastRecord>
-      </om:result>
-    </om:OM_Observation>
-  </iwxxm:trendForecast>
-  <iwxxm:trendForecast>
-    <om:OM_Observation gml:id="trend-fcst-2">
-      <om:type xlink:href="http://codes.wmo.int/49-2/observation-type/iwxxm/2.1/MeteorologicalAerodromeTrendForecast" />
-      <!-- time at which the forecast conditions actually occur -->
-      <om:phenomenonTime>
-        <gml:TimePeriod gml:id="tp-201208221800Z-201208221800Z">
-          <gml:beginPosition>2012-08-22T18:00:00Z</gml:beginPosition>
-          <gml:endPosition>2012-08-22T18:00:00Z</gml:endPosition>
-        </gml:TimePeriod>
-      </om:phenomenonTime>
-      <!-- time at which the results of the observation were made available -->
-      <om:resultTime xlink:href="#ti-201208221630Z" />
-      <om:procedure xlink:href="#p-49-2-metar" />
-      <om:observedProperty xlink:href="http://codes.wmo.int/49-2/observable-property/MeteorologicalAerodromeTrendForecast" />
-      <om:featureOfInterest xlink:href="#sampling-point-03839" />
-      <om:result>
-        <iwxxm:MeteorologicalAerodromeTrendForecastRecord gml:id="trend-fcst-record-03839-201208221800Z-201208221900Z" changeIndicator="BECOMING"
-          cloudAndVisibilityOK="false">
-          <iwxxm:prevailingVisibility uom="m">10000</iwxxm:prevailingVisibility>
-          <iwxxm:prevailingVisibilityOperator>ABOVE</iwxxm:prevailingVisibilityOperator>
-          <iwxxm:forecastWeather xsi:nil="true" nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance" />
-        </iwxxm:MeteorologicalAerodromeTrendForecastRecord>
-      </om:result>
-    </om:OM_Observation>
-  </iwxxm:trendForecast>
 </iwxxm:METAR>

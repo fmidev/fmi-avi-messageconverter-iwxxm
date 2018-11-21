@@ -1,24 +1,19 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import aero.aixm511.*;
-import fi.fmi.avi.converter.ConversionException;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.model.*;
-import icao.iwxxm21.*;
-import net.opengis.gml32.*;
-import net.opengis.gml32.PointType;
-import net.opengis.om20.OMObservationType;
-import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
-import net.opengis.sampling.spatial.ShapeType;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.UUID;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.*;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.ValidationEvent;
+import javax.xml.bind.ValidationEventHandler;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -31,13 +26,54 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
+
+import net.opengis.gml32.AbstractGeometryType;
+import net.opengis.gml32.AngleType;
+import net.opengis.gml32.DirectPositionType;
+import net.opengis.gml32.FeaturePropertyType;
+import net.opengis.gml32.LengthType;
+import net.opengis.gml32.MeasureType;
+import net.opengis.gml32.PointType;
+import net.opengis.gml32.ReferenceType;
+import net.opengis.gml32.SpeedType;
+import net.opengis.gml32.TimePrimitivePropertyType;
+import net.opengis.om20.OMObservationType;
+import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
+import net.opengis.sampling.spatial.ShapeType;
+
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import aero.aixm511.AirportHeliportTimeSlicePropertyType;
+import aero.aixm511.AirportHeliportTimeSliceType;
+import aero.aixm511.AirportHeliportType;
+import aero.aixm511.CodeAirportHeliportDesignatorType;
+import aero.aixm511.CodeIATAType;
+import aero.aixm511.CodeICAOType;
+import aero.aixm511.ElevatedPointPropertyType;
+import aero.aixm511.ElevatedPointType;
+import aero.aixm511.TextNameType;
+import aero.aixm511.ValDistanceVerticalType;
+import fi.fmi.avi.converter.ConversionException;
+import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
+import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.model.Aerodrome;
+import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.CloudForecast;
+import fi.fmi.avi.model.CloudLayer;
+import fi.fmi.avi.model.GeoPosition;
+import fi.fmi.avi.model.NumericMeasure;
+import icao.iwxxm21.AerodromeCloudForecastType;
+import icao.iwxxm21.AngleWithNilReasonType;
+import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
+import icao.iwxxm21.CloudLayerType;
+import icao.iwxxm21.DistanceWithNilReasonType;
+import icao.iwxxm21.LengthWithNilReasonType;
+import icao.iwxxm21.ReportType;
+import icao.iwxxm21.SigConvectiveCloudTypeType;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM.
@@ -253,7 +289,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
             target.setId("cfct-" + UUID.randomUUID().toString());
             final Optional<NumericMeasure> measure = source.getVerticalVisibility();
             if (measure.isPresent()) {
-                final QName eName = new QName("http://icao.int/iwxxm/2.1", "verticalVisibility");
+                final QName eName = new QName(IWXXMNamespaceContext.getURI("iwxxm"), "verticalVisibility");
                 final LengthWithNilReasonType vvValue = create(LengthWithNilReasonType.class, (vv) -> {
                     vv.setValue(measure.get().getValue());
                     vv.setUom(measure.get().getUom());
@@ -284,7 +320,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
             }
             Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
             if (type.isPresent()) {
-                final QName eName = new QName("http://icao.int/iwxxm/2.1", "cloudType");
+                final QName eName = new QName(IWXXMNamespaceContext.getURI("iwxxm"), "cloudType");
                 final SigConvectiveCloudTypeType cloudType = create(SigConvectiveCloudTypeType.class, (convCloud) -> {
                     convCloud.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + type.get().getCode());
                     convCloud.setTitle(type.get().name() + ", from codelist " + AviationCodeListUser.CODELIST_SIGNIFICANT_CONVECTIVE_CLOUD_TYPE);

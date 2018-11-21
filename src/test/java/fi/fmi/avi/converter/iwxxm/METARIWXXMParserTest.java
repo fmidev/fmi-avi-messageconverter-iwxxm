@@ -149,8 +149,8 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
     }
 
     @Test
-    public void testTrendCloudForecast() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-trend-cloud-and-nsc.xml");
+    public void testNoCloudsDetectedForecast() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-ncd.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }

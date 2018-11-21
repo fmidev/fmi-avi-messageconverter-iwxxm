@@ -2,8 +2,12 @@ package fi.fmi.avi.converter.iwxxm;
 
 import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -11,6 +15,7 @@ import java.util.function.Consumer;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
 
 import net.opengis.gml32.DirectPositionType;
 import net.opengis.gml32.FeaturePropertyType;
@@ -28,6 +33,7 @@ import org.w3c.dom.Node;
 import aero.aixm511.AirportHeliportTimeSlicePropertyType;
 import aero.aixm511.AirportHeliportTimeSliceType;
 import aero.aixm511.AirportHeliportType;
+import aero.aixm511.CodeAirportHeliportDesignatorType;
 import aero.aixm511.ElevatedPointPropertyType;
 import aero.aixm511.ElevatedPointType;
 import aero.aixm511.ValDistanceVerticalType;
@@ -117,10 +123,11 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         } else {
             Optional<AirportHeliportTimeSliceType> slice = resolveProperty(slices.get(0), AirportHeliportTimeSliceType.class, refCtx);
             if (slice.isPresent()) {
-                if (slice.get().getDesignator().getNilReason() == null) {
-                    aerodromeBuilder.setDesignator(slice.get().getDesignator().getValue());
-                } else {
+                CodeAirportHeliportDesignatorType designator = slice.get().getDesignator();
+                if (designator == null || designator.getValue() == null) {
                     retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No designator for " + "aerodrome"));
+                } else {
+                    aerodromeBuilder.setDesignator(designator.getValue());
                 }
                 if (slice.get().getLocationIndicatorICAO() != null) {
                     aerodromeBuilder.setLocationIndicatorICAO(slice.get().getLocationIndicatorICAO().getValue());
@@ -467,27 +474,11 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
     protected static void withCloudBase(final CloudLayerType layer, final ReferredObjectRetrievalContext refCtx, final Consumer<NumericMeasure> resultHandler,
             final Consumer<List<String>> nilReasonHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         if (layer != null) {
-            DistanceWithNilReasonType base = layer.getBase();
-            if (base != null && base.getNilReason().isEmpty()) {
-                resultHandler.accept(asNumericMeasure(base).get());
-            } else {
-                List<String> nilReasons = null;
-                if (base != null) {
-                    nilReasons = base.getNilReason();
-                } else {
-                    Optional<String> nilReason = refCtx.getNilReasonForNthChild(layer, "http://icao.int/iwxxm/2.1:base", 0);
-                    if (nilReason.isPresent()) {
-                        nilReasons = Arrays.asList(nilReason.get().split("\\s"));
-                    }
-                }
-                if (nilReasons != null) {
-                    if (nilReasonHandler != null) {
-                        nilReasonHandler.accept(nilReasons);
-                    }
-                }
-            }
+            withNillableChild(layer, layer.getBase(), DistanceWithNilReasonType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "base"), refCtx,
+                    (value) -> {
+                        resultHandler.accept(asNumericMeasure(value).get());
+                    }, nilReasonHandler);
         }
-
     }
 
     protected static void withCloudAmount(final CloudLayerType layer, final ReferredObjectRetrievalContext refCtx,
@@ -499,10 +490,12 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             final Consumer<AviationCodeListUser.CloudAmount> resultHandler, final Consumer<List<String>> nilReasonHandler,
             final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         if (layer != null) {
-            CloudAmountReportedAtAerodromeType amount = layer.getAmount();
-            if (amount != null && amount.getNilReason().isEmpty()) {
-                if (amount.getHref() != null && amount.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
-                    String amountCode = amount.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME.length());
+            withNillableChild(layer, layer.getAmount(), CloudAmountReportedAtAerodromeType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "amount"),
+                    refCtx, (value) -> {
+                        if (value.getHref() != null && value.getHref()
+                                .startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
+                            String amountCode = value.getHref()
+                                    .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME.length());
                     try {
                         AviationCodeListUser.CloudAmount amountValue = AviationCodeListUser.CloudAmount.fromInt(Integer.parseInt(amountCode));
                         resultHandler.accept(amountValue);
@@ -514,23 +507,10 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
 
                 } else {
                     issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                            "Cloud amount code '" + amount.getHref() + "' does not start with "
+                            "Cloud amount code '" + value.getHref() + "' does not start with "
                                     + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
                 }
-            } else if (nilReasonHandler != null) {
-                List<String> nilReasons = null;
-                if (amount != null) {
-                    nilReasons = amount.getNilReason();
-                } else {
-                    Optional<String> nilReason = refCtx.getNilReasonForNthChild(layer, "http://icao.int/iwxxm/2.1:amount", 0);
-                    if (nilReason.isPresent()) {
-                        nilReasons = Arrays.asList(nilReason.get().split("\\s"));
-                    }
-                }
-                if (nilReasons != null) {
-                    nilReasonHandler.accept(nilReasons);
-                }
-            }
+                    }, nilReasonHandler);
         }
     }
 
@@ -544,13 +524,12 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         if (layer != null) {
             JAXBElement<SigConvectiveCloudTypeType> type = layer.getCloudType();
-            if (type != null) {
-                if (type.getValue() != null && type.getValue().getNilReason().isEmpty()) {
-                    if (type.getValue().getHref() != null) {
-                        if (type.getValue().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
-                            String typeCode = type.getValue()
-                                    .getHref()
-                                    .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
+            if (type != null && !type.isNil()) {
+                withNillableChild(layer, type.getValue(), SigConvectiveCloudTypeType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "cloudType"),
+                        refCtx, (value) -> {
+                            if (value.getHref() != null) {
+                                if (value.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
+                                    String typeCode = value.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
                             try {
                                 AviationCodeListUser.CloudType typeValue = AviationCodeListUser.CloudType.fromInt(Integer.parseInt(typeCode));
                                 resultHandler.accept(typeValue);
@@ -565,21 +544,60 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                                             + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + " in " + contextPath));
                         }
                     }
-                } else if (nilReasonHandler != null) {
-                    List<String> nilReasons = null;
-                    if (type.getValue() != null) {
-                        nilReasons = type.getValue().getNilReason();
-                    } else {
-                        Optional<String> nilReason = refCtx.getNilReasonForNthChild(layer, "http://icao.int/iwxxm/2.1:cloudType", 0);
-                        if (nilReason.isPresent()) {
-                            nilReasons = Arrays.asList(nilReason.get().split("\\s"));
-                        }
-                    }
-                    if (nilReasons != null) {
-                        nilReasonHandler.accept(nilReasons);
-                    }
-                }
+                        }, nilReasonHandler);
             }
         }
+    }
+
+    protected static <T> void withNillableChild(final Object parent, final T child, final Class<T> clz, final QName childElementName,
+            final ReferredObjectRetrievalContext refCtx, final Consumer<T> valueHandler, final Consumer<List<String>> nilReasonHandler) {
+        withNthNillableChild(parent, child, clz, childElementName, refCtx, 0, valueHandler, nilReasonHandler);
+    }
+
+    protected static <T> void withNthNillableChild(final Object parent, final T child, final Class<T> clz, final QName childElementName,
+            final ReferredObjectRetrievalContext refCtx, final int n, final Consumer<T> valueHandler, final Consumer<List<String>> nilReasonHandler) {
+        List<String> nilReasons = new ArrayList<>();
+        if (child == null) {
+            Optional<String> nilReason = refCtx.getNilReasonForNthChild(parent, childElementName, n);
+            nilReason.ifPresent(reason -> nilReasons.addAll(Arrays.asList(reason.split("\\s"))));
+        } else {
+            try {
+                Class[] params = new Class[0];
+                Object[] paramValues = new Object[0];
+                Method getNilReason = clz.getMethod("getNilReason", params);
+                Object value = getNilReason.invoke(child, paramValues);
+                if (value != null) {
+                    if (List.class.isAssignableFrom(value.getClass())) {
+                        List<?> values = (List<?>) value;
+                        for (Object o : values) {
+                            if (o instanceof String) {
+                                nilReasons.add((String) o);
+                            }
+                        }
+                    } else if (String.class.isAssignableFrom(value.getClass())) {
+                        nilReasons.addAll(Arrays.asList(((String) value).split("\\s")));
+                    }
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+                //NOOP
+            }
+        }
+        if (child != null && nilReasons.isEmpty()) {
+            valueHandler.accept(child);
+        } else if (!nilReasons.isEmpty()) {
+            nilReasonHandler.accept(nilReasons);
+        }
+    }
+
+    protected static <T> void withEachNillableChild(final Object parent, final Iterable<T> children, final Class<T> clz, final QName childElementName,
+            final ReferredObjectRetrievalContext refCtx, final Consumer<T> valueHandler, final Consumer<List<String>> nilReasonHandler) {
+
+        int i = 0;
+        Iterator<T> it = children.iterator();
+        while (it.hasNext()) {
+            withNthNillableChild(parent, it.next(), clz, childElementName, refCtx, i, valueHandler, nilReasonHandler);
+            i++;
+        }
+
     }
 }

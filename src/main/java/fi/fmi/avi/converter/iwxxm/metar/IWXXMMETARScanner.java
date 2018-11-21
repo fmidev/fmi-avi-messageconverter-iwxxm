@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 
 import net.opengis.om20.OMObservationPropertyType;
 import net.opengis.om20.OMObservationType;
@@ -23,6 +24,7 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
+import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.model.Aerodrome;
@@ -139,30 +141,26 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         }
 
         // trends
-        boolean nosigFound = false;
-        for (OMObservationPropertyType obsProp : input.getTrendForecast()) {
-            if (obsProp.getNilReason().isEmpty()) {
-                Optional<OMObservationType> trend = resolveProperty(obsProp, OMObservationType.class, refCtx);
-                if (trend.isPresent()) {
-                    OMObservationProperties trendProps = new OMObservationProperties(trend.get());
-                    retval.addAll(collectTrendProperties(trend.get(), refCtx, trendProps, hints));
-                    properties.addToList(METARProperties.Name.TREND_FORECAST, trendProps);
-                } else {
-                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No Observation in METAR");
-                }
-            } else {
-                if (obsProp.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NO_SIGNIFICANT_CHANGE::equals)) {
-                    nosigFound = true;
-                }
-            }
-        }
-        if (nosigFound) {
-            properties.set(METARProperties.Name.TREND_NO_SIGNIFICANT_CHANGES, Boolean.TRUE);
-            if (input.getTrendForecast().size() != 1) {
-                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
-                        "'No significant changes' (NOSIG) reported with other trend " + "forecasts, NOSIG must be the only trend if given");
-            }
-        }
+        withEachNillableChild(input, input.getTrendForecast(), OMObservationPropertyType.class,
+                new QName(IWXXMNamespaceContext.getURI("iwxxm"), "trendForecast"), refCtx, (value) -> {
+                    Optional<OMObservationType> trend = resolveProperty(value, OMObservationType.class, refCtx);
+                    if (trend.isPresent()) {
+                        OMObservationProperties trendProps = new OMObservationProperties(trend.get());
+                        retval.addAll(collectTrendProperties(trend.get(), refCtx, trendProps, hints));
+                        properties.addToList(METARProperties.Name.TREND_FORECAST, trendProps);
+                    } else {
+                        retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No Observation in METAR");
+                    }
+                }, (nilReasons) -> {
+                    if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NO_SIGNIFICANT_CHANGE)) {
+                        properties.set(METARProperties.Name.TREND_NO_SIGNIFICANT_CHANGES, Boolean.TRUE);
+                        if (input.getTrendForecast().size() != 1) {
+                            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
+                                    "'No significant changes' (NOSIG) reported with other trend " + "forecasts, NOSIG must be the only trend if given");
+                        }
+                    }
+                });
+
         return retval;
     }
 
@@ -432,27 +430,22 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                 }
 
                 //forecast weather (C) (incl. NSW)
-                boolean nswFound = false;
-                for (AerodromeForecastWeatherType weather : trendRecord.get().getForecastWeather()) {
-                    if (weather.getNilReason().isEmpty()) {
-                        withWeatherBuilderFor(weather, hints, (builder) -> {
-                            trendProps.addToList(TrendForecastRecordProperties.Name.FORECAST_WEATHER, builder.build());
-                        }, retval::add);
-                    } else {
-                        if (weather.getNilReason()
-                                .stream()
-                                .anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE::equals)) {
-                            nswFound = true;
-                        }
-                    }
-                }
-                if (nswFound) {
-                    trendProps.set(TrendForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.TRUE);
-                    if (trendRecord.get().getForecastWeather().size() != 1) {
-                        retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL, "'No significant weather' (NSW) was reported with other "
-                                + "weather phenomena, NSW must be the only forecastWeather property if given");
-                    }
-                }
+                withEachNillableChild(trendRecord.get(), trendRecord.get().getForecastWeather(), AerodromeForecastWeatherType.class,
+                        new QName(IWXXMNamespaceContext.getURI("iwxxm"), "forecastWeather"), refCtx, (value) -> {
+                            withWeatherBuilderFor(value, hints, (builder) -> {
+                                trendProps.addToList(TrendForecastRecordProperties.Name.FORECAST_WEATHER, builder.build());
+                            }, retval::add);
+                        }, (nilReasons) -> {
+                            if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
+                                trendProps.set(TrendForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.TRUE);
+                                if (trendRecord.get().getForecastWeather().size() != 1) {
+                                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
+                                            "'No significant weather' (NSW) was reported with other "
+                                                    + "weather phenomena, NSW must be the only forecastWeather property if given");
+                                }
+                            }
+                        });
+
                 //cloud (C) (incl. NSC)
                 JAXBElement<AerodromeCloudForecastPropertyType> cloudElem = trendRecord.get().getCloud();
                 withTrendCloudBuilderFor(cloudElem, refCtx, (cloudBuilder) -> {
@@ -702,12 +695,13 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                             if (dod.getValue().getNilReason().isEmpty()) {
                                 rwsBuilder.setDepthOfDeposit(NumericMeasureImpl.of(dod.getValue().getValue(), dod.getValue().getUom()));
                             } else {
-                                for (String nilReason : dod.getValue().getNilReason()) {
-                                    if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE.equals(nilReason)) {
-                                        rwsBuilder.setDepthInsignificant(true);
-                                    } else if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE.equals(nilReason)) {
-                                        rwsBuilder.setDepthNotMeasurable(true);
-                                    }
+                                if (dod.getValue()
+                                        .getNilReason()
+                                        .contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
+                                    rwsBuilder.setDepthInsignificant(true);
+                                }
+                                if (dod.getValue().getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
+                                    rwsBuilder.setDepthNotMeasurable(true);
                                 }
                             }
                         }
@@ -813,7 +807,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                             if (vv != null) {
                                 if (vv.getValue() != null) {
                                     LengthWithNilReasonType length = vv.getValue();
-                                    if (length.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE::equals)) {
+                                    if (length.getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                                         cloudBuilder.setVerticalVisibilityUnobservableByAutoSystem(true);
                                     } else {
                                         cloudBuilder.setVerticalVisibility(asNumericMeasure(vv.getValue()));
@@ -825,30 +819,22 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                             }
                         } else if (!obsClouds.getLayer().isEmpty()) {
                             List<ObservedCloudLayer> layers = new ArrayList<>();
-                            AerodromeObservedCloudsType.Layer layerProp;
-                            for (int i = 0; i < obsClouds.getLayer().size(); i++) {
-                                layerProp = obsClouds.getLayer().get(i);
-                                if (layerProp == null) {
-                                    //null jaxbElement due to xsi:nil="true" attribute
-                                    //Need to fetch the nilReason parsed from DOM previously:
-                                    Optional<String> nilReason = refCtx.getNilReasonForNthChild(obsClouds, "http://icao.int/iwxxm/2.1:layer", i);
-                                    if (nilReason.isPresent()) {
+                            withEachNillableChild(obsClouds, obsClouds.getLayer(), AerodromeObservedCloudsType.Layer.class,
+                                    new QName(IWXXMNamespaceContext.getURI("iwxxm"), "layer"), refCtx, (value) -> {
+                                        withObservedCloudLayerBuilderFor(value, refCtx, (layerBuilder) -> {
+                                            layers.add(layerBuilder.build());
+                                        }, issues::add, "observed cloud");
+                                    }, (nilReasons) -> {
                                         ObservedCloudLayerImpl.Builder layerBuilder = new ObservedCloudLayerImpl.Builder();
-                                        if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE.equals(nilReason.get())) {
+                                        if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                                             layerBuilder.setHeightUnobservableByAutoSystem(true);
                                             layerBuilder.setAmountUnobservableByAutoSystem(true);
-                                        } else if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM.equals(nilReason.get())) {
+                                        } else if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM)) {
                                             layerBuilder.setHeightNotDetectedByAutoSystem(true);
                                             layerBuilder.setAmountNotDetectedByAutoSystem(true);
                                         }
                                         layers.add(layerBuilder.build());
-                                    }
-                                } else {
-                                    withObservedCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
-                                        layers.add(layerBuilder.build());
-                                    }, issues::add, "observed cloud");
-                                }
-                            }
+                                    });
                             cloudBuilder.setLayers(layers);
                         } else {
                             issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.MISSING_DATA,
@@ -860,9 +846,9 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                     }
                 } else {
                     cloudBuilder.setNoCloudsDetectedByAutoSystem(
-                            cloud.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM::equals));
+                            cloud.getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM));
                     cloudBuilder.setNoSignificantCloud(
-                            cloud.getNilReason().stream().anyMatch(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE::equals));
+                            cloud.getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE));
                 }
                 resultHandler.accept(cloudBuilder);
             }
@@ -901,27 +887,14 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                             }
                         } else if (!cloudFct.get().getLayer().isEmpty()) {
                             List<CloudLayer> layers = new ArrayList<>();
-                            CloudLayerPropertyType layerProp;
                             List<AerodromeCloudForecastType.Layer> inputLayers = cloudFct.get().getLayer();
-                            for (int i = 0; i < inputLayers.size(); i++) {
-                                layerProp = inputLayers.get(i);
-                                if (layerProp == null) {
-                                    Optional<String> nilReason = refCtx.getNilReasonForNthChild(cloudFct.get(), "http://icao.int/iwxxm/2.1:layer", i);
-                                    if (nilReason.isPresent()) {
-                                        ObservedCloudLayerImpl.Builder layerBuilder = new ObservedCloudLayerImpl.Builder();
-                                        if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE.equals(nilReason.get())) {
-                                            layerBuilder.setHeightUnobservableByAutoSystem(true);
-                                            layerBuilder.setAmountUnobservableByAutoSystem(true);
-                                        } else if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM.equals(nilReason.get())) {
-                                            layerBuilder.setHeightNotDetectedByAutoSystem(true);
-                                            layerBuilder.setAmountNotDetectedByAutoSystem(true);
-                                        }
-                                        layers.add(layerBuilder.build());
-                                    }
-                                } else {
+                            for (CloudLayerPropertyType layerProp : inputLayers) {
+                                if (layerProp != null) {
                                     withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
                                         layers.add(layerBuilder.build());
-                                    }, issues::add, "observed cloud");
+                                    }, issues::add, "trend cloud");
+                                } else {
+                                    issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX, "Nil cloud layer in trend forecast");
                                 }
                             }
                             cloudBuilder.setLayers(layers);

@@ -172,7 +172,7 @@
           <iwxxm:prevailingVisibility uom="m">10000</iwxxm:prevailingVisibility>
           <iwxxm:prevailingVisibilityOperator>ABOVE</iwxxm:prevailingVisibilityOperator>
           <iwxxm:forecastWeather nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance" />
-          <iwxxm:cloud nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance" />
+          <iwxxm:cloud xsi:nil="true" nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance" />
         </iwxxm:MeteorologicalAerodromeTrendForecastRecord>
       </om:result>
     </om:OM_Observation>
