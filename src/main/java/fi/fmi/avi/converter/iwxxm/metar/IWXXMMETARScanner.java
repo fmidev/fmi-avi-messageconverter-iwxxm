@@ -996,16 +996,6 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
             }, issues::add, contextPath);
 
             resultHandler.accept(layerBuilder);
-        } else if (!layerProp.getNilReason().isEmpty()) {
-            if (layerProp.getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
-                layerBuilder.setAmountUnobservableByAutoSystem(true);
-                layerBuilder.setHeightUnobservableByAutoSystem(true);
-            }
-            if (layerProp.getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_DETECTED_BY_AUTO_SYSTEM)) {
-                layerBuilder.setAmountNotDetectedByAutoSystem(true);
-                layerBuilder.setHeightNotDetectedByAutoSystem(true);
-            }
-            resultHandler.accept(layerBuilder);
         } else {
             issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Could not resolve cloud layer in " + contextPath));
         }

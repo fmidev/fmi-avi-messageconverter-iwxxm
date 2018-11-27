@@ -23,9 +23,11 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.ObservedCloudLayer;
 import fi.fmi.avi.model.metar.ObservedClouds;
+import fi.fmi.avi.model.metar.TrendForecast;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -266,6 +268,26 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertFalse(layer.isAmountNotDetectedByAutoSystem());
         assertFalse(layer.isAmountUnobservableByAutoSystem());
     }
+
+    @Test
+    public void testTrendCloudForecast() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-trend-cloud-and-nsc.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+
+        Optional<METAR> m = result.getConvertedMessage();
+        assertTrue(m.isPresent());
+        Optional<List<TrendForecast>> trends = m.get().getTrends();
+        assertTrue(trends.isPresent());
+        assertEquals(3, trends.get().size());
+        TrendForecast trend = trends.get().get(1);
+        Optional<CloudForecast> cloudForecast = trend.getCloud();
+        assertTrue(cloudForecast.isPresent());
+        assertTrue(cloudForecast.get().isNoSignificantCloud());
+
+    }
+
+
 
     //TODO: RWS with snow closure conflicts
     //TODO: RWS with all runways flag

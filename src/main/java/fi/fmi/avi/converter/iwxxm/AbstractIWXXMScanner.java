@@ -7,7 +7,6 @@ import java.lang.reflect.Method;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -563,8 +562,8 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         } else {
             try {
                 Class[] params = new Class[0];
-                Object[] paramValues = new Object[0];
                 Method getNilReason = clz.getMethod("getNilReason", params);
+                Object[] paramValues = new Object[0];
                 Object value = getNilReason.invoke(child, paramValues);
                 if (value != null) {
                     if (List.class.isAssignableFrom(value.getClass())) {
@@ -591,12 +590,9 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
 
     protected static <T> void withEachNillableChild(final Object parent, final Iterable<T> children, final Class<T> clz, final QName childElementName,
             final ReferredObjectRetrievalContext refCtx, final Consumer<T> valueHandler, final Consumer<List<String>> nilReasonHandler) {
-
         int i = 0;
-        Iterator<T> it = children.iterator();
-        while (it.hasNext()) {
-            withNthNillableChild(parent, it.next(), clz, childElementName, refCtx, i++, valueHandler, nilReasonHandler);
+        for (T child:children) {
+            withNthNillableChild(parent, child, clz, childElementName, refCtx, i++, valueHandler, nilReasonHandler);
         }
-
     }
 }
