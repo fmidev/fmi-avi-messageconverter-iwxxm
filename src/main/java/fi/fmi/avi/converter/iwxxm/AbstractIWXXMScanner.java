@@ -595,8 +595,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         int i = 0;
         Iterator<T> it = children.iterator();
         while (it.hasNext()) {
-            withNthNillableChild(parent, it.next(), clz, childElementName, refCtx, i, valueHandler, nilReasonHandler);
-            i++;
+            withNthNillableChild(parent, it.next(), clz, childElementName, refCtx, i++, valueHandler, nilReasonHandler);
         }
 
     }

@@ -84,32 +84,29 @@ public class ReferredObjectRetrievalContext {
             //Build a lookup hash for nilReason attribute values.
             //These are not available using JAXB tooling because the xsi:nil="true" elements
             //evaluate to null objects.
-            expr = xpath.compile("//*[@xsi:nil='true' and @nilReason]");
+            expr = xpath.compile("//*[*/@xsi:nil='true' and */@nilReason]");
             hits = (NodeList) expr.evaluate(dom.getDocumentElement(), XPathConstants.NODESET);
             for (int i = 0; i < hits.getLength(); i++) {
-                Node hit = hits.item(i);
-                Node parent = hit.getParentNode();
-                Map<QName, List<String>> reasonsForThisParent = new HashMap<>();
-                nilReasons.put(getNodeParentPath(parent), reasonsForThisParent);
-                if (Node.ELEMENT_NODE == hit.getNodeType()) {
-                    QName key = new QName(hit.getNamespaceURI(), hit.getLocalName());
-                    List<String> reasonsForElement;
-                    if (reasonsForThisParent.containsKey(key)) {
-                        reasonsForElement = reasonsForThisParent.get(key);
-                    } else {
-                        reasonsForElement = new ArrayList<>();
-                        reasonsForThisParent.put(key, reasonsForElement);
-                    }
-                    NamedNodeMap attrs = hit.getAttributes();
-                    if (attrs != null) {
-                        Node nilReason = attrs.getNamedItem("nilReason");
-                        if (nilReason != null) {
-                            reasonsForElement.add(nilReason.getNodeValue());
+                Node parent = hits.item(i);
+                String parentKey = getNodeParentPath(parent);
+                Map<QName, List<String>> reasonsForThisParent = nilReasons.computeIfAbsent(parentKey, (key) -> new HashMap<>());
+                NodeList children = parent.getChildNodes();
+                for (int j = 0; j < children.getLength(); j++) {
+                    Node hit = children.item(j);
+                    if (Node.ELEMENT_NODE == hit.getNodeType()) {
+                        QName childKey = new QName(hit.getNamespaceURI(), hit.getLocalName());
+                        List<String> reasonsForElement = reasonsForThisParent.computeIfAbsent(childKey,(key) -> new ArrayList<>());
+                        NamedNodeMap attrs = hit.getAttributes();
+                        if (attrs != null) {
+                            Node nilReason = attrs.getNamedItem("nilReason");
+                            if (nilReason != null) {
+                                reasonsForElement.add(nilReason.getNodeValue());
+                            } else {
+                                reasonsForElement.add(null);
+                            }
                         } else {
                             reasonsForElement.add(null);
                         }
-                    } else {
-                        reasonsForElement.add(null);
                     }
                 }
             }

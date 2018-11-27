@@ -110,6 +110,12 @@
               <iwxxm:layer>
                 <iwxxm:CloudLayer>
                   <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/2" />
+                  <iwxxm:base uom="[ft_i]">1500</iwxxm:base>
+                </iwxxm:CloudLayer>
+              </iwxxm:layer>
+              <iwxxm:layer>
+                <iwxxm:CloudLayer>
+                  <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/2" />
                   <iwxxm:base xsi:nil="true" uom="none" nilReason="http://codes.wmo.int/common/nil/notDetectedByAutoSystem" />
                 </iwxxm:CloudLayer>
               </iwxxm:layer>

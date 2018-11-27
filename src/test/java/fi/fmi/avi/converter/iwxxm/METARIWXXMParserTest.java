@@ -1,10 +1,13 @@
 package fi.fmi.avi.converter.iwxxm;
 
 import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +22,10 @@ import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.metar.METAR;
+import fi.fmi.avi.model.metar.ObservedCloudLayer;
+import fi.fmi.avi.model.metar.ObservedClouds;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -157,13 +163,108 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testMissingCloudObservations() throws Exception {
+        //have to split in two documents, max no. of layers per METAR obs is 4
+
         Document toValidate = readDocument("metar-A3-1_with-missing-cloud-obs.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
 
+        Optional<METAR> m = result.getConvertedMessage();
+        assertTrue(m.isPresent());
+        Optional<ObservedClouds> clouds = m.get().getClouds();
+        assertTrue(clouds.isPresent());
+        Optional<List<ObservedCloudLayer>> layers = clouds.get().getLayers();
+        assertTrue(layers.isPresent());
+        assertEquals(4, layers.get().size());
+        ObservedCloudLayer layer = layers.get().get(0);
+        assertFalse(layer.getBase().isPresent());
+        assertFalse(layer.getAmount().isPresent());
+        assertTrue(layer.isAmountUnobservableByAutoSystem());
+        assertTrue(layer.isHeightUnobservableByAutoSystem());
+
+        layer = layers.get().get(1);
+        assertFalse(layer.getBase().isPresent());
+        assertFalse(layer.getAmount().isPresent());
+        assertTrue(layer.isAmountNotDetectedByAutoSystem());
+        assertTrue(layer.isHeightNotDetectedByAutoSystem());
+
+        layer = layers.get().get(2);
+        assertFalse(layer.getAmount().isPresent());
+        assertTrue(layer.getBase().isPresent());
+        assertEquals(layer.getBase().get().getUom(), "[ft_i]");
+        assertTrue(Math.abs(layer.getBase().get().getValue() - 1500) < 0.00001);
+        assertFalse(layer.isHeightUnobservableByAutoSystem());
+        assertFalse(layer.isHeightNotDetectedByAutoSystem());
+        assertFalse(layer.isCloudTypeUnobservableByAutoSystem());
+        assertFalse(layer.isAmountNotDetectedByAutoSystem());
+        assertTrue(layer.isAmountUnobservableByAutoSystem());
+
+        layer = layers.get().get(3);
+        assertFalse(layer.getAmount().isPresent());
+        assertTrue(layer.getBase().isPresent());
+        assertEquals(layer.getBase().get().getUom(), "[ft_i]");
+        assertTrue(Math.abs(layer.getBase().get().getValue() - 1500) < 0.00001);
+        assertFalse(layer.isHeightUnobservableByAutoSystem());
+        assertFalse(layer.isHeightNotDetectedByAutoSystem());
+        assertFalse(layer.isCloudTypeUnobservableByAutoSystem());
+        assertTrue(layer.isAmountNotDetectedByAutoSystem());
+        assertFalse(layer.isAmountUnobservableByAutoSystem());
+
+
         toValidate = readDocument("metar-A3-1_with-missing-cloud-obs2.xml");
         result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+
+        m = result.getConvertedMessage();
+        assertTrue(m.isPresent());
+        clouds = m.get().getClouds();
+        assertTrue(clouds.isPresent());
+        layers = clouds.get().getLayers();
+        assertTrue(layers.isPresent());
+        assertEquals(4, layers.get().size());
+        layer = layers.get().get(0);
+        assertTrue(layer.getAmount().isPresent());
+        assertEquals(AviationCodeListUser.CloudAmount.SCT, layer.getAmount().get());
+        assertFalse(layer.getBase().isPresent());
+        assertTrue(layer.isHeightUnobservableByAutoSystem());
+        assertFalse(layer.isHeightNotDetectedByAutoSystem());
+        assertFalse(layer.isCloudTypeUnobservableByAutoSystem());
+        assertFalse(layer.isAmountNotDetectedByAutoSystem());
+        assertFalse(layer.isAmountUnobservableByAutoSystem());
+
+        layer = layers.get().get(1);
+        assertTrue(layer.getAmount().isPresent());
+        assertEquals(AviationCodeListUser.CloudAmount.SCT, layer.getAmount().get());
+        assertTrue(layer.getBase().isPresent());
+        assertEquals(layer.getBase().get().getUom(), "[ft_i]");
+        assertTrue(Math.abs(layer.getBase().get().getValue() - 1500) < 0.00001);
+        assertFalse(layer.isHeightUnobservableByAutoSystem());
+        assertFalse(layer.isHeightNotDetectedByAutoSystem());
+        assertFalse(layer.isCloudTypeUnobservableByAutoSystem());
+        assertFalse(layer.isAmountNotDetectedByAutoSystem());
+        assertFalse(layer.isAmountUnobservableByAutoSystem());
+
+        layer = layers.get().get(2);
+        assertTrue(layer.getAmount().isPresent());
+        assertEquals(AviationCodeListUser.CloudAmount.SCT, layer.getAmount().get());
+        assertFalse(layer.getBase().isPresent());
+        assertFalse(layer.isHeightUnobservableByAutoSystem());
+        assertTrue(layer.isHeightNotDetectedByAutoSystem());
+        assertFalse(layer.isCloudTypeUnobservableByAutoSystem());
+        assertFalse(layer.isAmountNotDetectedByAutoSystem());
+        assertFalse(layer.isAmountUnobservableByAutoSystem());
+
+        layer = layers.get().get(3);
+        assertTrue(layer.getAmount().isPresent());
+        assertEquals(AviationCodeListUser.CloudAmount.BKN_OVC, layer.getAmount().get());
+        assertTrue(layer.getBase().isPresent());
+        assertEquals(layer.getBase().get().getUom(), "[ft_i]");
+        assertTrue(Math.abs(layer.getBase().get().getValue() - 1500) < 0.00001);
+        assertFalse(layer.isHeightUnobservableByAutoSystem());
+        assertFalse(layer.isHeightNotDetectedByAutoSystem());
+        assertTrue(layer.isCloudTypeUnobservableByAutoSystem());
+        assertFalse(layer.isAmountNotDetectedByAutoSystem());
+        assertFalse(layer.isAmountUnobservableByAutoSystem());
     }
 
     //TODO: RWS with snow closure conflicts
