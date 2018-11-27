@@ -29,6 +29,7 @@ import net.opengis.gml32.CurveSegmentArrayPropertyType;
 import net.opengis.gml32.CurveType;
 import net.opengis.gml32.DirectPositionListType;
 import net.opengis.gml32.DirectPositionType;
+import net.opengis.gml32.DirectionPropertyType;
 import net.opengis.gml32.FeaturePropertyType;
 import net.opengis.gml32.LengthType;
 import net.opengis.gml32.LinearRingType;
@@ -235,7 +236,6 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
             input.getAnalysis().ifPresent((l) -> {
                 sigmet.setAnalysis(createAnalysis(l, input.getIssuingAirTrafficServicesUnit().getDesignator(),
                         input.getIssuingAirTrafficServicesUnit().getName(), issueTime, sigmetUuid));
-      //          if (!l.get(0).getMovingDirection().isPresent()&&!l.get(0).getMovingSpeed().isPresent())||() {
                 if (l.get(0).getForecastTime().isPresent()) {
                     Debug.println("Creating FPA");
                     sigmet.setForecastPositionAnalysis(
@@ -243,14 +243,6 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                     sigmetUuid));
                 }
             });
-
-
-/*
-          if (!input.getAnalysis().get().get(0).getMovingDirection().isPresent()) {
-              Debug.println("Creating FPA");
-              sigmet.setForecastPositionAnalysis(createForecastPositionAnalysis(input, resultTimeId, validTimeId, procedureId, foiId, sfSpatialId, sigmetUuid));
-          }
-*/
 
         }
 
@@ -419,17 +411,19 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                 }
                             });
                             input.getMovingDirection().ifPresent((md) -> {
-                                input.getMovingSpeed().ifPresent((ms) -> {
-                                    JAXBElement<AngleWithNilReasonType> directionOfMotion = createAndWrap(AngleWithNilReasonType.class, (awnrt2) -> {
-                                        awnrt2.setUom(md.getUom());
-                                        awnrt2.setValue(md.getValue());
-                                    });
-                                    sect.setDirectionOfMotion(directionOfMotion);
-                                    sect.setSpeedOfMotion(create(SpeedType.class, (spd) -> {
-                                        spd.setUom(ms.getUom());
-                                        spd.setValue(ms.getValue());
-                                    }));
-                                });
+                                icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
+                                AngleWithNilReasonType angl = new AngleWithNilReasonType();
+                                angl.setUom(md.getUom());
+                                angl.setValue(md.getValue());
+
+                                JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm21.createSIGMETEvolvingConditionTypeDirectionOfMotion(angl);
+                                sect.setDirectionOfMotion(directionOfMotion);
+                            });
+                            input.getMovingSpeed().ifPresent((ms) -> {
+                                sect.setSpeedOfMotion(create(SpeedType.class, (spd) -> {
+                                    spd.setUom(ms.getUom());
+                                    spd.setValue(ms.getValue());
+                                }));
                             });
 
                             sect.setGeometry(create(AirspaceVolumePropertyType.class, (avpt) -> {
