@@ -34,6 +34,8 @@ import net.opengis.gml32.FeaturePropertyType;
 import net.opengis.gml32.LengthType;
 import net.opengis.gml32.LinearRingType;
 import net.opengis.gml32.ObjectFactory;
+import net.opengis.gml32.PointPropertyType;
+import net.opengis.gml32.PointType;
 import net.opengis.gml32.PolygonPatchType;
 import net.opengis.gml32.ReferenceType;
 import net.opengis.gml32.RingType;
@@ -87,10 +89,13 @@ import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.VolcanoDescription;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysis;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
+import fi.fmi.avi.model.sigmet.VASIGMET;
 import icao.iwxxm21.AeronauticalSignificantWeatherPhenomenonType;
+import icao.iwxxm21.AirspacePropertyType;
 import icao.iwxxm21.AngleWithNilReasonType;
 import icao.iwxxm21.ExpectedIntensityChangeType;
 import icao.iwxxm21.PermissibleUsageReasonType;
@@ -110,6 +115,8 @@ import icao.iwxxm21.TropicalCycloneSIGMETType;
 import icao.iwxxm21.UnitPropertyType;
 import icao.iwxxm21.VolcanicAshSIGMETType;
 import wmo.metce2013.ProcessType;
+import wmo.metce2013.VolcanoPropertyType;
+import wmo.metce2013.VolcanoType;
 
 public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSerializer implements AviMessageSpecificConverter<SIGMET, T> {
     protected abstract T render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException;
@@ -224,6 +231,35 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
             }));
 
             sigmet.setAnalysis(createCancelAnalysis(input, issueTime, sigmetUuid));
+            if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+                if (((VASIGMET)input).getVolcanicAshMovedToFIR().isPresent()) {
+                    String designator = input.getIssuingAirTrafficServicesUnit().getDesignator();
+                    String airSpaceName = input.getIssuingAirTrafficServicesUnit().getName();
+                    sigmet.setVolcanicAshMovedToFIR(create(AirspacePropertyType.class, (apt) -> {
+                        AirspaceType airspace = create(AirspaceType.class);
+                        airspace.setValidTime(null);
+                        airspace.setId("movedto-fir-" + designator + "-" + UUID.randomUUID());
+                        airspace.getTimeSlice().add(create(AirspaceTimeSlicePropertyType.class, (timeSliceProp) -> {
+                            timeSliceProp.setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, (timeSlice) -> {
+                                timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
+                                timeSlice.setInterpretation("SNAPSHOT");
+                                timeSlice.setType(create(CodeAirspaceType.class, (type) -> {
+                                    type.setValue("FIR");
+                                }));
+                                timeSlice.setAirspaceName(create(TextNameType.class, (name) -> {
+                                    name.setValue(airSpaceName);
+                                }));
+                                timeSlice.setId("fir-" + designator + "-" + UUID.randomUUID() + "-ts");
+                                timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, (desig) -> {
+                                    desig.setValue(designator);
+                                }));
+
+                            }));
+                        }));
+                        apt.setAirspace(airspace);
+                    }));
+                }
+            }
         } else {
             AeronauticalSignificantWeatherPhenomenonType phenType = create(AeronauticalSignificantWeatherPhenomenonType.class, (ref) -> {
                 ref.setHref(AviationCodeListUser.CODELIST_SIGWX_PHENOMENA_ROOT + input.getSigmetPhenomenon());
@@ -245,12 +281,48 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
             });
 
         }
+        if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+            VolcanoDescription volcano=((VASIGMET)input).getVolcano();
+            icao.iwxxm21.ObjectFactory of=new icao.iwxxm21.ObjectFactory();
+            ((VolcanicAshSIGMETType)sigmet).getRest().add(
+                    of.createVolcanicAshSIGMETTypeEruptingVolcano(create(VolcanoPropertyType.class, (vpt)->{
+                        vpt.setVolcano(createAndWrap(VolcanoType.class, (v)-> {
+                            ((VASIGMET) input).getVolcano().getVolcanoName().ifPresent((vn)->{
+                                v.setVolcanoName(vn);
+                            });
+                            //                   v.setVolcanoName(((VASIGMET) input).getVolcano().getVolcanoName().get());
+                            Double[] pts=((VASIGMET) input).getVolcano().getVolcanoPosition().getCoordinates();
+                            v.setPosition(create(PointPropertyType.class, (ppt) -> {
+                                ppt.setPoint(create(PointType.class, (pt)->{
+                                    pt.setPos(create(DirectPositionType.class, (dpt) -> {
+                                        dpt.getValue().addAll(Arrays.asList(pts));
+                                        dpt.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
+                                        dpt.setSrsDimension(BigInteger.valueOf(2));
+                                        dpt.getAxisLabels().add("Lat Lon");
+                                        dpt.getUomLabels().add("deg deg");
+                                    }));
+                                    pt.setId("wv-pt-"+sigmetUuid);
+                                }));
+                            }));
+                            v.setId("wv-"+((VASIGMET) input).getVolcano().getVolcanoName().get()+"-"+sigmetUuid);
+                        }));
+                    }))
+            );
+        }
+
 
         try {
             result.setStatus(Status.SUCCESS);
             this.updateMessageMetadata(input, result, sigmet);
             ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
-            this.validateDocument(sigmet, SIGMETType.class, hints, eventHandler); //TODO true is for debugging: shows results even in case of failure
+            if (input.getSigmetPhenomenon().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+                this.validateDocument(((VolcanicAshSIGMETType)sigmet), VolcanicAshSIGMETType.class, hints, eventHandler); //TODO true is for debugging: shows
+                // results even in
+                // case of failure
+            } else {
+                this.validateDocument(sigmet, SIGMETType.class, hints, eventHandler); //TODO true is for debugging: shows results even in case of failure
+            }
+
             if (eventHandler.errorsFound()) {
                 result.setStatus(Status.FAIL);
                 System.err.println("FAILED in eventhandler");
@@ -625,11 +697,6 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                                                     curvet.setSegments(create(CurveSegmentArrayPropertyType.class, (curvesat) -> {
                                                                         curvesat.getAbstractCurveSegment()
                                                                                 .add(createAndWrap(CircleByCenterPointType.class, (cbcpt) -> {
-/*
-                                                                                        cbcpt.setCoordinates(create(CoordinatesType.class, (coordt) -> {
-                                                                                            coordt.setValue("5 52.0");
-                                                                                        }));
-*/
                                                                                     cbcpt.setPos(create(DirectPositionType.class, (dpt) -> {
                                                                                         dpt.getValue().addAll(Arrays.asList(pts.toArray(new Double[0])));
                                                                                     }));

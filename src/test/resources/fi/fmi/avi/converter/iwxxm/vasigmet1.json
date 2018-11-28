@@ -1,0 +1,101 @@
+{
+  "status": "NORMAL",
+  "issuingAirTrafficServicesUnit": {
+    "name": "AMSTERDAM",
+    "type": "FIR",
+    "designator": "EHAA"
+  },
+  "meteorologicalWatchOffice": {
+    "name": "DE BILT",
+    "type": "MWO",
+    "designator": "EHDB"
+  },
+  "sequenceNumber": "1",
+  "issueTime": {
+    "completeTime": "2018-08-27T11:30:00Z"
+  },
+  "validityPeriod": {
+    "startTime": {
+      "completeTime": "2018-08-27T12:00:00Z"
+    },
+    "endTime": {
+      "completeTime": "2018-08-27T18:00:00Z"
+    }
+  },
+  "sigmetPhenomenon": "VA",
+  "analysis": [
+    {
+      "analysisTime": {
+        "completeTime": "2017-08-27T11:30:00Z"
+      },
+      "lowerLimit": {
+        "value": 10,
+        "uom": "FL"
+      },
+      "upperLimit": {
+        "value": 35,
+        "uom": "FL"
+      },
+      "analysisType": "OBSERVATION",
+      "intensityChange": "NO_CHANGE",
+      "analysisApproximateLocation": false,
+      "analysisGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.0,
+              52.0
+            ],
+            [
+              6.0,
+              53.0
+            ],
+            [
+              4.0,
+              54.0
+            ],
+            [
+              5.0,
+              52.0
+            ]
+          ]
+        ]
+      },
+      "forecastTime":  {
+        "completeTime": "2017-08-27T18:00:00Z"
+      },
+      "forecastGeometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              5.0,
+              53.0
+            ],
+            [
+              6.0,
+              54.0
+            ],
+            [
+              4.0,
+              55.0
+            ],
+            [
+              5.0,
+              53.0
+            ]
+          ]
+        ]
+      }
+    }
+  ],
+  "volcano": {
+    "volcanoPosition": {
+      "coordinateReferenceSystemId":"EPSG:4326",
+      "coordinates":[52.0,5.2]
+    },
+    "volcanoName": "GRIMSVOTN"
+  },
+  "translated": false
+}
