@@ -12,7 +12,7 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
-import fi.fmi.avi.model.taf.GTSExchangeFileNameBuilder;
+import fi.fmi.avi.model.GTSExchangeFileNameBuilder;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import icao.iwxxm21.TAFType;
