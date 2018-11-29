@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.xml.XMLConstants;
@@ -23,13 +22,11 @@ import javax.xml.transform.dom.DOMSource;
 import net.opengis.gml32.AbstractRingPropertyType;
 import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.CircleByCenterPointType;
-import net.opengis.gml32.CoordinatesType;
 import net.opengis.gml32.CurvePropertyType;
 import net.opengis.gml32.CurveSegmentArrayPropertyType;
 import net.opengis.gml32.CurveType;
 import net.opengis.gml32.DirectPositionListType;
 import net.opengis.gml32.DirectPositionType;
-import net.opengis.gml32.DirectionPropertyType;
 import net.opengis.gml32.FeaturePropertyType;
 import net.opengis.gml32.LengthType;
 import net.opengis.gml32.LinearRingType;
@@ -77,7 +74,6 @@ import aero.aixm511.TextNameType;
 import aero.aixm511.UnitTimeSlicePropertyType;
 import aero.aixm511.UnitTimeSliceType;
 import aero.aixm511.UnitType;
-import aero.aixm511.ValDistanceType;
 import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
@@ -87,7 +83,6 @@ import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.VolcanoDescription;
 import fi.fmi.avi.model.sigmet.SIGMET;
@@ -282,32 +277,35 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
 
         }
         if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
-            VolcanoDescription volcano=((VASIGMET)input).getVolcano();
-            icao.iwxxm21.ObjectFactory of=new icao.iwxxm21.ObjectFactory();
-            ((VolcanicAshSIGMETType)sigmet).getRest().add(
-                    of.createVolcanicAshSIGMETTypeEruptingVolcano(create(VolcanoPropertyType.class, (vpt)->{
-                        vpt.setVolcano(createAndWrap(VolcanoType.class, (v)-> {
-                            ((VASIGMET) input).getVolcano().getVolcanoName().ifPresent((vn)->{
-                                v.setVolcanoName(vn);
-                            });
-                            //                   v.setVolcanoName(((VASIGMET) input).getVolcano().getVolcanoName().get());
-                            Double[] pts=((VASIGMET) input).getVolcano().getVolcanoPosition().getCoordinates();
-                            v.setPosition(create(PointPropertyType.class, (ppt) -> {
-                                ppt.setPoint(create(PointType.class, (pt)->{
-                                    pt.setPos(create(DirectPositionType.class, (dpt) -> {
-                                        dpt.getValue().addAll(Arrays.asList(pts));
-                                        dpt.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
-                                        dpt.setSrsDimension(BigInteger.valueOf(2));
-                                        dpt.getAxisLabels().add("Lat Lon");
-                                        dpt.getUomLabels().add("deg deg");
-                                    }));
-                                    pt.setId("wv-pt-"+sigmetUuid);
-                                }));
+            VolcanoDescription volcano = ((VASIGMET) input).getVolcano();
+            icao.iwxxm21.ObjectFactory of = new icao.iwxxm21.ObjectFactory();
+            ((VolcanicAshSIGMETType) sigmet).getRest().add(of.createVolcanicAshSIGMETTypeEruptingVolcano(create(VolcanoPropertyType.class, (vpt) -> {
+                vpt.setVolcano(createAndWrap(VolcanoType.class, (v) -> {
+                    ((VASIGMET) input).getVolcano().getVolcanoName().ifPresent((vn) -> {
+                        v.setVolcanoName(vn);
+                    });
+
+                    Double[] pts = ((VASIGMET) input).getVolcano().getVolcanoPosition().getCoordinates();
+                    v.setPosition(create(PointPropertyType.class, (ppt) -> {
+                        ppt.setPoint(create(PointType.class, (pt) -> {
+                            pt.setPos(create(DirectPositionType.class, (dpt) -> {
+                                dpt.getValue().addAll(Arrays.asList(pts));
+                                dpt.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
+                                dpt.setSrsDimension(BigInteger.valueOf(2));
+                                dpt.getAxisLabels().add("Lat Lon");
+                                dpt.getUomLabels().add("deg deg");
                             }));
-                            v.setId("wv-"+((VASIGMET) input).getVolcano().getVolcanoName().get()+"-"+sigmetUuid);
+                            pt.setId("wv-pt-" + sigmetUuid);
                         }));
-                    }))
-            );
+                    }));
+                    if (((VASIGMET) input).getVolcano().getVolcanoName().isPresent()) {
+                        v.setId("wv-" + ((VASIGMET) input).getVolcano().getVolcanoName().get() + "-" + sigmetUuid);
+                    } else {
+                        String generatedVolcanoName = String.format("volcano-%d", (int) Math.random() * 100000);
+                        v.setId("wv-" + generatedVolcanoName + "-" + sigmetUuid);
+                    }
+                }));
+            })));
         }
 
 
@@ -850,12 +848,11 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
 
             //Default permissions
             target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
-            target.setPermissibleUsageReason(PermissibleUsageReasonType.EXERCISE);
             source.getPermissibleUsage().ifPresent((us) -> {
                 target.setPermissibleUsage(PermissibleUsageType.valueOf(us.name()));
-                source.getPermissibleUsageReason().ifPresent((usr) -> {
-                    target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(usr.name()));
-                });
+                if (source.getPermissibleUsageReason().isPresent()) {
+                    target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
+                }
                 if (target.getPermissibleUsage().equals(PermissibleUsageType.NON_OPERATIONAL)) {
                     target.setPermissibleUsageReason(PermissibleUsageReasonType.EXERCISE);
                 }
