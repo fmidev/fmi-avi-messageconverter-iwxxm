@@ -220,7 +220,7 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
 
         if (sigmet.getStatus().equals(SIGMETReportStatusType.CANCELLATION)) {
             sigmet.setCancelledSequenceNumber(input.getCancelledReference().get().getSequenceNumber());
-            sigmet.setCancelledValidPeriod(getTimePeriodPropertyType(input, "cnl-tp-" + getTimePeriodId(input)));
+            sigmet.setCancelledValidPeriod(getCancelledTimePeriodPropertyType(input, "cnl-tp-" + getTimePeriodId(input)));
             sigmet.setPhenomenon(create(AeronauticalSignificantWeatherPhenomenonType.class, (phen) -> {
                 phen.getNilReason().add("inapplicable");
             }));
@@ -228,8 +228,8 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
             sigmet.setAnalysis(createCancelAnalysis(input, issueTime, sigmetUuid));
             if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
                 if (((VASIGMET)input).getVolcanicAshMovedToFIR().isPresent()) {
-                    String designator = input.getIssuingAirTrafficServicesUnit().getDesignator();
-                    String airSpaceName = input.getIssuingAirTrafficServicesUnit().getName();
+                    String designator = ((VASIGMET)input).getVolcanicAshMovedToFIR().get().getDesignator();
+                    String airSpaceName = ((VASIGMET)input).getVolcanicAshMovedToFIR().get().getName();
                     sigmet.setVolcanicAshMovedToFIR(create(AirspacePropertyType.class, (apt) -> {
                         AirspaceType airspace = create(AirspaceType.class);
                         airspace.setValidTime(null);
@@ -277,35 +277,35 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
 
         }
         if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
-            VolcanoDescription volcano = ((VASIGMET) input).getVolcano();
-            icao.iwxxm21.ObjectFactory of = new icao.iwxxm21.ObjectFactory();
-            ((VolcanicAshSIGMETType) sigmet).getRest().add(of.createVolcanicAshSIGMETTypeEruptingVolcano(create(VolcanoPropertyType.class, (vpt) -> {
-                vpt.setVolcano(createAndWrap(VolcanoType.class, (v) -> {
-                    ((VASIGMET) input).getVolcano().getVolcanoName().ifPresent((vn) -> {
-                        v.setVolcanoName(vn);
-                    });
+                VolcanoDescription volcano = ((VASIGMET) input).getVolcano();
+                icao.iwxxm21.ObjectFactory of = new icao.iwxxm21.ObjectFactory();
+                ((VolcanicAshSIGMETType) sigmet).getRest().add(of.createVolcanicAshSIGMETTypeEruptingVolcano(create(VolcanoPropertyType.class, (vpt) -> {
+                    vpt.setVolcano(createAndWrap(VolcanoType.class, (v) -> {
+                        ((VASIGMET) input).getVolcano().getVolcanoName().ifPresent((vn) -> {
+                            v.setVolcanoName(vn);
+                        });
 
-                    Double[] pts = ((VASIGMET) input).getVolcano().getVolcanoPosition().getCoordinates();
-                    v.setPosition(create(PointPropertyType.class, (ppt) -> {
-                        ppt.setPoint(create(PointType.class, (pt) -> {
-                            pt.setPos(create(DirectPositionType.class, (dpt) -> {
-                                dpt.getValue().addAll(Arrays.asList(pts));
-                                dpt.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
-                                dpt.setSrsDimension(BigInteger.valueOf(2));
-                                dpt.getAxisLabels().add("Lat Lon");
-                                dpt.getUomLabels().add("deg deg");
+                        Double[] pts = ((VASIGMET) input).getVolcano().getVolcanoPosition().getCoordinates();
+                        v.setPosition(create(PointPropertyType.class, (ppt) -> {
+                            ppt.setPoint(create(PointType.class, (pt) -> {
+                                pt.setPos(create(DirectPositionType.class, (dpt) -> {
+                                    dpt.getValue().addAll(Arrays.asList(pts));
+                                    dpt.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
+                                    dpt.setSrsDimension(BigInteger.valueOf(2));
+                                    dpt.getAxisLabels().add("Lat Lon");
+                                    dpt.getUomLabels().add("deg deg");
+                                }));
+                                pt.setId("wv-pt-" + sigmetUuid);
                             }));
-                            pt.setId("wv-pt-" + sigmetUuid);
                         }));
+                        if (((VASIGMET) input).getVolcano().getVolcanoName().isPresent()) {
+                            v.setId("wv-" + ((VASIGMET) input).getVolcano().getVolcanoName().get().replace(" ", "_") + "-" + sigmetUuid);
+                        } else {
+                            String generatedVolcanoName = String.format("volcano-%d", (int) Math.random() * 100000);
+                            v.setId("wv-" + generatedVolcanoName + "-" + sigmetUuid);
+                        }
                     }));
-                    if (((VASIGMET) input).getVolcano().getVolcanoName().isPresent()) {
-                        v.setId("wv-" + ((VASIGMET) input).getVolcano().getVolcanoName().get() + "-" + sigmetUuid);
-                    } else {
-                        String generatedVolcanoName = String.format("volcano-%d", (int) Math.random() * 100000);
-                        v.setId("wv-" + generatedVolcanoName + "-" + sigmetUuid);
-                    }
-                }));
-            })));
+                })));
         }
 
 
@@ -504,30 +504,39 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                             vdvt.setUom(l.getUom());
                                             vdvt.setValue(l.getValue().toString());
                                         }));
+                                        avt.setUpperLimitReference(create(CodeVerticalReferenceType.class, (cvrt) -> {
+                                            if (l.getValue()==0.){
+                                                cvrt.setValue("SFC");
+                                            } else {
+                                                cvrt.setValue("STD");
+                                            }
+                                        }));
                                     });
-                                    avt.setUpperLimitReference(create(CodeVerticalReferenceType.class, (cvrt) -> {
-                                        cvrt.setValue("STD");//TODO extract correct value from input
-                                    }));
                                     input.getLowerLimit().ifPresent((l) -> {
                                         avt.setLowerLimit(create(ValDistanceVerticalType.class, (vdvt) -> {
                                             vdvt.setUom(l.getUom());
                                             vdvt.setValue(l.getValue().toString());
                                         }));
                                         avt.setLowerLimitReference(create(CodeVerticalReferenceType.class, (cvrt) -> {
-                                            cvrt.setValue("STD");//TODO extract correct value from input
+                                             if (l.getValue()==0.){
+                                                cvrt.setValue("SFC");
+                                            } else {
+                                                cvrt.setValue("STD");
+                                            }
                                         }));
                                     });
                                     avt.setHorizontalProjection(create(SurfacePropertyType.class, (spt) -> {
                                         spt.setSurface(createAndWrap(SurfaceType.class, (sft) -> {
                                             try {
-                                                Geometry geom = input.getAnalysisGeometry();
-                                                System.err.println("GEOM: " + geom.getGeometryType());
-                                                if ("Point".equals(geom.getGeometryType())) {
-                                                    List<Double> pts = new ArrayList<Double>();
-                                                    for (Coordinate coord : geom.getCoordinates()) {
-                                                        pts.add(coord.y);
-                                                        pts.add(coord.x);
-                                                    }
+                                                if (input.getAnalysisGeometry().isPresent()) {
+                                                    Geometry geom = input.getAnalysisGeometry().get();
+                                                    System.err.println("GEOM: " + geom.getGeometryType());
+                                                    if ("Point".equals(geom.getGeometryType())) {
+                                                        List<Double> pts = new ArrayList<Double>();
+                                                        for (Coordinate coord : geom.getCoordinates()) {
+                                                            pts.add(coord.y);
+                                                            pts.add(coord.x);
+                                                        }
                                                         JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
                                                             poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
                                                                 arpt.setAbstractRing(createAndWrap(RingType.class, (rt) -> {
@@ -565,29 +574,30 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                                                 _spapt.getAbstractSurfacePatch().add(ppt);
                                                             });*/
                                                         sft.setPatches(spapt);
-                                                } else {
-                                                    List<Double> pts = new ArrayList<Double>();
-                                                    for (Coordinate coord : geom.getCoordinates()) {
-                                                        pts.add(coord.y);
-                                                        pts.add(coord.x);
-                                                    }
-                                                    ;
-                                                    JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
-                                                        poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
-                                                            arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
-                                                                DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
-                                                                    dpl.getValue().addAll(pts);
-                                                                });
-                                                                lrt.setPosList(dplt);
+                                                    } else {
+                                                        List<Double> pts = new ArrayList<Double>();
+                                                        for (Coordinate coord : geom.getCoordinates()) {
+                                                            pts.add(coord.y);
+                                                            pts.add(coord.x);
+                                                        }
+                                                        ;
+                                                        JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
+                                                            poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
+                                                                arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
+                                                                    DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
+                                                                        dpl.getValue().addAll(pts);
+                                                                    });
+                                                                    lrt.setPosList(dplt);
+                                                                }));
                                                             }));
-                                                        }));
-                                                    });
+                                                        });
 
-                                                    SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
-                                                    JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
-                                                    spapt.getValue().getAbstractSurfacePatch().add(ppt);
+                                                        SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
+                                                        JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
+                                                        spapt.getValue().getAbstractSurfacePatch().add(ppt);
 
-                                                    sft.setPatches(spapt);
+                                                        sft.setPatches(spapt);
+                                                    }
                                                 }
                                             } catch (Exception e) {
                                                 sft.setPatches(null);
