@@ -27,6 +27,7 @@ import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.ObservedCloudLayer;
 import fi.fmi.avi.model.metar.ObservedClouds;
+import fi.fmi.avi.model.metar.RunwayState;
 import fi.fmi.avi.model.metar.TrendForecast;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -194,7 +195,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertFalse(layer.getAmount().isPresent());
         assertTrue(layer.getBase().isPresent());
         assertEquals(layer.getBase().get().getUom(), "[ft_i]");
-        assertTrue(Math.abs(layer.getBase().get().getValue() - 1500) < 0.00001);
+        assertEquals(layer.getBase().get().getValue(),1500, 0.00001);
         assertFalse(layer.isHeightUnobservableByAutoSystem());
         assertFalse(layer.isHeightNotDetectedByAutoSystem());
         assertFalse(layer.isCloudTypeUnobservableByAutoSystem());
@@ -205,7 +206,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertFalse(layer.getAmount().isPresent());
         assertTrue(layer.getBase().isPresent());
         assertEquals(layer.getBase().get().getUom(), "[ft_i]");
-        assertTrue(Math.abs(layer.getBase().get().getValue() - 1500) < 0.00001);
+        assertEquals(layer.getBase().get().getValue(),1500,0.00001);
         assertFalse(layer.isHeightUnobservableByAutoSystem());
         assertFalse(layer.isHeightNotDetectedByAutoSystem());
         assertFalse(layer.isCloudTypeUnobservableByAutoSystem());
@@ -239,7 +240,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(AviationCodeListUser.CloudAmount.SCT, layer.getAmount().get());
         assertTrue(layer.getBase().isPresent());
         assertEquals(layer.getBase().get().getUom(), "[ft_i]");
-        assertTrue(Math.abs(layer.getBase().get().getValue() - 1500) < 0.00001);
+        assertEquals(layer.getBase().get().getValue(),1500,0.00001);
         assertFalse(layer.isHeightUnobservableByAutoSystem());
         assertFalse(layer.isHeightNotDetectedByAutoSystem());
         assertFalse(layer.isCloudTypeUnobservableByAutoSystem());
@@ -261,7 +262,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(AviationCodeListUser.CloudAmount.BKN_OVC, layer.getAmount().get());
         assertTrue(layer.getBase().isPresent());
         assertEquals(layer.getBase().get().getUom(), "[ft_i]");
-        assertTrue(Math.abs(layer.getBase().get().getValue() - 1500) < 0.00001);
+        assertEquals(layer.getBase().get().getValue(), 1500, 0.00001);
         assertFalse(layer.isHeightUnobservableByAutoSystem());
         assertFalse(layer.isHeightNotDetectedByAutoSystem());
         assertTrue(layer.isCloudTypeUnobservableByAutoSystem());
@@ -287,10 +288,20 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     }
 
+    @Test
+    public void testRunwayStateAllRunways() throws Exception {
+        Document toValidate = readDocument("metar-EDDF-runwaystate-all-runways.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+        Optional<METAR> m = result.getConvertedMessage();
+        assertTrue(m.isPresent());
 
+        Optional<List<RunwayState>> runwayStates = m.get().getRunwayStates();
+        assertTrue(runwayStates.isPresent());
+        RunwayState rws = runwayStates.get().get(0);
+        assertTrue(rws.isAppliedToAllRunways());
+    }
 
-    //TODO: RWS with snow closure conflicts
-    //TODO: RWS with all runways flag
     //TODO: RWS with cleared flag conflicts
     //TODO: RWS with depth of deposit
     //TODO: RWS with braking action special values 99 and 127

@@ -267,23 +267,25 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
             }
 
             // runway state (C)
-            boolean snoclo = false;
+            boolean snoCloPresent = false;
+            boolean nonSnoCloRWSPresent = false;
             for (AerodromeRunwayStatePropertyType rvsProp : obsRecord.get().getRunwayState()) {
                 Optional<AerodromeRunwayStateType> rvs = resolveProperty(rvsProp, AerodromeRunwayStateType.class, refCtx);
                 if (rvs.isPresent()) {
                     if (rvs.get().isSnowClosure() != null && rvs.get().isSnowClosure()) {
-                        snoclo = true;
+                        snoCloPresent = true;
                     } else {
+                        nonSnoCloRWSPresent = true;
                         withRunwayStateBuilderFor(rvsProp, aerodrome, refCtx, (rvsBuilder) -> {
                             obsProps.addToList(ObservationRecordProperties.Name.RUNWAY_STATE, rvsBuilder.build());
                         }, retval::add);
                     }
                 }
             }
-            if (snoclo) {
-                if (!obsProps.getList(ObservationRecordProperties.Name.RUNWAY_STATE, RunwayDirection.class).isEmpty()) {
+            if (snoCloPresent) {
+                if (nonSnoCloRWSPresent) {
                     retval.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.LOGICAL, "Additional runway state information given in addition to "
-                            + "snow closure (applying for the entire aerodrome)");
+                            + "snow closure (applying for the entire aerodrome), this info is discarded");
                 }
                 metarProps.set(METARProperties.Name.SNOW_CLOSURE, Boolean.TRUE);
             }
@@ -621,131 +623,124 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         IssueList issues = new IssueList();
         Optional<AerodromeRunwayStateType> runwayState = resolveProperty(rwsProp, AerodromeRunwayStateType.class, refCtx);
         if (runwayState.isPresent()) {
-            RunwayStateImpl.Builder rwsBuilder = new RunwayStateImpl.Builder();
             if (runwayState.get().isSnowClosure() != null && runwayState.get().isSnowClosure()) {
-                //none of the other RVS parameters are allowed
-                //runway direction not allowed
-                if (runwayState.get().getRunway() != null || (runwayState.get().isCleared() != null && runwayState.get().isCleared())
-                        || runwayState.get().getDepositType() != null
-                        || runwayState.get().getContamination() != null || runwayState.get().getEstimatedSurfaceFrictionOrBrakingAction() != null
-                        || runwayState.get().getDepthOfDeposit() != null) {
-                    issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL, "No runwayDirection, cleared, deposit, contamination, surface "
-                            + "friction / braking action or depth of deposit allowed with snow closure flag");
+                throw new IllegalArgumentException("Must not give runway state with snow closure as input, no need to parse as RunwayState object. SNOCLO "
+                        + "applies to the whole aerodrome, not an individual runway");
+            }
+            RunwayStateImpl.Builder rwsBuilder = new RunwayStateImpl.Builder();
+            if (runwayState.get().isAllRunways() != null && runwayState.get().isAllRunways()) {
+                rwsBuilder.setAppliedToAllRunways(true);
+                if (runwayState.get().getRunway() != null) {
+                    issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
+                            "Runway should not be given if 'allRunways' is true in " + "RunwayState");
                 }
             } else {
-                if (runwayState.get().isAllRunways() != null && runwayState.get().isAllRunways()) {
-                    rwsBuilder.setAppliedToAllRunways(true);
-                    if (runwayState.get().getRunway() != null) {
-                        issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
-                                "Runway should not be given if 'allRunways' is true in " + "RunwayState");
-                    }
+                RunwayDirectionPropertyType rwdProp = runwayState.get().getRunway();
+                if (rwdProp != null) {
+                    withRunwayDirectionBuilderFor(rwdProp, aerodrome, refCtx, (rwdBuilder) -> {
+                        rwsBuilder.setRunwayDirection(rwdBuilder.build());
+                    }, issues::add);
                 } else {
-                    RunwayDirectionPropertyType rwdProp = runwayState.get().getRunway();
-                    if (rwdProp != null) {
-                        withRunwayDirectionBuilderFor(rwdProp, aerodrome, refCtx, (rwdBuilder) -> {
-                            rwsBuilder.setRunwayDirection(rwdBuilder.build());
-                        }, issues::add);
-                    } else {
-                        issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                "Runway designator must be given in RunwayState unless " + "'allRunways' flag is given");
-                    }
-                }
-                if (runwayState.get().isCleared() != null && runwayState.get().isCleared()) {
-                    rwsBuilder.setCleared(true);
-                    if (runwayState.get().getDepositType() != null || runwayState.get().getContamination() != null
-                            || runwayState.get().getEstimatedSurfaceFrictionOrBrakingAction() != null || runwayState.get().getDepthOfDeposit() != null) {
-                        issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
-                                "No deposit, contamination, surface friction / braking " + "action or depth of deposit allowed with cleared flag");
-                    }
-                } else {
-                    //deposit
-                    if (runwayState.get().getDepositType() != null && runwayState.get().getDepositType().getHref() != null) {
-                        if (runwayState.get().getDepositType().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_DEPOSITS)) {
-                            String code = runwayState.get()
-                                    .getDepositType()
-                                    .getHref()
-                                    .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_DEPOSITS.length());
-                            rwsBuilder.setDeposit(AviationCodeListUser.RunwayDeposit.fromInt(Integer.parseInt(code)));
-                        } else {
-                            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                                    "Unknown codelist reference for runway state " + "deposit '" + runwayState.get().getDepositType().getHref() + "'");
-                        }
-                    }
-
-                    //contamination
-                    if (runwayState.get().getContamination() != null && runwayState.get().getContamination().getHref() != null) {
-                        if (runwayState.get().getContamination().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_CONTAMINATION)) {
-                            String code = runwayState.get()
-                                    .getContamination()
-                                    .getHref()
-                                    .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_CONTAMINATION.length());
-                            rwsBuilder.setContamination(AviationCodeListUser.RunwayContamination.fromInt(Integer.parseInt(code)));
-                        } else {
-                            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                                    "Unknown codelist reference for runway state " + "contamination '" + runwayState.get().getContamination().getHref() + "'");
-                        }
-                    }
-
-                    //depth of deposit
-                    if (runwayState.get().getDepthOfDeposit() != null) {
-                        JAXBElement<DistanceWithNilReasonType> dod = runwayState.get().getDepthOfDeposit();
-                        if (dod.isNil()) {
-                            rwsBuilder.setDepthNotMeasurable(true);
-                        } else if (dod.getValue() != null) {
-                            if (dod.getValue().getNilReason().isEmpty()) {
-                                rwsBuilder.setDepthOfDeposit(NumericMeasureImpl.of(dod.getValue().getValue(), dod.getValue().getUom()));
-                            } else {
-                                if (dod.getValue()
-                                        .getNilReason()
-                                        .contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
-                                    rwsBuilder.setDepthInsignificant(true);
-                                }
-                                if (dod.getValue().getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
-                                    rwsBuilder.setDepthNotMeasurable(true);
-                                }
-                            }
-                        }
-                    }
-
-                    //friction/braking action
-                    if (runwayState.get().getEstimatedSurfaceFrictionOrBrakingAction() != null
-                            && runwayState.get().getEstimatedSurfaceFrictionOrBrakingAction().getHref() != null) {
-                        if (runwayState.get()
-                                .getEstimatedSurfaceFrictionOrBrakingAction()
-                                .getHref()
-                                .startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_SURFACE_FRICTION_OR_BRAKING_ACTION)) {
-                            String code = runwayState.get()
-                                    .getEstimatedSurfaceFrictionOrBrakingAction()
-                                    .getHref()
-                                    .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_SURFACE_FRICTION_OR_BRAKING_ACTION.length());
-                            AviationCodeListUser.BrakingAction ba = AviationCodeListUser.BrakingAction.fromInt(Integer.parseInt(code));
-                            if (ba == null) {
-                                //not one of the BA codes, must be surface friction
-                                int intValue = Integer.parseInt(code);
-                                if (intValue == 127) {
-                                    rwsBuilder.setRunwayNotOperational(true);
-                                } else if (intValue == 99) {
-                                    rwsBuilder.setEstimatedSurfaceFrictionUnreliable(true);
-                                } else if (intValue >= 0 && intValue <= 98) {
-                                    double friction = Integer.parseInt(code) / 100.0;
-                                    rwsBuilder.setEstimatedSurfaceFriction(friction);
-                                } else {
-                                    issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
-                                            "Unknown estimated surface friction / braking " + "action code '" + intValue + "'");
-                                }
-                            } else {
-                                rwsBuilder.setBrakingAction(ba);
-                            }
-                        } else {
-                            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                                    "Invalid codelist reference for " + "estimated surface friction / braking action '" + runwayState.get()
-                                            .getEstimatedSurfaceFrictionOrBrakingAction()
-                                            .getHref() + "'");
-                        }
-                    }
-
+                    issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                            "Runway designator must be given in RunwayState unless " + "'allRunways' flag is given");
                 }
             }
+            if (runwayState.get().isCleared() != null && runwayState.get().isCleared()) {
+                rwsBuilder.setCleared(true);
+                if (runwayState.get().getDepositType() != null || runwayState.get().getContamination() != null
+                        || runwayState.get().getEstimatedSurfaceFrictionOrBrakingAction() != null || runwayState.get().getDepthOfDeposit() != null) {
+                    issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
+                            "No deposit, contamination, surface friction / braking " + "action or depth of deposit allowed with cleared flag");
+                }
+            } else {
+                //deposit
+                if (runwayState.get().getDepositType() != null && runwayState.get().getDepositType().getHref() != null) {
+                    if (runwayState.get().getDepositType().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_DEPOSITS)) {
+                        String code = runwayState.get()
+                                .getDepositType()
+                                .getHref()
+                                .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_DEPOSITS.length());
+                        rwsBuilder.setDeposit(AviationCodeListUser.RunwayDeposit.fromInt(Integer.parseInt(code)));
+                    } else {
+                        issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                                "Unknown codelist reference for runway state " + "deposit '" + runwayState.get().getDepositType().getHref() + "'");
+                    }
+                }
+
+                //contamination
+                if (runwayState.get().getContamination() != null && runwayState.get().getContamination().getHref() != null) {
+                    if (runwayState.get().getContamination().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_CONTAMINATION)) {
+                        String code = runwayState.get()
+                                .getContamination()
+                                .getHref()
+                                .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_CONTAMINATION.length());
+                        rwsBuilder.setContamination(AviationCodeListUser.RunwayContamination.fromInt(Integer.parseInt(code)));
+                    } else {
+                        issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                                "Unknown codelist reference for runway state " + "contamination '" + runwayState.get().getContamination().getHref() + "'");
+                    }
+                }
+
+                //depth of deposit
+                if (runwayState.get().getDepthOfDeposit() != null) {
+                    JAXBElement<DistanceWithNilReasonType> dod = runwayState.get().getDepthOfDeposit();
+                    if (dod.isNil()) {
+                        rwsBuilder.setDepthNotMeasurable(true);
+                    } else if (dod.getValue() != null) {
+                        if (dod.getValue().getNilReason().isEmpty()) {
+                            rwsBuilder.setDepthOfDeposit(NumericMeasureImpl.of(dod.getValue().getValue(), dod.getValue().getUom()));
+                        } else {
+                            if (dod.getValue()
+                                    .getNilReason()
+                                    .contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
+                                rwsBuilder.setDepthInsignificant(true);
+                            }
+                            if (dod.getValue().getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
+                                rwsBuilder.setDepthNotMeasurable(true);
+                            }
+                        }
+                    }
+                }
+
+                //friction/braking action
+                if (runwayState.get().getEstimatedSurfaceFrictionOrBrakingAction() != null
+                        && runwayState.get().getEstimatedSurfaceFrictionOrBrakingAction().getHref() != null) {
+                    if (runwayState.get()
+                            .getEstimatedSurfaceFrictionOrBrakingAction()
+                            .getHref()
+                            .startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_SURFACE_FRICTION_OR_BRAKING_ACTION)) {
+                        String code = runwayState.get()
+                                .getEstimatedSurfaceFrictionOrBrakingAction()
+                                .getHref()
+                                .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_SURFACE_FRICTION_OR_BRAKING_ACTION.length());
+                        AviationCodeListUser.BrakingAction ba = AviationCodeListUser.BrakingAction.fromInt(Integer.parseInt(code));
+                        if (ba == null) {
+                            //not one of the BA codes, must be surface friction
+                            int intValue = Integer.parseInt(code);
+                            if (intValue == 127) {
+                                rwsBuilder.setRunwayNotOperational(true);
+                            } else if (intValue == 99) {
+                                rwsBuilder.setEstimatedSurfaceFrictionUnreliable(true);
+                            } else if (intValue >= 0 && intValue <= 98) {
+                                double friction = Integer.parseInt(code) / 100.0;
+                                rwsBuilder.setEstimatedSurfaceFriction(friction);
+                            } else {
+                                issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
+                                        "Unknown estimated surface friction / braking " + "action code '" + intValue + "'");
+                            }
+                        } else {
+                            rwsBuilder.setBrakingAction(ba);
+                        }
+                    } else {
+                        issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                                "Invalid codelist reference for " + "estimated surface friction / braking action '" + runwayState.get()
+                                        .getEstimatedSurfaceFrictionOrBrakingAction()
+                                        .getHref() + "'");
+                    }
+                }
+
+            }
+
             resultHandler.accept(rwsBuilder);
         } else {
             issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
