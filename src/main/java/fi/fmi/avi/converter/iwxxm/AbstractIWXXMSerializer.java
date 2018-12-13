@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -181,9 +180,9 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
 
                                     point.setSrsName(inputPos.get().getCoordinateReferenceSystemId());
                                     if (inputPos.get().getCoordinates() != null) {
-                                        point.setSrsDimension(BigInteger.valueOf(inputPos.get().getCoordinates().length));
+                                        point.setSrsDimension(BigInteger.valueOf(inputPos.get().getCoordinates().size()));
                                         point.setPos(create(DirectPositionType.class,
-                                                (pos) -> pos.getValue().addAll(Arrays.asList(inputPos.get().getCoordinates()))));
+                                                (pos) -> pos.getValue().addAll(inputPos.get().getCoordinates())));
                                     }
                                 }
                             }), PointType.class);
@@ -239,9 +238,9 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
                                                 point.setId("point-" + UUID.randomUUID().toString());
                                                 point.setSrsName(inputPosition.getCoordinateReferenceSystemId());
                                                 if (inputPosition.getCoordinates() != null) {
-                                                    point.setSrsDimension(BigInteger.valueOf(inputPosition.getCoordinates().length));
+                                                    point.setSrsDimension(BigInteger.valueOf(inputPosition.getCoordinates().size()));
                                                     point.setPos(create(DirectPositionType.class,
-                                                            (pos) -> pos.getValue().addAll(Arrays.asList(inputPosition.getCoordinates()))));
+                                                            (pos) -> pos.getValue().addAll(inputPosition.getCoordinates())));
                                                 }
                                                 if (inputPosition.getElevationValue().isPresent() && inputPosition.getElevationUom().isPresent()) {
                                                     point.setElevation(create(ValDistanceVerticalType.class, (dist) -> {

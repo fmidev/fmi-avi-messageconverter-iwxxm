@@ -58,7 +58,7 @@ public class TAFIWXXMSerializerTest {
                 .setLocationIndicatorICAO("EETN")
                 .setReferencePoint(new GeoPositionImpl.Builder()
                         .setCoordinateReferenceSystemId("http://www.opengis.net/def/crs/EPSG/0/4326")
-                        .setCoordinates(new Double[]{24.8325, 59.413333})
+                        .addCoordinates(24.8325, 59.413333)
                         .setElevationValue(40.0)
                         .setElevationUom("m")
                         .build()
