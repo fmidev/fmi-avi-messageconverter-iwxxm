@@ -460,7 +460,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
                                 }
                             }
                             if (dp.getValue() != null) {
-                                posBuilder.setCoordinates(dp.getValue().toArray(new Double[] {}));
+                                posBuilder.addAllCoordinates(dp.getValue());
                             } else {
                                 canBuildPos = false;
                                 retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
@@ -546,7 +546,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
                                         "No SRS name for ARP elevated point position"));
                             }
                             if (dp.getValue() != null) {
-                                posBuilder.setCoordinates(dp.getValue().toArray(new Double[] {}));
+                                posBuilder.addAllCoordinates(dp.getValue());
                             } else {
                                 canBuildPos = false;
                                 retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
