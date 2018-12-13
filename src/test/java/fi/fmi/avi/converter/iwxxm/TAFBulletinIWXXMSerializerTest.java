@@ -34,6 +34,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.BulletinHeading;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.GeoPositionImpl;
@@ -81,7 +82,7 @@ public class TAFBulletinIWXXMSerializerTest {
                         .setGeographicalDesignator("FI")//
                         .setLocationIndicator("EFKL")//
                         .setBulletinNumber(31)//
-                        .setValidLessThan12Hours(false)//
+                        .setDataTypeDesignatorT2(BulletinHeading.ForecastsDataTypeDesignatorT2.AERODROME_VT_LONG)
                         .build());
         bulletinBuilder.addAllMessages(tafs);
         return bulletinBuilder.build();
