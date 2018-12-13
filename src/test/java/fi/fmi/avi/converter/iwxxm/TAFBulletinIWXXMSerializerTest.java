@@ -116,7 +116,7 @@ public class TAFBulletinIWXXMSerializerTest {
 
         XPathExpression expr = xpath.compile("/collect:MeteorologicalBulletin/collect:bulletinIdentifier");
         String bulletinId = expr.evaluate(docElement);
-        assertEquals("A_FTFI31EFKL_C_EFKL_201707301115--.xml", bulletinId);
+        assertEquals("A_LTFI31EFKL_C_EFKL_201707301115--.xml", bulletinId);
 
         expr = xpath.compile("count(/collect:MeteorologicalBulletin/collect:meteorologicalInformation)");
         assertTrue(2 == Integer.parseInt(expr.evaluate(docElement)));
