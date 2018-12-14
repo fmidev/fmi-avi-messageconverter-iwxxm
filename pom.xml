@@ -11,13 +11,13 @@
   <description>Aviation weather message conversions - IWXXM module</description>
   <groupId>fi.fmi.avi.converter</groupId>
   <artifactId>fmi-avi-messageconverter-iwxxm</artifactId>
-  <version>0.10.2</version>
+  <version>0.10.3-SNAPSHOT</version>
 
   <scm>
     <connection>scm:git:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm.git</connection>
     <developerConnection>scm:git:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm.git</developerConnection>
     <url>https://github.com/fmidev/fmi-avi-messageconverter-iwxxm</url>
-    <tag>fmi-avi-messageconverter-iwxxm-0.10.2</tag>
+    <tag>HEAD</tag>
   </scm>
   
   <dependencies>
