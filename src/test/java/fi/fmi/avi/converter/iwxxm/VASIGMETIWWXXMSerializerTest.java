@@ -23,7 +23,8 @@ import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.sigmet.SIGMET;
-import fi.fmi.avi.model.sigmet.immutable.SIGMETImpl;
+import fi.fmi.avi.model.sigmet.immutable.VASIGMETImpl;
+import fi.fmi.avi.model.sigmet.immutable.WSSIGMETImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -44,7 +45,7 @@ public class VASIGMETIWWXXMSerializerTest {
         om.registerModule(new JtsModule());
         InputStream is = VASIGMETIWWXXMSerializerTest.class.getResourceAsStream(fileName);
         if (is != null) {
-            return om.readValue(is, SIGMETImpl.class);
+            return om.readValue(is, SIGMET.class);
         } else {
             throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
         }

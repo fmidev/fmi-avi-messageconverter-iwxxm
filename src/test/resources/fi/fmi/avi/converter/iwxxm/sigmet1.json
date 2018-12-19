@@ -14,6 +14,11 @@
   "issueTime": {
     "completeTime": "2018-08-27T11:40:00Z"
   },
+  "airspace": {
+    "designator":"EHAA",
+    "name":"AMSTERDAM",
+    "type":"FIR"
+  },
   "validityPeriod": {
     "startTime": {
       "completeTime": "2018-08-27T12:00:00Z"
@@ -23,9 +28,11 @@
     }
   },
   "sigmetPhenomenon": "EMBD_TS",
-  "analysis": [
+  "analysisType": "OBSERVATION",
+  "intensityChange": "NO_CHANGE",
+  "analysisGeometries": [
     {
-      "analysisTime": {
+      "time": {
         "completeTime": "2017-08-27T11:30:00Z"
       },
       "lowerLimit": {
@@ -36,57 +43,63 @@
         "value": 35,
         "uom": "FL"
       },
-      "analysisType": "OBSERVATION",
-      "intensityChange": "NO_CHANGE",
-      "analysisApproximateLocation": false,
-      "analysisGeometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
+      "approximateLocation": false,
+      "geometry": {
+        "geoGeometry": {
+          "type": "Polygon",
+          "coordinates": [
             [
-              5.0,
-              52.0
-            ],
-            [
-              6.0,
-              53.0
-            ],
-            [
-              4.0,
-              54.0
-            ],
-            [
-              5.0,
-              52.0
+              [
+                5.0,
+                52.0
+              ],
+              [
+                6.0,
+                53.0
+              ],
+              [
+                4.0,
+                54.0
+              ],
+              [
+                5.0,
+                52.0
+              ]
             ]
           ]
-        ]
-      },
-      "forecastTime":  {
+        }
+      }
+    }
+  ],
+  "forecastGeometries": [
+    {
+      "time": {
         "completeTime": "2017-08-27T18:00:00Z"
       },
-      "forecastGeometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
+      "geometry": {
+        "geoGeometry": {
+          "type": "Polygon",
+          "coordinates": [
             [
-              5.0,
-              53.0
-            ],
-            [
-              6.0,
-              54.0
-            ],
-            [
-              4.0,
-              55.0
-            ],
-            [
-              5.0,
-              53.0
+              [
+                5.0,
+                53.0
+              ],
+              [
+                6.0,
+                54.0
+              ],
+              [
+                4.0,
+                55.0
+              ],
+              [
+                5.0,
+                53.0
+              ]
             ]
           ]
-        ]
+        }
       }
     }
   ],

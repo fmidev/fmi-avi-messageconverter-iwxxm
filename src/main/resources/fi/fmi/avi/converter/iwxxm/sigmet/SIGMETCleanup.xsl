@@ -15,5 +15,7 @@
     <xsl:template match="//aixm:upperLimitReference[@xsi:nil='true']"/>
     <xsl:template match="//aixm:lowerLimit[@xsi:nil='true']"/>
     <xsl:template match="//aixm:lowerLimitReference[@xsi:nil='true']"/>
+    <xsl:template match="//aixm:designatorICAO[@xsi:nil='true']"/>
+    <xsl:template match="//aixm:horizontalAccuracy[@xsi:nil='true']"/>
     <xsl:template match="//om:result[@xsi:type='iwxxm:MeteorologicalAerodromeForecastRecordPropertyType']/@xsi:type"/>
 </xsl:stylesheet>
