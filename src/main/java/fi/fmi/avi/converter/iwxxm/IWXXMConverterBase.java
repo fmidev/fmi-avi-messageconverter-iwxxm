@@ -44,20 +44,24 @@ public abstract class IWXXMConverterBase {
     /*
       XMLConstants.FEATURE_SECURE_PROCESSING flag value "true" forces the XML schema
       loader to check the allowed protocols using the system property "javax.xml.accessExternalSchema".
-
       On the other hand setting XMLConstants.FEATURE_SECURE_PROCESSING to "false" is not allowed
-      when SecurityManager is enabled. This to enabled loading the XML Schemas from the jar file
-      in the classpath into cached in-memory copies, the work-around below is necessary (for now).
+      when SecurityManager is enabled.
 
-      TODO: In the long term a way of loading the required XML Schema files into memory should be done
-      in way that does not require weakening of the global XML schema loading restrictions.
-       */
+      The schema loading is done using class path resource loading
+      mechanism for all the schemas anyway. Unfortunately the code in
+      com.sun.org.apache.xerces.internal.impl.xs.traversers.XSDHandler#getSchemaDocument method
+      checks the schema loading permissions based on the jar:file type systemID, and thus requires
+      permission for using the "file" (and subsequently "http") protocol, even if the XML Schema
+      contents in this case have already been loaded into memory at this stage by
+      the IWXXMSchemaResourceResolver.
+
+    */
     protected static final boolean F_SECURE_PROCESSING;
     static {
         if (System.getSecurityManager() != null) {
             F_SECURE_PROCESSING = true;
-            //A bit dangerous, as this allows the entire application to access both file system and http resources
-            //when the code loads XML Schema files.
+            //A bit dangerous, as this allows the entire application to use both file and http resources
+            //when the code tries to load XML Schema files.
             System.setProperty("javax.xml.accessExternalSchema", "file,http");
         } else {
             F_SECURE_PROCESSING = false;
@@ -167,7 +171,6 @@ public abstract class IWXXMConverterBase {
             final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
             schemaFactory.setResourceResolver(resolver);
-            //Secure processing does not allow "file" protocol loading for schemas:
             schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
             Source[] schemaSources;
             String schemaLocation;
