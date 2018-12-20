@@ -24,11 +24,14 @@ import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.CloudForecast;
+import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.ObservedCloudLayer;
 import fi.fmi.avi.model.metar.ObservedClouds;
 import fi.fmi.avi.model.metar.RunwayState;
+import fi.fmi.avi.model.metar.SeaState;
 import fi.fmi.avi.model.metar.TrendForecast;
+import fi.fmi.avi.model.metar.WindShear;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -55,10 +58,16 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
     }
 
     @Test
-    public void testNoIssuesWithValidMETAR_RVS() throws Exception {
+    public void testNoIssuesWithValidMETAR_RWS() throws Exception {
         Document toValidate = readDocument("metar-EDDF-runwaystate.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue( "No issues should have been found", result.getConversionIssues().isEmpty());
+        Optional<METAR> m = result.getConvertedMessage();
+        assertTrue(m.isPresent());
+        Optional<List<RunwayState>> states = m.get().getRunwayStates();
+        assertTrue(states.isPresent());
+        assertTrue(states.get().size() == 3);
+
     }
 
     @Test
@@ -302,10 +311,280 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(rws.isAppliedToAllRunways());
     }
 
-    //TODO: RWS with cleared flag conflicts
-    //TODO: RWS with depth of deposit
-    //TODO: RWS with braking action special values 99 and 127
+
+    @Test
+    public void testRunwayStateCleared() throws Exception {
+        Document toValidate = readDocument("metar-EDDF-runwaystate-cleared.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+        Optional<METAR> m = result.getConvertedMessage();
+        assertTrue(m.isPresent());
+
+        Optional<List<RunwayState>> runwayStates = m.get().getRunwayStates();
+        assertTrue(runwayStates.isPresent());
+        RunwayState rws = runwayStates.get().get(0);
+        assertTrue(!rws.isCleared());
+        rws = runwayStates.get().get(1);
+        assertTrue(rws.isCleared());
+        rws = runwayStates.get().get(2);
+        assertTrue(rws.isCleared());
+    }
+
+    @Test
+    public void testRunwayStateClearedConflict() throws Exception {
+        Document toValidate = readDocument("metar-EDDF-runwaystate-cleared-conflict.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
+        assertFalse(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().contains("Schema validation issue")));
+        assertTrue(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().toUpperCase().contains("CLEARED")));
+    }
 
 
+    @Test
+    public void testRunwayStateInfo() throws Exception {
+        Document toValidate = readDocument("metar-EDDF-runwaystate-depth-of-deposit.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue( "No issues should have been found", result.getConversionIssues().isEmpty());
+        Optional<METAR> m = result.getConvertedMessage();
+        assertTrue(m.isPresent());
+        Optional<List<RunwayState>> states = m.get().getRunwayStates();
+        assertTrue(states.isPresent());
+        assertTrue(states.get().size() == 7);
+
+
+        RunwayState rws = states.get().get(0);
+        assertTrue(rws.getRunwayDirection().isPresent());
+        assertEquals("07R", rws.getRunwayDirection().get().getDesignator());
+
+        assertTrue(rws.getContamination().isPresent());
+        assertEquals(AviationCodeListUser.RunwayContamination.PCT_COVERED_LESS_THAN_10, rws.getContamination().get());
+
+        assertTrue(rws.getDeposit().isPresent());
+        assertEquals(AviationCodeListUser.RunwayDeposit.DAMP, rws.getDeposit().get());
+
+        assertFalse(rws.getBrakingAction().isPresent());
+
+        assertTrue(rws.getDepthOfDeposit().isPresent());
+        assertFalse(rws.getDepthOperator().isPresent());
+        assertFalse(rws.isDepthNotMeasurable());
+        assertFalse(rws.isDepthInsignificant());
+        assertEquals(10.1, rws.getDepthOfDeposit().get().getValue(), 0.00001);
+        assertEquals("mm", rws.getDepthOfDeposit().get().getUom());
+
+        assertTrue(rws.getEstimatedSurfaceFriction().isPresent());
+        assertEquals(0.9, rws.getEstimatedSurfaceFriction().get(), 0.00001);
+
+        assertFalse(rws.isCleared());
+        assertFalse(rws.isAppliedToAllRunways());
+
+        assertFalse(rws.isRepetition());
+        assertFalse(rws.isRunwayNotOperational());
+
+        assertFalse(rws.isEstimatedSurfaceFrictionUnreliable());
+
+
+        rws = states.get().get(1);
+        assertTrue(rws.getRunwayDirection().isPresent());
+        assertEquals("07C", rws.getRunwayDirection().get().getDesignator());
+
+        assertTrue(rws.getContamination().isPresent());
+        assertEquals(AviationCodeListUser.RunwayContamination.PCT_COVERED_26_50, rws.getContamination().get());
+
+        assertTrue(rws.getDeposit().isPresent());
+        assertEquals(AviationCodeListUser.RunwayDeposit.DAMP, rws.getDeposit().get());
+
+        assertFalse(rws.getBrakingAction().isPresent());
+
+        assertTrue(rws.getDepthOfDeposit().isPresent());
+        assertFalse(rws.getDepthOperator().isPresent());
+        assertFalse(rws.isDepthNotMeasurable());
+        assertFalse(rws.isDepthInsignificant());
+        assertEquals(-10.1, rws.getDepthOfDeposit().get().getValue(), 0.00001);
+        assertEquals("mm", rws.getDepthOfDeposit().get().getUom());
+
+        assertFalse(rws.getEstimatedSurfaceFriction().isPresent());
+        assertTrue(rws.isEstimatedSurfaceFrictionUnreliable());
+
+        assertFalse(rws.isCleared());
+        assertFalse(rws.isAppliedToAllRunways());
+
+        assertFalse(rws.isRepetition());
+        assertFalse(rws.isRunwayNotOperational());
+
+
+        rws = states.get().get(2);
+        assertTrue(rws.getRunwayDirection().isPresent());
+        assertEquals("07L", rws.getRunwayDirection().get().getDesignator());
+
+        assertTrue(rws.getContamination().isPresent());
+        assertEquals(AviationCodeListUser.RunwayContamination.PCT_COVERED_26_50, rws.getContamination().get());
+
+        assertTrue(rws.getDeposit().isPresent());
+        assertEquals(AviationCodeListUser.RunwayDeposit.DAMP, rws.getDeposit().get());
+
+        assertFalse(rws.getBrakingAction().isPresent());
+
+        assertTrue(rws.getDepthOfDeposit().isPresent());
+        assertFalse(rws.getDepthOperator().isPresent());
+        assertFalse(rws.isDepthNotMeasurable());
+        assertFalse(rws.isDepthInsignificant());
+        assertEquals(0.0, rws.getDepthOfDeposit().get().getValue(), 0.00001);
+        assertEquals("mm", rws.getDepthOfDeposit().get().getUom());
+
+        assertFalse(rws.getEstimatedSurfaceFriction().isPresent());
+        assertFalse(rws.isEstimatedSurfaceFrictionUnreliable());
+
+        assertFalse(rws.isCleared());
+        assertFalse(rws.isAppliedToAllRunways());
+
+        assertFalse(rws.isRepetition());
+        assertTrue(rws.isRunwayNotOperational());
+
+
+        rws = states.get().get(3);
+        assertTrue(rws.getRunwayDirection().isPresent());
+        assertEquals("07L2", rws.getRunwayDirection().get().getDesignator());
+
+        assertTrue(rws.getContamination().isPresent());
+        assertEquals(AviationCodeListUser.RunwayContamination.PCT_COVERED_26_50, rws.getContamination().get());
+
+        assertTrue(rws.getDeposit().isPresent());
+        assertEquals(AviationCodeListUser.RunwayDeposit.DAMP, rws.getDeposit().get());
+
+        assertTrue(rws.getBrakingAction().isPresent());
+        assertEquals(AviationCodeListUser.BrakingAction.GOOD, rws.getBrakingAction().get());
+
+        assertTrue(rws.getDepthOfDeposit().isPresent());
+        assertFalse(rws.getDepthOperator().isPresent());
+        assertFalse(rws.isDepthNotMeasurable());
+        assertFalse(rws.isDepthInsignificant());
+        assertEquals(-0.0, rws.getDepthOfDeposit().get().getValue(), 0.00001);
+        assertEquals("mm", rws.getDepthOfDeposit().get().getUom());
+
+        assertFalse(rws.getEstimatedSurfaceFriction().isPresent());
+        assertFalse(rws.isEstimatedSurfaceFrictionUnreliable());
+
+        assertFalse(rws.isCleared());
+        assertFalse(rws.isAppliedToAllRunways());
+
+        assertFalse(rws.isRepetition());
+        assertFalse(rws.isRunwayNotOperational());
+
+
+        rws = states.get().get(4);
+        assertTrue(rws.getRunwayDirection().isPresent());
+        assertEquals("07L3", rws.getRunwayDirection().get().getDesignator());
+
+        assertTrue(rws.getContamination().isPresent());
+        assertEquals(AviationCodeListUser.RunwayContamination.PCT_COVERED_26_50, rws.getContamination().get());
+
+        assertTrue(rws.getDeposit().isPresent());
+        assertEquals(AviationCodeListUser.RunwayDeposit.DAMP, rws.getDeposit().get());
+
+        assertTrue(rws.getBrakingAction().isPresent());
+        assertEquals(AviationCodeListUser.BrakingAction.POOR, rws.getBrakingAction().get());
+
+        assertFalse(rws.getDepthOfDeposit().isPresent());
+        assertFalse(rws.getDepthOperator().isPresent());
+        assertTrue(rws.isDepthNotMeasurable());
+        assertFalse(rws.isDepthInsignificant());
+
+        assertFalse(rws.getEstimatedSurfaceFriction().isPresent());
+        assertFalse(rws.isEstimatedSurfaceFrictionUnreliable());
+
+        assertFalse(rws.isCleared());
+        assertFalse(rws.isAppliedToAllRunways());
+
+        assertFalse(rws.isRepetition());
+        assertFalse(rws.isRunwayNotOperational());
+
+        rws = states.get().get(5);
+        assertTrue(rws.getRunwayDirection().isPresent());
+        assertEquals("07L4", rws.getRunwayDirection().get().getDesignator());
+
+        assertTrue(rws.getContamination().isPresent());
+        assertEquals(AviationCodeListUser.RunwayContamination.PCT_COVERED_26_50, rws.getContamination().get());
+
+        assertTrue(rws.getDeposit().isPresent());
+        assertEquals(AviationCodeListUser.RunwayDeposit.DAMP, rws.getDeposit().get());
+
+        assertFalse(rws.getBrakingAction().isPresent());
+
+        assertFalse(rws.getDepthOfDeposit().isPresent());
+        assertFalse(rws.getDepthOperator().isPresent());
+        assertFalse(rws.isDepthNotMeasurable());
+        assertTrue(rws.isDepthInsignificant());
+
+        assertTrue(rws.getEstimatedSurfaceFriction().isPresent());
+        assertEquals(0.0, rws.getEstimatedSurfaceFriction().get(), 0.00001);
+        assertFalse(rws.isEstimatedSurfaceFrictionUnreliable());
+
+        assertFalse(rws.isCleared());
+        assertFalse(rws.isAppliedToAllRunways());
+
+        assertFalse(rws.isRepetition());
+        assertFalse(rws.isRunwayNotOperational());
+
+
+        rws = states.get().get(6);
+        assertTrue(rws.getRunwayDirection().isPresent());
+        assertEquals("07L5", rws.getRunwayDirection().get().getDesignator());
+
+        assertTrue(rws.getContamination().isPresent());
+        assertEquals(AviationCodeListUser.RunwayContamination.PCT_COVERED_26_50, rws.getContamination().get());
+
+        assertTrue(rws.getDeposit().isPresent());
+        assertEquals(AviationCodeListUser.RunwayDeposit.DAMP, rws.getDeposit().get());
+
+        assertFalse(rws.getBrakingAction().isPresent());
+
+        assertFalse(rws.getDepthOfDeposit().isPresent());
+        assertFalse(rws.getDepthOperator().isPresent());
+        assertFalse(rws.isDepthNotMeasurable());
+        assertFalse(rws.isDepthInsignificant());
+
+        assertTrue(rws.getEstimatedSurfaceFriction().isPresent());
+        assertEquals(0.98, rws.getEstimatedSurfaceFriction().get(), 0.00001);
+        assertFalse(rws.isEstimatedSurfaceFrictionUnreliable());
+
+        assertFalse(rws.isCleared());
+        assertFalse(rws.isAppliedToAllRunways());
+
+        assertFalse(rws.isRepetition());
+        assertTrue(rws.isRunwayNotOperational());
+
+    }
+
+    @Test
+    public void testSeaStateWithSignificantWaveHeight() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-sea-state-sig-wave-height.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+
+        Optional<METAR> m = result.getConvertedMessage();
+        assertTrue(m.isPresent());
+
+        Optional<SeaState> seaState = m.get().getSeaState();
+        assertTrue(seaState.isPresent());
+        Optional<NumericMeasure> wh = seaState.get().getSignificantWaveHeight();
+        assertTrue(wh.isPresent());
+        assertEquals(5.5, wh.get().getValue(), 0.00001);
+        assertEquals("m", wh.get().getUom());
+    }
+
+    @Test
+    public void testWindShearAllRunways() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-wind-shear-all-runways.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+
+        Optional<METAR> m = result.getConvertedMessage();
+        assertTrue(m.isPresent());
+
+        Optional<WindShear> windShear = m.get().getWindShear();
+        assertTrue(windShear.isPresent());
+
+        assertTrue(windShear.get().isAppliedToAllRunways());
+    }
 
 }

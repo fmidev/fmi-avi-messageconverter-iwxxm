@@ -685,20 +685,29 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                 if (runwayState.get().getDepthOfDeposit() != null) {
                     JAXBElement<DistanceWithNilReasonType> dod = runwayState.get().getDepthOfDeposit();
                     if (dod.isNil()) {
-                        rwsBuilder.setDepthNotMeasurable(true);
-                    } else if (dod.getValue() != null) {
-                        if (dod.getValue().getNilReason().isEmpty()) {
-                            rwsBuilder.setDepthOfDeposit(NumericMeasureImpl.of(dod.getValue().getValue(), dod.getValue().getUom()));
-                        } else {
+                        if (dod.getValue() != null && !dod.getValue().getNilReason().isEmpty()){
                             if (dod.getValue()
                                     .getNilReason()
                                     .contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
                                 rwsBuilder.setDepthInsignificant(true);
-                            }
-                            if (dod.getValue().getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
+                            } else if (dod.getValue().getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
+                                rwsBuilder.setDepthNotMeasurable(true);
+                            } else if (dod.getValue().getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_UNKNOWN)) {
+                                rwsBuilder.setRunwayNotOperational(true);
+                            } else {
+                                issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
+                                        "Unknown nilReason for runway state depth of deposit '" + dod.getValue().getNilReason() + "', treating as "
+                                                + "notMeasurable");
                                 rwsBuilder.setDepthNotMeasurable(true);
                             }
+                        } else {
+                            issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
+                                    "No nilReason for nil runway state depth of deposit, treating as "
+                                            + "notMeasurable");
+                            rwsBuilder.setDepthNotMeasurable(true);
                         }
+                    } else if (dod.getValue() != null) {
+                        rwsBuilder.setDepthOfDeposit(NumericMeasureImpl.of(dod.getValue().getValue(), dod.getValue().getUom()));
                     }
                 }
 
@@ -757,26 +766,26 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         IssueList issues = new IssueList();
         Optional<AerodromeRunwayVisualRangeType> rvr = resolveProperty(rvrProp, AerodromeRunwayVisualRangeType.class, refCtx);
         if (rvr.isPresent()) {
-            RunwayVisualRangeImpl.Builder rvrBuilder = new RunwayVisualRangeImpl.Builder();
+            final RunwayVisualRangeImpl.Builder rvrBuilder = new RunwayVisualRangeImpl.Builder();
             RunwayDirectionPropertyType rwdProp = rvr.get().getRunway();
             if (rwdProp != null) {
                 withRunwayDirectionBuilderFor(rwdProp, aerodrome, refCtx, (rwdBuilder) -> {
                     rvrBuilder.setRunwayDirection(rwdBuilder.build());
+                    rvrBuilder.setMeanRVR(asNumericMeasure(rvr.get().getMeanRVR()));
+                    rvrBuilder.setMeanRVROperator(asRelationalOperator(rvr.get().getMeanRVROperator()));
+                    if (rvr.get().getPastTendency() != null) {
+                        rvrBuilder.setPastTendency(AviationCodeListUser.VisualRangeTendency.valueOf(rvr.get().getPastTendency().name()));
+                    }
+                    //Note: varying RVR is not supported in IWXXM 2.1:
+                    rvrBuilder.setVaryingRVRMaximum(Optional.empty());
+                    rvrBuilder.setVaryingRVRMaximumOperator(Optional.empty());
+                    rvrBuilder.setVaryingRVRMinimum(Optional.empty());
+                    rvrBuilder.setVaryingRVRMinimumOperator(Optional.empty());
+                    resultHandler.accept(rvrBuilder);
                 }, issues::add);
             } else {
                 issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No runway property in RunwayVisualRange");
             }
-            rvrBuilder.setMeanRVR(asNumericMeasure(rvr.get().getMeanRVR()));
-            rvrBuilder.setMeanRVROperator(asRelationalOperator(rvr.get().getMeanRVROperator()));
-            if (rvr.get().getPastTendency() != null) {
-                rvrBuilder.setPastTendency(AviationCodeListUser.VisualRangeTendency.valueOf(rvr.get().getPastTendency().name()));
-            }
-            //Note: varying RVR is not supported in IWXXM 2.1:
-            rvrBuilder.setVaryingRVRMaximum(Optional.empty());
-            rvrBuilder.setVaryingRVRMaximumOperator(Optional.empty());
-            rvrBuilder.setVaryingRVRMinimum(Optional.empty());
-            rvrBuilder.setVaryingRVRMinimumOperator(Optional.empty());
-            resultHandler.accept(rvrBuilder);
         } else {
             issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
                     "Unable to resolve AerodromeRunwayVisualRange from " + "AerodromeRunwayVisualRangeProperty");
@@ -952,8 +961,13 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                 }
             }
         } else {
-            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                    "Unable to resolve the RunwayDirectionType within " + "the runway element");
+            String message;
+            if (rwdProp.getHref() != null) {
+                message = "Unable to resolve the RunwayDirectionType within the runway element, id:" + rwdProp.getHref().substring(1);
+            } else {
+                message = "Unable to resolve the RunwayDirectionType within the runway element";
+            }
+            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,message);
         }
         for (ConversionIssue issue : issues) {
             issueHandler.accept(issue);

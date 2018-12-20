@@ -81,54 +81,21 @@
 
                     <iwxxm:rvr>
                         <iwxxm:AerodromeRunwayVisualRange pastTendency="NO_CHANGE">
-                            <iwxxm:runway>
-                                <aixm:RunwayDirection  gml:id="runway-EDDF-07-r-sf">
-                                    <aixm:timeSlice>
-                                        <aixm:RunwayDirectionTimeSlice gml:id="runway-EDDF-07-r-sf-ts">
-                                            <gml:validTime/>
-                                            <aixm:interpretation>SNAPSHOT</aixm:interpretation>
-                                            <aixm:designator>07R</aixm:designator>
-                                            <aixm:trueBearing>70</aixm:trueBearing>
-                                        </aixm:RunwayDirectionTimeSlice>
-                                    </aixm:timeSlice>
-                                </aixm:RunwayDirection>
-                            </iwxxm:runway>
+                            <iwxxm:runway xlink:href="#runway-eddf-07-r-sf" />
                             <iwxxm:meanRVR uom="m">2000</iwxxm:meanRVR>
                             <iwxxm:meanRVROperator>ABOVE</iwxxm:meanRVROperator>
                         </iwxxm:AerodromeRunwayVisualRange>
                     </iwxxm:rvr>
                     <iwxxm:rvr>
                         <iwxxm:AerodromeRunwayVisualRange pastTendency="NO_CHANGE">
-                          <iwxxm:runway>
-                            <aixm:RunwayDirection  gml:id="runway-EDDF-07-c-sf">
-                              <aixm:timeSlice>
-                                <aixm:RunwayDirectionTimeSlice gml:id="runway-EDDF-07-c-sf-ts">
-                                  <gml:validTime/>
-                                  <aixm:interpretation>SNAPSHOT</aixm:interpretation>
-                                  <aixm:designator>07C</aixm:designator>
-                                  <aixm:trueBearing>70</aixm:trueBearing>
-                                </aixm:RunwayDirectionTimeSlice>
-                              </aixm:timeSlice>
-                            </aixm:RunwayDirection>
-                          </iwxxm:runway>
+                            <iwxxm:runway xlink:href="#runway-EDDF-07-c-sf" />
                             <iwxxm:meanRVR uom="m">2000</iwxxm:meanRVR>
                             <iwxxm:meanRVROperator>ABOVE</iwxxm:meanRVROperator>
                         </iwxxm:AerodromeRunwayVisualRange>
                     </iwxxm:rvr>
                     <iwxxm:rvr>
                         <iwxxm:AerodromeRunwayVisualRange pastTendency="UPWARD">
-                          <iwxxm:runway>
-                            <aixm:RunwayDirection  gml:id="runway-EDDF-07-l-sf">
-                              <aixm:timeSlice>
-                                <aixm:RunwayDirectionTimeSlice gml:id="runway-EDDF-07-l-sf-ts">
-                                  <gml:validTime/>
-                                  <aixm:interpretation>SNAPSHOT</aixm:interpretation>
-                                  <aixm:designator>07L</aixm:designator>
-                                  <aixm:trueBearing>70</aixm:trueBearing>
-                                </aixm:RunwayDirectionTimeSlice>
-                              </aixm:timeSlice>
-                            </aixm:RunwayDirection>
-                          </iwxxm:runway>
+                            <iwxxm:runway xlink:href="#runway-EDDF-07-l-sf" />
                             <iwxxm:meanRVR uom="m">1900</iwxxm:meanRVR>
                         </iwxxm:AerodromeRunwayVisualRange>
                     </iwxxm:rvr>
@@ -143,13 +110,57 @@
                         </iwxxm:AerodromeObservedClouds>
                      </iwxxm:cloud>
                     <iwxxm:runwayState>
-                        <iwxxm:AerodromeRunwayState allRunways="true">
+                        <iwxxm:AerodromeRunwayState>
+                            <iwxxm:runway>
+                                <aixm:RunwayDirection gml:id="runway-eddf-07-r-sf">
+                                    <aixm:timeSlice>
+                                        <aixm:RunwayDirectionTimeSlice gml:id="runway-eddf-07-r-sf-ts">
+                                            <gml:validTime/>
+                                            <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+                                            <aixm:designator>07R</aixm:designator>
+                                            <aixm:trueBearing>70</aixm:trueBearing>
+                                        </aixm:RunwayDirectionTimeSlice>
+                                    </aixm:timeSlice>
+                                </aixm:RunwayDirection>
+                            </iwxxm:runway>
                             <iwxxm:depositType xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-086/1"/>
                             <iwxxm:contamination xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-087/1"/>
                             <iwxxm:estimatedSurfaceFrictionOrBrakingAction xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-089/90"/>
                         </iwxxm:AerodromeRunwayState>
                     </iwxxm:runwayState>
-                  
+                    <iwxxm:runwayState>
+                        <iwxxm:AerodromeRunwayState cleared="true">
+                            <iwxxm:runway>
+                                <aixm:RunwayDirection gml:id="runway-EDDF-07-c-sf">
+                                    <aixm:timeSlice>
+                                        <aixm:RunwayDirectionTimeSlice gml:id="runway-EDDF-07-c-sf-ts">
+                                            <gml:validTime/>
+                                            <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+                                            <aixm:designator>07C</aixm:designator>
+                                            <aixm:trueBearing>70</aixm:trueBearing>
+                                        </aixm:RunwayDirectionTimeSlice>
+                                    </aixm:timeSlice>
+                                </aixm:RunwayDirection>
+                            </iwxxm:runway>
+                        </iwxxm:AerodromeRunwayState>
+                    </iwxxm:runwayState>
+                    <iwxxm:runwayState>
+                        <iwxxm:AerodromeRunwayState cleared="true">
+                            <iwxxm:runway>
+                                <aixm:RunwayDirection gml:id="runway-EDDF-07-l-sf">
+                                    <aixm:timeSlice>
+                                        <aixm:RunwayDirectionTimeSlice gml:id="runway-EDDF-07-l-sf-ts">
+                                            <gml:validTime/>
+                                            <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+                                            <aixm:designator>07L</aixm:designator>
+                                            <aixm:trueBearing>70</aixm:trueBearing>
+                                        </aixm:RunwayDirectionTimeSlice>
+                                    </aixm:timeSlice>
+                                </aixm:RunwayDirection>
+                            </iwxxm:runway>
+                        </iwxxm:AerodromeRunwayState>
+                    </iwxxm:runwayState>
+
                 </iwxxm:MeteorologicalAerodromeObservationRecord>
             </om:result>
         </om:OM_Observation>
