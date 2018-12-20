@@ -41,7 +41,28 @@ import wmo.collect2014.MeteorologicalBulletinType;
  * Helpers for creating and handling JAXB generated content classes.
  */
 public abstract class IWXXMConverterBase {
+    /*
+      XMLConstants.FEATURE_SECURE_PROCESSING flag value "true" forces the XML schema
+      loader to check the allowed protocols using the system property "javax.xml.accessExternalSchema".
 
+      On the other hand setting XMLConstants.FEATURE_SECURE_PROCESSING to "false" is not allowed
+      when SecurityManager is enabled. This to enabled loading the XML Schemas from the jar file
+      in the classpath into cached in-memory copies, the work-around below is necessary (for now).
+
+      TODO: In the long term a way of loading the required XML Schema files into memory should be done
+      in way that does not require weakening of the global XML schema loading restrictions.
+       */
+    protected static final boolean F_SECURE_PROCESSING;
+    static {
+        if (System.getSecurityManager() != null) {
+            F_SECURE_PROCESSING = true;
+            //A bit dangerous, as this allows the entire application to access both file system and http resources
+            //when the code loads XML Schema files.
+            System.setProperty("javax.xml.accessExternalSchema", "file,http");
+        } else {
+            F_SECURE_PROCESSING = false;
+        }
+    }
     private static JAXBContext jaxbCtx = null;
     private final static Map<String, Object> classToObjectFactory = new HashMap<>();
     private final static Map<String, Object> objectFactoryMap = new HashMap<>();
@@ -147,7 +168,7 @@ public abstract class IWXXMConverterBase {
             final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
             schemaFactory.setResourceResolver(resolver);
             //Secure processing does not allow "file" protocol loading for schemas:
-            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
+            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
             Source[] schemaSources;
             String schemaLocation;
             if (MeteorologicalBulletinType.class.isAssignableFrom(clz)) {

@@ -99,7 +99,7 @@ public abstract class AbstractTAFIWXXMParser<T> extends IWXXMConverterBase imple
             IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
             schemaFactory.setResourceResolver(resolver);
             //Secure processing does not allow "file" protocol loading for schemas:
-            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
+            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
             Schema iwxxmSchema = schemaFactory.newSchema(TAFType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
 
             Binder<Node> binder = getJAXBContext().createBinder();

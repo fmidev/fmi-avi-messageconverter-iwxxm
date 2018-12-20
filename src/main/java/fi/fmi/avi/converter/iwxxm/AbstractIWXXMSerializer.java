@@ -122,7 +122,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
         try {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
             final DocumentBuilder db = dbf.newDocumentBuilder();
             final InputSource is = new InputSource(new StringReader(input.toString()));
             final Document dom3Doc = db.parse(is);
