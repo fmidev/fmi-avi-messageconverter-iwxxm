@@ -12,6 +12,9 @@ import javax.xml.namespace.QName;
 import net.opengis.om20.OMObservationPropertyType;
 import net.opengis.om20.OMObservationType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aero.aixm511.AirportHeliportType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -50,6 +53,8 @@ import icao.iwxxm21.TAFType;
  * Carries out detailed validation and property value collecting for IWXXM TAF messages.
  */
 public class IWXXMTAFScanner extends AbstractIWXXMScanner {
+
+    private static final Logger LOG = LoggerFactory.getLogger(IWXXMTAFScanner.class);
 
     public static List<ConversionIssue> collectTAFProperties(final TAFType input, final ReferredObjectRetrievalContext refCtx, final TAFProperties properties,
             final ConversionHints hints) {
@@ -150,6 +155,16 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         // report metadata
         GenericReportProperties meta = new GenericReportProperties(input);
         retval.addAll(collectReportMetadata(input, meta, hints));
+        if (!meta.contains(GenericReportProperties.Name.TRANSLATION_TIME)) {
+            if (hints != null && hints.containsKey(ConversionHints.KEY_TRANSLATION_TIME)) {
+                Object value = hints.get(ConversionHints.KEY_TRANSLATION_TIME);
+                if (ConversionHints.VALUE_TRANSLATION_TIME_AUTO.equals(value)) {
+                    meta.set(GenericReportProperties.Name.TRANSLATION_TIME, ZonedDateTime.now());
+                } else if (value instanceof ZonedDateTime) {
+                    meta.set(GenericReportProperties.Name.TRANSLATION_TIME, (ZonedDateTime) value);
+                }
+            }
+        }
         properties.set(TAFProperties.Name.REPORT_METADATA, meta);
         return retval;
     }
@@ -425,8 +440,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
 
     private static void withTAFSurfaceWindBuilderFor(final AerodromeSurfaceWindForecastPropertyType windProp, final ReferredObjectRetrievalContext refCtx,
-            final Consumer<SurfaceWindImpl.Builder> resultHandler,
-                                                     final Consumer<ConversionIssue> issueHandler) {
+            final Consumer<SurfaceWindImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
         Optional<AerodromeSurfaceWindForecastType> windFct = resolveProperty(windProp, AerodromeSurfaceWindForecastType.class, refCtx);
         if (windFct.isPresent()) {
@@ -492,5 +506,4 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             issueHandler.accept(issues);
         }
     }
-
 }

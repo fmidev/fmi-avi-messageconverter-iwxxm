@@ -51,7 +51,7 @@ public abstract class AbstractIWXXMParser<T, S extends AviationWeatherMessage> e
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         try {
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
             DocumentBuilder db = dbf.newDocumentBuilder();
             ByteArrayInputStream bais = new ByteArrayInputStream(input.getBytes());
             retval = db.parse(bais);
@@ -110,7 +110,7 @@ public abstract class AbstractIWXXMParser<T, S extends AviationWeatherMessage> e
             IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
             schemaFactory.setResourceResolver(resolver);
             //Secure processing does not allow "file" protocol loading for schemas:
-            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
+            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
             Schema iwxxmSchema = schemaFactory.newSchema(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
 
             Binder<Node> binder = getJAXBContext().createBinder();

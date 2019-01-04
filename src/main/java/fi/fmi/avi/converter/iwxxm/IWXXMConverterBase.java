@@ -10,9 +10,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.ValidationEventHandler;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
 
 import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.TimeInstantPropertyType;
@@ -23,14 +29,44 @@ import net.opengis.gml32.TimePositionType;
 import net.opengis.om20.TimeObjectPropertyType;
 
 import org.springframework.util.StringUtils;
+import org.xml.sax.helpers.DefaultHandler;
 
+import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import icao.iwxxm21.ReportType;
+import wmo.collect2014.MeteorologicalBulletinType;
 
 /**
  * Helpers for creating and handling JAXB generated content classes.
  */
 public abstract class IWXXMConverterBase {
+    /*
+      XMLConstants.FEATURE_SECURE_PROCESSING flag value "true" forces the XML schema
+      loader to check the allowed protocols using the system property "javax.xml.accessExternalSchema".
+      On the other hand setting XMLConstants.FEATURE_SECURE_PROCESSING to "false" is not allowed
+      when SecurityManager is enabled.
+
+      The schema loading is done using class path resource loading
+      mechanism for all the schemas anyway. Unfortunately the code in
+      com.sun.org.apache.xerces.internal.impl.xs.traversers.XSDHandler#getSchemaDocument method
+      checks the schema loading permissions based on the jar:file type systemID, and thus requires
+      permission for using the "file" (and subsequently "http") protocol, even if the XML Schema
+      contents in this case have already been loaded into memory at this stage by
+      the IWXXMSchemaResourceResolver.
+
+    */
+    protected static final boolean F_SECURE_PROCESSING;
+    static {
+        if (System.getSecurityManager() != null) {
+            F_SECURE_PROCESSING = true;
+            //A bit dangerous, as this allows the entire application to use both file and http resources
+            //when the code tries to load XML Schema files.
+            System.setProperty("javax.xml.accessExternalSchema", "file,http");
+        } else {
+            F_SECURE_PROCESSING = false;
+        }
+    }
     private static JAXBContext jaxbCtx = null;
     private final static Map<String, Object> classToObjectFactory = new HashMap<>();
     private final static Map<String, Object> objectFactoryMap = new HashMap<>();
@@ -48,7 +84,7 @@ public abstract class IWXXMConverterBase {
         if (jaxbCtx == null) {
             jaxbCtx = JAXBContext.newInstance("icao.iwxxm21:aero.aixm511:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
                     + ".iso19139.ogc2007.gss:org.iso19139.ogc2007.gts:org.iso19139.ogc2007.gsr:net.opengis.om20:net.opengis.sampling:net.opengis.sampling"
-                    + ".spatial:wmo.metce2013:wmo.opm2013:org.w3c.xlink11");
+                    + ".spatial:wmo.metce2013:wmo.opm2013:wmo.collect2014:org.w3c.xlink11");
         }
         return jaxbCtx;
     }
@@ -126,6 +162,86 @@ public abstract class IWXXMConverterBase {
             consumer.accept(element);
         }
         return (JAXBElement<T>) result;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static <S> void validateDocument(final S input, final Class<S> clz, final ConversionHints hints, final ValidationEventHandler eventHandler) {
+        try {
+            //XML Schema validation:
+            final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
+            schemaFactory.setResourceResolver(resolver);
+            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
+            Source[] schemaSources;
+            String schemaLocation;
+            if (MeteorologicalBulletinType.class.isAssignableFrom(clz)) {
+                schemaSources = new Source[2];
+                schemaSources[0] = new StreamSource(ReportType.class.getResource("/int/wmo/collect/1.2/collect.xsd").toExternalForm());
+                schemaSources[1] = new StreamSource(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd").toExternalForm());
+                schemaLocation = "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd "
+                        + "http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd "
+                        + "http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd "
+                        + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd";
+            } else {
+                schemaSources = new Source[1];
+                schemaSources[0] = new StreamSource(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd").toExternalForm());
+                schemaLocation = "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd "
+                        + "http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd "
+                        + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd";
+            }
+            Marshaller marshaller = getJAXBContext().createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
+            marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
+
+            marshaller.setSchema(schemaFactory.newSchema(schemaSources));
+            marshaller.setEventHandler(eventHandler);
+            //Marshall to run the validation:
+            marshaller.marshal(wrap(input, clz), new DefaultHandler());
+        } catch (final Exception e) {
+            throw new RuntimeException("Error in validating document", e);
+        }
+    }
+
+    private static Object getObjectFactory(Class<?> clz) {
+        Object objectFactory = null;
+        try {
+            synchronized (objectFactoryMap) {
+
+                objectFactory = classToObjectFactory.get(clz.getCanonicalName());
+                if (objectFactory == null) {
+                    String objectFactoryPath = clz.getPackage().getName();
+                    String objectFactoryName = null;
+                    Class<?> ofClass = null;
+                    while (objectFactory == null && objectFactoryPath != null) {
+                        objectFactoryName = objectFactoryPath + ".ObjectFactory";
+                        objectFactory = objectFactoryMap.get(objectFactoryName);
+                        if (objectFactory == null) {
+                            try {
+                                ofClass = IWXXMConverterBase.class.getClassLoader().loadClass(objectFactoryName);
+                                break;
+                            } catch (ClassNotFoundException cnfe) {
+                                int nextDot = objectFactoryPath.lastIndexOf('.');
+                                if (nextDot == -1) {
+                                    objectFactoryPath = null;
+                                } else {
+                                    objectFactoryPath = objectFactoryPath.substring(0, nextDot);
+                                }
+                            }
+                        }
+                    }
+                    if (ofClass != null) {
+                        Constructor<?> c = ofClass.getConstructor();
+                        objectFactory = c.newInstance();
+                        objectFactoryMap.put(objectFactoryName, objectFactory);
+                    }
+                    classToObjectFactory.put(clz.getCanonicalName(), objectFactory);
+                }
+            }
+            return objectFactory;
+        } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InstantiationException | InvocationTargetException e) {
+            throw new IllegalArgumentException("Unable to get ObjectFactory for " + clz.getCanonicalName(), e);
+        }
     }
     public static <T> Optional<T> resolveProperty(final Object prop, final Class<T> clz, final ReferredObjectRetrievalContext refCtx) {
         return resolveProperty(prop, null, clz, refCtx);
@@ -255,6 +371,7 @@ public abstract class IWXXMConverterBase {
         }
         return Optional.empty();
     }
+
     protected static Optional<PartialOrCompleteTimeInstant> getCompleteTimeInstant(final TimeInstantPropertyType timeInstantPropertyType,
             final ReferredObjectRetrievalContext refCtx) {
         Optional<ZonedDateTime> time = getTime(timeInstantPropertyType, refCtx);
@@ -301,46 +418,5 @@ public abstract class IWXXMConverterBase {
         }
     }
 
-
-    private static Object getObjectFactory(Class<?> clz) {
-        Object objectFactory = null;
-        try {
-            synchronized (objectFactoryMap) {
-
-                objectFactory = classToObjectFactory.get(clz.getCanonicalName());
-                if (objectFactory == null) {
-                    String objectFactoryPath = clz.getPackage().getName();
-                    String objectFactoryName = null;
-                    Class<?> ofClass = null;
-                    while (objectFactory == null && objectFactoryPath != null) {
-                        objectFactoryName = objectFactoryPath + ".ObjectFactory";
-                        objectFactory = objectFactoryMap.get(objectFactoryName);
-                        if (objectFactory == null) {
-                            try {
-                                ofClass = IWXXMConverterBase.class.getClassLoader().loadClass(objectFactoryName);
-                                break;
-                            } catch (ClassNotFoundException cnfe) {
-                                int nextDot = objectFactoryPath.lastIndexOf('.');
-                                if (nextDot == -1) {
-                                    objectFactoryPath = null;
-                                } else {
-                                    objectFactoryPath = objectFactoryPath.substring(0, nextDot);
-                                }
-                            }
-                        }
-                    }
-                    if (ofClass != null) {
-                        Constructor<?> c = ofClass.getConstructor();
-                        objectFactory = c.newInstance();
-                        objectFactoryMap.put(objectFactoryName, objectFactory);
-                    }
-                    classToObjectFactory.put(clz.getCanonicalName(), objectFactory);
-                }
-            }
-            return objectFactory;
-        } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InstantiationException | InvocationTargetException e) {
-            throw new IllegalArgumentException("Unable to get ObjectFactory for " + clz.getCanonicalName(), e);
-        }
-    }
 
 }
