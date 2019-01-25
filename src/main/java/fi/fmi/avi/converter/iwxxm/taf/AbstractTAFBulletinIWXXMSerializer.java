@@ -12,9 +12,9 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
-import fi.fmi.avi.model.GTSExchangeFileNameBuilder;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
+import fi.fmi.avi.util.GTSExchangeFileInfo;
 import icao.iwxxm21.TAFType;
 import wmo.collect2014.MeteorologicalBulletinType;
 import wmo.collect2014.MeteorologicalInformationMemberPropertyType;
@@ -71,12 +71,14 @@ public abstract class AbstractTAFBulletinIWXXMSerializer<T> extends AbstractIWXX
         MeteorologicalBulletinType bulletin = create(MeteorologicalBulletinType.class);
         bulletin.setId("bulletin-" + UUID.randomUUID().toString());
 
-        bulletin.setBulletinIdentifier(new GTSExchangeFileNameBuilder().setPFlag(GTSExchangeFileNameBuilder.GTSExchangePFlag.A)
-                .setHeading(input.getHeading())
-                .setMetadataFile(false)
-                .setTimeStamp(issue)
-                .setFileType(GTSExchangeFileNameBuilder.GTSExchangeFileType.XML)
-                .build());
+        bulletin.setBulletinIdentifier(new GTSExchangeFileInfo.Builder()//
+                .setPFlag(GTSExchangeFileInfo.GTSExchangePFlag.A)//
+                .setHeading(input.getHeading())//
+                .setMetadataFile(false)//
+                .setTimeStamp(issue)//
+                .setFileType(GTSExchangeFileInfo.GTSExchangeFileType.XML)//
+                .build()//
+                .toGTSExchangeFileName());
 
         List<TAFType> tafs = new ArrayList<>();
         ConversionResult<TAFType> tafResult;
