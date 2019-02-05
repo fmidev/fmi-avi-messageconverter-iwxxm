@@ -27,7 +27,15 @@
       "completeTime": "2018-08-27T18:00:00Z"
     }
   },
-  "sigmetPhenomenon": "EMBD_TS",
+  "movingSpeed": {
+    "value": 10,
+    "uom": "[kn_i]"
+  },
+  "movingDirection": {
+    "value": 180,
+    "uom": "deg"
+  },
+  "airmetPhenomenon": "ISOL_TSGR",
   "analysisType": "OBSERVATION",
   "intensityChange": "NO_CHANGE",
   "analysisGeometries": [
@@ -43,14 +51,29 @@
         "value": 35,
         "uom": "FL"
       },
-
       "approximateLocation": false,
       "geometry": {
         "geoGeometry": {
-          "type": "Point",
+          "type": "Polygon",
           "coordinates": [
-            5.0,
-            52.0
+            [
+              [
+                5.0,
+                52.0
+              ],
+              [
+                6.0,
+                53.0
+              ],
+              [
+                4.0,
+                54.0
+              ],
+              [
+                5.0,
+                52.0
+              ]
+            ]
           ]
         }
       }

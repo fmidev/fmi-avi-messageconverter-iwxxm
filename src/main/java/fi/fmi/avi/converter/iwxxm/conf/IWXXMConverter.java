@@ -7,12 +7,15 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionSpecification;
+import fi.fmi.avi.converter.iwxxm.airmet.AIRMETIWXXMDOMSerializer;
+import fi.fmi.avi.converter.iwxxm.airmet.AIRMETIWXXMStringSerializer;
 import fi.fmi.avi.converter.iwxxm.sigmet.SIGMETIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.sigmet.SIGMETIWXXMStringSerializer;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMStringSerializer;
+import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.taf.TAF;
 
@@ -28,7 +31,6 @@ public class IWXXMConverter {
     public static final ConversionSpecification<TAF, String> TAF_POJO_TO_IWXXM21_STRING = new ConversionSpecification<>(TAF.class, String.class,
             null, "TAF, XML/IWXXM 2.1");
 
-
     /**
      * Pre-configured spec for {@link TAF} to IWXXM 2.1 XML format TAF document DOM Node.
      */
@@ -41,12 +43,12 @@ public class IWXXMConverter {
     public static final ConversionSpecification<String,TAF> IWXXM21_STRING_TO_TAF_POJO = new ConversionSpecification<>(String.class,TAF.class,
             "TAF, XML/IWXXM 2.1", null);
 
-
     /**
      * Pre-configured spec for IWXXM 2.1 XML format TAF document DOM Node to {@link TAF}.
      */
     public static final ConversionSpecification<Document,TAF> IWXXM21_DOM_TO_TAF_POJO = new ConversionSpecification<>(Document.class,TAF.class,
             "TAF, XML/IWXXM 2.1", null);
+
 
     /**
      * Pre-configured spec for {@link TAF} to IWXXM 2.1 XML format TAF document String.
@@ -54,12 +56,23 @@ public class IWXXMConverter {
     public static final ConversionSpecification<SIGMET, String> SIGMET_POJO_TO_IWXXM21_STRING = new ConversionSpecification<>(SIGMET.class, String.class,
             null, "SIGMET, XML/IWXXM 2.1");
 
-
     /**
      * Pre-configured spec for {@link TAF} to IWXXM 2.1 XML format TAF document DOM Node.
      */
     public static final ConversionSpecification<SIGMET, Document> SIGMET_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(SIGMET.class, Document.class,
             null, "SIGMET, XML/IWXXM 2.1");
+
+    /**
+     * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document String.
+     */
+    public static final ConversionSpecification<AIRMET, String> AIRMET_POJO_TO_IWXXM21_STRING = new ConversionSpecification<>(AIRMET.class, String.class,
+            null, "AIRMET, XML/IWXXM 2.1");
+
+    /**
+     * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document DOM Node.
+     */
+    public static final ConversionSpecification<AIRMET, Document> AIRMET_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(AIRMET.class, Document.class,
+            null, "AIRMET, XML/IWXXM 2.1");
 
     @Bean
     public AviMessageSpecificConverter<TAF, Document> tafIWXXMDOMSerializer() {
@@ -91,5 +104,14 @@ public class IWXXMConverter {
         return new SIGMETIWXXMStringSerializer();
     }
 
+    @Bean
+    public AviMessageSpecificConverter<AIRMET, Document> airmetIWXXMDOMSerializer() {
+        return new AIRMETIWXXMDOMSerializer();
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer() {
+        return new AIRMETIWXXMStringSerializer();
+    }
 
 }

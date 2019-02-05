@@ -49,12 +49,28 @@
         "geoGeometry": {
           "type": "Point",
           "coordinates": [
-            5.0,
-            52.0
+                5.0,
+                52.0
           ]
         }
       }
     }
+  ],
+  "forecastGeometries":[{
+    "time":  {
+      "completeTime": "2017-08-27T18:00:00Z"
+    },
+    "approximateLocation": false,
+    "geometry": {
+      "geoGeometry": {
+        "type": "Point",
+        "coordinates": [
+              6.0,
+              54.0
+        ]
+      }
+    }
+  }
   ],
   "translated": false
 }
