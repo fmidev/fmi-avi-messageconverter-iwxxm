@@ -3,12 +3,11 @@ package fi.fmi.avi.converter.iwxxm;
 import java.time.ZonedDateTime;
 
 import fi.fmi.avi.model.AviationCodeListUser;
-import icao.iwxxm21.ReportType;
 
 /**
  * Container class for (metadata) properties parsed from IWXXM ReportType.
  */
-public class GenericReportProperties extends AbstractPropertyContainer<ReportType> {
+public class GenericReportProperties extends AbstractPropertyContainer {
 
     public enum Name {
         PERMISSIBLE_USAGE(AviationCodeListUser.PermissibleUsage.class), PERMISSIBLE_USAGE_REASON(AviationCodeListUser.PermissibleUsageReason.class),
@@ -20,7 +19,7 @@ public class GenericReportProperties extends AbstractPropertyContainer<ReportTyp
         TRANSLATION_TIME(ZonedDateTime.class),
         TRANSLATION_FAILED_TAC(String.class);
 
-        private Class<?> acceptedType;
+        private final Class<?> acceptedType;
 
         Name(final Class<?> type) {
             this.acceptedType = type;
@@ -31,8 +30,7 @@ public class GenericReportProperties extends AbstractPropertyContainer<ReportTyp
         }
     }
 
-    public GenericReportProperties(ReportType parent) {
-        super(parent);
+    public GenericReportProperties() {
     }
 
     @Override

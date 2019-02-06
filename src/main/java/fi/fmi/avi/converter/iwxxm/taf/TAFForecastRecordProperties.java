@@ -7,12 +7,11 @@ import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.Weather;
 import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
-import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
 
 /**
  * Container class for properties parsed from an IWXXM MeteorologicalAerodromeForecastRecord.
  */
-public class TAFForecastRecordProperties extends AbstractPropertyContainer<MeteorologicalAerodromeForecastRecordType> {
+public class TAFForecastRecordProperties extends AbstractPropertyContainer {
 
     public enum Name {
         PREVAILING_VISIBILITY(NumericMeasure.class),
@@ -24,7 +23,7 @@ public class TAFForecastRecordProperties extends AbstractPropertyContainer<Meteo
         CLOUD_AND_VISIBILITY_OK(Boolean.class),
         NO_SIGNIFICANT_WEATHER(Boolean.class);
 
-        private Class<?> acceptedType;
+        private final Class<?> acceptedType;
 
         Name(final Class<?> type) {
             this.acceptedType = type;
@@ -35,8 +34,7 @@ public class TAFForecastRecordProperties extends AbstractPropertyContainer<Meteo
         }
     }
 
-    public TAFForecastRecordProperties(final MeteorologicalAerodromeForecastRecordType record) {
-        super(record);
+    public TAFForecastRecordProperties() {
     }
 
     @Override

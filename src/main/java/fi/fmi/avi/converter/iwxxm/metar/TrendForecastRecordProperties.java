@@ -6,12 +6,11 @@ import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.Weather;
-import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
 
 /**
  * Created by rinne on 25/07/2018.
  */
-public class TrendForecastRecordProperties extends AbstractPropertyContainer<MeteorologicalAerodromeTrendForecastRecordType> {
+public class TrendForecastRecordProperties extends AbstractPropertyContainer {
 
     public enum Name {
         SURFACE_WIND(SurfaceWind.class),
@@ -23,7 +22,7 @@ public class TrendForecastRecordProperties extends AbstractPropertyContainer<Met
         CLOUD_AND_VISIBILITY_OK(Boolean.class),
         NO_SIGNIFICANT_WEATHER(Boolean.class);
 
-        private Class<?> acceptedType;
+        private final Class<?> acceptedType;
 
         Name(final Class<?> type) {
             this.acceptedType = type;
@@ -34,8 +33,7 @@ public class TrendForecastRecordProperties extends AbstractPropertyContainer<Met
         }
     }
 
-    public TrendForecastRecordProperties(final MeteorologicalAerodromeTrendForecastRecordType record) {
-        super(record);
+    public TrendForecastRecordProperties() {
     }
 
     @Override

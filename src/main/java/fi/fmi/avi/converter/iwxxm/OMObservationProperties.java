@@ -1,7 +1,5 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import net.opengis.om20.OMObservationType;
-
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.GeoPosition;
 import fi.fmi.avi.model.PartialOrCompleteTime;
@@ -12,7 +10,7 @@ import wmo.metce2013.ProcessType;
 /**
  * Container class for properties parsed from an IWXXM OMObservationType.
  */
-public class OMObservationProperties extends AbstractPropertyContainer<OMObservationType> {
+public class OMObservationProperties extends AbstractPropertyContainer {
 
     public enum Name {
         TYPE(String.class),//
@@ -25,7 +23,7 @@ public class OMObservationProperties extends AbstractPropertyContainer<OMObserva
         SAMPLING_POINT(GeoPosition.class),//
         RESULT(Object.class);
 
-        private Class<?> acceptedType;
+        private final Class<?> acceptedType;
 
         Name(final Class<?> type) {
             this.acceptedType = type;
@@ -36,8 +34,7 @@ public class OMObservationProperties extends AbstractPropertyContainer<OMObserva
         }
     }
 
-    public OMObservationProperties(final OMObservationType baseFct) {
-        super(baseFct);
+    public OMObservationProperties() {
     }
 
     @Override

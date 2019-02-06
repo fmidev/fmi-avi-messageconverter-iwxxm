@@ -3,15 +3,14 @@ package fi.fmi.avi.converter.iwxxm.bulletin;
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.model.BulletinHeading;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
-import wmo.collect2014.MeteorologicalBulletinType;
 
-public class BulletinProperties extends AbstractPropertyContainer<MeteorologicalBulletinType> {
+public class BulletinProperties extends AbstractPropertyContainer {
 
     public enum Name {
         HEADING(BulletinHeading.class),
         MESSAGE(GenericAviationWeatherMessage.class);
 
-        private Class<?> acceptedType;
+        private final Class<?> acceptedType;
 
         Name(final Class<?> type) {
             this.acceptedType = type;
@@ -22,9 +21,7 @@ public class BulletinProperties extends AbstractPropertyContainer<Meteorological
         }
     }
 
-    public BulletinProperties(final MeteorologicalBulletinType bulletin) {
-        super(bulletin);
-
+    public BulletinProperties() {
     }
 
     @Override

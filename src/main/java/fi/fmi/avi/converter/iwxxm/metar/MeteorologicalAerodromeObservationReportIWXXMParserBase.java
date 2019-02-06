@@ -41,7 +41,7 @@ public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T,
 
     protected METARImpl.Builder getBuilder(final MeteorologicalAerodromeObservationReportType input, final ReferredObjectRetrievalContext refCtx,
             final ConversionResult<? extends MeteorologicalTerminalAirReport> result, final ConversionHints hints) {
-        METARProperties properties = new METARProperties(input);
+        METARProperties properties = new METARProperties();
 
         //Collect properties and do detailed validation:
         result.addIssue(IWXXMMETARScanner.collectMETARProperties(input, refCtx, properties, hints));

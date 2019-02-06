@@ -10,12 +10,11 @@ import fi.fmi.avi.model.metar.RunwayState;
 import fi.fmi.avi.model.metar.RunwayVisualRange;
 import fi.fmi.avi.model.metar.SeaState;
 import fi.fmi.avi.model.metar.WindShear;
-import icao.iwxxm21.MeteorologicalAerodromeObservationRecordType;
 
 /**
  * Created by rinne on 25/07/2018.
  */
-public class ObservationRecordProperties extends AbstractPropertyContainer<MeteorologicalAerodromeObservationRecordType> {
+public class ObservationRecordProperties extends AbstractPropertyContainer {
 
     public enum Name {
         CLOUD_AND_VISIBILITY_OK(Boolean.class),
@@ -32,7 +31,7 @@ public class ObservationRecordProperties extends AbstractPropertyContainer<Meteo
         SEA_STATE(SeaState.class),
         RUNWAY_STATE(RunwayState.class);
 
-        private Class<?> acceptedType;
+        private final Class<?> acceptedType;
 
         Name(final Class<?> type) {
             this.acceptedType = type;
@@ -43,8 +42,7 @@ public class ObservationRecordProperties extends AbstractPropertyContainer<Meteo
         }
     }
 
-    public ObservationRecordProperties(final MeteorologicalAerodromeObservationRecordType record) {
-        super(record);
+    public ObservationRecordProperties() {
     }
 
     @Override

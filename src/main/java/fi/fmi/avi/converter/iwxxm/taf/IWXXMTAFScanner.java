@@ -103,7 +103,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
         Optional<OMObservationType> baseFct = resolveProperty(input.getBaseForecast(), OMObservationType.class, refCtx);
         if (baseFct.isPresent()) {
-            OMObservationProperties baseFctProps = new OMObservationProperties(baseFct.get());
+            OMObservationProperties baseFctProps = new OMObservationProperties();
             retval.addAll(collectBaseForecast(baseFct.get(), issueDateTime, tafValidityTime, refCtx, baseFctProps, hints));
             properties.set(TAFProperties.Name.BASE_FORECAST, baseFctProps);
         }
@@ -112,7 +112,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             for (OMObservationPropertyType obsProp : input.getChangeForecast()) {
                 Optional<OMObservationType> changeFct = resolveProperty(obsProp, OMObservationType.class, refCtx);
                 if (changeFct.isPresent()) {
-                    OMObservationProperties chFctProps = new OMObservationProperties(changeFct.get());
+                    OMObservationProperties chFctProps = new OMObservationProperties();
                     retval.addAll(collectChangeForecast(changeFct.get(), issueDateTime, tafValidityTime, refCtx, chFctProps, hints));
                     properties.addToList(TAFProperties.Name.CHANGE_FORECAST, chFctProps);
                 }
@@ -153,7 +153,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         }
 
         // report metadata
-        GenericReportProperties meta = new GenericReportProperties(input);
+        GenericReportProperties meta = new GenericReportProperties();
         retval.addAll(collectReportMetadata(input, meta, hints));
         if (!meta.contains(GenericReportProperties.Name.TRANSLATION_TIME)) {
             if (hints != null && hints.containsKey(ConversionHints.KEY_TRANSLATION_TIME)) {
@@ -175,7 +175,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         IssueList retval = collectBaseFctObsMetadata(baseFct, issueTime, tafValidityTime, refCtx, properties, hints);
         Optional<MeteorologicalAerodromeForecastRecordType> baseRecord = getAerodromeForecastRecordResult(baseFct, refCtx);
         if (baseRecord.isPresent()) {
-            TAFForecastRecordProperties baseProps = new TAFForecastRecordProperties(baseRecord.get());
+            TAFForecastRecordProperties baseProps = new TAFForecastRecordProperties();
 
             retval.addAll(collectCommonForecastRecordProperties(baseRecord.get(), refCtx, baseProps, "base forecast", hints));
 
@@ -225,7 +225,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         IssueList retval = collectChangeFctObsMetadata(changeFct, issueTime, tafValidityTime, refCtx, properties, "change forecast " + changeFct.getId(), hints);
         Optional<MeteorologicalAerodromeForecastRecordType> changeRecord = getAerodromeForecastRecordResult(changeFct, refCtx);
         if (changeRecord.isPresent()) {
-            TAFForecastRecordProperties changeProps = new TAFForecastRecordProperties(changeRecord.get());
+            TAFForecastRecordProperties changeProps = new TAFForecastRecordProperties();
             retval.addAll(collectCommonForecastRecordProperties(changeRecord.get(), refCtx, changeProps, "change forecast " + changeFct.getId(), hints));
 
             //changeIndicator

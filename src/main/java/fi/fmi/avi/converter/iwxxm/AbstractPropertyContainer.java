@@ -10,14 +10,11 @@ import java.util.Optional;
 /**
  * Common functionality for IWXXM property container classes used in scanning the IWXXM messages
  */
-public abstract class AbstractPropertyContainer<T> {
-
-    private T parent;
+public abstract class AbstractPropertyContainer {
 
     private final Map<Object, Object> properties = new HashMap<>();
 
-    protected AbstractPropertyContainer(final T parent) {
-        this.parent = parent;
+    protected AbstractPropertyContainer() {
     }
 
     public boolean contains(final Object key) {
@@ -110,10 +107,6 @@ public abstract class AbstractPropertyContainer<T> {
                     "Cannot assign value of type " + value.getClass().getCanonicalName() + " to property " + key + ", must be assignable to " + getAcceptedType(
                             key).getCanonicalName());
         }
-    }
-
-    public T getParent() {
-        return parent;
     }
 
     protected abstract Class<?> getAcceptedType(final Object key);

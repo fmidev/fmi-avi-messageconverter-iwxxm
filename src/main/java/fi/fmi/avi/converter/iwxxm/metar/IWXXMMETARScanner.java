@@ -98,7 +98,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         properties.set(METARProperties.Name.SPECI, Boolean.valueOf(input instanceof SPECIType));
 
         // report metadata
-        GenericReportProperties meta = new GenericReportProperties(input);
+        GenericReportProperties meta = new GenericReportProperties();
         retval.addAll(collectReportMetadata(input, meta, hints));
         properties.set(METARProperties.Name.REPORT_METADATA, meta);
 
@@ -133,7 +133,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         // observation
         Optional<OMObservationType> observation = resolveProperty(input.getObservation(), OMObservationType.class, refCtx);
         if (observation.isPresent()) {
-            OMObservationProperties obsProps = new OMObservationProperties(observation.get());
+            OMObservationProperties obsProps = new OMObservationProperties();
             retval.addAll(collectObservationProperties(observation.get(), status, refCtx, properties, obsProps, hints));
             properties.set(METARProperties.Name.OBSERVATION, obsProps);
         } else {
@@ -145,7 +145,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                 new QName(IWXXMNamespaceContext.getURI("iwxxm"), "trendForecast"), refCtx, (value) -> {
                     Optional<OMObservationType> trend = resolveProperty(value, OMObservationType.class, refCtx);
                     if (trend.isPresent()) {
-                        OMObservationProperties trendProps = new OMObservationProperties(trend.get());
+                        OMObservationProperties trendProps = new OMObservationProperties();
                         retval.addAll(collectTrendProperties(trend.get(), refCtx, trendProps, hints));
                         properties.addToList(METARProperties.Name.TREND_FORECAST, trendProps);
                     } else {
@@ -206,7 +206,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
 
         Optional<MeteorologicalAerodromeObservationRecordType> obsRecord = getAerodromeObservationRecordResult(obs, refCtx);
         if (obsRecord.isPresent()) {
-            ObservationRecordProperties obsProps = new ObservationRecordProperties(obsRecord.get());
+            ObservationRecordProperties obsProps = new ObservationRecordProperties();
 
             //Surface wind (M)
             AerodromeSurfaceWindPropertyType windProp = obsRecord.get().getSurfaceWind();
@@ -389,7 +389,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         Optional<MeteorologicalAerodromeTrendForecastRecordType> trendRecord = getAerodromeTrendRecordResult(trend, refCtx);
         if (trendRecord.isPresent()) {
 
-            TrendForecastRecordProperties trendProps = new TrendForecastRecordProperties(trendRecord.get());
+            TrendForecastRecordProperties trendProps = new TrendForecastRecordProperties();
             //change indicator (M)
             if (trendRecord.get().getChangeIndicator() != null) {
                 trendProps.set(TrendForecastRecordProperties.Name.CHANGE_INDICATOR,

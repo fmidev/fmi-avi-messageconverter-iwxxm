@@ -4,12 +4,11 @@ import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.model.AviationCodeListUser;
-import icao.iwxxm21.MeteorologicalAerodromeObservationReportType;
 
 /**
  * Created by rinne on 25/07/2018.
  */
-public class METARProperties extends AbstractPropertyContainer<MeteorologicalAerodromeObservationReportType> {
+public class METARProperties extends AbstractPropertyContainer {
 
     public enum Name {
         STATUS(AviationCodeListUser.MetarStatus.class),//
@@ -21,7 +20,7 @@ public class METARProperties extends AbstractPropertyContainer<MeteorologicalAer
         TREND_NO_SIGNIFICANT_CHANGES(Boolean.class),//
         REPORT_METADATA(GenericReportProperties.class);
 
-        private Class<?> acceptedType;
+        private final Class<?> acceptedType;
 
         Name(final Class<?> type) {
             this.acceptedType = type;
@@ -32,8 +31,7 @@ public class METARProperties extends AbstractPropertyContainer<MeteorologicalAer
         }
     }
 
-    public METARProperties(final MeteorologicalAerodromeObservationReportType metar) {
-        super(metar);
+    public METARProperties() {
     }
 
     @Override

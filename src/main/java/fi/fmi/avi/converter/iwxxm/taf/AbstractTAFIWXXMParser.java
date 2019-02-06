@@ -59,7 +59,7 @@ public abstract class AbstractTAFIWXXMParser<T> extends AbstractIWXXMParser<T, T
             throw new IllegalArgumentException("Source is not a TAF JAXB element");
         }
 
-        TAFProperties properties = new TAFProperties(input);
+        TAFProperties properties = new TAFProperties();
 
         //Other specific validation (using JAXB elements)
         result.addIssue(IWXXMTAFScanner.collectTAFProperties(input, refCtx, properties, hints));
