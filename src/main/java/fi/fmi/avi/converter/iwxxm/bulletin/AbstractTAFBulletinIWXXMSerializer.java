@@ -1,7 +1,6 @@
-package fi.fmi.avi.converter.iwxxm.taf;
+package fi.fmi.avi.converter.iwxxm.bulletin;
 
 import java.io.InputStream;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -12,6 +11,7 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.model.PartialDateTime;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import fi.fmi.avi.util.GTSExchangeFileInfo;
@@ -59,13 +59,10 @@ public abstract class AbstractTAFBulletinIWXXMSerializer<T> extends AbstractIWXX
             result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No TAF messages in bulletin"));
             return result;
         }
-        LocalDateTime issue;
         if (!input.getIssueTime().getCompleteTime().isPresent()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
                     "TAFBulletin issue time is not complete, " + "cannot serialize as WMO Collect / IWXXM"));
             return result;
-        } else {
-            issue = input.getIssueTime().getCompleteTime().get().toLocalDateTime();
         }
 
         MeteorologicalBulletinType bulletin = create(MeteorologicalBulletinType.class);
@@ -75,7 +72,9 @@ public abstract class AbstractTAFBulletinIWXXMSerializer<T> extends AbstractIWXX
                 .setPFlag(GTSExchangeFileInfo.GTSExchangePFlag.A)//
                 .setHeading(input.getHeading())//
                 .setMetadataFile(false)//
-                .setTimeStamp(issue)//
+                .setIssueTime(
+                        PartialDateTime.of(input.getIssueTime().getCompleteTime().get(), PartialDateTime.ALL_FIELDS, false, PartialDateTime.MIDNIGHT_0_HOUR))
+                .setTimeStamp(input.getIssueTime().getCompleteTime().get().toLocalDateTime())
                 .setFileType(GTSExchangeFileInfo.GTSExchangeFileType.XML)//
                 .build()//
                 .toGTSExchangeFileName());
