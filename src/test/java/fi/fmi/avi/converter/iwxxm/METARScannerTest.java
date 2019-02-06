@@ -52,7 +52,7 @@ public class METARScannerTest extends DOMParsingTestBase {
         METARType source = binder.unmarshal(doc, METARType.class).getValue();
 
         ReferredObjectRetrievalContext refCtx = new ReferredObjectRetrievalContext(doc, binder);
-        METARProperties metarProperties = new METARProperties(source);
+        METARProperties metarProperties = new METARProperties();
         List<ConversionIssue> issues = IWXXMMETARScanner.collectMETARProperties(source, refCtx, metarProperties, ConversionHints.EMPTY);
         resultHandler.accept(metarProperties);
         return issues;

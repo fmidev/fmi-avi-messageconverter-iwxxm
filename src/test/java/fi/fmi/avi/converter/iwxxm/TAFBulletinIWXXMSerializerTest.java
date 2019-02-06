@@ -37,11 +37,10 @@ import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.BulletinHeading;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
+import fi.fmi.avi.model.immutable.BulletinHeadingImpl;
 import fi.fmi.avi.model.immutable.GeoPositionImpl;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
-import fi.fmi.avi.model.taf.TAFBulletinHeading;
-import fi.fmi.avi.model.taf.immutable.TAFBulletinHeadingImpl;
 import fi.fmi.avi.model.taf.immutable.TAFBulletinImpl;
 import fi.fmi.avi.model.taf.immutable.TAFImpl;
 
@@ -77,12 +76,11 @@ public class TAFBulletinIWXXMSerializerTest {
 
         TAFBulletinImpl.Builder bulletinBuilder = new TAFBulletinImpl.Builder()//
                 .setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2017, 7, 30, 11, 15, 0, 0, ZoneId.of("Z"))))//
-                .setHeading(new TAFBulletinHeadingImpl.Builder()//
-                        .setType(TAFBulletinHeading.Type.NORMAL)//
+                .setHeading(new BulletinHeadingImpl.Builder()//
+                        .setDataTypeDesignatorT2(BulletinHeading.ForecastsDataTypeDesignatorT2.FCT_AERODROME_VT_LONG).setType(BulletinHeading.Type.NORMAL)//
                         .setGeographicalDesignator("FI")//
                         .setLocationIndicator("EFKL")//
                         .setBulletinNumber(31)//
-                        .setDataTypeDesignatorT2(BulletinHeading.ForecastsDataTypeDesignatorT2.AERODROME_VT_LONG)
                         .build());
         bulletinBuilder.addAllMessages(tafs);
         return bulletinBuilder.build();
@@ -116,7 +114,7 @@ public class TAFBulletinIWXXMSerializerTest {
 
         XPathExpression expr = xpath.compile("/collect:MeteorologicalBulletin/collect:bulletinIdentifier");
         String bulletinId = expr.evaluate(docElement);
-        assertEquals("A_LTFI31EFKL_C_EFKL_201707301115--.xml", bulletinId);
+        assertEquals("A_LTFI31EFKL301115_C_EFKL_201707301115--.xml", bulletinId);
 
         expr = xpath.compile("count(/collect:MeteorologicalBulletin/collect:meteorologicalInformation)");
         assertTrue(2 == Integer.parseInt(expr.evaluate(docElement)));
