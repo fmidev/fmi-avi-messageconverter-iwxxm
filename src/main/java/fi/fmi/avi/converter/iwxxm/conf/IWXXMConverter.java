@@ -1,18 +1,17 @@
 package fi.fmi.avi.converter.iwxxm.conf;
 
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionSpecification;
+import fi.fmi.avi.converter.iwxxm.bulletin.TAFBulletinIWXXMDOMSerializer;
+import fi.fmi.avi.converter.iwxxm.bulletin.TAFBulletinIWXXMStringSerializer;
 import fi.fmi.avi.converter.iwxxm.metar.METARIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.metar.METARIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.metar.SPECIIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.metar.SPECIIWXXMStringParser;
-import fi.fmi.avi.converter.iwxxm.taf.TAFBulletinIWXXMDOMSerializer;
-import fi.fmi.avi.converter.iwxxm.taf.TAFBulletinIWXXMStringSerializer;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMJAXBSerializer;
