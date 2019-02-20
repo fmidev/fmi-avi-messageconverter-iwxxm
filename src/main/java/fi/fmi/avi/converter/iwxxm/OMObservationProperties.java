@@ -12,7 +12,7 @@ import wmo.metce2013.ProcessType;
  */
 public class OMObservationProperties extends AbstractPropertyContainer {
 
-    public enum Name {
+    public enum Name implements PropertyName {
         TYPE(String.class),//
         PHENOMENON_TIME(PartialOrCompleteTime.class),//
         RESULT_TIME(PartialOrCompleteTimeInstant.class),//
@@ -29,6 +29,7 @@ public class OMObservationProperties extends AbstractPropertyContainer {
             this.acceptedType = type;
         }
 
+        @Override
         public Class<?> getAcceptedType() {
             return this.acceptedType;
         }
@@ -37,12 +38,4 @@ public class OMObservationProperties extends AbstractPropertyContainer {
     public OMObservationProperties() {
     }
 
-    @Override
-    protected Class<?> getAcceptedType(final Object key) {
-        if (Name.class.isAssignableFrom(key.getClass())) {
-            return ((Name) key).getAcceptedType();
-        } else {
-            throw new IllegalArgumentException("Key must be of type " + Name.class.getCanonicalName());
-        }
-    }
 }

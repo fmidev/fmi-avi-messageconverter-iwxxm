@@ -12,7 +12,7 @@ import fi.fmi.avi.model.Weather;
  */
 public class TrendForecastRecordProperties extends AbstractPropertyContainer {
 
-    public enum Name {
+    public enum Name implements PropertyName {
         SURFACE_WIND(SurfaceWind.class),
         PREVAILING_VISIBILITY(NumericMeasure.class),
         PREVAILING_VISIBILITY_OPERATOR(AviationCodeListUser.RelationalOperator.class),
@@ -28,20 +28,12 @@ public class TrendForecastRecordProperties extends AbstractPropertyContainer {
             this.acceptedType = type;
         }
 
+        @Override
         public Class<?> getAcceptedType() {
             return this.acceptedType;
         }
     }
 
     public TrendForecastRecordProperties() {
-    }
-
-    @Override
-    protected Class<?> getAcceptedType(final Object key) {
-        if (Name.class.isAssignableFrom(key.getClass())) {
-            return ((Name) key).getAcceptedType();
-        } else {
-            throw new IllegalArgumentException("Key must be of type " + Name.class.getCanonicalName());
-        }
     }
 }

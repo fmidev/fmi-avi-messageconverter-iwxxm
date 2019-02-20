@@ -9,7 +9,7 @@ import fi.fmi.avi.model.AviationCodeListUser;
  */
 public class GenericReportProperties extends AbstractPropertyContainer {
 
-    public enum Name {
+    public enum Name implements PropertyName {
         PERMISSIBLE_USAGE(AviationCodeListUser.PermissibleUsage.class), PERMISSIBLE_USAGE_REASON(AviationCodeListUser.PermissibleUsageReason.class),
         PERMISSIBLE_USAGE_SUPPLEMENTARY(String.class),
         TRANSLATED_BULLETIN_ID(String.class),
@@ -25,20 +25,12 @@ public class GenericReportProperties extends AbstractPropertyContainer {
             this.acceptedType = type;
         }
 
+        @Override
         public Class<?> getAcceptedType() {
             return this.acceptedType;
         }
     }
 
     public GenericReportProperties() {
-    }
-
-    @Override
-    protected Class<?> getAcceptedType(final Object key) {
-        if (Name.class.isAssignableFrom(key.getClass())) {
-            return ((Name) key).getAcceptedType();
-        } else {
-            throw new IllegalArgumentException("Key must be of type " + Name.class.getCanonicalName());
-        }
     }
 }

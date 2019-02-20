@@ -14,7 +14,7 @@ import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
  */
 public class TAFProperties extends AbstractPropertyContainer {
 
-    public enum Name {
+    public enum Name implements PropertyName {
         REPORT_METADATA(GenericReportProperties.class),
         ISSUE_TIME(PartialOrCompleteTimeInstant.class),
         VALID_TIME(PartialOrCompleteTimePeriod.class),
@@ -30,21 +30,13 @@ public class TAFProperties extends AbstractPropertyContainer {
             this.acceptedType = type;
         }
 
+        @Override
         public Class<?> getAcceptedType() {
             return this.acceptedType;
         }
     }
 
     public TAFProperties() {
-    }
-
-    @Override
-    protected Class<?> getAcceptedType(final Object key) {
-        if (Name.class.isAssignableFrom(key.getClass())) {
-            return ((Name) key).getAcceptedType();
-        } else {
-            throw new IllegalArgumentException("Key must be of type " + Name.class.getCanonicalName());
-        }
     }
 
 }

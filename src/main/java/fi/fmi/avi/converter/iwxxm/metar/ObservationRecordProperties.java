@@ -16,7 +16,7 @@ import fi.fmi.avi.model.metar.WindShear;
  */
 public class ObservationRecordProperties extends AbstractPropertyContainer {
 
-    public enum Name {
+    public enum Name implements PropertyName {
         CLOUD_AND_VISIBILITY_OK(Boolean.class),
         SURFACE_WIND(ObservedSurfaceWind.class),
         VISIBILITY(HorizontalVisibility.class),
@@ -37,6 +37,7 @@ public class ObservationRecordProperties extends AbstractPropertyContainer {
             this.acceptedType = type;
         }
 
+        @Override
         public Class<?> getAcceptedType() {
             return this.acceptedType;
         }
@@ -45,12 +46,4 @@ public class ObservationRecordProperties extends AbstractPropertyContainer {
     public ObservationRecordProperties() {
     }
 
-    @Override
-    protected Class<?> getAcceptedType(final Object key) {
-        if (Name.class.isAssignableFrom(key.getClass())) {
-            return ((Name) key).getAcceptedType();
-        } else {
-            throw new IllegalArgumentException("Key must be of type " + Name.class.getCanonicalName());
-        }
-    }
 }

@@ -10,7 +10,7 @@ import fi.fmi.avi.model.AviationCodeListUser;
  */
 public class METARProperties extends AbstractPropertyContainer {
 
-    public enum Name {
+    public enum Name implements PropertyName {
         STATUS(AviationCodeListUser.MetarStatus.class),//
         SPECI(Boolean.class),//
         AUTOMATED(Boolean.class),//
@@ -26,20 +26,12 @@ public class METARProperties extends AbstractPropertyContainer {
             this.acceptedType = type;
         }
 
+        @Override
         public Class<?> getAcceptedType() {
             return this.acceptedType;
         }
     }
 
     public METARProperties() {
-    }
-
-    @Override
-    protected Class<?> getAcceptedType(final Object key) {
-        if (Name.class.isAssignableFrom(key.getClass())) {
-            return ((Name) key).getAcceptedType();
-        } else {
-            throw new IllegalArgumentException("Key must be of type " + Name.class.getCanonicalName());
-        }
     }
 }
