@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,13 +76,15 @@ public class TAFBulletinIWXXMSerializerTest {
         }
 
         TAFBulletinImpl.Builder bulletinBuilder = new TAFBulletinImpl.Builder()//
-                .setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2017, 7, 30, 11, 15, 0, 0, ZoneId.of("Z"))))//
                 .setHeading(new BulletinHeadingImpl.Builder()//
                         .setDataTypeDesignatorT2(BulletinHeading.ForecastsDataTypeDesignatorT2.FCT_AERODROME_VT_LONG).setType(BulletinHeading.Type.NORMAL)//
                         .setGeographicalDesignator("FI")//
                         .setLocationIndicator("EFKL")//
                         .setBulletinNumber(31)//
-                        .build());
+                        .setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2017, 7, 30, 11, 15, 0, 0, ZoneId.of("Z"))))//
+                        .build())
+                .setTimeStamp(ZonedDateTime.of(2017, 7, 30, 11, 15, 0, 0, ZoneId.of("Z")))
+                .addTimeStampFields(ChronoField.YEAR, ChronoField.MONTH_OF_YEAR, ChronoField.DAY_OF_MONTH, ChronoField.HOUR_OF_DAY);
         bulletinBuilder.addAllMessages(tafs);
         return bulletinBuilder.build();
     }
@@ -114,7 +117,7 @@ public class TAFBulletinIWXXMSerializerTest {
 
         XPathExpression expr = xpath.compile("/collect:MeteorologicalBulletin/collect:bulletinIdentifier");
         String bulletinId = expr.evaluate(docElement);
-        assertEquals("A_LTFI31EFKL301115_C_EFKL_201707301115--.xml", bulletinId);
+        assertEquals("A_LTFI31EFKL301115_C_EFKL_2017073011----.xml", bulletinId);
 
         expr = xpath.compile("count(/collect:MeteorologicalBulletin/collect:meteorologicalInformation)");
         assertTrue(2 == Integer.parseInt(expr.evaluate(docElement)));

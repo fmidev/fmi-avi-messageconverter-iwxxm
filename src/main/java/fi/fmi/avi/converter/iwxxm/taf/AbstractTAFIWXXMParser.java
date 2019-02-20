@@ -11,7 +11,7 @@ import javax.xml.bind.JAXBElement;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.AbstractJAXBIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
@@ -40,7 +40,7 @@ import icao.iwxxm21.TAFType;
  *
  * @param <T> the type of the raw input message
  */
-public abstract class AbstractTAFIWXXMParser<T> extends AbstractIWXXMParser<T, TAF> {
+public abstract class AbstractTAFIWXXMParser<T> extends AbstractJAXBIWXXMParser<T, TAF> {
 
     protected TAF createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx, final ConversionResult<TAF> result,
             final ConversionHints hints) {

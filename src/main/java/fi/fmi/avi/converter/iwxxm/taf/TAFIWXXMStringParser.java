@@ -3,7 +3,7 @@ package fi.fmi.avi.converter.iwxxm.taf;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.ConversionException;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 
 /**
  * Specialization of {@link AbstractTAFIWXXMParser} for String input.
@@ -22,6 +22,6 @@ public class TAFIWXXMStringParser extends AbstractTAFIWXXMParser<String> {
      */
     @Override
     protected Document parseAsDom(final String input) throws ConversionException {
-        return AbstractIWXXMParser.parseStringToDOM(input);
+        return IWXXMConverterBase.parseStringToDOM(input);
     }
 }

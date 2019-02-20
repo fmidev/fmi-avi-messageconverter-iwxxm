@@ -3,7 +3,7 @@ package fi.fmi.avi.converter.iwxxm.metar;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.ConversionException;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 
 /**
  * Specialization of {@link AbstractSPECIIWXXMParser} for String input.
@@ -23,6 +23,6 @@ public class SPECIIWXXMStringParser extends AbstractSPECIIWXXMParser<String> {
      */
     @Override
     protected Document parseAsDom(final String input) throws ConversionException {
-        return AbstractIWXXMParser.parseStringToDOM(input);
+        return IWXXMConverterBase.parseStringToDOM(input);
     }
 }

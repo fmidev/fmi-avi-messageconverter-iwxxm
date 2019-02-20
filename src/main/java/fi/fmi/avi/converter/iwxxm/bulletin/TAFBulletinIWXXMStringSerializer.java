@@ -7,13 +7,13 @@ import fi.fmi.avi.converter.ConversionHints;
 import wmo.collect2014.MeteorologicalBulletinType;
 
 /**
- * Specialization of {@link AbstractTAFBulletinIWXXMSerializer} for String output.
+ * Specialization of {@link AbstractBulletinIWXXMSerializer} for String output.
  */
 public class TAFBulletinIWXXMStringSerializer extends AbstractTAFBulletinIWXXMSerializer<String> {
 
     @Override
-    protected String render(final MeteorologicalBulletinType bulletin, ConversionHints hints) throws ConversionException {
-        Document result = renderXMLDocument(bulletin, hints);
+    protected String render(final MeteorologicalBulletinType bulletin, final ConversionHints hints) throws ConversionException {
+        final Document result = renderXMLDocument(bulletin, hints);
         return renderDOMToString(result, hints);
     }
 

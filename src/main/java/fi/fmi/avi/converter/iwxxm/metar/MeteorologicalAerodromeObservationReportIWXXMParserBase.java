@@ -8,7 +8,7 @@ import java.util.Optional;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.AbstractJAXBIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
@@ -37,7 +37,8 @@ import icao.iwxxm21.MeteorologicalAerodromeObservationReportType;
 /**
  * Created by rinne on 01/08/2018.
  */
-public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T, S extends MeteorologicalTerminalAirReport> extends AbstractIWXXMParser<T, S> {
+public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T, S extends MeteorologicalTerminalAirReport>
+        extends AbstractJAXBIWXXMParser<T, S> {
 
     protected METARImpl.Builder getBuilder(final MeteorologicalAerodromeObservationReportType input, final ReferredObjectRetrievalContext refCtx,
             final ConversionResult<? extends MeteorologicalTerminalAirReport> result, final ConversionHints hints) {

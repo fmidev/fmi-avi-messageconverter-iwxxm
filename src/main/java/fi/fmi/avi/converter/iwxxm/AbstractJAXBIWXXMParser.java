@@ -1,6 +1,5 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,8 +8,6 @@ import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -36,30 +33,16 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.model.AviationWeatherMessage;
+import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import icao.iwxxm21.ReportType;
 
 /**
  * Created by rinne on 25/07/2018.
  */
-public abstract class AbstractIWXXMParser<T, S extends AviationWeatherMessage> extends IWXXMConverterBase implements AviMessageSpecificConverter<T, S> {
+public abstract class AbstractJAXBIWXXMParser<T, S extends AviationWeatherMessageOrCollection> extends IWXXMConverterBase
+        implements AviMessageSpecificConverter<T, S> {
 
     private static Templates iwxxmTemplates;
-
-    protected static Document parseStringToDOM(final String input) throws ConversionException {
-        Document retval = null;
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        try {
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            ByteArrayInputStream bais = new ByteArrayInputStream(input.getBytes());
-            retval = db.parse(bais);
-        } catch (Exception e) {
-            throw new ConversionException("Error in parsing input as to an XML document", e);
-        }
-        return retval;
-    }
 
     /**
      * Returns the TAF input message as A DOM Document.

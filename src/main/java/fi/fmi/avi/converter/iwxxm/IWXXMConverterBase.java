@@ -1,5 +1,6 @@
 package fi.fmi.avi.converter.iwxxm;
 
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,6 +17,8 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.ValidationEventHandler;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
@@ -29,8 +32,10 @@ import net.opengis.gml32.TimePositionType;
 import net.opengis.om20.TimeObjectPropertyType;
 
 import org.springframework.util.StringUtils;
+import org.w3c.dom.Document;
 import org.xml.sax.helpers.DefaultHandler;
 
+import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -68,8 +73,8 @@ public abstract class IWXXMConverterBase {
         }
     }
     private static JAXBContext jaxbCtx = null;
-    private final static Map<String, Object> classToObjectFactory = new HashMap<>();
-    private final static Map<String, Object> objectFactoryMap = new HashMap<>();
+    private static final Map<String, Object> CLASS_TO_OBJECT_FACTORY = new HashMap<>();
+    private static final Map<String, Object> OBJECT_FACTORY_MAP = new HashMap<>();
 
     /**
      * Singleton for accessing the shared JAXBContext for IWXXM JAXB handling.
@@ -96,12 +101,12 @@ public abstract class IWXXMConverterBase {
     @SuppressWarnings("unchecked")
     public static <T> T create(final Class<T> clz, final Consumer<T> consumer) throws IllegalArgumentException {
         Object result = null;
-        Object objectFactory = getObjectFactory(clz);
+        final Object objectFactory = getObjectFactory(clz);
         if (objectFactory != null) {
             String methodName = null;
             if (clz.getEnclosingClass() != null) {
                 Class<?> encClass = clz.getEnclosingClass();
-                StringBuilder sb = new StringBuilder("create").append(encClass.getSimpleName().substring(0, 1).toUpperCase())
+                final StringBuilder sb = new StringBuilder("create").append(encClass.getSimpleName().substring(0, 1).toUpperCase())
                         .append(encClass.getSimpleName().substring(1));
                 while (encClass.getEnclosingClass() != null) {
                     sb.append(clz.getSimpleName());
@@ -114,7 +119,7 @@ public abstract class IWXXMConverterBase {
                         .toString();
             }
             try {
-                Method toCall = objectFactory.getClass().getMethod(methodName);
+                final Method toCall = objectFactory.getClass().getMethod(methodName);
                 result = toCall.invoke(objectFactory);
             } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InvocationTargetException | IllegalArgumentException e) {
                 throw new IllegalArgumentException("Unable to create JAXB element object for type " + clz, e);
@@ -128,29 +133,29 @@ public abstract class IWXXMConverterBase {
         return (T) result;
     }
 
-    public static <T> JAXBElement<T> createAndWrap(Class<T> clz) {
+    public static <T> JAXBElement<T> createAndWrap(final Class<T> clz) {
         return createAndWrap(clz, null);
     }
 
-    public static <T> JAXBElement<T> createAndWrap(Class<T> clz, final Consumer<T> consumer) {
-        T element = create(clz);
+    public static <T> JAXBElement<T> createAndWrap(final Class<T> clz, final Consumer<T> consumer) {
+        final T element = create(clz);
         return wrap(element, clz, consumer);
     }
 
-    public static <T> JAXBElement<T> wrap(T element, Class<T> clz) {
+    public static <T> JAXBElement<T> wrap(final T element, final Class<T> clz) {
         return wrap(element, clz, null);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> JAXBElement<T> wrap(T element, Class<T> clz, final Consumer<T> consumer) {
+    public static <T> JAXBElement<T> wrap(final T element, final Class<T> clz, final Consumer<T> consumer) {
         Object result = null;
-        Object objectFactory = getObjectFactory(clz);
+        final Object objectFactory = getObjectFactory(clz);
         if (objectFactory != null) {
-            String methodName = new StringBuilder("create").append(clz.getSimpleName().substring(0, 1).toUpperCase())
+            final String methodName = new StringBuilder("create").append(clz.getSimpleName().substring(0, 1).toUpperCase())
                     .append(clz.getSimpleName().substring(1, clz.getSimpleName().lastIndexOf("Type")))
                     .toString();
             try {
-                Method toCall = objectFactory.getClass().getMethod(methodName, clz);
+                final Method toCall = objectFactory.getClass().getMethod(methodName, clz);
                 result = toCall.invoke(objectFactory, element);
             } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InvocationTargetException | IllegalArgumentException e) {
                 throw new IllegalArgumentException("Unable to create JAXBElement wrapper", e);
@@ -172,8 +177,8 @@ public abstract class IWXXMConverterBase {
             final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
             schemaFactory.setResourceResolver(resolver);
             schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
-            Source[] schemaSources;
-            String schemaLocation;
+            final Source[] schemaSources;
+            final String schemaLocation;
             if (MeteorologicalBulletinType.class.isAssignableFrom(clz)) {
                 schemaSources = new Source[2];
                 schemaSources[0] = new StreamSource(ReportType.class.getResource("/int/wmo/collect/1.2/collect.xsd").toExternalForm());
@@ -189,7 +194,7 @@ public abstract class IWXXMConverterBase {
                         + "http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd "
                         + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd";
             }
-            Marshaller marshaller = getJAXBContext().createMarshaller();
+            final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
             marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
             marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
@@ -203,25 +208,25 @@ public abstract class IWXXMConverterBase {
         }
     }
 
-    private static Object getObjectFactory(Class<?> clz) {
+    private static Object getObjectFactory(final Class<?> clz) {
         Object objectFactory = null;
         try {
-            synchronized (objectFactoryMap) {
+            synchronized (OBJECT_FACTORY_MAP) {
 
-                objectFactory = classToObjectFactory.get(clz.getCanonicalName());
+                objectFactory = CLASS_TO_OBJECT_FACTORY.get(clz.getCanonicalName());
                 if (objectFactory == null) {
                     String objectFactoryPath = clz.getPackage().getName();
                     String objectFactoryName = null;
                     Class<?> ofClass = null;
                     while (objectFactory == null && objectFactoryPath != null) {
                         objectFactoryName = objectFactoryPath + ".ObjectFactory";
-                        objectFactory = objectFactoryMap.get(objectFactoryName);
+                        objectFactory = OBJECT_FACTORY_MAP.get(objectFactoryName);
                         if (objectFactory == null) {
                             try {
                                 ofClass = IWXXMConverterBase.class.getClassLoader().loadClass(objectFactoryName);
                                 break;
-                            } catch (ClassNotFoundException cnfe) {
-                                int nextDot = objectFactoryPath.lastIndexOf('.');
+                            } catch (final ClassNotFoundException cnfe) {
+                                final int nextDot = objectFactoryPath.lastIndexOf('.');
                                 if (nextDot == -1) {
                                     objectFactoryPath = null;
                                 } else {
@@ -231,11 +236,11 @@ public abstract class IWXXMConverterBase {
                         }
                     }
                     if (ofClass != null) {
-                        Constructor<?> c = ofClass.getConstructor();
+                        final Constructor<?> c = ofClass.getConstructor();
                         objectFactory = c.newInstance();
-                        objectFactoryMap.put(objectFactoryName, objectFactory);
+                        OBJECT_FACTORY_MAP.put(objectFactoryName, objectFactory);
                     }
-                    classToObjectFactory.put(clz.getCanonicalName(), objectFactory);
+                    CLASS_TO_OBJECT_FACTORY.put(clz.getCanonicalName(), objectFactory);
                 }
             }
             return objectFactory;
@@ -255,7 +260,7 @@ public abstract class IWXXMConverterBase {
         try {
             //First try resolving the href reference (if it exists):
             try {
-                Method getHref = prop.getClass().getMethod("getHref", (Class<?>[]) null);
+                final Method getHref = prop.getClass().getMethod("getHref", (Class<?>[]) null);
                 if (String.class.isAssignableFrom(getHref.getReturnType())) {
                     String id = (String) getHref.invoke(prop, (Object[]) null);
                     if (id != null) {
@@ -265,7 +270,7 @@ public abstract class IWXXMConverterBase {
                         return refCtx.getReferredObject(id, clz);
                     }
                 }
-            } catch (NoSuchMethodException nsme) {
+            } catch (final NoSuchMethodException nsme) {
                 //NOOP
             }
 
@@ -283,9 +288,9 @@ public abstract class IWXXMConverterBase {
                     if (clz.isAssignableFrom(getObject.getReturnType())) {
                         return (Optional<T>) Optional.ofNullable(getObject.invoke(prop, (Object[]) null));
                     } else if (JAXBElement.class.isAssignableFrom(getObject.getReturnType())) {
-                        JAXBElement<?> wrapped = (JAXBElement<?>) getObject.invoke(prop, (Object[]) null);
+                        final JAXBElement<?> wrapped = (JAXBElement<?>) getObject.invoke(prop, (Object[]) null);
                         if (wrapped != null) {
-                            Object value = wrapped.getValue();
+                            final Object value = wrapped.getValue();
                             if (value != null) {
                                 if (clz.isAssignableFrom(value.getClass())) {
                                     return (Optional<T>) Optional.of(value);
@@ -293,20 +298,20 @@ public abstract class IWXXMConverterBase {
                             }
                         }
                     }
-                } catch (NoSuchMethodException nsme) {
+                } catch (final NoSuchMethodException nsme) {
                     try {
                         getObject = prop.getClass().getMethod("getAny", (Class<?>[]) null);
-                        Object wrapper = getObject.invoke(prop, (Object[]) null);
+                        final Object wrapper = getObject.invoke(prop, (Object[]) null);
                         if (wrapper != null && JAXBElement.class.isAssignableFrom(wrapper.getClass())) {
-                            Object value = ((JAXBElement)wrapper).getValue();
+                            final Object value = ((JAXBElement) wrapper).getValue();
                             return (Optional<T>) Optional.of(value);
                         }
-                    } catch (NoSuchMethodException nsme2) {
+                    } catch (final NoSuchMethodException nsme2) {
                         //NOOP
                     }
                 }
             }
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (final IllegalAccessException | InvocationTargetException e) {
             return Optional.empty();
         }
         return Optional.empty();
@@ -314,10 +319,10 @@ public abstract class IWXXMConverterBase {
 
     protected static Optional<PartialOrCompleteTimePeriod> getCompleteTimePeriod(final TimeObjectPropertyType timeObjectPropertyType,
             final ReferredObjectRetrievalContext refCtx) {
-        Optional<AbstractTimeObjectType> to = resolveProperty(timeObjectPropertyType, "abstractTimeObject", AbstractTimeObjectType.class, refCtx);
+        final Optional<AbstractTimeObjectType> to = resolveProperty(timeObjectPropertyType, "abstractTimeObject", AbstractTimeObjectType.class, refCtx);
         if (to.isPresent()) {
             if (TimePeriodType.class.isAssignableFrom(to.get().getClass())) {
-                TimePeriodType tp = (TimePeriodType) to.get();
+                final TimePeriodType tp = (TimePeriodType) to.get();
                 final PartialOrCompleteTimePeriod.Builder retval = new PartialOrCompleteTimePeriod.Builder();
                 getStartTime(tp, refCtx).ifPresent((start) -> {
                     retval.setStartTime(new PartialOrCompleteTimeInstant.Builder()//
@@ -338,7 +343,7 @@ public abstract class IWXXMConverterBase {
 
     protected static Optional<PartialOrCompleteTimePeriod> getCompleteTimePeriod(final TimePeriodPropertyType timePeriodPropertyType,
             final ReferredObjectRetrievalContext refCtx) {
-        Optional<TimePeriodType> tp = resolveProperty(timePeriodPropertyType, TimePeriodType.class, refCtx);
+        final Optional<TimePeriodType> tp = resolveProperty(timePeriodPropertyType, TimePeriodType.class, refCtx);
         if (tp.isPresent()) {
             final PartialOrCompleteTimePeriod.Builder retval = new PartialOrCompleteTimePeriod.Builder();
             getStartTime(tp.get(), refCtx).ifPresent((start) -> {
@@ -357,11 +362,11 @@ public abstract class IWXXMConverterBase {
 
     protected static Optional<PartialOrCompleteTimeInstant> getCompleteTimeInstant(final TimeObjectPropertyType timeObjectPropertyType,
             final ReferredObjectRetrievalContext refCtx) {
-        Optional<AbstractTimeObjectType> to = resolveProperty(timeObjectPropertyType, "abstractTimeObject", AbstractTimeObjectType.class, refCtx);
+        final Optional<AbstractTimeObjectType> to = resolveProperty(timeObjectPropertyType, "abstractTimeObject", AbstractTimeObjectType.class, refCtx);
         if (to.isPresent()) {
             if (TimeInstantType.class.isAssignableFrom(to.get().getClass())) {
-                TimeInstantType ti = (TimeInstantType) to.get();
-                Optional<ZonedDateTime> time = getTime(ti.getTimePosition());
+                final TimeInstantType ti = (TimeInstantType) to.get();
+                final Optional<ZonedDateTime> time = getTime(ti.getTimePosition());
                 if (time.isPresent()) {
                     return Optional.of(new PartialOrCompleteTimeInstant.Builder().setCompleteTime(time).build());
                 }
@@ -374,7 +379,7 @@ public abstract class IWXXMConverterBase {
 
     protected static Optional<PartialOrCompleteTimeInstant> getCompleteTimeInstant(final TimeInstantPropertyType timeInstantPropertyType,
             final ReferredObjectRetrievalContext refCtx) {
-        Optional<ZonedDateTime> time = getTime(timeInstantPropertyType, refCtx);
+        final Optional<ZonedDateTime> time = getTime(timeInstantPropertyType, refCtx);
         if (time.isPresent()) {
             return Optional.of(new PartialOrCompleteTimeInstant.Builder().setCompleteTime(time.get()).build());
         }
@@ -402,7 +407,7 @@ public abstract class IWXXMConverterBase {
     }
 
     protected static Optional<ZonedDateTime> getTime(final TimeInstantPropertyType tiProp, final ReferredObjectRetrievalContext ctx) {
-        Optional<TimeInstantType> ti = resolveProperty(tiProp, TimeInstantType.class, ctx);
+        final Optional<TimeInstantType> ti = resolveProperty(tiProp, TimeInstantType.class, ctx);
         if (ti.isPresent()) {
             return getTime(ti.get().getTimePosition());
         } else {
@@ -418,5 +423,18 @@ public abstract class IWXXMConverterBase {
         }
     }
 
-
+    protected static Document parseStringToDOM(final String input) throws ConversionException {
+        Document retval = null;
+        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        try {
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
+            final DocumentBuilder db = dbf.newDocumentBuilder();
+            final ByteArrayInputStream bais = new ByteArrayInputStream(input.getBytes());
+            retval = db.parse(bais);
+        } catch (final Exception e) {
+            throw new ConversionException("Error in parsing input as to an XML document", e);
+        }
+        return retval;
+    }
 }
