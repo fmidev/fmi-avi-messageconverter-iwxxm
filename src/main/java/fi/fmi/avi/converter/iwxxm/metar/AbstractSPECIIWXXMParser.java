@@ -8,23 +8,28 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.model.metar.SPECI;
-import fi.fmi.avi.model.metar.immutable.METARImpl;
+import fi.fmi.avi.model.metar.immutable.SPECIImpl;
 import icao.iwxxm21.SPECIType;
 
 /**
  * Created by rinne on 01/08/2018.
  */
-public abstract class AbstractSPECIIWXXMParser<T> extends MeteorologicalAerodromeObservationReportIWXXMParserBase<T, SPECI> {
+public abstract class AbstractSPECIIWXXMParser<T> extends MeteorologicalAerodromeObservationReportIWXXMParserBase<T, SPECI, SPECIImpl.Builder> {
+
+    @Override
+    protected SPECIImpl.Builder getEmptyBuilder() {
+        return new SPECIImpl.Builder();
+    }
 
     @Override
     protected SPECI createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx, final ConversionResult<SPECI> result,
             final ConversionHints hints) {
         Objects.requireNonNull(source, "source cannot be null");
-        SPECIType input;
+        final SPECIType input;
         if (SPECIType.class.isAssignableFrom(source.getClass())) {
             input = (SPECIType) source;
         } else if (JAXBElement.class.isAssignableFrom(source.getClass())) {
-            JAXBElement<?> je = (JAXBElement<?>) source;
+            final JAXBElement<?> je = (JAXBElement<?>) source;
             if (SPECIType.class.isAssignableFrom(je.getDeclaredType())) {
                 input = (SPECIType) je.getValue();
             } else {
@@ -33,9 +38,9 @@ public abstract class AbstractSPECIIWXXMParser<T> extends MeteorologicalAerodrom
         } else {
             throw new IllegalArgumentException("Source is not a SPECI JAXB element");
         }
-        METARImpl.Builder retval = getBuilder(input, refCtx, result, hints);
+        final SPECIImpl.Builder retval = getBuilder(input, refCtx, result, hints);
         if (retval != null) {
-            return retval.buildAsSPECI();
+            return retval.build();
         } else {
             return null;
         }
