@@ -235,7 +235,6 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                 System.err.println("FAILED in eventhandler");
                 for (ConversionIssue iss: eventHandler.getResult().getConversionIssues()) {
                     System.err.println("ISS: "+iss.getMessage());
-
                 }
             } else {
                 result.setConvertedMessage(this.render(airmet, hints));

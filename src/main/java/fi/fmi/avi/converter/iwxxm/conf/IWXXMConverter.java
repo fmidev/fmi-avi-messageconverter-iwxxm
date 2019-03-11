@@ -9,7 +9,9 @@ import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionSpecification;
 import fi.fmi.avi.converter.iwxxm.airmet.AIRMETIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.airmet.AIRMETIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.sigmet.SIGMETIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.sigmet.SIGMETIWXXMDOMSerializer;
+import fi.fmi.avi.converter.iwxxm.sigmet.SIGMETIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.sigmet.SIGMETIWXXMStringSerializer;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMDOMSerializer;
@@ -62,6 +64,17 @@ public class IWXXMConverter {
     public static final ConversionSpecification<SIGMET, Document> SIGMET_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(SIGMET.class, Document.class,
             null, "SIGMET, XML/IWXXM 2.1");
 
+
+    public static final ConversionSpecification<String,SIGMET> IWXXM21_STRING_TO_SIGMET_POJO = new ConversionSpecification<>(String.class,SIGMET.class,
+            "SIGMET, XML/IWXXM 2.1", null);
+
+    /**
+     * Pre-configured spec for IWXXM 2.1 XML format TAF document DOM Node to {@link TAF}.
+     */
+    public static final ConversionSpecification<Document,SIGMET> IWXXM21_DOM_TO_SIGMET_POJO = new ConversionSpecification<>(Document.class,SIGMET.class,
+            "SIGMET, XML/IWXXM 2.1", null);
+
+
     /**
      * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document String.
      */
@@ -102,6 +115,16 @@ public class IWXXMConverter {
     @Bean
     public AviMessageSpecificConverter<SIGMET, String> sigmetIWXXMStringSerializer() {
         return new SIGMETIWXXMStringSerializer();
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<String, SIGMET> sigmetIWXXMStringParser() {
+        return new SIGMETIWXXMStringParser();
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<Document, SIGMET> sigmetIWXXMDOMParser() {
+        return new SIGMETIWXXMDOMParser();
     }
 
     @Bean
