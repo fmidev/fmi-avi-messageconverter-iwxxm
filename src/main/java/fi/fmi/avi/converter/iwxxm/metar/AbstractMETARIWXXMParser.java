@@ -18,7 +18,7 @@ public abstract class AbstractMETARIWXXMParser<T> extends MeteorologicalAerodrom
 
     @Override
     protected METARImpl.Builder getEmptyBuilder() {
-        return new METARImpl.Builder();
+        return METARImpl.builder();
     }
 
     @Override

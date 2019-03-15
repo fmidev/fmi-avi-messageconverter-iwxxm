@@ -396,7 +396,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         //cloud
         withNillableChild(record, record.getCloud(), AerodromeCloudForecastPropertyType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "cloud"),
                 refCtx, (value) -> {
-            CloudForecastImpl.Builder cloudBuilder = new CloudForecastImpl.Builder();
+            CloudForecastImpl.Builder cloudBuilder = CloudForecastImpl.builder();
                     Optional<AerodromeCloudForecastType> cloudForecast = resolveProperty(value, AerodromeCloudForecastType.class, refCtx);
             if (cloudForecast.isPresent()) {
                 if (record.isCloudAndVisibilityOK()) {
@@ -428,7 +428,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             properties.set(TAFForecastRecordProperties.Name.CLOUD, cloudBuilder.build());
                 }, (nilReasons) -> {
                     if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
-                        properties.set(TAFForecastRecordProperties.Name.CLOUD, new CloudForecastImpl.Builder()//
+                        properties.set(TAFForecastRecordProperties.Name.CLOUD, CloudForecastImpl.builder()//
                                 .setNoSignificantCloud(true)//
                                 .build());
                     }
@@ -444,7 +444,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         ConversionIssue issue = null;
         Optional<AerodromeSurfaceWindForecastType> windFct = resolveProperty(windProp, AerodromeSurfaceWindForecastType.class, refCtx);
         if (windFct.isPresent()) {
-            SurfaceWindImpl.Builder windBuilder = new SurfaceWindImpl.Builder();
+            SurfaceWindImpl.Builder windBuilder = SurfaceWindImpl.builder();
             windBuilder.setMeanWindDirection(asNumericMeasure(windFct.get().getMeanWindDirection()));
             windBuilder.setVariableDirection(windFct.get().isVariableWindDirection());
             if (windFct.get().getMeanWindSpeed() != null) {
@@ -469,7 +469,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         List<ConversionIssue> issues = new ArrayList<>();
         Optional<AerodromeAirTemperatureForecastType> tempFct = resolveProperty(prop, AerodromeAirTemperatureForecastType.class, refCtx);
         if (tempFct.isPresent()) {
-            TAFAirTemperatureForecastImpl.Builder builder = new TAFAirTemperatureForecastImpl.Builder();
+            TAFAirTemperatureForecastImpl.Builder builder = TAFAirTemperatureForecastImpl.builder();
             if (tempFct.get().getMaximumAirTemperature() != null) {
                 builder.setMaxTemperature(asNumericMeasure(tempFct.get().getMaximumAirTemperature()).get());
             } else {

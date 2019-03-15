@@ -71,7 +71,7 @@ public abstract class AbstractTAFIWXXMParser<T> extends AbstractIWXXMParser<T, T
             return null;
         }
 
-        TAFImpl.Builder tafBuilder = new TAFImpl.Builder();
+        TAFImpl.Builder tafBuilder = TAFImpl.builder();
         tafBuilder.setStatus(status.get());
         properties.get(TAFProperties.Name.ISSUE_TIME, PartialOrCompleteTimeInstant.class).ifPresent(tafBuilder::setIssueTime);
 
@@ -111,7 +111,7 @@ public abstract class AbstractTAFIWXXMParser<T> extends AbstractIWXXMParser<T, T
                 PartialOrCompleteTimePeriod.class);
         if (previousReportAerodrome.isPresent() && previousReportValidTime.isPresent()) {
             tafBuilder.setReferredReport(
-                    new TAFReferenceImpl.Builder().setAerodrome(previousReportAerodrome.get()).setValidityTime(previousReportValidTime.get()).build());
+                    TAFReferenceImpl.builder().setAerodrome(previousReportAerodrome.get()).setValidityTime(previousReportValidTime.get()).build());
         }
 
         properties.get(TAFProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent((metaProps) -> {
@@ -133,7 +133,7 @@ public abstract class AbstractTAFIWXXMParser<T> extends AbstractIWXXMParser<T, T
     }
 
     private TAFBaseForecast createBaseForecast(final TAFForecastRecordProperties source) {
-        TAFBaseForecastImpl.Builder builder = new TAFBaseForecastImpl.Builder();
+        TAFBaseForecastImpl.Builder builder = TAFBaseForecastImpl.builder();
         source.get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class).ifPresent(builder::setPrevailingVisibility);
         source.get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, AviationCodeListUser.RelationalOperator.class)
                 .ifPresent(builder::setPrevailingVisibilityOperator);
@@ -155,7 +155,7 @@ public abstract class AbstractTAFIWXXMParser<T> extends AbstractIWXXMParser<T, T
     }
 
     private TAFChangeForecast createChangeForecast(final OMObservationProperties source) {
-        TAFChangeForecastImpl.Builder builder = new TAFChangeForecastImpl.Builder();
+        TAFChangeForecastImpl.Builder builder = TAFChangeForecastImpl.builder();
         source.get(OMObservationProperties.Name.PHENOMENON_TIME, PartialOrCompleteTimePeriod.class).ifPresent(builder::setPeriodOfChange);
         Optional<TAFForecastRecordProperties> recordProps = source.get(OMObservationProperties.Name.RESULT, TAFForecastRecordProperties.class);
         if (recordProps.isPresent()) {

@@ -102,7 +102,7 @@ public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T,
         } else {
             final List<TrendForecast> trends = new ArrayList<>();
             for (final OMObservationProperties trendProperties : properties.getList(METARProperties.Name.TREND_FORECAST, OMObservationProperties.class)) {
-                final TrendForecastImpl.Builder trendBuilder = new TrendForecastImpl.Builder();
+                final TrendForecastImpl.Builder trendBuilder = TrendForecastImpl.builder();
                 final Optional<PartialOrCompleteTime> phenTime = trendProperties.get(OMObservationProperties.Name.PHENOMENON_TIME, PartialOrCompleteTime.class);
                 if (phenTime.isPresent()) {
                     if (phenTime.get() instanceof PartialOrCompleteTimeInstant) {

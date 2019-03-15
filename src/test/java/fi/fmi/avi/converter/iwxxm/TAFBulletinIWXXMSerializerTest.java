@@ -59,11 +59,11 @@ public class TAFBulletinIWXXMSerializerTest {
         List<TAF> tafs = new ArrayList<>();
         for (String fName : fileNames) {
             TAF t = readFromJSON(fName);
-            AerodromeImpl.Builder airportBuilder = new AerodromeImpl.Builder().setDesignator("EETN")
+            AerodromeImpl.Builder airportBuilder = AerodromeImpl.builder().setDesignator("EETN")
                     .setName("Tallinn Airport")
                     .setFieldElevationValue(40.0)
                     .setLocationIndicatorICAO("EETN")
-                    .setReferencePoint(new GeoPositionImpl.Builder().setCoordinateReferenceSystemId("http://www.opengis.net/def/crs/EPSG/0/4326")
+                    .setReferencePoint(GeoPositionImpl.builder().setCoordinateReferenceSystemId("http://www.opengis.net/def/crs/EPSG/0/4326")
                             .addCoordinates(24.8325, 59.413333)
                             .setElevationValue(40.0)
                             .setElevationUom("m")
@@ -75,9 +75,9 @@ public class TAFBulletinIWXXMSerializerTest {
             tafs.add(tafBuilder.build());
         }
 
-        TAFBulletinImpl.Builder bulletinBuilder = new TAFBulletinImpl.Builder()//
+        TAFBulletinImpl.Builder bulletinBuilder = TAFBulletinImpl.builder()//
                 .setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2017, 7, 30, 11, 15, 0, 0, ZoneId.of("Z"))))//
-                .setHeading(new TAFBulletinHeadingImpl.Builder()//
+                .setHeading(TAFBulletinHeadingImpl.builder()//
                         .setType(TAFBulletinHeading.Type.NORMAL)//
                         .setGeographicalDesignator("FI")//
                         .setLocationIndicator("EFKL")//

@@ -18,7 +18,7 @@ public abstract class AbstractSPECIIWXXMParser<T> extends MeteorologicalAerodrom
 
     @Override
     protected SPECIImpl.Builder getEmptyBuilder() {
-        return new SPECIImpl.Builder();
+        return SPECIImpl.builder();
     }
 
     @Override

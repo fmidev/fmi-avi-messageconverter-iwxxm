@@ -51,12 +51,12 @@ public class TAFIWXXMSerializerTest {
 
     private TAF getTAF() throws IOException {
         TAF t = readFromJSON("taf12.json");
-        AerodromeImpl.Builder airportBuilder = new AerodromeImpl.Builder()
+        AerodromeImpl.Builder airportBuilder = AerodromeImpl.builder()
                 .setDesignator("EETN")
                 .setName("Tallinn Airport")
                 .setFieldElevationValue(40.0)
                 .setLocationIndicatorICAO("EETN")
-                .setReferencePoint(new GeoPositionImpl.Builder()
+                .setReferencePoint(GeoPositionImpl.builder()
                         .setCoordinateReferenceSystemId("http://www.opengis.net/def/crs/EPSG/0/4326")
                         .addCoordinates(24.8325, 59.413333)
                         .setElevationValue(40.0)
