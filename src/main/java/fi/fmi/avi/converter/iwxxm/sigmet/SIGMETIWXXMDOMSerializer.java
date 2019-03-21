@@ -10,6 +10,6 @@ import icao.iwxxm21.SIGMETType;
 public class SIGMETIWXXMDOMSerializer  extends AbstractSIGMETIWXXMSerializer<Document> {
     @Override
     protected Document render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException {
-        return null;
+        return renderXMLDocument(sigmet, hints);
     }
 }

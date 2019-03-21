@@ -1,7 +1,7 @@
 {
   "status": "NORMAL",
   "issuingAirTrafficServicesUnit": {
-    "name": "AMSTERDAM",
+    "name": "AMSTERDAM FIR",
     "type": "FIR",
     "designator": "EHAA"
   },
@@ -26,14 +26,6 @@
     "endTime": {
       "completeTime": "2018-08-27T18:00:00Z"
     }
-  },
-  "movingSpeed": {
-    "value": 10,
-    "uom": "[kn_i]"
-  },
-  "movingDirection": {
-    "value": 180,
-    "uom": "deg"
   },
   "airmetPhenomenon": "ISOL_TSGR",
   "analysisType": "OBSERVATION",

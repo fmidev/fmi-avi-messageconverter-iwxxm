@@ -21,6 +21,7 @@ import javax.xml.transform.dom.DOMSource;
 
 import net.opengis.gml32.AbstractRingPropertyType;
 import net.opengis.gml32.AbstractTimeObjectType;
+import net.opengis.gml32.AngleType;
 import net.opengis.gml32.CircleByCenterPointType;
 import net.opengis.gml32.CurvePropertyType;
 import net.opengis.gml32.CurveSegmentArrayPropertyType;
@@ -83,6 +84,7 @@ import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.sigmet.AIRMET;
+import fi.fmi.avi.model.sigmet.AirmetWind;
 import fi.fmi.avi.model.sigmet.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
 import icao.iwxxm21.AIRMETEvolvingConditionCollectionPropertyType;
@@ -102,6 +104,7 @@ import icao.iwxxm21.PermissibleUsageType;
 import icao.iwxxm21.RelationalOperatorType;
 import icao.iwxxm21.TimeIndicatorType;
 import icao.iwxxm21.UnitPropertyType;
+import icao.iwxxm21.WeatherCausingVisibilityReductionType;
 import wmo.metce2013.ProcessType;
 
 public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSerializer implements AviMessageSpecificConverter<AIRMET, T> {
@@ -218,12 +221,10 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                         input.getIssuingAirTrafficServicesUnit().getName(), issueTime, airmetUuid));
         }
         
-        System.err.println("seq:" + input.getSequenceNumber() + " " + airmet.getStatus());
         airmet.setSequenceNumber(input.getSequenceNumber());
 
         airmet.setValidPeriod(getTimePeriodPropertyType(input, airmetUuid));
 
-        System.err.println("AM: " + airmet.toString());
         try {
             result.setStatus(Status.SUCCESS);
             this.updateMessageMetadata(input, result, airmet);
@@ -428,7 +429,7 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                         spd.setValue(ms.getValue());
                                     }));
                                 });
-/*
+
                             } else { //Add nil directionOfMotion if there is no forecast
                                     icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
                                     AngleWithNilReasonType angl = new AngleWithNilReasonType();
@@ -436,7 +437,7 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                     angl.setUom("N/A");
                                     JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm21.createAIRMETEvolvingConditionTypeDirectionOfMotion(angl);
                                     directionOfMotion.setNil(true);
-*/
+
                                     sect.setDirectionOfMotion(directionOfMotion);
                             }
 
@@ -555,6 +556,30 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                             }
                             if (geometryWithHeight.getUpperLimitOperator().isPresent()){
                                 sect.setGeometryUpperLimitOperator(RelationalOperatorType.fromValue(geometryWithHeight.getUpperLimitOperator().get().name()));
+                            }
+
+                            if (input.getVisibility().isPresent()) {
+                                sect.setSurfaceVisibility(create(LengthType.class, (lt) -> {
+                                           lt.setValue(input.getVisibility().get().getValue().intValue());
+                                           lt.setUom(input.getVisibility().get().getUom().toLowerCase());
+                                        }));
+                                for (AviationCodeListUser.WeatherCausingVisibilityReduction w: input.getObscuration().get()) {
+                                    WeatherCausingVisibilityReductionType wt=new WeatherCausingVisibilityReductionType();
+                                    wt.setHref(AviationCodeListUser.CODELIST_VALUE_WEATHERCAUSINGVISIBILITYREDUCTION+"/"+w.getText());
+                                    sect.getSurfaceVisibilityCause().add(wt);
+                                }
+                            }
+
+                            if (input.getWind().isPresent()) {
+                                AirmetWind w = input.getWind().get();
+                                sect.setSurfaceWindSpeed(create(SpeedType.class, (st)-> {
+                                        st.setValue(w.getSpeed().getValue());
+                                        st.setUom(w.getSpeed().getUom());
+                                }));
+                                sect.setSurfaceWindDirection(create(AngleType.class, (at) -> {
+                                    at.setValue(w.getDirection().getValue());
+                                    at.setUom(w.getDirection().getUom());
+                                }));
                             }
                         }));
                     }));

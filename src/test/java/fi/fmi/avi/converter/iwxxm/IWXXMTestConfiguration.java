@@ -24,7 +24,7 @@ import fi.fmi.avi.model.taf.TAF;
 public class IWXXMTestConfiguration {
     @Bean
     private static ObjectMapper getObjectMapper() {
-        System.err.println("ObjectMapper created");
+        System.err.println("ObjectMapper created in IWXXMTestConfiguration");
         ObjectMapper om = new ObjectMapper();
         om.registerModule(new Jdk8Module());
         om.registerModule(new JavaTimeModule());

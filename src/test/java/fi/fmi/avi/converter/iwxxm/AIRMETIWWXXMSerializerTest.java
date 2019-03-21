@@ -16,6 +16,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
+import org.w3c.dom.Document;
 
 import com.bedatadriven.jackson.datatype.jts.JtsModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +33,7 @@ import fi.fmi.avi.model.sigmet.immutable.AIRMETImpl;
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
 
 public class AIRMETIWWXXMSerializerTest {
+
     @Autowired
     private AviMessageConverter converter;
 
@@ -69,7 +71,22 @@ public class AIRMETIWWXXMSerializerTest {
         assertNotNull(result.getConvertedMessage().get());
     }
 
-    @Test
+    public void doTestAIRMETDOMSerialization(String fn) throws Exception {
+        assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM));
+        AIRMET s= readFromJSON(fn);
+        ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM);
+        System.err.println("STATUS: "+result.getStatus());
+        if (result.getConvertedMessage().isPresent()) {
+            System.err.println("AIRMET:"+result.getConvertedMessage().get());
+        }
+
+        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+    }
+
+ //   @Test
     public void dotestAIRMETStringSerialization1() throws Exception {
       doTestAIRMETStringSerialization("airmet_iwxxm1.json");
     }
@@ -79,9 +96,24 @@ public class AIRMETIWWXXMSerializerTest {
         doTestAIRMETStringSerialization("airmet_iwxxmmoving.json");
     }
 
-    @Test
+ //   @Test
     public void dotestAIRMETStringSerialization3() throws Exception {
         doTestAIRMETStringSerialization("airmet2.json");
+    }
+
+ //   @Test
+    public void dotestAIRMETDOMSerialization1() throws Exception {
+        doTestAIRMETDOMSerialization("airmet_iwxxm1.json");
+    }
+
+    @Test
+    public void dotestAIRMETDOMSerialization2() throws Exception {
+        doTestAIRMETDOMSerialization("airmet_iwxxmmoving.json");
+    }
+
+//    @Test
+    public void dotestAIRMETDOMSerialization3() throws Exception {
+        doTestAIRMETDOMSerialization("airmet2.json");
     }
 
 }

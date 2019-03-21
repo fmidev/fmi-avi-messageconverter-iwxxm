@@ -19,6 +19,7 @@ import icao.iwxxm21.AIRMETType;
 import icao.iwxxm21.SIGMETType;
 
 public class AIRMETIWXXMStringSerializer extends AbstractAIRMETIWXXMSerializer<String> {
+
     @Override
     protected String render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException {
         return renderXMLString(airmet, hints);
@@ -32,7 +33,7 @@ public class AIRMETIWXXMStringSerializer extends AbstractAIRMETIWXXMSerializer<S
                 StringWriter sw = new StringWriter();
                 Result output = new StreamResult(sw);
                 TransformerFactory tFactory = TransformerFactory.newInstance();
-                Transformer transformer = tFactory.newTransformer();
+                Transformer transformer = tFactory.newTransformer(this.getCleanupTransformationStylesheet(hints));//TODO
 
                 //TODO: switch these on based on the ConversionHints:
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
