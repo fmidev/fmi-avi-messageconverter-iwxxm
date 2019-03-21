@@ -29,6 +29,7 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.model.Aerodrome;
+import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -93,34 +94,34 @@ public class IWXXMGenericBulletinScanner extends AbstractIWXXMScanner {
             final String messageType = featureElement.getLocalName();
             switch (messageType) {
                 case "TAF":
-                    builder.setMessageType(GenericAviationWeatherMessage.MessageType.TAF);
+                    builder.setMessageType(AviationCodeListUser.MessageType.TAF);
                     retval.addAll(collectTAFMessage(featureElement, xpath, builder));
                     break;
 
                 case "METAR":
-                    builder.setMessageType(GenericAviationWeatherMessage.MessageType.METAR);
+                    builder.setMessageType(AviationCodeListUser.MessageType.METAR);
                     break;
 
                 case "SPECI":
-                    builder.setMessageType(GenericAviationWeatherMessage.MessageType.SPECI);
+                    builder.setMessageType(AviationCodeListUser.MessageType.SPECI);
 
                 case "SIGMET":
                 case "TropicalCycloneSIGMET":
                 case "VolcanicAshSIGMET":
-                    builder.setMessageType(GenericAviationWeatherMessage.MessageType.SIGMET);
+                    builder.setMessageType(AviationCodeListUser.MessageType.SIGMET);
                     retval.addAll(collectSIGMETMessage(featureElement, xpath, builder));
                     break;
 
                 case "AIRMET":
-                    builder.setMessageType(GenericAviationWeatherMessage.MessageType.AIRMET);
+                    builder.setMessageType(AviationCodeListUser.MessageType.AIRMET);
                     break;
 
                 case "TropicalCycloneAdvisory":
-                    builder.setMessageType(GenericAviationWeatherMessage.MessageType.TROPICAL_CYCLONE_ADVISORY);
+                    builder.setMessageType(AviationCodeListUser.MessageType.TROPICAL_CYCLONE_ADVISORY);
                     break;
 
                 case "VolcanicAshAdvisory":
-                    builder.setMessageType(GenericAviationWeatherMessage.MessageType.VOLCANIC_ASH_ADVISORY);
+                    builder.setMessageType(AviationCodeListUser.MessageType.VOLCANIC_ASH_ADVISORY);
                     break;
 
                 default:
