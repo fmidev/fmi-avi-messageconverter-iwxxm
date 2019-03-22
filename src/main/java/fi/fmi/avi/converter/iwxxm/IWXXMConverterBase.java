@@ -323,14 +323,14 @@ public abstract class IWXXMConverterBase {
         if (to.isPresent()) {
             if (TimePeriodType.class.isAssignableFrom(to.get().getClass())) {
                 final TimePeriodType tp = (TimePeriodType) to.get();
-                final PartialOrCompleteTimePeriod.Builder retval = new PartialOrCompleteTimePeriod.Builder();
+                final PartialOrCompleteTimePeriod.Builder retval = PartialOrCompleteTimePeriod.builder();
                 getStartTime(tp, refCtx).ifPresent((start) -> {
-                    retval.setStartTime(new PartialOrCompleteTimeInstant.Builder()//
+                    retval.setStartTime(PartialOrCompleteTimeInstant.builder()//
                             .setCompleteTime(start).build());
                 });
 
                 getEndTime(tp, refCtx).ifPresent((end) -> {
-                    retval.setEndTime(new PartialOrCompleteTimeInstant.Builder()//
+                    retval.setEndTime(PartialOrCompleteTimeInstant.builder()//
                             .setCompleteTime(end).build());
                 });
                 return Optional.of(retval.build());
@@ -345,14 +345,14 @@ public abstract class IWXXMConverterBase {
             final ReferredObjectRetrievalContext refCtx) {
         final Optional<TimePeriodType> tp = resolveProperty(timePeriodPropertyType, TimePeriodType.class, refCtx);
         if (tp.isPresent()) {
-            final PartialOrCompleteTimePeriod.Builder retval = new PartialOrCompleteTimePeriod.Builder();
+            final PartialOrCompleteTimePeriod.Builder retval = PartialOrCompleteTimePeriod.builder();
             getStartTime(tp.get(), refCtx).ifPresent((start) -> {
-                retval.setStartTime(new PartialOrCompleteTimeInstant.Builder()//
+                retval.setStartTime(PartialOrCompleteTimeInstant.builder()//
                         .setCompleteTime(start).build());
             });
 
             getEndTime(tp.get(), refCtx).ifPresent((end) -> {
-                retval.setEndTime(new PartialOrCompleteTimeInstant.Builder()//
+                retval.setEndTime(PartialOrCompleteTimeInstant.builder()//
                         .setCompleteTime(end).build());
             });
             return Optional.of(retval.build());
@@ -368,7 +368,7 @@ public abstract class IWXXMConverterBase {
                 final TimeInstantType ti = (TimeInstantType) to.get();
                 final Optional<ZonedDateTime> time = getTime(ti.getTimePosition());
                 if (time.isPresent()) {
-                    return Optional.of(new PartialOrCompleteTimeInstant.Builder().setCompleteTime(time).build());
+                    return Optional.of(PartialOrCompleteTimeInstant.builder().setCompleteTime(time).build());
                 }
             } else {
                 throw new IllegalArgumentException("Time object is not a time instant");
@@ -381,7 +381,7 @@ public abstract class IWXXMConverterBase {
             final ReferredObjectRetrievalContext refCtx) {
         final Optional<ZonedDateTime> time = getTime(timeInstantPropertyType, refCtx);
         if (time.isPresent()) {
-            return Optional.of(new PartialOrCompleteTimeInstant.Builder().setCompleteTime(time.get()).build());
+            return Optional.of(PartialOrCompleteTimeInstant.builder().setCompleteTime(time.get()).build());
         }
         return Optional.empty();
     }

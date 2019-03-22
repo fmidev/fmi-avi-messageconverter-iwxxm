@@ -111,7 +111,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
 
     protected static Optional<Aerodrome> buildAerodrome(final AirportHeliportType airport, final IssueList retval,
             final ReferredObjectRetrievalContext refCtx) {
-        AerodromeImpl.Builder aerodromeBuilder = new AerodromeImpl.Builder();
+        AerodromeImpl.Builder aerodromeBuilder = AerodromeImpl.builder();
         List<AirportHeliportTimeSlicePropertyType> slices = airport.getTimeSlice();
         if (slices.isEmpty()) {
             retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No time slice (for aerodrome)"));
@@ -144,7 +144,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                     Optional<ElevatedPointType> elPoint = resolveProperty(pointProp, ElevatedPointType.class, refCtx);
                     if (elPoint.isPresent()) {
                         String srsName = elPoint.get().getSrsName();
-                        GeoPositionImpl.Builder posBuilder = new GeoPositionImpl.Builder();
+                        GeoPositionImpl.Builder posBuilder = GeoPositionImpl.builder();
                         boolean canBuildPos = true;
                         //use ref point elevation as fallback for the aerodrome elevation
                         if (elevation == null && elPoint.get().getElevation() != null) {
@@ -284,7 +284,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                         retval.add(
                                 new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "The spatial sampling feature shape is not a Point in " + contextPath));
                     } else {
-                        GeoPositionImpl.Builder posBuilder = new GeoPositionImpl.Builder();
+                        GeoPositionImpl.Builder posBuilder = GeoPositionImpl.builder();
                         boolean canBuildPos = true;
                         if (point.get().getPos() != null) {
                             DirectPositionType dp = point.get().getPos();
@@ -394,7 +394,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         if (source == null) {
             return Optional.empty();
         }
-        return Optional.of(new NumericMeasureImpl.Builder().setValue(source.getValue()).setUom(source.getUom()).build());
+        return Optional.of(NumericMeasureImpl.builder().setValue(source.getValue()).setUom(source.getUom()).build());
     }
 
     protected static Optional<AviationCodeListUser.RelationalOperator> asRelationalOperator(final RelationalOperatorType source) {
@@ -410,7 +410,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         if (codeListValue != null && codeListValue.startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER)) {
             String code = codeListValue.substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER.length());
             String description = weather.getTitle();
-            WeatherImpl.Builder wBuilder = new WeatherImpl.Builder();
+            WeatherImpl.Builder wBuilder = WeatherImpl.builder();
             boolean codeOk = false;
             if (hints == null || hints.isEmpty() || !hints.containsKey(ConversionHints.KEY_WEATHER_CODES) || ConversionHints.VALUE_WEATHER_CODES_STRICT_WMO_4678
                     .equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
@@ -452,7 +452,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         IssueList issues = new IssueList();
         Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
         if (layer.isPresent()) {
-            CloudLayerImpl.Builder layerBuilder = new CloudLayerImpl.Builder();
+            CloudLayerImpl.Builder layerBuilder = CloudLayerImpl.builder();
             withCloudBase(layer.get(), refCtx, layerBuilder::setBase, issues::add, contextPath);
             withCloudAmount(layer.get(), refCtx, layerBuilder::setAmount, issues::add, contextPath);
             withCloudType(layer.get(), refCtx, layerBuilder::setCloudType, issues::add, contextPath);

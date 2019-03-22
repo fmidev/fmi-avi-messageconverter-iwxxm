@@ -59,11 +59,11 @@ public class TAFBulletinIWXXMSerializerTest {
         List<TAF> tafs = new ArrayList<>();
         for (String fName : fileNames) {
             TAF t = readFromJSON(fName);
-            AerodromeImpl.Builder airportBuilder = new AerodromeImpl.Builder().setDesignator("EETN")
+            AerodromeImpl.Builder airportBuilder = AerodromeImpl.builder().setDesignator("EETN")
                     .setName("Tallinn Airport")
                     .setFieldElevationValue(40.0)
                     .setLocationIndicatorICAO("EETN")
-                    .setReferencePoint(new GeoPositionImpl.Builder().setCoordinateReferenceSystemId("http://www.opengis.net/def/crs/EPSG/0/4326")
+                    .setReferencePoint(GeoPositionImpl.builder().setCoordinateReferenceSystemId("http://www.opengis.net/def/crs/EPSG/0/4326")
                             .addCoordinates(24.8325, 59.413333)
                             .setElevationValue(40.0)
                             .setElevationUom("m")
@@ -75,8 +75,8 @@ public class TAFBulletinIWXXMSerializerTest {
             tafs.add(tafBuilder.build());
         }
 
-        TAFBulletinImpl.Builder bulletinBuilder = new TAFBulletinImpl.Builder()//
-                .setHeading(new BulletinHeadingImpl.Builder()//
+        TAFBulletinImpl.Builder bulletinBuilder = TAFBulletinImpl.builder()//
+                .setHeading(BulletinHeadingImpl.builder()//
                         .setDataTypeDesignatorT2(BulletinHeading.ForecastsDataTypeDesignatorT2.FCT_AERODROME_VT_LONG).setType(BulletinHeading.Type.NORMAL)//
                         .setGeographicalDesignator("FI")//
                         .setLocationIndicator("EFKL")//
@@ -117,7 +117,7 @@ public class TAFBulletinIWXXMSerializerTest {
 
         XPathExpression expr = xpath.compile("/collect:MeteorologicalBulletin/collect:bulletinIdentifier");
         String bulletinId = expr.evaluate(docElement);
-        assertEquals("A_LTFI31EFKL301115_C_EFKL_2017073011----.xml", bulletinId);
+        assertEquals("A_LTFI31EFKL_C_EFKL_201707301115--.xml", bulletinId);
 
         expr = xpath.compile("count(/collect:MeteorologicalBulletin/collect:meteorologicalInformation)");
         assertTrue(2 == Integer.parseInt(expr.evaluate(docElement)));

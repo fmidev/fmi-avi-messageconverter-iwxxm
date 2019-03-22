@@ -466,7 +466,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         ConversionIssue issue = null;
         Optional<AerodromeSurfaceWindType> wind = resolveProperty(windProp, AerodromeSurfaceWindType.class, refCtx);
         if (wind.isPresent()) {
-            ObservedSurfaceWindImpl.Builder windBuilder = new ObservedSurfaceWindImpl.Builder();
+            ObservedSurfaceWindImpl.Builder windBuilder = ObservedSurfaceWindImpl.builder();
             windBuilder.setMeanWindDirection(asNumericMeasure(wind.get().getMeanWindDirection()));
             windBuilder.setVariableDirection(wind.get().isVariableWindDirection());
             if (wind.get().getMeanWindSpeed() != null) {
@@ -498,7 +498,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         ConversionIssue issue = null;
         Optional<AerodromeSurfaceWindTrendForecastType> wind = resolveProperty(windProp, AerodromeSurfaceWindTrendForecastType.class, refCtx);
         if (wind.isPresent()) {
-            SurfaceWindImpl.Builder windBuilder = new SurfaceWindImpl.Builder();
+            SurfaceWindImpl.Builder windBuilder = SurfaceWindImpl.builder();
             windBuilder.setMeanWindDirection(asNumericMeasure(wind.get().getMeanWindDirection()).get());
             if (wind.get().getMeanWindSpeed() != null) {
                 windBuilder.setMeanWindSpeed(asNumericMeasure(wind.get().getMeanWindSpeed()).get());
@@ -526,7 +526,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         ConversionIssue issue = null;
         Optional<AerodromeHorizontalVisibilityType> visibility = resolveProperty(visProp, AerodromeHorizontalVisibilityType.class, refCtx);
         if (visibility.isPresent()) {
-            HorizontalVisibilityImpl.Builder visBuilder = new HorizontalVisibilityImpl.Builder();
+            HorizontalVisibilityImpl.Builder visBuilder = HorizontalVisibilityImpl.builder();
             if (visibility.get().getPrevailingVisibility() != null) {
                 visBuilder.setPrevailingVisibility(asNumericMeasure(visibility.get().getPrevailingVisibility()).get());
             } else {
@@ -551,7 +551,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         IssueList issues = new IssueList();
         Optional<AerodromeWindShearType> windShear = resolveProperty(shearProp, AerodromeWindShearType.class, refCtx);
         if (windShear.isPresent()) {
-            WindShearImpl.Builder wsBuilder = new WindShearImpl.Builder();
+            WindShearImpl.Builder wsBuilder = WindShearImpl.builder();
             if (windShear.get().isAllRunways() != null && windShear.get().isAllRunways()) {
                 wsBuilder.setAppliedToAllRunways(windShear.get().isAllRunways());
                 if (!windShear.get().getRunway().isEmpty()) {
@@ -582,7 +582,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         IssueList issues = new IssueList();
         Optional<AerodromeSeaStateType> seaState = resolveProperty(seaStateProperty, AerodromeSeaStateType.class, refCtx);
         if (seaState.isPresent()) {
-            SeaStateImpl.Builder ssBuilder = new SeaStateImpl.Builder();
+            SeaStateImpl.Builder ssBuilder = SeaStateImpl.builder();
             //Either temp AND (state OR sig wave height)
             if (seaState.get().getSeaSurfaceTemperature() != null) {
                 ssBuilder.setSeaSurfaceTemperature(asNumericMeasure(seaState.get().getSeaSurfaceTemperature()).get());
@@ -627,7 +627,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                 throw new IllegalArgumentException("Must not give runway state with snow closure as input, no need to parse as RunwayState object. SNOCLO "
                         + "applies to the whole aerodrome, not an individual runway");
             }
-            RunwayStateImpl.Builder rwsBuilder = new RunwayStateImpl.Builder();
+            RunwayStateImpl.Builder rwsBuilder = RunwayStateImpl.builder();
             if (runwayState.get().isAllRunways() != null && runwayState.get().isAllRunways()) {
                 rwsBuilder.setAppliedToAllRunways(true);
                 if (runwayState.get().getRunway() != null) {
@@ -766,7 +766,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         IssueList issues = new IssueList();
         Optional<AerodromeRunwayVisualRangeType> rvr = resolveProperty(rvrProp, AerodromeRunwayVisualRangeType.class, refCtx);
         if (rvr.isPresent()) {
-            final RunwayVisualRangeImpl.Builder rvrBuilder = new RunwayVisualRangeImpl.Builder();
+            final RunwayVisualRangeImpl.Builder rvrBuilder = RunwayVisualRangeImpl.builder();
             RunwayDirectionPropertyType rwdProp = rvr.get().getRunway();
             if (rwdProp != null) {
                 withRunwayDirectionBuilderFor(rwdProp, aerodrome, refCtx, (rwdBuilder) -> {
@@ -802,7 +802,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         if (cloudElement != null && cloudElement.getValue() != null) {
             MeteorologicalAerodromeObservationRecordType.Cloud cloud = cloudElement.getValue();
             if (cloud != null) {
-                ObservedCloudsImpl.Builder cloudBuilder = new ObservedCloudsImpl.Builder();
+                ObservedCloudsImpl.Builder cloudBuilder = ObservedCloudsImpl.builder();
                 AerodromeObservedCloudsType obsClouds = cloud.getAerodromeObservedClouds();
                 if (cloud.getNilReason().isEmpty()) {
                     if (obsClouds != null) {
@@ -829,7 +829,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                                             layers.add(layerBuilder.build());
                                         }, issues::add, "observed cloud");
                                     }, (nilReasons) -> {
-                                        ObservedCloudLayerImpl.Builder layerBuilder = new ObservedCloudLayerImpl.Builder();
+                                        ObservedCloudLayerImpl.Builder layerBuilder = ObservedCloudLayerImpl.builder();
                                         if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                                             layerBuilder.setHeightUnobservableByAutoSystem(true);
                                             layerBuilder.setAmountUnobservableByAutoSystem(true);
@@ -869,7 +869,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         if (cloudElement != null && cloudElement.getValue() != null) {
             AerodromeCloudForecastPropertyType cloudProp = cloudElement.getValue();
             if (cloudProp != null) {
-                CloudForecastImpl.Builder cloudBuilder = new CloudForecastImpl.Builder();
+                CloudForecastImpl.Builder cloudBuilder = CloudForecastImpl.builder();
                 if (cloudProp.getNilReason().isEmpty()) {
                     Optional<AerodromeCloudForecastType> cloudFct = resolveProperty(cloudProp, AerodromeCloudForecastType.class, refCtx);
                     if (cloudFct.isPresent()) {
@@ -945,7 +945,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                     }
                 }
                 if (slice.isPresent()) {
-                    RunwayDirectionImpl.Builder rwdBuilder = new RunwayDirectionImpl.Builder();
+                    RunwayDirectionImpl.Builder rwdBuilder = RunwayDirectionImpl.builder();
                     TextDesignatorType designator = slice.get().getDesignator();
                     ValBearingType trueBearing = slice.get().getTrueBearing();
                     rwdBuilder.setAssociatedAirportHeliport(aerodrome);
@@ -977,7 +977,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
     protected static void withObservedCloudLayerBuilderFor(final AerodromeObservedCloudsType.Layer layerProp, final ReferredObjectRetrievalContext refCtx,
             final Consumer<ObservedCloudLayerImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         IssueList issues = new IssueList();
-        ObservedCloudLayerImpl.Builder layerBuilder = new ObservedCloudLayerImpl.Builder();
+        ObservedCloudLayerImpl.Builder layerBuilder = ObservedCloudLayerImpl.builder();
         Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
         if (layer.isPresent()) {
             withCloudBase(layer.get(), refCtx, layerBuilder::setBase, (nilReasons) -> {
