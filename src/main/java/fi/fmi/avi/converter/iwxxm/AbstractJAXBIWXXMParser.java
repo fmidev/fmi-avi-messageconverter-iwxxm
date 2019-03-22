@@ -113,8 +113,12 @@ public abstract class AbstractJAXBIWXXMParser<T, S extends AviationWeatherMessag
 
                 //Schematron validation:
                 result.addIssue(validateAgainstIWXXMSchematron(dom, hints));
-
-                result.setConvertedMessage(createPOJO(source, refCtx, result, hints));
+                try {
+                    result.setConvertedMessage(createPOJO(source, refCtx, result, hints));
+                } catch (IllegalStateException ise) {
+                    result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "All mandatory information for "
+                            + "constructing a message object was not available", ise));
+                }
             } else {
                 for (ValidationEvent evt : collector.getEvents()) {
                     result.addIssue(

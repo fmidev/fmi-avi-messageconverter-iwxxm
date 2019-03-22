@@ -66,10 +66,15 @@ public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T,
             } else {
                 result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No aerodrome info in METAR"));
             }
+            Optional<PartialOrCompleteTimeInstant> phenTime = observationProperties.get()
+                    .get(OMObservationProperties.Name.PHENOMENON_TIME, PartialOrCompleteTimeInstant.class);
 
-            observationProperties.get()
-                    .get(OMObservationProperties.Name.PHENOMENON_TIME, PartialOrCompleteTimeInstant.class)
-                    .ifPresent(metarBuilder::setIssueTime);
+            if (phenTime.isPresent()) {
+                metarBuilder.setIssueTime(phenTime.get());
+            } else {
+                result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                        "No phenomenon time given in METAR, unable to parse POJO"));
+            }
 
             if (AviationCodeListUser.MetarStatus.MISSING != status.get()) {
                 if (observationProperties.get().get(OMObservationProperties.Name.RESULT, ObservationRecordProperties.class).isPresent()) {
