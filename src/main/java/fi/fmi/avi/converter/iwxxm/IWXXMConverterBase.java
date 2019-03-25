@@ -334,8 +334,6 @@ public abstract class IWXXMConverterBase {
                             .setCompleteTime(end).build());
                 });
                 return Optional.of(retval.build());
-            } else {
-                throw new IllegalArgumentException("Time object is not a time period");
             }
         }
         return Optional.empty();

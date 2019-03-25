@@ -587,4 +587,12 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(windShear.get().isAppliedToAllRunways());
     }
 
+
+    @Test
+    public void testTrendPhenomenonTime() throws Exception {
+        Document toValidate = readDocument("metar-A3-1_with-trend-time-instant.xml");
+        ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+    }
+
 }
