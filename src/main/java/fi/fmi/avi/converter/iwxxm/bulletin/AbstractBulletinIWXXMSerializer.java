@@ -112,26 +112,26 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
         bulletin.setBulletinIdentifier(info.build().toGTSExchangeFileName());
 
         final List<V> outputMessages = new ArrayList<>();
-        ConversionResult<V> tafResult;
+        ConversionResult<V> messageResult;
         ConversionResult.Status worstStatus = ConversionResult.Status.SUCCESS;
         for (final S inputMessage : input.getMessages()) {
-            tafResult = this.contentMessageConverter.convertMessage(inputMessage, hints);
-            if (ConversionResult.Status.SUCCESS != tafResult.getStatus()) {
-                if (ConversionResult.Status.isMoreCritical(tafResult.getStatus(), worstStatus)) {
-                    worstStatus = tafResult.getStatus();
+            messageResult = this.contentMessageConverter.convertMessage(inputMessage, hints);
+            if (ConversionResult.Status.SUCCESS != messageResult.getStatus()) {
+                if (ConversionResult.Status.isMoreCritical(messageResult.getStatus(), worstStatus)) {
+                    worstStatus = messageResult.getStatus();
                 }
-                result.addIssue(tafResult.getConversionIssues());
+                result.addIssue(messageResult.getConversionIssues());
             }
             result.setStatus(worstStatus);
-            if (tafResult.getConvertedMessage().isPresent()) {
-                outputMessages.add(tafResult.getConvertedMessage().get());
+            if (messageResult.getConvertedMessage().isPresent()) {
+                outputMessages.add(messageResult.getConvertedMessage().get());
             }
         }
-        MeteorologicalInformationMemberPropertyType tafProp;
+        MeteorologicalInformationMemberPropertyType memberProp;
         for (final V outputMessage : outputMessages) {
-            tafProp = create(MeteorologicalInformationMemberPropertyType.class);
-            tafProp.setAbstractFeature(wrap(outputMessage, getMessageJAXBClass()));
-            bulletin.getMeteorologicalInformation().add(tafProp);
+            memberProp = create(MeteorologicalInformationMemberPropertyType.class);
+            memberProp.setAbstractFeature(wrap(outputMessage, getMessageJAXBClass()));
+            bulletin.getMeteorologicalInformation().add(memberProp);
         }
         try {
             final ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
