@@ -93,7 +93,7 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
      * @return the conversion result.
      */
     @Override
-    public ConversionResult<T> convertMessage(TAF input, ConversionHints hints) {
+    public ConversionResult<T> convertMessage(final TAF input, ConversionHints hints) {
         ConversionResult<T> result = new ConversionResult<>();
         if (!input.areAllTimeReferencesComplete()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "All time references must be completed before converting to IWXXM"));
@@ -117,11 +117,11 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
         AviationCodeListUser.TAFStatus status = input.getStatus();
         taf.setStatus(TAFReportStatusType.valueOf(status.name()));
 
-        if (input.getIssueTime().getCompleteTime().isPresent()) {
+        if (input.getIssueTime().isPresent() && input.getIssueTime().get().getCompleteTime().isPresent()) {
             taf.setIssueTime(create(TimeInstantPropertyType.class, (prop) -> {
                 TimeInstantType ti = create(TimeInstantType.class);
                 TimePositionType tp = create(TimePositionType.class);
-                tp.getValue().add(input.getIssueTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+                tp.getValue().add(input.getIssueTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
                 ti.setTimePosition(tp);
                 ti.setId(issueTimeId);
                 prop.setTimeInstant(ti);
