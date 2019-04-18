@@ -133,7 +133,7 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
         airmet.setId("as-" + UUID.randomUUID().toString());
 
         //Use current time as issueTime if missing
-        final String issueTime = input.getIssueTime().getCompleteTime().orElse(ZonedDateTime.now()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        final String issueTime = input.getIssueTime().get().getCompleteTime().orElse(ZonedDateTime.now()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
         if (input.getCancelledReference().isPresent()) {
             airmet.setStatus(AIRMETReportStatusType.CANCELLATION);

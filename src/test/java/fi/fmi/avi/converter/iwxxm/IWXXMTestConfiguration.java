@@ -84,7 +84,6 @@ public class IWXXMTestConfiguration {
 
     @Autowired
     private AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer;
-
     @Bean
     public AviMessageConverter aviMessageConverter() {
         AviMessageConverter p = new AviMessageConverter();

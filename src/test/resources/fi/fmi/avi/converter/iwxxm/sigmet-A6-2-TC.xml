@@ -51,7 +51,7 @@
 
   <!-- Valid period for this report -->
   <iwxxm:validPeriod>
-    <gml:TimePeriod gml:id="tp-20120825T1600Z-20120825T2200Z" >
+    <gml:TimePeriod gml:id="tp-20120825T1600Z-20120825T2200Z">
       <gml:beginPosition>2012-08-25T16:00:00Z</gml:beginPosition>
       <gml:endPosition>2012-08-25T22:00:00Z</gml:endPosition>
     </gml:TimePeriod>

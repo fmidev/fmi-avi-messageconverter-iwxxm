@@ -168,7 +168,6 @@ public abstract class IWXXMConverterBase {
         }
         return (JAXBElement<T>) result;
     }
-
     @SuppressWarnings("unchecked")
     protected static <S> void validateDocument(final S input, final Class<S> clz, final ConversionHints hints, final ValidationEventHandler eventHandler) {
         try {
@@ -183,14 +182,14 @@ public abstract class IWXXMConverterBase {
                 schemaSources = new Source[2];
                 schemaSources[0] = new StreamSource(ReportType.class.getResource("/int/wmo/collect/1.2/collect.xsd").toExternalForm());
                 schemaSources[1] = new StreamSource(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd").toExternalForm());
-                schemaLocation = "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd "
+                schemaLocation = "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd "
                         + "http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd "
                         + "http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd "
                         + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd";
             } else {
                 schemaSources = new Source[1];
                 schemaSources[0] = new StreamSource(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd").toExternalForm());
-                schemaLocation = "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd "
+                schemaLocation = "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd "
                         + "http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd "
                         + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd";
             }
