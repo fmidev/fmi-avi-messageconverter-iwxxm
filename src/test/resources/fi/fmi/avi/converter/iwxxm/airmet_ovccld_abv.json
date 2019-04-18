@@ -1,0 +1,86 @@
+{
+  "status": "NORMAL",
+  "issuingAirTrafficServicesUnit": {
+    "name": "AMSTERDAM",
+    "type": "FIR",
+    "designator": "EHAA"
+  },
+  "meteorologicalWatchOffice": {
+    "name": "De Bilt",
+    "type": "MWO",
+    "designator": "EHDB"
+  },
+  "sequenceNumber": "1",
+  "issueTime": {
+    "completeTime": "2017-08-27T11:30:00Z"
+  },
+  "validityPeriod": {
+    "startTime": {
+      "completeTime": "2017-08-27T11:30:00Z"
+    },
+    "endTime": {
+      "completeTime": "2017-08-27T18:00:00Z"
+    }
+  },
+  "airspace" : {
+    "designator" : "EHAA",
+    "name" : "AMSTERDAM",
+    "type" : "FIR"
+  },
+  "movingDirection": {
+    "value": 180.0,
+    "uom": "deg"
+  },
+  "movingSpeed": {
+    "value": 10.0,
+    "uom": "[kn_i]"
+  },
+  "permissibleUsage":"NON_OPERATIONAL",
+  "permissibleUsageReason":"EXERCISE",
+  "airmetPhenomenon": "OVC_CLD",
+  "analysisType": "OBSERVATION",
+  "cloudLevels": {
+     "cloudBase": {
+       "value": 100.0,
+       "uom": "[ft_i]"
+     },
+     "cloudTop": {
+       "value": 5000,
+       "uom": "[ft_i]"
+     },
+     "topAbove": "true"
+  },
+  "analysisGeometries": [
+    {
+      "geometry": {
+        "geoGeometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                5.0,
+                52.0
+              ],
+              [
+                6.0,
+                53.0
+              ],
+              [
+                4.0,
+                54.0
+              ],
+              [
+                5.0,
+                52.0
+              ]
+            ]
+          ]
+        }
+      },
+      "time": {
+        "completeTime": "2017-08-27T11:00:00Z"
+      },
+      "approximateLocation": false
+    } ],
+  "intensityChange": "NO_CHANGE"
+}

@@ -1,6 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.sigmet;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,15 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
 
 import net.opengis.gml32.AbstractRingPropertyType;
 import net.opengis.gml32.AbstractTimeObjectType;
@@ -55,8 +49,6 @@ import net.opengis.sampling.spatial.ShapeType;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.util.Debug;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 import aero.aixm511.AirspaceTimeSlicePropertyType;
 import aero.aixm511.AirspaceTimeSliceType;
@@ -86,12 +78,10 @@ import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.VolcanoDescription;
-import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.sigmet.PhenomenonGeometry;
 import fi.fmi.avi.model.sigmet.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
-import fi.fmi.avi.model.sigmet.VASIGMET;
 import icao.iwxxm21.AeronauticalSignificantWeatherPhenomenonType;
 import icao.iwxxm21.AirspacePropertyType;
 import icao.iwxxm21.AngleWithNilReasonType;
@@ -231,9 +221,9 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
 
             sigmet.setAnalysis(createCancelAnalysis(input, issueTime, sigmetUuid));
             if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
-                if (((VASIGMET)input).getVolcanicAshMovedToFIR().isPresent()) {
-                    String designator = ((VASIGMET)input).getVolcanicAshMovedToFIR().get().getDesignator();
-                    String airSpaceName = ((VASIGMET)input).getVolcanicAshMovedToFIR().get().getName();
+                if (input.getVAInfo().get().getVolcanicAshMovedToFIR().isPresent()) {
+                    String designator = input.getVAInfo().get().getVolcanicAshMovedToFIR().get().getDesignator();
+                    String airSpaceName = input.getVAInfo().get().getVolcanicAshMovedToFIR().get().getName();
                     sigmet.setVolcanicAshMovedToFIR(create(AirspacePropertyType.class, (apt) -> {
                         AirspaceType airspace = create(AirspaceType.class);
                         airspace.setValidTime(null);
@@ -279,16 +269,16 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
 
         }
         if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
-            VolcanoDescription volcano = ((VASIGMET) input).getVolcano();
+            VolcanoDescription volcano = input.getVAInfo().get().getVolcano();
             icao.iwxxm21.ObjectFactory of = new icao.iwxxm21.ObjectFactory();
             ((VolcanicAshSIGMETType) sigmet).getRest().add(of.createVolcanicAshSIGMETTypeEruptingVolcano(create(VolcanoPropertyType.class, (vpt) -> {
                 if (volcano.getVolcanoPosition().isPresent()) {
                     vpt.setVolcano(createAndWrap(VolcanoType.class, (v) -> {
-                        ((VASIGMET) input).getVolcano().getVolcanoName().ifPresent((vn) -> {
+                        volcano.getVolcanoName().ifPresent((vn) -> {
                             v.setVolcanoName(vn);
                         });
 
-                        Double[] pts = ((VASIGMET) input).getVolcano().getVolcanoPosition().get().getCoordinates();
+                        Double[] pts = volcano.getVolcanoPosition().get().getCoordinates().toArray(new Double[0]);
                         v.setPosition(create(PointPropertyType.class, (ppt) -> {
                             ppt.setPoint(create(PointType.class, (pt) -> {
                                 pt.setPos(create(DirectPositionType.class, (dpt) -> {
@@ -301,8 +291,8 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                 pt.setId("wv-pt-" + sigmetUuid);
                             }));
                         }));
-                        if (((VASIGMET) input).getVolcano().getVolcanoName().isPresent()) {
-                            v.setId("wv-" + ((VASIGMET) input).getVolcano().getVolcanoName().get().replace(" ", "_") + "-" + sigmetUuid);
+                        if (volcano.getVolcanoName().isPresent()) {
+                            v.setId("wv-" + volcano.getVolcanoName().get().replace(" ", "_") + "-" + sigmetUuid);
                         } else {
                             String generatedVolcanoName = String.format("volcano-%d", (int) Math.random() * 100000);
                             v.setId("wv-" + generatedVolcanoName + "-" + sigmetUuid);
@@ -875,16 +865,16 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
 
             //Default permissions
             target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+            target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
             source.getPermissibleUsage().ifPresent((us) -> {
-                target.setPermissibleUsage(PermissibleUsageType.valueOf(us.name()));
-                if (source.getPermissibleUsageReason().isPresent()) {
-                    target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
-                }
-                if (target.getPermissibleUsage().equals(PermissibleUsageType.NON_OPERATIONAL)) {
-                    target.setPermissibleUsageReason(PermissibleUsageReasonType.EXERCISE);
-                }
-                if ((source.getPermissibleUsageSupplementary() != null)&&(source.getPermissibleUsageSupplementary().isPresent())) {
-                    target.setPermissibleUsageSupplementary(source.getPermissibleUsageSupplementary().get());
+                if (us== AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL) {
+                    target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+                    if (source.getPermissibleUsageReason().isPresent()) {
+                        target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
+                    }
+                    if ((source.getPermissibleUsageSupplementary() != null) && (source.getPermissibleUsageSupplementary().isPresent())) {
+                        target.setPermissibleUsageSupplementary(source.getPermissibleUsageSupplementary().get());
+                    }
                 }
             });
 
@@ -946,20 +936,12 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
             prop.setTimePeriod(tp);
         });
     }
-
     @Override
-    protected Source getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        try {
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(this.getClass().getResourceAsStream("SIGMETCleanup.xsl"));
-            return new DOMSource(doc);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new ConversionException("Unexpected problem in reading the cleanup XSL sheet", e);
+    protected InputStream getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
+        InputStream retval = this.getClass().getResourceAsStream("SIGMETCleanup.xsl");
+        if (retval == null) {
+            throw new ConversionException("Error accessing cleanup XSLT sheet file");
         }
-
+        return retval;
     }
-
 }

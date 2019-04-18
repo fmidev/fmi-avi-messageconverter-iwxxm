@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -10,25 +11,26 @@ import java.util.Optional;
 /**
  * Common functionality for IWXXM property container classes used in scanning the IWXXM messages
  */
-public abstract class AbstractPropertyContainer<T> {
+public abstract class AbstractPropertyContainer {
 
-    private T parent;
+    private final Map<PropertyName, Object> properties = new HashMap<>();
 
-    private final Map<Object, Object> properties = new HashMap<>();
-
-    protected AbstractPropertyContainer(final T parent) {
-        this.parent = parent;
+    protected AbstractPropertyContainer() {
     }
 
-    public boolean contains(final Object key) {
+    public boolean contains(final PropertyName key) {
         return this.properties.containsKey(key);
     }
 
+    public boolean containsAny(final PropertyName... keys) {
+        return this.properties.keySet().stream().anyMatch((key) -> Arrays.stream(keys).anyMatch((key::equals)));
+    }
+
     @SuppressWarnings("unchecked")
-    public <S> Optional<S> get(final Object name, final Class<S> clz) {
+    public <S> Optional<S> get(final PropertyName name, final Class<S> clz) {
         Object o = this.properties.get(name);
         if (o != null) {
-            if (clz.isAssignableFrom(o.getClass())) {
+            if (name.getAcceptedType().isAssignableFrom(o.getClass())) {
                 return (Optional<S>) Optional.of(o);
             }
         }
@@ -36,7 +38,7 @@ public abstract class AbstractPropertyContainer<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <S> List<S> getList(final Object name, final Class<S> itemClz) {
+    public <S> List<S> getList(final PropertyName name, final Class<S> itemClz) {
         Object o = this.properties.get(name);
         if (o != null) {
             if (o instanceof List) {
@@ -61,17 +63,27 @@ public abstract class AbstractPropertyContainer<T> {
      * @throws IllegalArgumentException if the value type is not acceptable for the given key
      */
     @SuppressWarnings("unchecked")
-    public Object set(final Object key, final Object value) throws IllegalArgumentException {
+    public Object set(final PropertyName key, final Object value) throws IllegalArgumentException {
         if (value == null) {
             return null;
         }
-        if (getAcceptedType(key).isAssignableFrom(value.getClass())) {
+        if (key.getAcceptedType().isAssignableFrom(value.getClass())) {
             return this.properties.put(key, value);
         } else {
             throw new IllegalArgumentException(
-                    "Cannot assign value of type " + value.getClass().getCanonicalName() + " to property " + key + ", must be assignable to " + getAcceptedType(
-                            key).getCanonicalName());
+                    "Cannot assign value of type " + value.getClass().getCanonicalName() + " to property " + key + ", must be assignable to "
+                            + key.getAcceptedType().getCanonicalName());
         }
+    }
+
+    /**
+     * Removes the value for this key is one has previously been set.
+     *
+     * @param key
+     *         the property to unset
+     */
+    public void unset(final Object key) {
+        this.properties.remove(key);
     }
 
     /**
@@ -86,8 +98,8 @@ public abstract class AbstractPropertyContainer<T> {
      *         if the property with this key already has non-list value, or if the value is of wrong type
      */
     @SuppressWarnings("unchecked")
-    public void addToList(final Object key, final Object value) throws IllegalArgumentException {
-        if (getAcceptedType(key).isAssignableFrom(value.getClass())) {
+    public void addToList(final PropertyName key, final Object value) throws IllegalArgumentException {
+        if (key.getAcceptedType().isAssignableFrom(value.getClass())) {
             Object o = this.properties.computeIfAbsent(key, k -> new ArrayList<>());
             if (o instanceof List) {
                 List retval = (List) o;
@@ -97,16 +109,14 @@ public abstract class AbstractPropertyContainer<T> {
             }
         } else {
             throw new IllegalArgumentException(
-                    "Cannot assign value of type " + value.getClass().getCanonicalName() + " to property " + key + ", must be assignable to " + getAcceptedType(
-                            key).getCanonicalName());
+                    "Cannot assign value of type " + value.getClass().getCanonicalName() + " to property " + key + ", must be assignable to "
+                            + key.getAcceptedType().getCanonicalName());
         }
     }
 
-    public T getParent() {
-        return parent;
+    public interface PropertyName {
+        Class<?> getAcceptedType();
     }
-
-    protected abstract Class<?> getAcceptedType(final Object key);
 }
 
 

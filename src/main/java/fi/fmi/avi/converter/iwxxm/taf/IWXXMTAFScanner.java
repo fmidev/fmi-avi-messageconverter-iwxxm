@@ -1,7 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.taf;
 
-import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
-
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,49 +7,34 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
+import javax.xml.namespace.QName;
 
-import net.opengis.gml32.DirectPositionType;
-import net.opengis.gml32.FeaturePropertyType;
-import net.opengis.gml32.MeasureType;
-import net.opengis.gml32.PointType;
-import net.opengis.gml32.ReferenceType;
 import net.opengis.om20.OMObservationPropertyType;
 import net.opengis.om20.OMObservationType;
-import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
-import net.opengis.sampling.spatial.ShapeType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
 
-import aero.aixm511.AirportHeliportTimeSlicePropertyType;
-import aero.aixm511.AirportHeliportTimeSliceType;
 import aero.aixm511.AirportHeliportType;
-import aero.aixm511.ElevatedPointPropertyType;
-import aero.aixm511.ElevatedPointType;
-import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
+import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
-import fi.fmi.avi.model.immutable.AerodromeImpl;
+import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.immutable.CloudForecastImpl;
-import fi.fmi.avi.model.immutable.CloudLayerImpl;
-import fi.fmi.avi.model.immutable.GeoPositionImpl;
-import fi.fmi.avi.model.immutable.NumericMeasureImpl;
-import fi.fmi.avi.model.immutable.WeatherImpl;
+import fi.fmi.avi.model.immutable.SurfaceWindImpl;
 import fi.fmi.avi.model.taf.immutable.TAFAirTemperatureForecastImpl;
-import fi.fmi.avi.model.taf.immutable.TAFSurfaceWindImpl;
 import icao.iwxxm21.AerodromeAirTemperatureForecastPropertyType;
 import icao.iwxxm21.AerodromeAirTemperatureForecastType;
 import icao.iwxxm21.AerodromeCloudForecastPropertyType;
@@ -60,17 +43,11 @@ import icao.iwxxm21.AerodromeForecastChangeIndicatorType;
 import icao.iwxxm21.AerodromeForecastWeatherType;
 import icao.iwxxm21.AerodromeSurfaceWindForecastPropertyType;
 import icao.iwxxm21.AerodromeSurfaceWindForecastType;
-import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
 import icao.iwxxm21.CloudLayerPropertyType;
-import icao.iwxxm21.CloudLayerType;
-import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
 import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
-import icao.iwxxm21.RelationalOperatorType;
-import icao.iwxxm21.SigConvectiveCloudTypeType;
 import icao.iwxxm21.TAFReportStatusType;
 import icao.iwxxm21.TAFType;
-import wmo.metce2013.ProcessType;
 
 /**
  * Carries out detailed validation and property value collecting for IWXXM TAF messages.
@@ -126,7 +103,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
         Optional<OMObservationType> baseFct = resolveProperty(input.getBaseForecast(), OMObservationType.class, refCtx);
         if (baseFct.isPresent()) {
-            OMObservationProperties baseFctProps = new OMObservationProperties(baseFct.get());
+            OMObservationProperties baseFctProps = new OMObservationProperties();
             retval.addAll(collectBaseForecast(baseFct.get(), issueDateTime, tafValidityTime, refCtx, baseFctProps, hints));
             properties.set(TAFProperties.Name.BASE_FORECAST, baseFctProps);
         }
@@ -135,7 +112,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             for (OMObservationPropertyType obsProp : input.getChangeForecast()) {
                 Optional<OMObservationType> changeFct = resolveProperty(obsProp, OMObservationType.class, refCtx);
                 if (changeFct.isPresent()) {
-                    OMObservationProperties chFctProps = new OMObservationProperties(changeFct.get());
+                    OMObservationProperties chFctProps = new OMObservationProperties();
                     retval.addAll(collectChangeForecast(changeFct.get(), issueDateTime, tafValidityTime, refCtx, chFctProps, hints));
                     properties.addToList(TAFProperties.Name.CHANGE_FORECAST, chFctProps);
                 }
@@ -176,7 +153,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         }
 
         // report metadata
-        GenericReportProperties meta = new GenericReportProperties(input);
+        GenericReportProperties meta = new GenericReportProperties();
         retval.addAll(collectReportMetadata(input, meta, hints));
         if (!meta.contains(GenericReportProperties.Name.TRANSLATION_TIME)) {
             if (hints != null && hints.containsKey(ConversionHints.KEY_TRANSLATION_TIME)) {
@@ -198,7 +175,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         IssueList retval = collectBaseFctObsMetadata(baseFct, issueTime, tafValidityTime, refCtx, properties, hints);
         Optional<MeteorologicalAerodromeForecastRecordType> baseRecord = getAerodromeForecastRecordResult(baseFct, refCtx);
         if (baseRecord.isPresent()) {
-            ForecastRecordProperties baseProps = new ForecastRecordProperties(baseRecord.get());
+            TAFForecastRecordProperties baseProps = new TAFForecastRecordProperties();
 
             retval.addAll(collectCommonForecastRecordProperties(baseRecord.get(), refCtx, baseProps, "base forecast", hints));
 
@@ -210,28 +187,28 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             //air temperatures
             for (AerodromeAirTemperatureForecastPropertyType prop : baseRecord.get().getTemperature()) {
                 withTAFAirTempForecastBuilderFor(prop, refCtx, (builder) -> {
-                    baseProps.addToList(ForecastRecordProperties.Name.TEMPERATURE, builder.build());
+                    baseProps.addToList(TAFForecastRecordProperties.Name.TEMPERATURE, builder.build());
                 }, retval::addAll);
             }
 
             //prevailing visibility & operator is mandatory
             Optional<NumericMeasure> visibility = asNumericMeasure(baseRecord.get().getPrevailingVisibility());
             if (visibility.isPresent()) {
-                baseProps.set(ForecastRecordProperties.Name.PREVAILING_VISIBILITY, visibility.get());
+                baseProps.set(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY, visibility.get());
             } else {
                 retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Missing visibility in base forecast"));
             }
 
             Optional<AviationCodeListUser.RelationalOperator> visibilityOperator = asRelationalOperator(baseRecord.get().getPrevailingVisibilityOperator());
             if (visibilityOperator.isPresent()) {
-                baseProps.set(ForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, visibilityOperator.get());
+                baseProps.set(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, visibilityOperator.get());
             }
 
             //surface wind is mandatory
             AerodromeSurfaceWindForecastPropertyType windProp = baseRecord.get().getSurfaceWind();
             if (windProp != null) {
                 withTAFSurfaceWindBuilderFor(windProp, refCtx, (builder) -> {
-                    baseProps.set(ForecastRecordProperties.Name.SURFACE_WIND, builder.build());
+                    baseProps.set(TAFForecastRecordProperties.Name.SURFACE_WIND, builder.build());
                 }, retval::add);
             } else {
                 retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Surface wind missing in base forecast"));
@@ -248,13 +225,14 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         IssueList retval = collectChangeFctObsMetadata(changeFct, issueTime, tafValidityTime, refCtx, properties, "change forecast " + changeFct.getId(), hints);
         Optional<MeteorologicalAerodromeForecastRecordType> changeRecord = getAerodromeForecastRecordResult(changeFct, refCtx);
         if (changeRecord.isPresent()) {
-            ForecastRecordProperties changeProps = new ForecastRecordProperties(changeRecord.get());
+            TAFForecastRecordProperties changeProps = new TAFForecastRecordProperties();
             retval.addAll(collectCommonForecastRecordProperties(changeRecord.get(), refCtx, changeProps, "change forecast " + changeFct.getId(), hints));
 
             //changeIndicator
             Optional<AerodromeForecastChangeIndicatorType> changeIndicator = Optional.ofNullable(changeRecord.get().getChangeIndicator());
             if (changeIndicator.isPresent()) {
-                changeProps.set(ForecastRecordProperties.Name.CHANGE_INDICATOR, AviationCodeListUser.TAFChangeIndicator.valueOf(changeIndicator.get().name()));
+                changeProps.set(TAFForecastRecordProperties.Name.CHANGE_INDICATOR,
+                        AviationCodeListUser.TAFChangeIndicator.valueOf(changeIndicator.get().name()));
             } else {
                 retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX, "Change forecast record must contain a change indicator in " + changeFct.getId()));
             }
@@ -267,9 +245,10 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             //prevailing visibility & operator if given
             Optional<NumericMeasure> visibility = asNumericMeasure(changeRecord.get().getPrevailingVisibility());
             if (visibility.isPresent()) {
-                changeProps.set(ForecastRecordProperties.Name.PREVAILING_VISIBILITY, visibility.get());
+                changeProps.set(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY, visibility.get());
                 if (changeRecord.get().getPrevailingVisibilityOperator() != null) {
-                    changeProps.set(ForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, AviationCodeListUser.RelationalOperator.valueOf(changeRecord.get().getPrevailingVisibilityOperator().name()));
+                    changeProps.set(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR,
+                            AviationCodeListUser.RelationalOperator.valueOf(changeRecord.get().getPrevailingVisibilityOperator().name()));
                 }
             }
 
@@ -277,8 +256,25 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             AerodromeSurfaceWindForecastPropertyType windProp = changeRecord.get().getSurfaceWind();
             if (windProp != null) {
                 withTAFSurfaceWindBuilderFor(windProp, refCtx, (builder) -> {
-                    changeProps.set(ForecastRecordProperties.Name.SURFACE_WIND, builder.build());
+                    changeProps.set(TAFForecastRecordProperties.Name.SURFACE_WIND, builder.build());
                 }, retval::add);
+            }
+
+            //Check for existence of all the mandatory properties in the From case:
+            Optional<AviationCodeListUser.TAFChangeIndicator> changeIndicator2 = changeProps.get(TAFForecastRecordProperties.Name.CHANGE_INDICATOR,
+                    AviationCodeListUser.TAFChangeIndicator.class);
+            if (changeIndicator2.isPresent() && AviationCodeListUser.TAFChangeIndicator.FROM == changeIndicator2.get()) {
+                if (!changeProps.get(TAFForecastRecordProperties.Name.SURFACE_WIND, SurfaceWind.class).isPresent()) {
+                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Surface wind is missing in the From type change forecast");
+                }
+
+                if (!changeProps.get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class).isPresent()) {
+                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Visibility is missing in the From type change forecast");
+                }
+
+                if (!changeProps.get(TAFForecastRecordProperties.Name.CLOUD, CloudForecast.class).isPresent()) {
+                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Cloud is missing in the From type change forecast");
+                }
             }
             properties.set(OMObservationProperties.Name.RESULT, changeProps);
         }
@@ -287,7 +283,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
     private static IssueList collectBaseFctObsMetadata(final OMObservationType fct, final ZonedDateTime issueTime, final PartialOrCompleteTimePeriod tafValidityTime, final ReferredObjectRetrievalContext refCtx,
             final OMObservationProperties properties, final ConversionHints hints) {
-        IssueList retval = collectCommonObsMetadata(fct, issueTime, tafValidityTime, refCtx, properties, "base forecast", hints);
+        IssueList retval = collectAndCheckCommonObsMetadata(fct, issueTime, tafValidityTime, refCtx, properties, "base forecast", hints);
 
         //phenomenonTime
         if (fct.getPhenomenonTime() != null) {
@@ -308,7 +304,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
     private static IssueList collectChangeFctObsMetadata(final OMObservationType fct, final ZonedDateTime issueTime, final PartialOrCompleteTimePeriod tafValidityTime, final ReferredObjectRetrievalContext refCtx, final OMObservationProperties properties,
             final String contextPath, final ConversionHints hints) {
-        IssueList retval = collectCommonObsMetadata(fct, issueTime, tafValidityTime, refCtx, properties, contextPath, hints);
+        IssueList retval = collectAndCheckCommonObsMetadata(fct, issueTime, tafValidityTime, refCtx, properties, contextPath, hints);
 
         //phenomenonTime
         if (fct.getPhenomenonTime() != null) {
@@ -342,394 +338,123 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         return retval;
     }
 
-    private static IssueList collectCommonObsMetadata(final OMObservationType fct, final ZonedDateTime issueTime, final PartialOrCompleteTimePeriod tafValidityTime,
-            final ReferredObjectRetrievalContext refCtx, final OMObservationProperties properties, final String contextPath, final ConversionHints hints) {
-        IssueList retval = new IssueList();
-        //forecast type is correct
-        if (fct.getType() != null) {
-            ReferenceType type = fct.getType();
-            if (AviationCodeListUser.MET_AERODROME_FORECAST_TYPE.equals(type.getHref())) {
-                properties.set(OMObservationProperties.Name.TYPE, type.getHref());
-            } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                        "Observation type for IWXXM 2.1 aerodrome forecast Observation is invalid " + "in " + contextPath + ", expected '" + AviationCodeListUser.MET_AERODROME_FORECAST_TYPE + "'"));
-            }
-        } else {
-            retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "Observation type for IWXXM 2.1 aerodrome forecast Observation type is missing in " + contextPath));
+    private static IssueList collectAndCheckCommonObsMetadata(final OMObservationType fct, final ZonedDateTime issueTime,
+            final PartialOrCompleteTimePeriod tafValidityTime, final ReferredObjectRetrievalContext refCtx, final OMObservationProperties properties,
+            final String contextPath, final ConversionHints hints) {
+        IssueList retval = collectCommonObsMetadata(fct, refCtx, properties, contextPath, hints);
+
+        Optional<String> type = properties.get(OMObservationProperties.Name.TYPE, String.class);
+        if (type.isPresent() && !AviationCodeListUser.MET_AERODROME_FORECAST_TYPE.equals(type.get())) {
+            retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
+                    "Observation type for IWXXM 2.1 aerodrome forecast Observation is invalid " + "in " + contextPath + ", expected '"
+                            + AviationCodeListUser.MET_AERODROME_FORECAST_TYPE + "'"));
         }
 
-        //result time
-        if (fct.getResultTime() != null) {
-            Optional<PartialOrCompleteTimeInstant> resultTime = getCompleteTimeInstant(fct.getResultTime(), refCtx);
-            if (resultTime.isPresent() && resultTime.get().getCompleteTime().isPresent()) {
-                properties.set(OMObservationProperties.Name.RESULT_TIME, resultTime.get());
-                if (issueTime != null && !resultTime.get().getCompleteTime().get().equals(issueTime)) {
-                    retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL, "Result time in forecast is not equal to the TAF message issue time " + "in " + contextPath));
-                }
-            } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX, "Result time is not valid or cannot be resolved in " + contextPath));
-            }
-        } else {
-            retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Result time is missing in " + contextPath));
+        Optional<PartialOrCompleteTimeInstant> resultTime = properties.get(OMObservationProperties.Name.RESULT_TIME, PartialOrCompleteTimeInstant.class);
+        if (issueTime != null && resultTime.isPresent() && resultTime.get().getCompleteTime().isPresent() && !resultTime.get()
+                .getCompleteTime()
+                .get()
+                .equals(issueTime)) {
+            retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL,
+                    "Result time in forecast is not equal to the TAF message issue time " + "in " + contextPath));
         }
 
-        //validTime
-        if (fct.getValidTime() != null) {
-            Optional<PartialOrCompleteTimePeriod> validTime = getCompleteTimePeriod(fct.getValidTime(), refCtx);
-            if (validTime.isPresent()) {
-                properties.set(OMObservationProperties.Name.VALID_TIME, validTime.get());
-                if (!validTime.get().equals(tafValidityTime)) {
-                    retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL,
-                            "Valid time of the base forecast is not equal to the valid time of " + "the entire TAF in " + contextPath));
-                }
-            }
+        Optional<PartialOrCompleteTimePeriod> validTime = properties.get(OMObservationProperties.Name.VALID_TIME, PartialOrCompleteTimePeriod.class);
+        if (validTime.isPresent() && !validTime.get().equals(tafValidityTime)) {
+            retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL,
+                    "Valid time of the base forecast is not equal to the valid time of " + "the entire TAF in " + contextPath));
         }
-
-        //procedure
-        if (fct.getProcedure() != null) {
-            Optional<ProcessType> process = resolveProperty(fct.getProcedure(), ProcessType.class, refCtx);
-
-            if (process.isPresent()) {
-                //Note: Checking against the exact String match of the description is probably too strict:
-                /*
-                if (!AviationCodeListUser.TAF_PROCEDURE_DESCRIPTION.equals(process.get().getDescription().getValue())) {
-                    retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX, "Process description is not "));
-                }
-                */
-                properties.set(OMObservationProperties.Name.PROCEDURE, process.get());
-            } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Could not resolve the process property value in " + contextPath));
-            }
-        } else {
-            retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No process given in " + contextPath));
-        }
-
-        //observed property
-        if (fct.getObservedProperty() != null) {
-            ReferenceType obsProp = fct.getObservedProperty();
-            if (AviationCodeListUser.MET_AERODROME_FORECAST_PROPERTIES.equals(obsProp.getHref())) {
-                properties.set(OMObservationProperties.Name.OBSERVED_PROPERTY, obsProp.getHref());
-            } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                        "Observed property does not match " + AviationCodeListUser.MET_AERODROME_FORECAST_PROPERTIES + " in " + contextPath));
-            }
-        }
-
-        //foi
-        if (fct.getFeatureOfInterest() != null) {
-            Optional<SFSpatialSamplingFeatureType> sft = resolveProperty(fct.getFeatureOfInterest(), "abstractFeature", SFSpatialSamplingFeatureType.class, refCtx);
-            if (sft.isPresent()) {
-
-                List<FeaturePropertyType> sampledFeatures = sft.get().getSampledFeature();
-                if (sampledFeatures.isEmpty()) {
-                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                            "No sampled feature (for aerodrome) in TAF"));
-                } else if (sampledFeatures.size() != 1) {
-                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "More than one sampled feature in TAF"));
-                } else {
-                    Optional<AirportHeliportType> airport = resolveProperty(sampledFeatures.get(0), "abstractFeature", AirportHeliportType.class, refCtx);
-                    airport.ifPresent((p) -> {
-                        Optional<Aerodrome> drome = buildAerodrome(p, retval, refCtx);
-                        drome.ifPresent((d) -> {
-                            properties.set(OMObservationProperties.Name.AERODROME, d);
-                        });
-                    });
-                }
-
-                ShapeType shape = sft.get().getShape();
-                if (shape != null) {
-                    Optional<PointType> point = resolveProperty(shape, "abstractGeometry", PointType.class, refCtx);
-                    if (!point.isPresent()) {
-                        retval.add(
-                                new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "The spatial sampling feature shape is not a Point in " + contextPath));
-                    } else {
-                        GeoPositionImpl.Builder posBuilder = new GeoPositionImpl.Builder();
-                        boolean canBuildPos = true;
-                        if (point.get().getPos() != null) {
-                            DirectPositionType dp = point.get().getPos();
-                            if (dp.getSrsName() != null) {
-                                posBuilder.setCoordinateReferenceSystemId(dp.getSrsName());
-                            } else {
-                                if (point.get().getSrsName() != null) {
-                                    posBuilder.setCoordinateReferenceSystemId(point.get().getSrsName());
-                                } else {
-                                    canBuildPos = false;
-                                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                            "No SRS name for sampling point position"));
-                                }
-                            }
-                            if (dp.getValue() != null) {
-                                posBuilder.setCoordinates(dp.getValue().toArray(new Double[] {}));
-                            } else {
-                                canBuildPos = false;
-                                retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                        "No value for sampling point position"));
-                            }
-
-                            if (canBuildPos) {
-                                properties.set(OMObservationProperties.Name.SAMPLING_POINT, posBuilder.build());
-                            }
-
-                        } else if (point.get().getCoordinates() != null) {
-                            retval.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
-                                    "Found elevated " + "position defined using the deprecated GML CoordinatesType, skipping elevated position info"));
-                        }
-                    }
-                } else {
-                    retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No shape in spatial sampling feature in " + contextPath));
-                }
-            } else {
-                retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                        "Could not find feature of interest of type SFSpatialSamplingFeature in " + contextPath));
-            }
-        }
+        //Note: Checking against the exact String match of the process description is probably too strict
         return retval;
     }
 
-    private static Optional<Aerodrome> buildAerodrome(final AirportHeliportType airport, final IssueList retval, final ReferredObjectRetrievalContext refCtx) {
-        AerodromeImpl.Builder aerodromeBuilder = new AerodromeImpl.Builder();
-        List<AirportHeliportTimeSlicePropertyType> slices = airport.getTimeSlice();
-        if (slices.isEmpty()) {
-            retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No time slice (for aerodrome) in TAF"));
-            return Optional.empty();
-        } else if (slices.size() != 1) {
-            retval.add(
-                    new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "More than one time slice (for aerodrome) in TAF"));
-            return Optional.empty();
-        } else {
-            Optional<AirportHeliportTimeSliceType> slice = resolveProperty(slices.get(0), AirportHeliportTimeSliceType.class, refCtx);
-            if (slice.isPresent()) {
-                if (slice.get().getDesignator().getNilReason() == null) {
-                    aerodromeBuilder.setDesignator(slice.get().getDesignator().getValue());
-                } else {
-                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No designator for " + "aerodrome"));
-                }
-                if (slice.get().getLocationIndicatorICAO() != null) {
-                    aerodromeBuilder.setLocationIndicatorICAO(slice.get().getLocationIndicatorICAO().getValue());
-                }
-                if (slice.get().getDesignatorIATA() != null) {
-                    aerodromeBuilder.setDesignatorIATA(slice.get().getDesignatorIATA().getValue());
-                }
-                if (slice.get().getPortName() != null) {
-                    aerodromeBuilder.setName(slice.get().getPortName().getValue());
-                }
-
-                ValDistanceVerticalType elevation = slice.get().getFieldElevation();
-                ElevatedPointPropertyType pointProp = slice.get().getARP();
-                if (pointProp != null && pointProp.getNilReason() == null) {
-                    Optional<ElevatedPointType> elPoint = resolveProperty(pointProp, ElevatedPointType.class, refCtx);
-                    if (elPoint.isPresent()) {
-                        String srsName = elPoint.get().getSrsName();
-                        GeoPositionImpl.Builder posBuilder = new GeoPositionImpl.Builder();
-                        boolean canBuildPos = true;
-                        //use ref point elevation as fallback for the aerodrome elevation
-                        if (elevation == null && elPoint.get().getElevation() != null) {
-                            elevation = elPoint.get().getElevation();
-                            if (elevation.getNilReason() == null) {
-                                posBuilder.setNullableElevationUom(elevation.getUom());
-                                if (elevation.getValue() != null) {
-                                    posBuilder.setElevationValue(Double.parseDouble(elevation.getValue()));
-                                }
-                            }
-                        }
-                        if (elPoint.get().getPos() != null) {
-                            DirectPositionType dp = elPoint.get().getPos();
-                            if (dp.getSrsName() != null) {
-                                srsName = dp.getSrsName();
-                            }
-                            if (srsName != null) {
-                                posBuilder.setCoordinateReferenceSystemId(srsName);
-                            } else {
-                                canBuildPos = false;
-                                retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                        "No SRS name for ARP elevated point position"));
-                            }
-                            if (dp.getValue() != null) {
-                                posBuilder.setCoordinates(dp.getValue().toArray(new Double[] {}));
-                            } else {
-                                canBuildPos = false;
-                                retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                        "No value for ARP elevated point position"));
-                            }
-
-                            if (canBuildPos) {
-                                aerodromeBuilder.setReferencePoint(posBuilder.build());
-                            }
-
-                        } else if (elPoint.get().getCoordinates() != null) {
-                            retval.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
-                                    "Found elevated position defined using the deprecated GML CoordinatesType, skipping elevated position info"));
-                        }
-                    }
-                }
-
-                if (elevation != null && elevation.getNilReason() == null) {
-                    if ("M".equals(elevation.getUom())) {
-                        aerodromeBuilder.setFieldElevationValue(Double.parseDouble(elevation.getValue()));
-                    } else {
-                        retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                                "Field elevation unit is '" + elevation.getUom() + "', 'M' is required"));
-                    }
-                }
-            }
-        }
-        return Optional.of(aerodromeBuilder.build());
-    }
-
-    private static IssueList collectCommonForecastRecordProperties(final MeteorologicalAerodromeForecastRecordType record, final ReferredObjectRetrievalContext refCtx, final ForecastRecordProperties properties, final String contextPath, final ConversionHints hints) {
+    private static IssueList collectCommonForecastRecordProperties(final MeteorologicalAerodromeForecastRecordType record,
+            final ReferredObjectRetrievalContext refCtx, final TAFForecastRecordProperties properties, final String contextPath, final ConversionHints hints) {
         IssueList retval = new IssueList();
 
         //cavok
         if (record.isCloudAndVisibilityOK()) {
-            properties.set(ForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.TRUE);
+            properties.set(TAFForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.TRUE);
         }
 
         //weather
-        for (AerodromeForecastWeatherType weather : record.getWeather()) {
-            boolean nswFound = false;
-            for (String nilReason : weather.getNilReason()) {
-                if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE.equals(nilReason)) {
-                    nswFound = true;
-                    break;
-                }
-            }
-            if (nswFound) {
-                properties.set(ForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.TRUE);
-            } else {
-                withWeatherBuilderFor(weather, hints, (builder) -> {
-                    properties.addToList(ForecastRecordProperties.Name.WEATHER, builder.build());
-                }, retval::add);
-            }
-        }
+        withEachNillableChild(record, record.getWeather(), AerodromeForecastWeatherType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "weather"),
+                refCtx, (value) -> {
+                    withWeatherBuilderFor(value, hints, (builder) -> {
+                        properties.addToList(TAFForecastRecordProperties.Name.WEATHER, builder.build());
+                    }, retval::add);
+                }, (nilReasons) -> {
+                    if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
+                        properties.set(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.TRUE);
+                        if (record.getWeather().size() != 1) {
+                            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL, "'No significant weather' (NSW) was reported with other "
+                                    + "weather phenomena, NSW must be the only weather property if given");
+                        }
+                    }
+                });
 
         //cloud
-        AerodromeCloudForecastPropertyType cloudProp = record.getCloud();
-        if (cloudProp != null) {
-            CloudForecastImpl.Builder cloudBuilder = new CloudForecastImpl.Builder();
-            //NSC
-            boolean nscFound = false;
-            for (String nilReason : cloudProp.getNilReason()) {
-                if (AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE.equals(nilReason)) {
-                    nscFound = true;
-                    break;
+        withNillableChild(record, record.getCloud(), AerodromeCloudForecastPropertyType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "cloud"),
+                refCtx, (value) -> {
+            CloudForecastImpl.Builder cloudBuilder = CloudForecastImpl.builder();
+                    Optional<AerodromeCloudForecastType> cloudForecast = resolveProperty(value, AerodromeCloudForecastType.class, refCtx);
+            if (cloudForecast.isPresent()) {
+                if (record.isCloudAndVisibilityOK()) {
+                    retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL, "Forecast features CAVOK but cloud forecast exists in " + contextPath));
                 }
-            }
-
-            cloudBuilder.setNoSignificantCloud(nscFound);
-            if (!nscFound) {
-                Optional<AerodromeCloudForecastType> cloud = resolveProperty(cloudProp, AerodromeCloudForecastType.class, refCtx);
-                if (cloud.isPresent()) {
-                    if (record.isCloudAndVisibilityOK()) {
-                        retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL, "Forecast features CAVOK but cloud forecast exists in " + contextPath));
-                    }
-                    JAXBElement<LengthWithNilReasonType> vv = cloud.get().getVerticalVisibility();
-                    if (vv != null && vv.getValue() != null) {
+                JAXBElement<LengthWithNilReasonType> vv = cloudForecast.get().getVerticalVisibility();
+                if (vv != null) {
+                    if (vv.getValue() != null) {
                         cloudBuilder.setVerticalVisibility(asNumericMeasure(vv.getValue()));
+                    } else if (vv.isNil()) {
+                        cloudBuilder.setVerticalVisibilityMissing(true);
+                    }
+                } else {
+                    List<CloudLayer> layers = new ArrayList<>();
+                    for (CloudLayerPropertyType layerProp : cloudForecast.get().getLayer()) {
+                        withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
+                            layers.add(layerBuilder.build());
+                        }, retval::add, contextPath + " / cloud forecast");
+                    }
+                    if (!layers.isEmpty()) {
+                        cloudBuilder.setLayers(layers);
                     } else {
-                        List<CloudLayer> layers = new ArrayList<>();
-                        for (CloudLayerPropertyType layerProp : cloud.get().getLayer()) {
-                            Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
-                            if (layer.isPresent()) {
-                                CloudAmountReportedAtAerodromeType amount = layer.get().getAmount();
-                                DistanceWithNilReasonType base = layer.get().getBase();
-                                JAXBElement<SigConvectiveCloudTypeType> type = layer.get().getCloudType();
-                                CloudLayerImpl.Builder layerBuilder = new CloudLayerImpl.Builder();
-
-                                if (base.getNilReason().isEmpty()) {
-                                    layerBuilder.setBase(asNumericMeasure(base));
-                                }
-                                if (amount.getHref() != null && amount.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
-                                    String amountCode = amount.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME.length());
-                                    try {
-                                        layerBuilder.setAmount(AviationCodeListUser.CloudAmount.fromInt(Integer.parseInt(amountCode)));
-                                    } catch (NumberFormatException e) {
-                                        retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                                                "Could not parse code list value '" + amountCode + "' as an integer for code list " + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME));
-                                    }
-
-                                } else {
-                                    retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                                            "Cloud amount code '" + amount.getHref() + "' does not start with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
-                                }
-
-                                if (type != null && type.getValue() != null) {
-                                    if (type.getValue().getHref() != null && type.getValue().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
-                                        String typeCode = type.getValue().getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
-                                        try {
-                                            layerBuilder.setCloudType(AviationCodeListUser.CloudType.fromInt(Integer.parseInt(typeCode)));
-                                        } catch (NumberFormatException e) {
-                                            retval.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                                                    "Could not parse code list value '" + typeCode + "' as an integer for code list " + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE));
-                                        }
-                                    }
-                                }
-                                layers.add(layerBuilder.build());
-                            } else {
-                                retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                                        "Could not resolve cloud layer " + cloudProp.getHref() + "" + " in " + contextPath));
-                            }
-                        }
-                        if (!layers.isEmpty()) {
-                            cloudBuilder.setLayers(layers);
-                        } else {
-                            retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                                    "No NSC, vertical visibility or cloud layers in cloud forecast in " + contextPath));
-                        }
+                        retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                                "No vertical visibility or cloud layers in " + contextPath + " / cloud forecast"));
                     }
                 }
             }
-            properties.set(ForecastRecordProperties.Name.CLOUD, cloudBuilder.build());
-        }
+
+            properties.set(TAFForecastRecordProperties.Name.CLOUD, cloudBuilder.build());
+                }, (nilReasons) -> {
+                    if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
+                        properties.set(TAFForecastRecordProperties.Name.CLOUD, CloudForecastImpl.builder()//
+                                .setNoSignificantCloud(true)//
+                                .build());
+                    }
+                });
 
         return retval;
     }
-
     //Helpers
 
-    private static Optional<MeteorologicalAerodromeForecastRecordType> getAerodromeForecastRecordResult(final OMObservationType fct, final ReferredObjectRetrievalContext refCtx) {
-        Object o = fct.getResult();
-        if (o instanceof Node) {
-            Node resultNode = ((Node) o);
-            Node recordNode = resultNode.getFirstChild();
-            if (recordNode != null && "MeteorologicalAerodromeForecastRecord".equals(recordNode.getLocalName()) && "http://icao.int/iwxxm/2.1".equals(recordNode.getNamespaceURI())) {
-                try {
-                    JAXBElement<MeteorologicalAerodromeForecastRecordType> record = refCtx.getJAXBBinder().unmarshal(recordNode, MeteorologicalAerodromeForecastRecordType.class);
-                    return Optional.of(record.getValue());
-                } catch (JAXBException e) {
-                    LOG.error("Strange, could not unmarshall MeteorologicalAerodromeForecastRecord DOM Node into MeteorologicalAerodromeForecastRecordType "
-                            + "JAXElement, returning an empty Optional", e);
-                }
-            }
-        }
-        return Optional.empty();
-    }
 
-    private static void withTAFSurfaceWindBuilderFor(final AerodromeSurfaceWindForecastPropertyType windProp, final ReferredObjectRetrievalContext refCtx, final Consumer<TAFSurfaceWindImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
+    private static void withTAFSurfaceWindBuilderFor(final AerodromeSurfaceWindForecastPropertyType windProp, final ReferredObjectRetrievalContext refCtx,
+            final Consumer<SurfaceWindImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
         Optional<AerodromeSurfaceWindForecastType> windFct = resolveProperty(windProp, AerodromeSurfaceWindForecastType.class, refCtx);
         if (windFct.isPresent()) {
-            TAFSurfaceWindImpl.Builder windBuilder = new TAFSurfaceWindImpl.Builder();
+            SurfaceWindImpl.Builder windBuilder = SurfaceWindImpl.builder();
             windBuilder.setMeanWindDirection(asNumericMeasure(windFct.get().getMeanWindDirection()));
-            if (windFct.get().isVariableWindDirection()) {
-                windBuilder.setVariableDirection(true);
-            } else {
-                windBuilder.setVariableDirection(false);
-            }
+            windBuilder.setVariableDirection(windFct.get().isVariableWindDirection());
             if (windFct.get().getMeanWindSpeed() != null) {
                 windBuilder.setMeanWindSpeed(asNumericMeasure(windFct.get().getMeanWindSpeed()).get());
             } else {
                 issue = new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Mean wind speed missing from TAF surface wind forecast");
             }
-            Optional<AviationCodeListUser.RelationalOperator> speedOperator = asRelationalOperator(windFct.get().getMeanWindSpeedOperator());
-            speedOperator.ifPresent(windBuilder::setMeanWindSpeedOperator);
-
-            Optional<NumericMeasure> gustSpeed = asNumericMeasure(windFct.get().getWindGustSpeed());
-            gustSpeed.ifPresent(windBuilder::setWindGust);
-
-            Optional<AviationCodeListUser.RelationalOperator> gustOperator = asRelationalOperator(windFct.get().getWindGustSpeedOperator());
-            gustOperator.ifPresent(windBuilder::setWindGustOperator);
-
+            windBuilder.setMeanWindSpeedOperator(asRelationalOperator(windFct.get().getMeanWindSpeedOperator()));
+            windBuilder.setWindGust(asNumericMeasure(windFct.get().getWindGustSpeed()));
+            windBuilder.setWindGustOperator(asRelationalOperator(windFct.get().getWindGustSpeedOperator()));
             resultHandler.accept(windBuilder);
         } else {
             issue = new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Could not find AerodromeSurfaceWindForecastType value within " + "AerodromeSurfaceWindForecastTypePropertyType or by reference");
@@ -744,7 +469,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
         List<ConversionIssue> issues = new ArrayList<>();
         Optional<AerodromeAirTemperatureForecastType> tempFct = resolveProperty(prop, AerodromeAirTemperatureForecastType.class, refCtx);
         if (tempFct.isPresent()) {
-            TAFAirTemperatureForecastImpl.Builder builder = new TAFAirTemperatureForecastImpl.Builder();
+            TAFAirTemperatureForecastImpl.Builder builder = TAFAirTemperatureForecastImpl.builder();
             if (tempFct.get().getMaximumAirTemperature() != null) {
                 builder.setMaxTemperature(asNumericMeasure(tempFct.get().getMaximumAirTemperature()).get());
             } else {
@@ -781,62 +506,4 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
             issueHandler.accept(issues);
         }
     }
-
-    private static void withWeatherBuilderFor(final AerodromeForecastWeatherType weather, final ConversionHints hints, final Consumer<WeatherImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
-        ConversionIssue issue = null;
-        String codeListValue = weather.getHref();
-        if (codeListValue != null && codeListValue.startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER)) {
-            String code = codeListValue.substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER.length());
-            String description = weather.getTitle();
-            WeatherImpl.Builder wBuilder = new WeatherImpl.Builder();
-            boolean codeOk = false;
-            if (hints == null || hints.isEmpty() || !hints.containsKey(ConversionHints.KEY_WEATHER_CODES) || ConversionHints.VALUE_WEATHER_CODES_STRICT_WMO_4678
-                    .equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                // Only the official codes allowed by default
-                if (WEATHER_CODES.containsKey(code)) {
-                    wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
-                    codeOk = true;
-                } else {
-                    issue = new ConversionIssue(ConversionIssue.Type.SYNTAX, "Illegal weather code " + code + " found with strict WMO 4678 " + "checking");
-                }
-            } else {
-                if (ConversionHints.VALUE_WEATHER_CODES_ALLOW_ANY.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                    wBuilder.setCode(code);
-                    if (description != null) {
-                        wBuilder.setDescription(description);
-                    } else if (WEATHER_CODES.containsKey(code)) {
-                        wBuilder.setDescription(WEATHER_CODES.get(code));
-                    }
-                } else if (ConversionHints.VALUE_WEATHER_CODES_IGNORE_NON_WMO_4678.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                    if (WEATHER_CODES.containsKey(code)) {
-                        wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
-                        codeOk = true;
-                    }
-                }
-            }
-            if (codeOk) {
-                resultHandler.accept(wBuilder);
-            }
-        } else {
-            issue = new ConversionIssue(ConversionIssue.Type.SYNTAX, "Weather codelist value does not begin with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER);
-        }
-        if (issue != null) {
-            issueHandler.accept(issue);
-        }
-    }
-
-    private static Optional<NumericMeasure> asNumericMeasure(final MeasureType source) {
-        if (source == null) {
-            return Optional.empty();
-        }
-        return Optional.of(new NumericMeasureImpl.Builder().setValue(source.getValue()).setUom(source.getUom()).build());
-    }
-
-    private static Optional<AviationCodeListUser.RelationalOperator> asRelationalOperator(final RelationalOperatorType source) {
-        if (source == null) {
-            return Optional.empty();
-        }
-        return Optional.of(AviationCodeListUser.RelationalOperator.valueOf(source.name()));
-    }
-
 }

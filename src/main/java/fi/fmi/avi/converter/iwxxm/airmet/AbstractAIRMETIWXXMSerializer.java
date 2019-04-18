@@ -1,6 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.airmet;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,15 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
 
 import net.opengis.gml32.AbstractRingPropertyType;
 import net.opengis.gml32.AbstractTimeObjectType;
@@ -53,8 +47,6 @@ import net.opengis.sampling.spatial.ShapeType;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 import aero.aixm511.AirspaceTimeSlicePropertyType;
 import aero.aixm511.AirspaceTimeSliceType;
@@ -95,10 +87,7 @@ import icao.iwxxm21.AIRMETExpectedIntensityChangeType;
 import icao.iwxxm21.AIRMETReportStatusType;
 import icao.iwxxm21.AIRMETType;
 import icao.iwxxm21.AeronauticalAreaWeatherPhenomenonType;
-import icao.iwxxm21.AeronauticalSignificantWeatherPhenomenonType;
-import icao.iwxxm21.AirspacePropertyType;
 import icao.iwxxm21.AngleWithNilReasonType;
-import icao.iwxxm21.ExpectedIntensityChangeType;
 import icao.iwxxm21.PermissibleUsageReasonType;
 import icao.iwxxm21.PermissibleUsageType;
 import icao.iwxxm21.RelationalOperatorType;
@@ -143,8 +132,6 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
         airmet = create(AIRMETType.class);
         airmet.setId("as-" + UUID.randomUUID().toString());
 
-        
-        
         //Use current time as issueTime if missing
         final String issueTime = input.getIssueTime().getCompleteTime().orElse(ZonedDateTime.now()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
@@ -229,7 +216,7 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
             result.setStatus(Status.SUCCESS);
             this.updateMessageMetadata(input, result, airmet);
             ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
-            this.validateDocument(airmet, AIRMETType.class, hints, eventHandler); //TODO true is for debugging: shows results even in case of failure
+            this.validateDocument(airmet, AIRMETType.class, hints, eventHandler);
 
             if (eventHandler.errorsFound()) {
                 result.setStatus(Status.FAIL);
@@ -244,7 +231,7 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
         } catch (ConversionException e) {
             System.err.println("Error in conversion ");
             result.setStatus(Status.FAIL);
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message to String", e));
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message", e));
         }
 
         return result;
@@ -413,6 +400,7 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                         break;
                                 }
                             });
+
                             if (input.getMovingDirection().isPresent()) {
                                 icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
                                 AngleWithNilReasonType angl = new AngleWithNilReasonType();
@@ -431,6 +419,7 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                 });
 
                             } else { //Add nil directionOfMotion if there is no forecast
+/*
                                     icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
                                     AngleWithNilReasonType angl = new AngleWithNilReasonType();
                                     angl.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING);
@@ -439,6 +428,7 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                     directionOfMotion.setNil(true);
 
                                     sect.setDirectionOfMotion(directionOfMotion);
+*/
                             }
 
                             sect.setGeometry(create(AirspaceVolumePropertyType.class, (avpt) -> {
@@ -558,6 +548,26 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                 sect.setGeometryUpperLimitOperator(RelationalOperatorType.fromValue(geometryWithHeight.getUpperLimitOperator().get().name()));
                             }
 
+                            if (input.getCloudLevels().isPresent()) {
+                                NumericMeasure base = input.getCloudLevels().get().getCloudBase();
+                                NumericMeasure top = input.getCloudLevels().get().getCloudTop();
+                                if (base!=null) {
+                                    sect.setCloudBase(create(LengthType.class, (lt) -> {
+                                        lt.setValue(base.getValue().intValue());
+                                        lt.setUom(base.getUom().toLowerCase());
+                                    }));
+                                }
+                                if (top!=null) {
+                                    sect.setCloudTop(create(LengthType.class, (lt) -> {
+                                        lt.setValue(top.getValue().intValue());
+                                        lt.setUom(top.getUom().toLowerCase());
+                                    }));
+                                }
+                                if (input.getCloudLevels().get().getTopAbove().isPresent()&&(input.getCloudLevels().get().getTopAbove().get())){
+                                    sect.setGeometryUpperLimitOperator(RelationalOperatorType.ABOVE);
+                                }
+                            }
+
                             if (input.getVisibility().isPresent()) {
                                 sect.setSurfaceVisibility(create(LengthType.class, (lt) -> {
                                            lt.setValue(input.getVisibility().get().getValue().intValue());
@@ -675,16 +685,16 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
 
             //Default permissions
             target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+            target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
             source.getPermissibleUsage().ifPresent((us) -> {
-                target.setPermissibleUsage(PermissibleUsageType.valueOf(us.name()));
-                if (source.getPermissibleUsageReason().isPresent()) {
-                    target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
-                }
-                if (target.getPermissibleUsage().equals(PermissibleUsageType.NON_OPERATIONAL)) {
-                    target.setPermissibleUsageReason(PermissibleUsageReasonType.EXERCISE);
-                }
-                if ((source.getPermissibleUsageSupplementary() != null)&&(source.getPermissibleUsageSupplementary().isPresent())) {
-                    target.setPermissibleUsageSupplementary(source.getPermissibleUsageSupplementary().get());
+                if (us== AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL) {
+                    target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+                    if (source.getPermissibleUsageReason().isPresent()) {
+                        target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
+                    }
+                    if ((source.getPermissibleUsageSupplementary() != null) && (source.getPermissibleUsageSupplementary().isPresent())) {
+                        target.setPermissibleUsageSupplementary(source.getPermissibleUsageSupplementary().get());
+                    }
                 }
             });
 
@@ -725,20 +735,12 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                 .format(dtf);
     }
 
-
     @Override
-    protected Source getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        try {
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(this.getClass().getResourceAsStream("AIRMETCleanup.xsl"));
-            return new DOMSource(doc);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new ConversionException("Unexpected problem in reading the cleanup XSL sheet", e);
+    protected InputStream getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
+        InputStream retval = this.getClass().getResourceAsStream("AIRMETCleanup.xsl");
+        if (retval == null) {
+            throw new ConversionException("Error accessing cleanup XSLT sheet file");
         }
-
+        return retval;
     }
-
 }

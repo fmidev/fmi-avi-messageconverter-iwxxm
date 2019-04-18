@@ -23,7 +23,7 @@ import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.sigmet.SIGMET;
-import fi.fmi.avi.model.sigmet.immutable.WSSIGMETImpl;
+import fi.fmi.avi.model.sigmet.immutable.SIGMETImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -37,9 +37,9 @@ public class SIGMETIWWXXMSerializerTest {
         om.registerModule(new Jdk8Module());
         om.registerModule(new JavaTimeModule());
         om.registerModule(new JtsModule());
-        InputStream is = TAFIWXXMSerializerTest.class.getResourceAsStream(fileName);
+        InputStream is = this.getClass().getResourceAsStream(fileName);
         if (is != null) {
-            return om.readValue(is, SIGMET.class);
+            return om.readValue(is, SIGMETImpl.class);
         } else {
             throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
         }

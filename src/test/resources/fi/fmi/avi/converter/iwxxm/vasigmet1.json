@@ -103,12 +103,17 @@
         }
       }
         ],
-  "volcano": {
-    "volcanoPosition": {
-      "coordinateReferenceSystemId":"EPSG:4326",
-      "coordinates":[52.0,5.2]
-    },
-    "volcanoName": "GRIMSVOTN"
+  "VAInfo": {
+    "volcano": {
+      "volcanoPosition": {
+        "coordinateReferenceSystemId": "EPSG:4326",
+        "coordinates": [
+          52.0,
+          5.2
+        ]
+      },
+      "volcanoName": "GRIMSVOTN"
+    }
   },
   "translated": false
 }

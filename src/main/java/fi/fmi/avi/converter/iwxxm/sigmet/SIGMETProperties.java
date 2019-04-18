@@ -13,9 +13,9 @@ import icao.iwxxm21.SIGMETType;
  * Container class for properties parsed from an IWXXM SIGMETType.
  *
  */
-public class SIGMETProperties extends AbstractPropertyContainer<SIGMETType> {
+public class SIGMETProperties extends AbstractPropertyContainer {
 
-    public enum Name {
+    public enum Name implements PropertyName {
         REPORT_METADATA(GenericReportProperties.class),
         ISSUE_TIME(PartialOrCompleteTimeInstant.class),
         VALID_TIME(PartialOrCompleteTimePeriod.class),
@@ -25,28 +25,18 @@ public class SIGMETProperties extends AbstractPropertyContainer<SIGMETType> {
         PREV_REPORT_VALID_TIME(PartialOrCompleteTimePeriod.class),
         STATUS(AviationCodeListUser.SigmetAirmetReportStatus.class);
 
-        private Class<?> acceptedType;
+        private final Class<?> acceptedType;
 
         Name(final Class<?> type) {
             this.acceptedType = type;
         }
 
+        @Override
         public Class<?> getAcceptedType() {
             return this.acceptedType;
         }
     }
 
-    public SIGMETProperties(final SIGMETType sigmet) {
-        super(sigmet);
+    public SIGMETProperties() {
     }
-
-    @Override
-    protected Class<?> getAcceptedType(final Object key) {
-        if (Name.class.isAssignableFrom(key.getClass())) {
-            return ((Name) key).getAcceptedType();
-        } else {
-            throw new IllegalArgumentException("Key for SIGMET must be of type " + Name.class.getCanonicalName());
-        }
-    }
-
 }

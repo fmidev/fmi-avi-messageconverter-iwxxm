@@ -86,7 +86,7 @@ public class AIRMETIWWXXMSerializerTest {
         assertNotNull(result.getConvertedMessage().get());
     }
 
- //   @Test
+    @Test
     public void dotestAIRMETStringSerialization1() throws Exception {
       doTestAIRMETStringSerialization("airmet_iwxxm1.json");
     }
@@ -96,12 +96,32 @@ public class AIRMETIWWXXMSerializerTest {
         doTestAIRMETStringSerialization("airmet_iwxxmmoving.json");
     }
 
- //   @Test
+    @Test
     public void dotestAIRMETStringSerialization3() throws Exception {
         doTestAIRMETStringSerialization("airmet2.json");
     }
 
- //   @Test
+    @Test
+    public void dotestAIRMETStringSerialization4() throws Exception {
+        doTestAIRMETStringSerialization("airmet_bkncld.json");
+    }
+
+    @Test
+    public void dotestAIRMETStringSerialization5() throws Exception {
+        doTestAIRMETStringSerialization("airmet_ovccld_abv.json");
+    }
+
+    @Test
+    public void dotestAIRMETStringSerialization_wind() throws Exception {
+        doTestAIRMETStringSerialization("airmet_wind.json");
+    }
+
+    @Test
+    public void dotestAIRMETStringSerialization_vis() throws Exception {
+        doTestAIRMETStringSerialization("airmet_vis.json");
+    }
+
+    @Test
     public void dotestAIRMETDOMSerialization1() throws Exception {
         doTestAIRMETDOMSerialization("airmet_iwxxm1.json");
     }

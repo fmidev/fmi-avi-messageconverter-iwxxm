@@ -2,6 +2,8 @@ package fi.fmi.avi.converter.iwxxm.sigmet;
 
 import org.w3c.dom.Document;
 
+import fi.fmi.avi.converter.ConversionException;
+
 /**
  * Specialization of {@link AbstractSIGMETIWXXMParser} for DOM Document content.
  */
@@ -17,7 +19,7 @@ public class SIGMETIWXXMDOMParser extends AbstractSIGMETIWXXMParser<Document> {
      *
      */
     @Override
-    protected Document parseAsDom(final Document input) {
+    protected Document parseAsDom(final Document input)  throws ConversionException {
         return input;
     }
 }

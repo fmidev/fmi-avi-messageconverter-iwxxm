@@ -5,10 +5,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.InputStream;
 import java.util.Objects;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +22,7 @@ import fi.fmi.avi.model.taf.TAF;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class TAFIWXXMParserTest {
+public class TAFIWXXMParserTest extends DOMParsingTestBase {
 
     @Autowired
     private AviMessageConverter converter;
@@ -116,14 +112,5 @@ public class TAFIWXXMParserTest {
         assertTrue(result.getConvertedMessage().get().getAerodrome().getFieldElevationValue().isPresent());
     }
 
-
-
-    private Document readDocument(final String name) throws Exception {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        return db.parse(TAFIWXXMParserTest.class.getResourceAsStream(name));
-    }
 
 }

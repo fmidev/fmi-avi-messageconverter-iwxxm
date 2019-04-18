@@ -2,22 +2,25 @@ package fi.fmi.avi.converter.iwxxm.taf;
 
 import org.w3c.dom.Document;
 
+import fi.fmi.avi.converter.ConversionException;
+
 /**
  * Specialization of {@link AbstractTAFIWXXMParser} for DOM Document content.
  */
 public class TAFIWXXMDOMParser extends AbstractTAFIWXXMParser<Document> {
-
     /**
-     * This implementation simple passes the input Document through.
+     * Returns the TAF input message as A DOM Document.
      *
      * @param input
-     *         the raw input format
+     *         the XML Document input as a String
      *
-     * @return the parsed DOM
+     * @return the input parsed as DOM
      *
+     * @throws ConversionException
+     *         if an exception occurs while converting input to DOM
      */
     @Override
-    protected Document parseAsDom(final Document input) {
+    protected Document parseAsDom(final Document input) throws ConversionException {
         return input;
     }
 }

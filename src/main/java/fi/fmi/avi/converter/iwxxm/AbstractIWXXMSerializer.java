@@ -1,10 +1,10 @@
 package fi.fmi.avi.converter.iwxxm;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,14 +18,14 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
+import javax.xml.transform.stream.StreamResult;
 
 import net.opengis.gml32.AbstractGeometryType;
 import net.opengis.gml32.AngleType;
@@ -44,7 +44,6 @@ import net.opengis.sampling.spatial.ShapeType;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import aero.aixm511.AirportHeliportTimeSlicePropertyType;
 import aero.aixm511.AirportHeliportTimeSliceType;
@@ -62,7 +61,6 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationCodeListUser.CloudAmount;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
 import fi.fmi.avi.model.GeoPosition;
@@ -73,7 +71,6 @@ import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
 import icao.iwxxm21.CloudLayerType;
 import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
-import icao.iwxxm21.ReportType;
 import icao.iwxxm21.SigConvectiveCloudTypeType;
 
 /**
@@ -81,76 +78,67 @@ import icao.iwxxm21.SigConvectiveCloudTypeType;
  */
 public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
 
-    @SuppressWarnings("unchecked")
-    protected static <S> void validateDocument(final S input, final Class<S> clz, final ConversionHints hints, final ValidationEventHandler eventHandler) {
-        try {
-            //XML Schema validation:
-            final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
-            schemaFactory.setResourceResolver(resolver);
-            //Secure processing does not allow "file" protocol loading for schemas:
-            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
-            final Schema iwxxmSchema = schemaFactory.newSchema(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
-            final Marshaller marshaller = getJAXBContext().createMarshaller();
-
-            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, //
-                    "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd" //
-                            + " http://def.wmo.int/metce/2013" //
-                            + " http://schemas.wmo.int/metce/1.2/metce.xsd" //
-                            + " http://www.opengis.net/samplingSpatial/2.0" //
-                            + " http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
-
-            marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
-
-            marshaller.setSchema(iwxxmSchema);
-            marshaller.setEventHandler(eventHandler);
-            //Marshall to run the validation:
-            marshaller.marshal(wrap(input, clz), new DefaultHandler());
-        } catch (final Exception e) {
-            throw new RuntimeException("Error in validating document", e);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <S> Document renderXMLDocument(final S input, final ConversionHints hints) throws ConversionException {
+    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
         final StringWriter sw = new StringWriter();
         try {
             final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, //
-                    "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd" //
-                            + " http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd" //
-                            + " http://www.opengis.net/samplingSpatial/2.0" //
-                            + " http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
+                    "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd http://def.wmo.int/metce/2013 "
+                            + "http://schemas.wmo.int/metce/1.2/metce.xsd http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd "
+                            + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
             marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
-            marshaller.marshal(wrap(input, (Class<S>) input.getClass()), sw);
-            return asCleanedUpXML(sw, hints);
+            marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
+            return asCleanedUpXML(sw.toString(), hints);
         } catch (final JAXBException e) {
             throw new ConversionException("Exception in rendering to DOM", e);
         }
     }
 
-    private Document asCleanedUpXML(final StringWriter input, final ConversionHints hints) throws ConversionException {
+    protected String renderDOMToString(final Document source, ConversionHints hints) throws ConversionException {
+        if (source != null) {
+            try {
+                StringWriter sw = new StringWriter();
+                Result output = new StreamResult(sw);
+                TransformerFactory tFactory = TransformerFactory.newInstance();
+                Transformer transformer = tFactory.newTransformer();
+
+                //TODO: switch these on based on the ConversionHints:
+                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+                DOMSource dsource = new DOMSource(source);
+                transformer.transform(dsource, output);
+                return sw.toString();
+            } catch (TransformerException e) {
+                throw new ConversionException("Exception in rendering to String", e);
+            }
+        }
+        return null;
+    }
+
+    private Document asCleanedUpXML(final String input , final ConversionHints hints) throws ConversionException {
         try {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
             final DocumentBuilder db = dbf.newDocumentBuilder();
-            final InputSource is = new InputSource(new StringReader(input.toString()));
+            final InputSource is = new InputSource(new StringReader(input));
             final Document dom3Doc = db.parse(is);
+
             final DOMResult cleanedResult = new DOMResult();
             final TransformerFactory tFactory = TransformerFactory.newInstance();
-            final Transformer transformer = tFactory.newTransformer(this.getCleanupTransformationStylesheet(hints));
-            final DOMSource dsource = new DOMSource(dom3Doc);
-            transformer.transform(dsource, cleanedResult);
+            final Transformer transformer = tFactory.newTransformer(new DOMSource(db.parse(getCleanupTransformationStylesheet(hints))));
+            final DOMSource dSource = new DOMSource(dom3Doc);
+            transformer.transform(dSource, cleanedResult);
             return (Document) cleanedResult.getNode();
         } catch (final ParserConfigurationException | SAXException | IOException | TransformerException e) {
             throw new ConversionException("Exception in cleaning up", e);
         }
     }
 
-    protected abstract Source getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException;
+    protected abstract InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException;
 
     @SuppressWarnings("unchecked")
     protected void updateSamplingFeature(final Aerodrome input, final OMObservationType target, final String foiId, final String aerodromeId,
@@ -182,9 +170,9 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
 
                                     point.setSrsName(inputPos.get().getCoordinateReferenceSystemId());
                                     if (inputPos.get().getCoordinates() != null) {
-                                        point.setSrsDimension(BigInteger.valueOf(inputPos.get().getCoordinates().length));
+                                        point.setSrsDimension(BigInteger.valueOf(inputPos.get().getCoordinates().size()));
                                         point.setPos(create(DirectPositionType.class,
-                                                (pos) -> pos.getValue().addAll(Arrays.asList(inputPos.get().getCoordinates()))));
+                                                (pos) -> pos.getValue().addAll(inputPos.get().getCoordinates())));
                                     }
                                 }
                             }), PointType.class);
@@ -240,9 +228,9 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
                                                 point.setId("point-" + UUID.randomUUID().toString());
                                                 point.setSrsName(inputPosition.getCoordinateReferenceSystemId());
                                                 if (inputPosition.getCoordinates() != null) {
-                                                    point.setSrsDimension(BigInteger.valueOf(inputPosition.getCoordinates().length));
+                                                    point.setSrsDimension(BigInteger.valueOf(inputPosition.getCoordinates().size()));
                                                     point.setPos(create(DirectPositionType.class,
-                                                            (pos) -> pos.getValue().addAll(Arrays.asList(inputPosition.getCoordinates()))));
+                                                            (pos) -> pos.getValue().addAll(inputPosition.getCoordinates())));
                                                 }
                                                 if (inputPosition.getElevationValue().isPresent() && inputPosition.getElevationUom().isPresent()) {
                                                     point.setElevation(create(ValDistanceVerticalType.class, (dist) -> {
@@ -290,7 +278,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
             target.setId("cfct-" + UUID.randomUUID().toString());
             final Optional<NumericMeasure> measure = source.getVerticalVisibility();
             if (measure.isPresent()) {
-                final QName eName = new QName("http://icao.int/iwxxm/2.1", "verticalVisibility");
+                final QName eName = new QName(IWXXMNamespaceContext.getURI("iwxxm"), "verticalVisibility");
                 final LengthWithNilReasonType vvValue = create(LengthWithNilReasonType.class, (vv) -> {
                     vv.setValue(measure.get().getValue());
                     vv.setUom(measure.get().getUom());
@@ -301,13 +289,13 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
                 for (final CloudLayer layer : source.getLayers().get()) {
                     target.getLayer()
                             .add(create(AerodromeCloudForecastType.Layer.class,
-                                    (l) -> l.setCloudLayer(create(CloudLayerType.class, (cl) -> this.setCloudLayerData(cl, layer)))));
+                                    (l) -> l.setCloudLayer(create(CloudLayerType.class, (cl) -> this.setForecastCloudLayerData(cl, layer)))));
                 }
             }
         }
     }
 
-    protected void setCloudLayerData(final CloudLayerType target, final CloudLayer source) {
+    protected void setForecastCloudLayerData(final CloudLayerType target, final CloudLayer source) {
         if (source != null) {
             if (source.getBase().isPresent()) {
                 target.setBase(asMeasure(source.getBase().get(), DistanceWithNilReasonType.class));
@@ -321,7 +309,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
             }
             Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
             if (type.isPresent()) {
-                final QName eName = new QName("http://icao.int/iwxxm/2.1", "cloudType");
+                final QName eName = new QName(IWXXMNamespaceContext.getURI("iwxxm"), "cloudType");
                 final SigConvectiveCloudTypeType cloudType = create(SigConvectiveCloudTypeType.class, (convCloud) -> {
                     convCloud.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + type.get().getCode());
                     convCloud.setTitle(type.get().name() + ", from codelist " + AviationCodeListUser.CODELIST_SIGNIFICANT_CONVECTIVE_CLOUD_TYPE);
