@@ -64,15 +64,14 @@ public class SIGMETIWWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING));
         SIGMET s=readFromJSON(fn);
         ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
-        System.err.println("STATUS: "+result.getStatus());
-        if (result.getConvertedMessage().isPresent()) {
-            System.err.println("SIGMET:"+result.getConvertedMessage().get());
-        }
 
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
-
-
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
+
+        if (result.getConvertedMessage().isPresent()) {
+            String sigmet = result.getConvertedMessage().get();
+        }
+
     }
 }

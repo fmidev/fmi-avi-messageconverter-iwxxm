@@ -1,13 +1,11 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,13 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 import org.w3c.dom.Document;
 
-import com.bedatadriven.jackson.datatype.jts.JtsModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
@@ -31,7 +25,6 @@ import fi.fmi.avi.model.sigmet.immutable.AIRMETImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-
 public class AIRMETIWWXXMSerializerTest {
 
     @Autowired
@@ -60,30 +53,28 @@ public class AIRMETIWWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING));
         AIRMET s= readFromJSON(fn);
         ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING);
-        System.err.println("STATUS: "+result.getStatus());
-        if (result.getConvertedMessage().isPresent()) {
-            System.err.println("AIRMET:"+result.getConvertedMessage().get());
-        }
-
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
-
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
+        if (result.getConvertedMessage().isPresent()) {
+            String airmet = result.getConvertedMessage().get();
+        }
+
+
     }
 
     public void doTestAIRMETDOMSerialization(String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM));
         AIRMET s= readFromJSON(fn);
         ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM);
-        System.err.println("STATUS: "+result.getStatus());
-        if (result.getConvertedMessage().isPresent()) {
-            System.err.println("AIRMET:"+result.getConvertedMessage().get());
-        }
-
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
-
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
+
+        if (result.getConvertedMessage().isPresent()) {
+            Document airmet = result.getConvertedMessage().get();
+        }
+
     }
 
     @Test

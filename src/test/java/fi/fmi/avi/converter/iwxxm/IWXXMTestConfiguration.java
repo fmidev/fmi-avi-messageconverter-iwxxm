@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -28,7 +29,6 @@ import fi.fmi.avi.model.taf.TAFBulletin;
 public class IWXXMTestConfiguration {
     @Bean
     private static ObjectMapper getObjectMapper() {
-        System.err.println("ObjectMapper created in IWXXMTestConfiguration");
         ObjectMapper om = new ObjectMapper();
         om.registerModule(new Jdk8Module());
         om.registerModule(new JavaTimeModule());

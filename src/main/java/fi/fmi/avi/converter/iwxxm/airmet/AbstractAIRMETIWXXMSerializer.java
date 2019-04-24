@@ -112,7 +112,6 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
     @Override
     public ConversionResult<T> convertMessage(final AIRMET input, final ConversionHints hints) {
         ConversionResult<T> result = new ConversionResult<>();
-        System.err.println("AIRMET convertMessage(" + input.getAirmetPhenomenon() + ")");
 
         if (!input.areAllTimeReferencesComplete()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "All time references must be completed before converting to IWXXM"));
@@ -203,7 +202,6 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
             });
             airmet.setPhenomenon(phenType);
 
-            System.err.println("Creating analysis");
             airmet.setAnalysis(createAnalysis(input, input.getIssuingAirTrafficServicesUnit().getDesignator(),
                         input.getIssuingAirTrafficServicesUnit().getName(), issueTime, airmetUuid));
         }
@@ -222,14 +220,13 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                 result.setStatus(Status.FAIL);
                 System.err.println("FAILED in eventhandler");
                 for (ConversionIssue iss: eventHandler.getResult().getConversionIssues()) {
-                    System.err.println("ISS: "+iss.getMessage());
+                    System.err.println("Validation issue: "+iss.getMessage());
+                    result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, iss.getMessage()));
                 }
             } else {
                 result.setConvertedMessage(this.render(airmet, hints));
-                System.err.println("result set");
             }
         } catch (ConversionException e) {
-            System.err.println("Error in conversion ");
             result.setStatus(Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message", e));
         }
@@ -465,7 +462,6 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                             try {
                                                 if (geometryWithHeight.getGeometry().isPresent()) {
                                                     Geometry geom = geometryWithHeight.getGeometry().get().getGeoGeometry().get();
-                                                    System.err.println("GEOM: " + geom.getGeometryType());
                                                     if ("Point".equals(geom.getGeometryType())) {
                                                         List<Double> pts = new ArrayList<Double>();
                                                         for (Coordinate coord : geom.getCoordinates()) {

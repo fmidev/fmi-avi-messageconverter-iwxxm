@@ -83,7 +83,7 @@
     <dependency>
       <groupId>fi.fmi.avi.converter</groupId>
       <artifactId>fmi-avi-messageconverter</artifactId>
-      <version>3.5.1-SNAPSHOT</version>
+      <version>3.6.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
