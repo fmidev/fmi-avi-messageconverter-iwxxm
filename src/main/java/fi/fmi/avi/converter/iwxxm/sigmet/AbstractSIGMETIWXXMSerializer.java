@@ -292,6 +292,7 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                         v.setId("wv-" + volcano.getVolcanoName().get().replace(" ", "_") + "-" + sigmetUuid);
                     } else {
                         String generatedVolcanoName = "Unknown";
+                        v.setVolcanoName(generatedVolcanoName);
                         v.setId("wv-" + generatedVolcanoName + "-" + sigmetUuid);
                     }
                 }));
@@ -305,6 +306,7 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
     {
         result.setStatus(Status.SUCCESS);
         this.updateMessageMetadata(input, result, sigmet);
+
         ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
         if (input.getSigmetPhenomenon().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
             this.validateDocument(((VolcanicAshSIGMETType) sigmet), VolcanicAshSIGMETType.class, hints, eventHandler); //TODO true is for debugging: shows
@@ -318,7 +320,6 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
             result.setStatus(Status.FAIL);
             for (ConversionIssue iss : eventHandler.getResult().getConversionIssues()) {
                 System.err.println("ISS: " + iss.getMessage());
-                result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, iss.getMessage()));
             }
         } else {
             result.setConvertedMessage(this.render(sigmet, hints));
