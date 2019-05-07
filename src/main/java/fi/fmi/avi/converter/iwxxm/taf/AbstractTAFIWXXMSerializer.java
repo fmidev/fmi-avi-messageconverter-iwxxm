@@ -495,8 +495,8 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
                     }
                 }));
 
-                PartialOrCompleteTimePeriod validity = prevReport.get().getValidityTime();
-                if (!validity.isComplete()) {
+                final PartialOrCompleteTimePeriod validity = prevReport.get().getValidityTime().orElse(null);
+                if (validity == null || !validity.isComplete()) {
                     result.addIssue(new ConversionIssue(Type.SYNTAX, "Previous report TAF validity time is not complete"));
                     return;
                 }
