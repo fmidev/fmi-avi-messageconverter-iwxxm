@@ -38,7 +38,7 @@ public abstract class AbstractGenericBulletinIWXXMParser<T> extends IWXXMConvert
                 retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No bulletin heading"));
                 return retval;
             }
-            final GenericMeteorologicalBulletinImpl.Builder builder = new GenericMeteorologicalBulletinImpl.Builder();
+            final GenericMeteorologicalBulletinImpl.Builder builder = GenericMeteorologicalBulletinImpl.builder();
             properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class).ifPresent(builder::setHeading);
 
             //Messages
