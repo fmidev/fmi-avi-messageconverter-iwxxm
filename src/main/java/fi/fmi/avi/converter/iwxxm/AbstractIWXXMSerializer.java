@@ -87,7 +87,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
                     "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd http://def.wmo.int/metce/2013 "
                             + "http://schemas.wmo.int/metce/1.2/metce.xsd http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd "
                             + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
-            marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
+            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
             marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
             return asCleanedUpXML(sw.toString(), hints);
         } catch (final JAXBException e) {

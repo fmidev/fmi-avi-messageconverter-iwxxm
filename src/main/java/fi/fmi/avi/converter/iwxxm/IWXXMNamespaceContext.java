@@ -7,7 +7,7 @@ import java.util.Map;
 
 import javax.xml.namespace.NamespaceContext;
 
-import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
+import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 
 
 /**
