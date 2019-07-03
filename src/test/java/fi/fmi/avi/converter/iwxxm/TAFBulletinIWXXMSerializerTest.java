@@ -78,7 +78,7 @@ public class TAFBulletinIWXXMSerializerTest {
 
         TAFBulletinImpl.Builder bulletinBuilder = TAFBulletinImpl.builder()//
                 .setHeading(BulletinHeadingImpl.builder()//
-                        .setDataTypeDesignatorT2(BulletinHeading.ForecastsDataTypeDesignatorT2.FCT_AERODROME_VT_LONG).setType(BulletinHeading.Type.NORMAL)//
+                        .setDataTypeDesignatorT2(DataTypeDesignatorT2.ForecastsDataTypeDesignatorT2.FCT_AERODROME_VT_LONG).setType(BulletinHeading.Type.NORMAL)//
                         .setGeographicalDesignator("FI")//
                         .setLocationIndicator("EFKL")//
                         .setBulletinNumber(31)//
