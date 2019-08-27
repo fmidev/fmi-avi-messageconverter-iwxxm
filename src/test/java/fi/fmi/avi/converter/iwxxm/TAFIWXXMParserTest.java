@@ -112,5 +112,14 @@ public class TAFIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().get().getAerodrome().getFieldElevationValue().isPresent());
     }
 
+    @Test
+    public void testTAFParsingWithFieldElevationUomFt() throws Exception {
+        Document toValidate = readDocument("taf-field-elevation-uom-ft.xml");
+        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        assertTrue(result.getConversionIssues().isEmpty());
+        assertTrue(result.getConvertedMessage().get().getAerodrome().getFieldElevationValue().isPresent());
+    }
+
 
 }

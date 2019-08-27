@@ -219,7 +219,9 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
                             input.getFieldElevationValue()
                                     .ifPresent(inputElevation -> timeSlice.setFieldElevation(create(ValDistanceVerticalType.class, (elevation) -> {
                                         elevation.setValue(String.format("%.00f", inputElevation));
-                                        elevation.setUom("M");
+                                        if (input.getFieldElevationUom().isPresent()) {
+                                            elevation.setUom(input.getFieldElevationUom().get());
+                                        }
                                     })));
 
                             input.getReferencePoint()
