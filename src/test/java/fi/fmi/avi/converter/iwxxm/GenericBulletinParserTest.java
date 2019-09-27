@@ -23,8 +23,8 @@ import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.bulletin.BulletinProperties;
 import fi.fmi.avi.converter.iwxxm.bulletin.IWXXMGenericBulletinScanner;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.BulletinHeading;
-import fi.fmi.avi.model.GenericMeteorologicalBulletin;
+import fi.fmi.avi.model.bulletin.BulletinHeading;
+import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
 /**
  * Created by rinne on 19/07/17.

@@ -19,7 +19,7 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.model.AviationWeatherMessage;
-import fi.fmi.avi.model.MeteorologicalBulletin;
+import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 import fi.fmi.avi.util.GTSExchangeFileInfo;
 import wmo.collect2014.MeteorologicalBulletinType;
 import wmo.collect2014.MeteorologicalInformationMemberPropertyType;

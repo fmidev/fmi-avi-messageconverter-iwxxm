@@ -35,10 +35,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.BulletinHeading;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
+import fi.fmi.avi.model.bulletin.BulletinHeading;
+import fi.fmi.avi.model.bulletin.DataTypeDesignatorT2;
+import fi.fmi.avi.model.bulletin.immutable.BulletinHeadingImpl;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
-import fi.fmi.avi.model.immutable.BulletinHeadingImpl;
 import fi.fmi.avi.model.immutable.GeoPositionImpl;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
@@ -77,7 +78,7 @@ public class TAFBulletinIWXXMSerializerTest {
 
         TAFBulletinImpl.Builder bulletinBuilder = TAFBulletinImpl.builder()//
                 .setHeading(BulletinHeadingImpl.builder()//
-                        .setDataTypeDesignatorT2(BulletinHeading.ForecastsDataTypeDesignatorT2.FCT_AERODROME_VT_LONG).setType(BulletinHeading.Type.NORMAL)//
+                        .setDataTypeDesignatorT2(DataTypeDesignatorT2.ForecastsDataTypeDesignatorT2.FCT_AERODROME_VT_LONG).setType(BulletinHeading.Type.NORMAL)//
                         .setGeographicalDesignator("FI")//
                         .setLocationIndicator("EFKL")//
                         .setBulletinNumber(31)//

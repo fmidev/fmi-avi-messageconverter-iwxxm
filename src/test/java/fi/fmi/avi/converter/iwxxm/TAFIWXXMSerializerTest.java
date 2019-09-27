@@ -55,6 +55,7 @@ public class TAFIWXXMSerializerTest {
                 .setDesignator("EETN")
                 .setName("Tallinn Airport")
                 .setFieldElevationValue(40.0)
+                .setFieldElevationUom("FT")
                 .setLocationIndicatorICAO("EETN")
                 .setReferencePoint(GeoPositionImpl.builder()
                         .setCoordinateReferenceSystemId("http://www.opengis.net/def/crs/EPSG/0/4326")
@@ -190,7 +191,7 @@ public class TAFIWXXMSerializerTest {
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm"
                 + ":AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:fieldElevation/@uom");
-        assertEquals("Airport elevation unit does not match", "M", expr.evaluate(docElement));
+        assertEquals("Airport elevation unit does not match", "FT", expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm"
                 + ":AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/@srsName");

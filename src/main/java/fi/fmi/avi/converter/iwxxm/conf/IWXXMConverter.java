@@ -25,7 +25,7 @@ import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMJAXBSerializer;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMStringSerializer;
-import fi.fmi.avi.model.GenericMeteorologicalBulletin;
+import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
 import fi.fmi.avi.model.sigmet.AIRMET;
@@ -105,13 +105,13 @@ public class IWXXMConverter {
             Document.class, null, "XML/WMO COLLECT 1.2 + IWXXM 2.1 TAF");
 
     /**
-     * Pre-configured spec for WMO COLLECT 1.2 XML DOM document to {@link fi.fmi.avi.model.GenericMeteorologicalBulletin}
+     * Pre-configured spec for WMO COLLECT 1.2 XML DOM document to {@link GenericMeteorologicalBulletin}
      */
     public static final ConversionSpecification<Document, GenericMeteorologicalBulletin> IWXXM21_DOM_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
             Document.class, GenericMeteorologicalBulletin.class, "XML/WMO COLLECT 1.2", null);
 
     /**
-     * Pre-configured spec for WMO COLLECT 1.2 XML document String to {@link fi.fmi.avi.model.GenericMeteorologicalBulletin}
+     * Pre-configured spec for WMO COLLECT 1.2 XML document String to {@link GenericMeteorologicalBulletin}
      */
     public static final ConversionSpecification<String, GenericMeteorologicalBulletin> IWXXM21_STRING_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
             String.class, GenericMeteorologicalBulletin.class, "XML/WMO COLLECT 1.2", null);

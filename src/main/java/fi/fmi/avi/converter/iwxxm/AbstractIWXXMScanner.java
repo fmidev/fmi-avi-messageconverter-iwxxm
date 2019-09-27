@@ -188,12 +188,8 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                 }
 
                 if (elevation != null && elevation.getNilReason() == null) {
-                    if ("M".equals(elevation.getUom())) {
-                        aerodromeBuilder.setFieldElevationValue(Double.parseDouble(elevation.getValue()));
-                    } else {
-                        retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                                "Field elevation unit is '" + elevation.getUom() + "', 'M' is required"));
-                    }
+                    aerodromeBuilder.setFieldElevationValue(Double.parseDouble(elevation.getValue()));
+                    aerodromeBuilder.setNullableFieldElevationUom(elevation.getUom());
                 }
             }
         }
