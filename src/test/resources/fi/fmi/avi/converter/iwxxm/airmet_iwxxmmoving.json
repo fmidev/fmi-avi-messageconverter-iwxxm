@@ -45,8 +45,7 @@
       "geometry": {
         "geoGeometry": {
           "type": "Polygon",
-          "coordinates": [
-            [
+          "polygons": [
               [
                 5.0,
                 52.0
@@ -63,7 +62,6 @@
                 5.0,
                 52.0
               ]
-            ]
           ]
         }
       },

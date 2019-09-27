@@ -46,9 +46,8 @@ import net.opengis.om20.TimeObjectPropertyType;
 import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
 import net.opengis.sampling.spatial.ShapeType;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.util.Debug;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aero.aixm511.AirspaceTimeSlicePropertyType;
 import aero.aixm511.AirspaceTimeSliceType;
@@ -75,9 +74,15 @@ import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.PointGeometry;
+import fi.fmi.avi.model.PolygonsGeometry;
 import fi.fmi.avi.model.VolcanoDescription;
+import fi.fmi.avi.model.immutable.GeoPositionImpl;
+import fi.fmi.avi.model.immutable.PointGeometryImpl;
+import fi.fmi.avi.model.immutable.PolygonsGeometryImpl;
 import fi.fmi.avi.model.sigmet.PhenomenonGeometry;
 import fi.fmi.avi.model.sigmet.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.sigmet.SIGMET;
@@ -108,6 +113,8 @@ import wmo.metce2013.VolcanoPropertyType;
 import wmo.metce2013.VolcanoType;
 
 public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSerializer implements AviMessageSpecificConverter<SIGMET, T> {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractSIGMETIWXXMSerializer.class);
+
     protected abstract T render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException;
 
     /**
@@ -537,11 +544,10 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                             try {
                                                 if (geometryWithHeight.getGeometry().isPresent()) {
                                                     Geometry geom = geometryWithHeight.getGeometry().get().getGeoGeometry().get();
-                                                    if ("Point".equals(geom.getGeometryType())) {
+                                                    if (PointGeometryImpl.class.isAssignableFrom(geom.getClass())){
                                                         List<Double> pts = new ArrayList<Double>();
-                                                        for (Coordinate coord : geom.getCoordinates()) {
-                                                            pts.add(coord.y);
-                                                            pts.add(coord.x);
+                                                        for (Double coordElement : ((PointGeometryImpl)geom).getPoint()) {
+                                                            pts.add(coordElement);
                                                         }
                                                         JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
                                                             poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
@@ -578,9 +584,8 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                                         sft.setPatches(spapt);
                                                     } else {
                                                         List<Double> pts = new ArrayList<Double>();
-                                                        for (Coordinate coord : geom.getCoordinates()) {
-                                                            pts.add(coord.y);
-                                                            pts.add(coord.x);
+                                                        for (Double coord: ((PolygonsGeometryImpl)geom).getPolygons().get(0)) {
+                                                            pts.add(coord);
                                                         }
                                                         ;
                                                         JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
@@ -677,7 +682,7 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
 
                 int cnt = 0;
                 for (PhenomenonGeometry geometry : inputs.getForecastGeometries().get()) {
-                    Debug.println("About to setResult for FPA");
+                    LOG.debug("About to setResult for FPA");
                     omObs.setResult(createFPAResult(geometry, designator, cnt, sigmetUUID));
                     cnt++;
                 }
@@ -702,11 +707,10 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                     spt.setSurface(createAndWrap(SurfaceType.class, (sft) -> {
                                         try {
                                             Geometry geom = geometry.getGeometry().get().getGeoGeometry().get();
-                                            if ("Point".equals(geom.getGeometryType())) {
+                                            if (PointGeometryImpl.class.isAssignableFrom(geom.getClass())) {
                                                 List<Double> pts = new ArrayList<>();
-                                                for (Coordinate coord : geom.getCoordinates()) {
-                                                    pts.add(coord.y);
-                                                    pts.add(coord.x);
+                                                for (Double coordElement : ((PointGeometry)geom).getPoint()) {
+                                                    pts.add(coordElement);
                                                 }
 
                                                 JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
@@ -750,9 +754,8 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                                 sft.setPatches(spapt);
                                             } else {
                                                 List<Double> pts = new ArrayList<Double>();
-                                                for (Coordinate coord : geom.getCoordinates()) {
-                                                    pts.add(coord.y);
-                                                    pts.add(coord.x);
+                                                for (Double coord: ((PolygonsGeometryImpl)geom).getPolygons().get(0)){
+                                                    pts.add(coord);
                                                 }
 
                                                 JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {

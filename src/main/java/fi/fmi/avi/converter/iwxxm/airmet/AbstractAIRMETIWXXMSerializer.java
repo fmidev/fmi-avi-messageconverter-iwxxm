@@ -45,9 +45,6 @@ import net.opengis.om20.TimeObjectPropertyType;
 import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
 import net.opengis.sampling.spatial.ShapeType;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-
 import aero.aixm511.AirspaceTimeSlicePropertyType;
 import aero.aixm511.AirspaceTimeSliceType;
 import aero.aixm511.AirspaceType;
@@ -73,8 +70,13 @@ import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.PointGeometry;
+import fi.fmi.avi.model.PolygonsGeometry;
+import fi.fmi.avi.model.immutable.PointGeometryImpl;
+import fi.fmi.avi.model.immutable.PolygonsGeometryImpl;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.AirmetWind;
 import fi.fmi.avi.model.sigmet.PhenomenonGeometryWithHeight;
@@ -460,11 +462,10 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                             try {
                                                 if (geometryWithHeight.getGeometry().isPresent()) {
                                                     Geometry geom = geometryWithHeight.getGeometry().get().getGeoGeometry().get();
-                                                    if ("Point".equals(geom.getGeometryType())) {
+                                                    if (PointGeometryImpl.class.isAssignableFrom(geom.getClass())) {
                                                         List<Double> pts = new ArrayList<Double>();
-                                                        for (Coordinate coord : geom.getCoordinates()) {
-                                                            pts.add(coord.y);
-                                                            pts.add(coord.x);
+                                                        for (Double coordElement : ((PointGeometryImpl)geom).getPoint()) {
+                                                            pts.add(coordElement);
                                                         }
                                                         JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
                                                             poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
@@ -498,11 +499,10 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                                                 _spapt.getAbstractSurfacePatch().add(ppt);
                                                             });*/
                                                         sft.setPatches(spapt);
-                                                    } else {
+                                                    } else { //Polygon
                                                         List<Double> pts = new ArrayList<Double>();
-                                                        for (Coordinate coord : geom.getCoordinates()) {
-                                                            pts.add(coord.y);
-                                                            pts.add(coord.x);
+                                                        for ( Double coord : ((PolygonsGeometryImpl)geom).getPolygons().get(0)) {
+                                                            pts.add(coord);
                                                         }
                                                         ;
                                                         JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
