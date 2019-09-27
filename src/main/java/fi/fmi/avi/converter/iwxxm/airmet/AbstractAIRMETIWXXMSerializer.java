@@ -218,10 +218,8 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
 
             if (eventHandler.errorsFound()) {
                 result.setStatus(Status.FAIL);
-                System.err.println("FAILED in eventhandler");
                 for (ConversionIssue iss: eventHandler.getResult().getConversionIssues()) {
                     System.err.println("Validation issue: "+iss.getMessage());
-                    result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, iss.getMessage()));
                 }
             } else {
                 result.setConvertedMessage(this.render(airmet, hints));

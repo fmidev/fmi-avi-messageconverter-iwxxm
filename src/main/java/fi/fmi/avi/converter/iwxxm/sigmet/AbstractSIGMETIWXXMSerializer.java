@@ -306,6 +306,7 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
     {
         result.setStatus(Status.SUCCESS);
         this.updateMessageMetadata(input, result, sigmet);
+
         ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
         if (input.getSigmetPhenomenon().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
             this.validateDocument(((VolcanicAshSIGMETType) sigmet), VolcanicAshSIGMETType.class, hints, eventHandler); //TODO true is for debugging: shows

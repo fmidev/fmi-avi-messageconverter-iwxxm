@@ -196,7 +196,7 @@ public abstract class IWXXMConverterBase {
             final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
             marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
-            marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
+            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
 
             marshaller.setSchema(schemaFactory.newSchema(schemaSources));
             marshaller.setEventHandler(eventHandler);
