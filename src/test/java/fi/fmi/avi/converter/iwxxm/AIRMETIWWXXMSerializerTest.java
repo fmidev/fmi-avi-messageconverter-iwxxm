@@ -58,7 +58,7 @@ public class AIRMETIWWXXMSerializerTest {
         assertNotNull(result.getConvertedMessage().get());
         if (result.getConvertedMessage().isPresent()) {
             String airmet = result.getConvertedMessage().get();
-            System.err.println("Converted AIRMET=:"+airmet);
+//            System.err.println("Converted AIRMET=:"+airmet);
         }
 
     }

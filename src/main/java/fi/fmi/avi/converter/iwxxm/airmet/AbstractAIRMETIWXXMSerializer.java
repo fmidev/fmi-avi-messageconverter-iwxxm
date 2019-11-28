@@ -414,8 +414,7 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                 });
 
                             } else { //Add nil directionOfMotion if there is no forecast
-
-/*
+ /*
                                     icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
                                     AngleWithNilReasonType angl = new AngleWithNilReasonType();
                                     angl.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING);
@@ -424,11 +423,11 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                     directionOfMotion.setNil(true);
 
                                     sect.setDirectionOfMotion(directionOfMotion);
+ */
                                     sect.setSpeedOfMotion(create(SpeedType.class, (spd) -> {
                                         spd.setUom("[kn_i]");
                                         spd.setValue(0);
                                     }));
-*/
                             }
 
                             sect.setGeometry(create(AirspaceVolumePropertyType.class, (avpt) -> {
@@ -551,13 +550,21 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                 if (base!=null) {
                                     sect.setCloudBase(create(LengthType.class , (lt) -> {
                                         lt.setValue(base.getValue());
-                                        lt.setUom(base.getUom().toLowerCase());
+                                        if (base.getUom().toLowerCase().equals("ft")) {
+                                            lt.setUom("[ft_i]");
+                                        } else {
+                                            lt.setUom(base.getUom().toLowerCase());
+                                        }
                                     }));
                                 }
                                 if (top!=null) {
                                     sect.setCloudTop(create(LengthType.class, (lt) -> {
                                         lt.setValue(top.getValue());
-                                        lt.setUom(top.getUom().toLowerCase());
+                                        if (top.getUom().toLowerCase().equals("ft")) {
+                                            lt.setUom("[ft_i]");
+                                        } else {
+                                            lt.setUom(top.getUom().toLowerCase());
+                                        }
                                     }));
                                 }
                                 if (input.getCloudLevels().get().getTopAbove().isPresent()&&(input.getCloudLevels().get().getTopAbove().get())){

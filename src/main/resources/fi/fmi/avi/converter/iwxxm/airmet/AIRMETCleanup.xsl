@@ -21,4 +21,15 @@
     <xsl:template match="//aixm:designatorICAO[@xsi:nil='true']"/>
     <xsl:template match="//aixm:horizontalAccuracy[@xsi:nil='true']"/>
     <xsl:template match="//om:result[@xsi:type='iwxxm:MeteorologicalAerodromeForecastRecordPropertyType']/@xsi:type"/>
+    <xsl:template match="//iwxxm:AIRMETEvolvingCondition">
+        <iwxxm:AIRMETEvolvingCondition>
+            <xsl:apply-templates select = "@*"/>
+            <xsl:if test="not(iwxxm:directionOfMotion)">
+                <xsl:if test="iwxxm:speedOfMotion">
+                    <iwxxm:directionOfMotion uom="deg" xsi:nil="true" nilReason="http://codes.wmo.int/common/nil/missing"/>
+                </xsl:if>
+            </xsl:if>
+            <xsl:apply-templates select = "node()"/>
+        </iwxxm:AIRMETEvolvingCondition>
+    </xsl:template>
 </xsl:stylesheet>

@@ -58,6 +58,28 @@ public class SIGMETIWWXXMSerializerTest {
         doTestSIGMETStringSerialization("sigmet3.json");
     }
 
+    @Test
+    public void testSIGMETSTNR() throws Exception {
+        //SIGMET describes stationary phenomenon, should result in an IWXXM containing
+        //<directionOfMotion uom="deg" xsi:nil="true" nilReason="http://.."/> and
+        //<speedOfMotion uom="[kt_i]">0.0</speedOfMotion>
+        doTestSIGMETStringSerialization("sigmetSTNR.json");
+    }
+
+    @Test
+    public void testSIGMETMOVING() throws Exception {
+        //SIGMET has a speed and direction, should result in IWXXM containing
+        // directionOfMotion and speedOfMotion elements
+        doTestSIGMETStringSerialization("sigmetMOVING.json");
+    }
+
+    @Test
+     public void testSIGMETForecastPosition() throws Exception {
+        //SIGMET with forecast position for phenomenon
+        //should result in IWXXM with no speedOfMotion or directionOfMotion elements
+        doTestSIGMETStringSerialization("sigmetFORECASTPOSITION.json");
+    }
+
     public void doTestSIGMETStringSerialization(String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING));
         SIGMET s=readFromJSON(fn);
@@ -66,10 +88,6 @@ public class SIGMETIWWXXMSerializerTest {
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
-
-        if (result.getConvertedMessage().isPresent()) {
-            String sigmet = result.getConvertedMessage().get();
-        }
 
     }
 }
