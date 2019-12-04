@@ -83,8 +83,13 @@ public class AIRMETIWWXXMSerializerTest {
     }
 
     @Test
-    public void dotestAIRMETStringSerialization2() throws Exception {
-        doTestAIRMETStringSerialization("airmet_iwxxmmoving.json");
+    public void dotestAIRMETMOVING() throws Exception {
+        doTestAIRMETStringSerialization("airmetMOVING.json");
+    }
+
+    @Test
+    public void dotestAIRMETSTNR() throws Exception {
+        doTestAIRMETStringSerialization("airmetSTNR.json");
     }
 
     @Test
@@ -119,7 +124,7 @@ public class AIRMETIWWXXMSerializerTest {
 
     @Test
     public void dotestAIRMETDOMSerialization2() throws Exception {
-        doTestAIRMETDOMSerialization("airmet_iwxxmmoving.json");
+        doTestAIRMETDOMSerialization("airmetMOVING.json");
     }
 
 //    @Test

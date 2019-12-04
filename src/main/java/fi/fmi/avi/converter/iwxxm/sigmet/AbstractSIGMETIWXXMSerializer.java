@@ -499,20 +499,8 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                     }));
                                 });
 
-                            } else { //Add nil directionOfMotion if there is no forecast
-                                if (input.getForecastGeometries().isPresent()&&(input.getForecastGeometries().get().size()!=0)) {
-                                } else {
-/*
-                                    icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
-
-                                    AngleWithNilReasonType angl = new AngleWithNilReasonType();
-                                    angl.setUom("deg");
-                                    angl.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING);
-
-                                    JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm21.createSIGMETEvolvingConditionTypeDirectionOfMotion(angl);
-                                    directionOfMotion.setNil(true);
-                                    sect.setDirectionOfMotion(directionOfMotion);
- */
+                            } else { //Add zero speedOfMotion if STNR and nothing if there is an end position
+                                if (!(input.getForecastGeometries().isPresent()&&(input.getForecastGeometries().get().size()!=0))) {
                                     sect.setSpeedOfMotion(create(SpeedType.class, (spd) -> {
                                         spd.setUom("[kn_i]");
                                         spd.setValue(0);

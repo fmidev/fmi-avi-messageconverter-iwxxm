@@ -413,17 +413,7 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                     }));
                                 });
 
-                            } else { //Add nil directionOfMotion if there is no forecast
- /*
-                                    icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
-                                    AngleWithNilReasonType angl = new AngleWithNilReasonType();
-                                    angl.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING);
-                                    angl.setUom("N/A");
-                                    JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm21.createAIRMETEvolvingConditionTypeDirectionOfMotion(angl);
-                                    directionOfMotion.setNil(true);
-
-                                    sect.setDirectionOfMotion(directionOfMotion);
- */
+                            } else { //Add zero speedOfMotion for STNR
                                     sect.setSpeedOfMotion(create(SpeedType.class, (spd) -> {
                                         spd.setUom("[kn_i]");
                                         spd.setValue(0);

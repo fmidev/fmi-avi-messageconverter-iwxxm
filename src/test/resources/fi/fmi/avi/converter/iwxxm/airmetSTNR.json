@@ -1,0 +1,78 @@
+{
+  "status": "NORMAL",
+  "issuingAirTrafficServicesUnit": {
+    "name": "AMSTERDAM",
+    "type": "FIR",
+    "designator": "EHAA"
+  },
+  "meteorologicalWatchOffice": {
+    "name": "De Bilt",
+    "type": "MWO",
+    "designator": "EHDB"
+  },
+  "sequenceNumber": "1",
+  "issueTime": {
+    "completeTime": "2017-08-27T11:30:00Z"
+  },
+  "validityPeriod": {
+    "startTime": {
+      "completeTime": "2017-08-27T11:30:00Z"
+    },
+    "endTime": {
+      "completeTime": "2017-08-27T18:00:00Z"
+    }
+  },
+  "airspace" : {
+    "designator" : "EHAA",
+    "name" : "AMSTERDAM",
+    "type" : "FIR"
+  },
+  "movingSpeed": {
+    "value": 0.0,
+    "uom": "[kn_i]"
+  },
+  "permissibleUsage":"NON_OPERATIONAL",
+  "permissibleUsageReason":"EXERCISE",
+  "airmetPhenomenon": "MOD_ICE",
+  "analysisType": "OBSERVATION",
+
+  "analysisGeometries": [
+    {
+      "geometry": {
+        "geoGeometry": {
+          "type": "Polygon",
+          "polygons": [
+              [
+                5.0,
+                52.0
+              ],
+              [
+                6.0,
+                53.0
+              ],
+              [
+                4.0,
+                54.0
+              ],
+              [
+                5.0,
+                52.0
+              ]
+          ]
+        }
+      },
+      "time": {
+        "completeTime": "2017-08-27T11:00:00Z"
+      },
+      "approximateLocation": false,
+      "lowerLimit": {
+        "value": 10.0,
+        "uom": "FL"
+      },
+      "upperLimit": {
+        "value": 35.0,
+        "uom": "FL"
+      }
+    } ],
+  "intensityChange": "NO_CHANGE"
+}
