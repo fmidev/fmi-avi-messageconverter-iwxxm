@@ -77,7 +77,7 @@ import fi.fmi.avi.model.immutable.PointGeometryImpl;
 import fi.fmi.avi.model.immutable.PolygonsGeometryImpl;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.AirmetWind;
-import fi.fmi.avi.model.sigmet.PhenomenonGeometryWithHeight;
+import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
 import icao.iwxxm21.AIRMETEvolvingConditionCollectionPropertyType;
 import icao.iwxxm21.AIRMETEvolvingConditionCollectionType;
