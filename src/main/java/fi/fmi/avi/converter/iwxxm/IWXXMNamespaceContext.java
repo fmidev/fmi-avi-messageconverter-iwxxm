@@ -54,7 +54,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
     }
 
     @Override
-    public Iterator<?> getPrefixes(final String uri) {
+    public Iterator getPrefixes(final String uri) {
         ArrayList<String> retval = new ArrayList<>(1);
         String value = this.getPrefix(uri);
         if (value != null) {
