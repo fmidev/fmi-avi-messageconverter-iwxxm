@@ -241,7 +241,7 @@ public class ReferredObjectRetrievalContext {
         }
 
         @Override
-        public Iterator<?> getPrefixes(final String uri) {
+        public Iterator getPrefixes(final String uri) {
             throw new UnsupportedOperationException();
         }
 
