@@ -15,7 +15,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.SWX.SWX;
+import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
@@ -85,7 +85,7 @@ public class IWXXMTestConfiguration {
     private AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer;
 
     @Autowired
-    private AviMessageSpecificConverter<String, SWX> spaceWeatherIWXXMStringParser;
+    private AviMessageSpecificConverter<String, SpaceWeatherAdvisory> spaceWeatherIWXXMStringParser;
 
     @Bean
     public AviMessageConverter aviMessageConverter() {
