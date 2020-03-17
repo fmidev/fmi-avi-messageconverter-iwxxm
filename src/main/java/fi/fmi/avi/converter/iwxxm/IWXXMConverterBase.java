@@ -87,7 +87,8 @@ public abstract class IWXXMConverterBase {
      */
     public static synchronized JAXBContext getJAXBContext() throws JAXBException {
         if (jaxbCtx == null) {
-            jaxbCtx = JAXBContext.newInstance("icao.iwxxm21:aero.aixm511:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
+            jaxbCtx = JAXBContext.newInstance("icao.iwxxm21:icao.iwxxm30:aero.aixm511:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007"
+                    + ".gco:org"
                     + ".iso19139.ogc2007.gss:org.iso19139.ogc2007.gts:org.iso19139.ogc2007.gsr:net.opengis.om20:net.opengis.sampling:net.opengis.sampling"
                     + ".spatial:wmo.metce2013:wmo.opm2013:wmo.collect2014:org.w3c.xlink11");
         }

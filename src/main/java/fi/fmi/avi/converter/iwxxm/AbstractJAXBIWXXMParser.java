@@ -36,6 +36,7 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import icao.iwxxm21.ReportType;
 
+
 /**
  * Created by rinne on 25/07/2018.
  */
@@ -94,7 +95,8 @@ public abstract class AbstractJAXBIWXXMParser<T, S extends AviationWeatherMessag
             schemaFactory.setResourceResolver(resolver);
             //Secure processing does not allow "file" protocol loading for schemas:
             schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
-            Schema iwxxmSchema = schemaFactory.newSchema(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
+            //Schema iwxxmSchema = schemaFactory.newSchema(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
+            Schema iwxxmSchema = schemaFactory.newSchema(icao.iwxxm30.ReportType.class.getResource("/int/icao/iwxxm/3.0.0/iwxxm.xsd"));
 
             Binder<Node> binder = getJAXBContext().createBinder();
 

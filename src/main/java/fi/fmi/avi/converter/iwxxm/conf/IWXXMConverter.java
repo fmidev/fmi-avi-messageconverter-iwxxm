@@ -20,11 +20,13 @@ import fi.fmi.avi.converter.iwxxm.sigmet.SIGMETIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.sigmet.SIGMETIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.sigmet.SIGMETIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.sigmet.SIGMETIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.SpaceWeatherAdvisory.SpaceWeatherIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMJAXBSerializer;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMStringSerializer;
+import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
@@ -86,6 +88,12 @@ public class IWXXMConverter {
      */
     public static final ConversionSpecification<String, SPECI> IWXXM21_STRING_TO_SPECI_POJO = new ConversionSpecification<>(String.class, SPECI.class,
             "SPECI, XML/IWXXM 2.1", null);
+
+    /**
+     * Pre-configured spec for IWXXM 3.0 XML format Space Weather Advisory document String to {@link SWX}.
+     */
+    public static final ConversionSpecification<String, SpaceWeatherAdvisory> IWXXM30_STRING_TO_SPACE_WEATHER_POJO = new ConversionSpecification<>(String.class, SpaceWeatherAdvisory.class,
+            "SWX, XML/IWXXM 3.0", null);
 
     /**
      * Pre-configured spec for IWXXM 2.1 XML format METAR document DOM Node to {@link TAF}.
@@ -201,6 +209,8 @@ public class IWXXMConverter {
         return new SPECIIWXXMDOMParser();
     }
 
+    @Bean
+    public AviMessageSpecificConverter<String, SpaceWeatherAdvisory> spaceWeatherIWXXMStringParser() { return new SpaceWeatherIWXXMStringParser(); }
 
     @Bean
     public AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXMDOMSerializer() {

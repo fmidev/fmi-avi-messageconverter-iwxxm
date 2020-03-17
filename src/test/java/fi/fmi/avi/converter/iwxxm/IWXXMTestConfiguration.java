@@ -15,6 +15,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.SWX.SWX;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
@@ -82,6 +83,10 @@ public class IWXXMTestConfiguration {
 
     @Autowired
     private AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer;
+
+    @Autowired
+    private AviMessageSpecificConverter<String, SWX> spaceWeatherIWXXMStringParser;
+
     @Bean
     public AviMessageConverter aviMessageConverter() {
         AviMessageConverter p = new AviMessageConverter();
@@ -102,6 +107,8 @@ public class IWXXMTestConfiguration {
         p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING,sigmetIWXXMStringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM,airmetIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING,airmetIWXXMStringSerializer);
+
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,spaceWeatherIWXXMStringParser);
 
         return p;
     }
