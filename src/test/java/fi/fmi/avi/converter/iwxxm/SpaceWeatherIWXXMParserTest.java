@@ -7,10 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Objects;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,9 +59,6 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue( "No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
-    //TODO: does not work
-    //XML Schema validation issue: unexpected element (uri:"http://www.aixm.aero/schema/5.1.1", local:"maximumLimit"). Expected elements are <{http://www.aixm.aero/schema/5.1.1}extension>,<{http://www.opengis.net/gml/3.2}descriptionReference>,<{http://www.aixm.aero/schema/5.1.1}lowerLimitReference>,<{http://www.opengis.net/gml/3.2}description>,<{http://www.aixm.aero/schema/5.1.1}horizontalProjection>,<{http://www.opengis.net/gml/3.2}name>,<{http://www.aixm.aero/schema/5.1.1}upperLimit>,<{http://www.aixm.aero/schema/5.1.1}lowerLimit>,<{http://www.opengis.net/gml/3.2}identifier>,<{http://www.aixm.aero/schema/5.1.1}upperLimitReference>,<{http://www.opengis.net/gml/3.2}metaDataProperty>
-    @Ignore
     @Test
     public void testParser_A2_4() throws Exception {
         String input = getInput("spacewx-A2-4.xml");
