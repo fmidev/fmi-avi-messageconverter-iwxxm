@@ -10,20 +10,21 @@ import java.util.Optional;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
-import net.opengis.gml32.AbstractTimeObjectType;
+import net.opengis.gml32.CircleByCenterPointType;
+import net.opengis.gml32.CurveType;
 import net.opengis.gml32.LinearRingType;
 import net.opengis.gml32.PolygonPatchType;
+import net.opengis.gml32.RingType;
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
-import net.opengis.gml32.TimePositionType;
 
+import aero.aixm511.AirspaceVolumeType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractJAXBIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
-import fi.fmi.avi.model.PartialOrCompleteTime;
+import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.AdvisoryNumber;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.NextAdvisory;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
@@ -34,14 +35,14 @@ import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.NextAdvisoryImpl;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryAnalysisImpl;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryImpl;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherRegionImpl;
-import fi.fmi.avi.model.TacOrGeoGeometry;
+import fi.fmi.avi.model.immutable.CircleByCenterPointImpl;
+import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.PhenomenonGeometryWithHeightImpl;
 import fi.fmi.avi.model.immutable.PolygonsGeometryImpl;
 import fi.fmi.avi.model.immutable.TacOrGeoGeometryImpl;
 import icao.iwxxm30.SpaceWeatherAdvisoryType;
 import icao.iwxxm30.SpaceWeatherAnalysisPropertyType;
 import icao.iwxxm30.SpaceWeatherAnalysisType;
-import icao.iwxxm30.SpaceWeatherLocationType;
 import icao.iwxxm30.SpaceWeatherPhenomenaType;
 import icao.iwxxm30.SpaceWeatherRegionPropertyType;
 import icao.iwxxm30.SpaceWeatherRegionType;
@@ -100,10 +101,16 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
 
         TimeInstantPropertyType nextAdvisory = input.getNextAdvisoryTime();
         NextAdvisoryImpl.Builder na = NextAdvisoryImpl.builder();
-        if(nextAdvisory.getNilReason().get(0).equals("http://codes.wmo.int/common/nil/inapplicable")) {
-            na.setTime(Optional.empty());
-            na.setTimeSpecifier(NextAdvisory.Type.NO_FURTHER_ADVISORIES);
+        if (nextAdvisory.getNilReason().size() > 0) {
+            //TODO: move string to constatns
+            if(nextAdvisory.getNilReason().get(0).equals("http://codes.wmo.int/common/nil/inapplicable")) {
+                na.setTime(Optional.empty());
+                na.setTimeSpecifier(NextAdvisory.Type.NO_FURTHER_ADVISORIES);
+            }
+        } else {
+            na.setTimeSpecifier(NextAdvisory.Type.NEXT_ADVISORY_AT);
         }
+
         retval.setNextAdvisory(na.build());
 
         return retval.build();
@@ -146,23 +153,19 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
                     .setCompleteTime(ZonedDateTime.parse(timeInstantType.getTimePosition().getValue().get(0)));
             phenomenon.setTime(analysisTime.build());
 
-            //TODO: Get Regions (List)
             List<SpaceWeatherRegion> regions = new ArrayList<>();
             String nilReason = new String();
             for (SpaceWeatherRegionPropertyType regionProperty : spaceWeatherAnalysis.getRegion()) {
                 SpaceWeatherRegion region = null;
                 if (regionProperty.getHref() != null) {
-                    //TODO: Add refcontext to method and retrieve item with id
                     Optional<SpaceWeatherRegionType> optional = refCtx.getReferredObject(regionProperty.getHref(), SpaceWeatherRegionType.class);
                     if (optional.isPresent()) {
-                        //region = optional.get();
                         parseSpaceWeatherRegion(optional.get());
                     } else {
                         //TODO: add error no content
                         continue;
                     }
                 } else if(regionProperty.getNilReason().size() > 0){
-                    QName regionQ = new QName("region");
                     nilReason = regionProperty.getNilReason().get(0);
                     continue;
                 } else {
@@ -170,9 +173,8 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
                 }
                 regions.add(region);
             }
-
             analysis.setRegion(regions);
-            //Set time indicator value
+
             if (spaceWeatherAnalysis.getTimeIndicator().value().toUpperCase().equals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION.toString())) {
                 analysis.setAnalysisType(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION);
             } else {
@@ -207,7 +209,6 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
 
     private SpaceWeatherRegionImpl parseSpaceWeatherRegion(SpaceWeatherRegionType region) {
         SpaceWeatherRegionImpl.Builder regionItem = SpaceWeatherRegionImpl.builder();
-        //TODO: geographic location
         PhenomenonGeometryWithHeightImpl.Builder geometryWithHeight = new PhenomenonGeometryWithHeightImpl.Builder();
         PolygonPatchType polygonPatchType = (PolygonPatchType) region.getGeographicLocation()
                 .getAirspaceVolume()
@@ -219,26 +220,51 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
                 .getAbstractSurfacePatch()
                 .get(0)
                 .getValue();
-        LinearRingType linearRingType = (LinearRingType) polygonPatchType.getExterior().getAbstractRing().getValue();
-        List<List<Double>> latlonPairs = processPosList(linearRingType.getPosList().getValue());
+        Object obj = polygonPatchType.getExterior().getAbstractRing().getValue();
 
-        geometryWithHeight.setGeometry(
-                TacOrGeoGeometryImpl.builder().setGeoGeometry(PolygonsGeometryImpl.builder().setPolygons(latlonPairs).build()).build());
-        //TODO: separate poslist into lat lon pairs
-        //TODO: location indicators
+        if(obj instanceof LinearRingType) {
+            LinearRingType linearRingType = (LinearRingType) obj;
+            List<List<Double>> latlonPairs = parseLinearType(linearRingType.getPosList().getValue());
+            geometryWithHeight.setGeometry(
+                    TacOrGeoGeometryImpl.builder()
+                            .setGeoGeometry(
+                                    PolygonsGeometryImpl.builder()
+                                    .setPolygons(latlonPairs)
+                                    .build())
+                            .build());
+        } else if(obj instanceof RingType) {
+            CircleByCenterPoint cbcp = parseRingType((RingType) obj);
+            geometryWithHeight.setGeometry(
+                    TacOrGeoGeometryImpl.builder()
+                            .setGeoGeometry(cbcp)
+                            .build());
+        }
+        AirspaceVolumeType volume = region.getGeographicLocation().getAirspaceVolume();
+
+            if(volume.getUpperLimit() != null) {
+                NumericMeasureImpl.Builder nm = NumericMeasureImpl.builder()
+                        .setValue(Double.parseDouble(volume.getUpperLimit().getValue()))
+                        .setUom(volume.getUpperLimit().getUom());
+                geometryWithHeight.setUpperLimit(nm.build());
+            }
+
+            if(volume.getLowerLimit() != null) {
+                NumericMeasureImpl.Builder nm = NumericMeasureImpl.builder()
+                        .setValue(Double.parseDouble(volume.getLowerLimit().getValue()))
+                        .setUom(volume.getLowerLimit().getUom());
+                geometryWithHeight.setLowerLimit(nm.build());
+            }
         regionItem.setLocationIndicator(region.getLocationIndicator().getHref());
-
         regionItem.setGeographiclocation(geometryWithHeight.build());
 
         return regionItem.build();
     }
 
 
-    private List<List<Double>> processPosList(List<Double> posList) {
+    private List<List<Double>> parseLinearType(List<Double> posList) {
         List<List<Double>> pairList = new ArrayList<>();
 
          for(int i = 0; i < posList.size(); i++) {
-             //TODO: check list size is even
              List<Double> latlonPair = new ArrayList<>();
              latlonPair.add(posList.get(i));
              i = i + 1;
@@ -248,5 +274,22 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
 
 
         return pairList;
+    }
+
+    private CircleByCenterPoint parseRingType(RingType ringType) {
+        if(ringType.getCurveMember().size() != 1) {
+            //TODO: throw error
+        }
+        CurveType curveType = (CurveType)ringType.getCurveMember().get(0).getAbstractCurve().getValue();
+        CircleByCenterPointType cbct = (CircleByCenterPointType)curveType.getSegments().getAbstractCurveSegment().get(0).getValue();
+
+        NumericMeasureImpl.Builder radius = NumericMeasureImpl.builder()
+                .setUom(cbct.getRadius().getUom())
+                .setValue(cbct.getRadius().getValue());
+
+        CircleByCenterPointImpl.Builder circleRadius =
+                CircleByCenterPointImpl.builder().addAllCoordinates(cbct.getPos().getValue()).setRadius(radius.build());
+
+        return circleRadius.build();
     }
 }
