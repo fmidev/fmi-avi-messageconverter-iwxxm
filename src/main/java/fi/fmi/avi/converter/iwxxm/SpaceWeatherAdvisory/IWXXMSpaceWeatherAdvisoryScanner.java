@@ -122,19 +122,17 @@ public class IWXXMSpaceWeatherAdvisoryScanner extends AbstractIWXXMScanner {
             }
         } else {
             na.setTimeSpecifier(NextAdvisory.Type.NEXT_ADVISORY_AT);
-            Optional<TimePositionType> timePosition = resolveProperty(nextAdvisory, TimePositionType.class, refCtx);
-            if (timePosition.isPresent() && timePosition.get().getValue().size() == 1) {
-                String time = timePosition.get().getValue().get(0);
+            TimePositionType timePosition =nextAdvisory.getTimeInstant().getTimePosition();
+            if (timePosition != null && timePosition.getValue().size() == 1) {
+                String time = timePosition.getValue().get(0);
                 PartialOrCompleteTimeInstant completeTime = PartialOrCompleteTimeInstant.builder().setCompleteTime(ZonedDateTime.parse(time)).build();
                 na.setTime(completeTime);
             } else {
-                issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                        "Next advisory time is expected, but is missing"));
+                issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Next advisory time is expected, but is missing"));
             }
         }
         return na.build();
     }
-
 
     private static AdvisoryNumber parseAdvisoryNumber(String advisoryNumber) {
         List<Integer> i = new ArrayList<>();
@@ -297,7 +295,7 @@ public class IWXXMSpaceWeatherAdvisoryScanner extends AbstractIWXXMScanner {
         for (int i = 0; i < posList.size(); i++) {
             List<Double> latlonPair = new ArrayList<>();
             latlonPair.add(posList.get(i));
-            i = i + 1;
+            i ++;
             latlonPair.add(posList.get(i));
             pairList.add(latlonPair);
         }

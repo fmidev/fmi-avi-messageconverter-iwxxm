@@ -11,7 +11,6 @@ import javax.xml.bind.JAXBElement;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractJAXBIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
@@ -51,7 +50,6 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
         result.addIssue(issues);
 
         if (result.getConversionIssues().size() > 0) {
-            System.out.println("dfghjklkjhgfcd");
             return null;
         }
 
