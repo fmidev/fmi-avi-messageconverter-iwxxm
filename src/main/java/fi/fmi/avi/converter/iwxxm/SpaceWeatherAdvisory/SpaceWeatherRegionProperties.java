@@ -2,13 +2,15 @@ package fi.fmi.avi.converter.iwxxm.SpaceWeatherAdvisory;
 
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
+import fi.fmi.avi.model.SpaceWeatherAdvisory.AirspaceVolume;
 
 public class SpaceWeatherRegionProperties extends AbstractPropertyContainer {
     public SpaceWeatherRegionProperties() {
     }
 
     public enum Name implements AbstractPropertyContainer.PropertyName {
-        LOCATION_INDICATOR(String.class), PHENOMENON_LOCATION(PhenomenonGeometryWithHeight.class), NIL_REASON(String.class);
+        LOCATION_INDICATOR(String.class), AIRSPACE_VOLUME(AirspaceVolume.class),
+        NIL_REASON(String.class), TAC(String.class);
 
         private final Class<?> acceptedType;
 

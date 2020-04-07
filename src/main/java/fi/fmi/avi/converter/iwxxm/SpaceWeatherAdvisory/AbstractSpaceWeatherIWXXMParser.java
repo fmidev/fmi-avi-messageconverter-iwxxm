@@ -16,10 +16,12 @@ import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.AdvisoryNumber;
+import fi.fmi.avi.model.SpaceWeatherAdvisory.AirspaceVolume;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.NextAdvisory;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherRegion;
+import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.AirspaceVolumeImpl;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryAnalysisImpl;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryImpl;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherRegionImpl;
@@ -60,6 +62,12 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
         for (SpaceWeatherAnalysisProperties analysisProperties : analysisPropertiesList) {
             SpaceWeatherAdvisoryAnalysisImpl.Builder spaceWeatherAnalysis = SpaceWeatherAdvisoryAnalysisImpl.builder();
 
+            Optional<PartialOrCompleteTimeInstant> analysisTime = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TIME,
+                    PartialOrCompleteTimeInstant.class);
+            if(analysisTime.isPresent()) {
+                spaceWeatherAnalysis.setTime(analysisTime.get());
+            }
+
             List<SpaceWeatherRegionProperties> regionPropertiesList = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.REGION, List.class).get();
 
             //REGIONS
@@ -67,11 +75,11 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
             for (SpaceWeatherRegionProperties regionProperties : regionPropertiesList) {
                 SpaceWeatherRegionImpl.Builder spaceWeatherRegion = SpaceWeatherRegionImpl.builder();
 
-                Optional<PhenomenonGeometryWithHeight> geometry = regionProperties.get(SpaceWeatherRegionProperties.Name.PHENOMENON_LOCATION,
-                        PhenomenonGeometryWithHeight.class);
-                if (geometry.isPresent()) {
-                    spaceWeatherRegion.setGeographiclocation(geometry);
+                Optional<AirspaceVolume> airspaceVolume = regionProperties.get(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, AirspaceVolume.class);
+                if(airspaceVolume.isPresent()) {
+                    spaceWeatherRegion.setAirSpaceVolume(airspaceVolume);
                 }
+
 
                 Optional<String> locationIndicator = regionProperties.get(SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR, String.class);
                 if (locationIndicator.isPresent()) {
@@ -90,11 +98,15 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
             Optional<Boolean> noInformation = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.NO_INFORMATION_AVAILABLE, Boolean.class);
             if (noInformation.isPresent()) {
                 spaceWeatherAnalysis.setNoInformationAvailable(noInformation.get());
+            } else {
+                spaceWeatherAnalysis.setNoInformationAvailable(false);
             }
 
             Optional<Boolean> notExpected = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.NO_PHENOMENON_EXPECTED, Boolean.class);
             if (notExpected.isPresent()) {
                 spaceWeatherAnalysis.setNoPhenomenaExpected(notExpected.get());
+            } else {
+                spaceWeatherAnalysis.setNoPhenomenaExpected(false);
             }
 
             analyses.add(spaceWeatherAnalysis.build());
@@ -112,7 +124,7 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
         if (issuer.isPresent()) {
             spaceWeatherAdvisory.setIssuingCenterName(issuer.get());
         }
-        Optional<AdvisoryNumber> advisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.ADVISORY_NUMBER, AdvisoryNumber.class);
+        final Optional<AdvisoryNumber> advisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.ADVISORY_NUMBER, AdvisoryNumber.class);
         if (advisoryNumber.isPresent()) {
             spaceWeatherAdvisory.setAdvisoryNumber(advisoryNumber.get());
         }
@@ -122,7 +134,7 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
         }
         Optional<Enum> status = properties.get(SpaceWeatherAdvisoryProperties.Name.STATUS, Enum.class);
         if (status.isPresent()) {
-            spaceWeatherAdvisory.setStatus((SpaceWeatherAdvisory.STATUS) status.get());
+            spaceWeatherAdvisory.setStatus((SpaceWeatherAdvisory.Status) status.get());
         }
         Optional<List> phenomena = properties.get(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, List.class);
         if (phenomena.isPresent()) {
