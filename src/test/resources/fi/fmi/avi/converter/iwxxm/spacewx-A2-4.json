@@ -1,0 +1,315 @@
+{
+  "issueTime": {
+    "completeTime": "2016-11-08T00:00:00Z"
+  },
+  "issuingCenterName": "DONLON",
+  "advisoryNumber": {
+    "year": 2016,
+    "serialNumber": 2
+  },
+  "phenomena": [
+    "http://codes.wmo.int/49-2/SpaceWxPhenomena/RADIATION_MOD"
+  ],
+  "analyses": [
+    {
+      "time": {
+        "completeTime": "2016-11-08T01:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "region": [
+        {
+          "airSpaceVolume": {
+            "srsDimension": 2,
+            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "axisLabels": [
+              "Lat",
+              "Long"
+            ],
+            "geometry": {
+              "type": "Point",
+              "point": [
+                -180,
+                90,
+                -180,
+                60,
+                180,
+                60,
+                180,
+                90,
+                -180,
+                90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HNH"
+        },
+        {
+          "airSpaceVolume": {
+            "srsDimension": 2,
+            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "axisLabels": [
+              "Lat",
+              "Long"
+            ],
+            "geometry": {
+              "type": "Point",
+              "point": [
+                -180,
+                -90,
+                -180,
+                -60,
+                180,
+                -60,
+                180,
+                -90,
+                -180,
+                -90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HSH"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T07:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "region": [
+        {
+          "airSpaceVolume": {
+            "srsDimension": 2,
+            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "axisLabels": [
+              "Lat",
+              "Long"
+            ],
+            "geometry": {
+              "type": "Point",
+              "point": [
+                -180,
+                90,
+                -180,
+                60,
+                180,
+                60,
+                180,
+                90,
+                -180,
+                90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HNH"
+        },
+        {
+          "airSpaceVolume": {
+            "srsDimension": 2,
+            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "axisLabels": [
+              "Lat",
+              "Long"
+            ],
+            "geometry": {
+              "type": "Point",
+              "point": [
+                -180,
+                -90,
+                -180,
+                -60,
+                180,
+                -60,
+                180,
+                -90,
+                -180,
+                -90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HSH"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T13:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "region": [
+        {
+          "airSpaceVolume": {
+            "srsDimension": 2,
+            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "axisLabels": [
+              "Lat",
+              "Long"
+            ],
+            "geometry": {
+              "type": "Point",
+              "point": [
+                -180,
+                90,
+                -180,
+                60,
+                180,
+                60,
+                180,
+                90,
+                -180,
+                90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HNH"
+        },
+        {
+          "airSpaceVolume": {
+            "srsDimension": 2,
+            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "axisLabels": [
+              "Lat",
+              "Long"
+            ],
+            "geometry": {
+              "type": "Point",
+              "point": [
+                -180,
+                -90,
+                -180,
+                -60,
+                180,
+                -60,
+                180,
+                -90,
+                -180,
+                -90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HSH"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T19:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "region": [
+        {
+          "airSpaceVolume": {
+            "srsDimension": 2,
+            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "axisLabels": [
+              "Lat",
+              "Long"
+            ],
+            "geometry": {
+              "type": "Point",
+              "point": [
+                -180,
+                90,
+                -180,
+                60,
+                180,
+                60,
+                180,
+                90,
+                -180,
+                90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HNH"
+        },
+        {
+          "airSpaceVolume": {
+            "srsDimension": 2,
+            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "axisLabels": [
+              "Lat",
+              "Long"
+            ],
+            "geometry": {
+              "type": "Point",
+              "point": [
+                -180,
+                -90,
+                -180,
+                -60,
+                180,
+                -60,
+                180,
+                -90,
+                -180,
+                -90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HSH"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-09T01:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "region": [
+        {}
+      ],
+      "noPhenomenaExpected": true
+    }
+  ],
+  "remarks": [
+    "RADIATION LVL EXCEEDED 100 PCT OF BACKGROUND LVL AT FL350 AND ABV. THE CURRENT EVENT HAS PEAKED AND LVL SLW RTN TO BACKGROUND LVL. SEE WWW.SPACEWEATHERPROVIDER.WEB"
+  ],
+  "nextAdvisory": {
+    "timeSpecifier": "NO_FURTHER_ADVISORIES"
+  },
+  "replaceAdvisoryNumber": {
+    "year": 2016,
+    "serialNumber": 1
+  }
+}

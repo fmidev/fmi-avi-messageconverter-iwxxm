@@ -6,6 +6,7 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionSpecification;
+import fi.fmi.avi.converter.iwxxm.SpaceWeatherAdvisory.SpaceWeatherIWXXMStringSerializer;
 import fi.fmi.avi.converter.iwxxm.bulletin.GenericBulletinIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.bulletin.GenericBulletinIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.bulletin.TAFBulletinIWXXMDOMSerializer;
@@ -25,6 +26,7 @@ import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMJAXBSerializer;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.taf.TAFIWXXMStringSerializer;
+import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
@@ -151,6 +153,9 @@ public class IWXXMConverter {
     public static final ConversionSpecification<AIRMET, Document> AIRMET_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(AIRMET.class, Document.class,
             null, "AIRMET, XML/IWXXM 2.1");
 
+    public static final ConversionSpecification<SpaceWeatherAdvisory, String> SPACE_WEATHER_POJO_TO_IWXXM30_STRING = new ConversionSpecification<>(
+            SpaceWeatherAdvisory.class, String.class, null, "SWX, XML/IWXXM 3.0");
+
     @Bean
     public AviMessageSpecificConverter<TAF, Document> tafIWXXMDOMSerializer() {
         return new TAFIWXXMDOMSerializer();
@@ -250,5 +255,8 @@ public class IWXXMConverter {
     public AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer() {
         return new AIRMETIWXXMStringSerializer();
     }
+
+    @Bean
+    public AviMessageSpecificConverter<SpaceWeatherAdvisory, String> spaceWeatherIWXXMStringSerializer() { return new SpaceWeatherIWXXMStringSerializer(); }
 
 }
