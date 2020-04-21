@@ -77,14 +77,12 @@ import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.PhenomenonGeometry;
+import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.PointGeometry;
-import fi.fmi.avi.model.PolygonsGeometry;
 import fi.fmi.avi.model.VolcanoDescription;
-import fi.fmi.avi.model.immutable.GeoPositionImpl;
 import fi.fmi.avi.model.immutable.PointGeometryImpl;
 import fi.fmi.avi.model.immutable.PolygonsGeometryImpl;
-import fi.fmi.avi.model.sigmet.PhenomenonGeometry;
-import fi.fmi.avi.model.sigmet.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
 import icao.iwxxm21.AeronauticalSignificantWeatherPhenomenonType;
@@ -115,16 +113,205 @@ import wmo.metce2013.VolcanoType;
 public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSerializer implements AviMessageSpecificConverter<SIGMET, T> {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractSIGMETIWXXMSerializer.class);
 
+    @SuppressWarnings("unchecked")
+    private static OMObservationPropertyType createForecastPositionAnalysis(SIGMET inputs, String designator, String issueTime, String sigmetUUID) {
+        OMObservationPropertyType forecastPositionAnalysis = create(OMObservationPropertyType.class, (omObsType) -> {
+            omObsType.setOMObservation(create(OMObservationType.class, (omObs) -> {
+                omObs.setId("forecastPositionAnalysis-" + sigmetUUID);
+                omObs.setType(create(ReferenceType.class, (ref) -> {
+                    ref.setHref(AviationCodeListUser.CODELIST_SIGMET_POSITION_COLLECTION_ANALYSIS);
+                }));
+                omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, (toProp) -> {
+                    JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, (period) -> {
+                        period.setId("time-" + UUID.randomUUID().toString());
+                        period.setTimePosition(create(TimePositionType.class, (tPos) -> {
+                            Object o = tPos.getValue();
+                            tPos.getValue()
+                                    .add(inputs.getForecastGeometries()
+                                            .get()
+                                            .get(0)
+                                            .getTime()
+                                            .get()
+                                            .getCompleteTime()
+                                            .get()
+                                            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+                        }));
+                    });
+                    toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
+                }));
+
+                omObs.setResultTime(create(TimeInstantPropertyType.class, (tip) -> {
+                    tip.setHref("#resltt-" + sigmetUUID);
+                }));
+
+                omObs.setValidTime(create(TimePeriodPropertyType.class, (tip) -> {
+                    tip.setHref("#validt-" + sigmetUUID);
+                }));
+
+                omObs.setProcedure(create(OMProcessPropertyType.class, (procProp) -> {
+                    procProp.setHref("#proc-" + sigmetUUID);
+                    //
+                }));
+                omObs.setFeatureOfInterest(create(FeaturePropertyType.class, (fppt) -> {
+                    fppt.setHref("#sampling-surface-" + sigmetUUID);
+                }));
+
+                omObs.setObservedProperty(create(ReferenceType.class, (ref) -> {
+                    ref.setHref(AviationCodeListUser.CODELIST_SIGMET_POSITION_COLLECTION_ANALYSIS);
+                }));
+
+                int cnt = 0;
+                for (PhenomenonGeometry geometry : inputs.getForecastGeometries().get()) {
+                    LOG.debug("About to setResult for FPA");
+                    omObs.setResult(createFPAResult(geometry, designator, cnt, sigmetUUID));
+                    cnt++;
+                }
+            }));
+        });
+        return forecastPositionAnalysis;
+    }
+
+    private static SIGMETPositionCollectionPropertyType createFPAResult(PhenomenonGeometry geometry, String designator, int cnt, String sigmetUUID) {
+        ObjectFactory of = new ObjectFactory();
+        SIGMETPositionCollectionPropertyType _spcpt = create(SIGMETPositionCollectionPropertyType.class, (spcpt) -> {
+            spcpt.setSIGMETPositionCollection(create(SIGMETPositionCollectionType.class, (spct) -> {
+                spct.setId("spc-" + designator + "-" + cnt + "-" + sigmetUUID);
+                spct.getMember().add(create(SIGMETPositionPropertyType.class, (sppt) -> {
+                    sppt.setSIGMETPosition(create(SIGMETPositionType.class, (spot) -> {
+                        spot.setId("fpa-pos-" + cnt + "-" + sigmetUUID);
+                        spot.setApproximateLocation(geometry.getApproximateLocation().orElse(false));
+                        spot.setGeometry(create(AirspaceVolumePropertyType.class, (avpt) -> {
+                            avpt.setAirspaceVolume(create(AirspaceVolumeType.class, (avt) -> {
+                                avt.setId("fpa-" + cnt + "-" + sigmetUUID);
+                                avt.setHorizontalProjection(create(SurfacePropertyType.class, (spt) -> {
+                                    spt.setSurface(createAndWrap(SurfaceType.class, (sft) -> {
+                                        try {
+                                            Geometry geom = geometry.getGeometry().get().getGeoGeometry().get();
+                                            if (PointGeometryImpl.class.isAssignableFrom(geom.getClass())) {
+                                                List<Double> pts = new ArrayList<>();
+                                                for (Double coordElement : ((PointGeometry) geom).getPoint()) {
+                                                    pts.add(coordElement);
+                                                }
+
+                                                JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
+                                                    poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
+                                                        arpt.setAbstractRing(createAndWrap(RingType.class, (rt) -> {
+                                                            rt.getCurveMember().add(create(CurvePropertyType.class, (curvept) -> {
+                                                                curvept.setAbstractCurve(createAndWrap(CurveType.class, (curvet) -> {
+                                                                    curvet.setId("curve-forecast-" + cnt + "-" + sigmetUUID);
+                                                                    curvet.setSegments(create(CurveSegmentArrayPropertyType.class, (curvesat) -> {
+                                                                        curvesat.getAbstractCurveSegment()
+                                                                                .add(createAndWrap(CircleByCenterPointType.class, (cbcpt) -> {
+                                                                                    cbcpt.setPos(create(DirectPositionType.class, (dpt) -> {
+                                                                                        dpt.getValue().addAll(Arrays.asList(pts.toArray(new Double[0])));
+                                                                                    }));
+                                                                                    cbcpt.setNumArc(BigInteger.valueOf(1));
+                                                                                    cbcpt.setRadius(create(LengthType.class, (lt) -> {
+                                                                                        lt.setValue(0.0);
+                                                                                        lt.setUom("[nmi_i]");
+                                                                                    }));
+                                                                                }));
+                                                                    }));
+                                                                }));
+                                                            }));
+                                                        }));
+                                                    }));
+                                                });
+
+                                                SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
+                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
+                                                spapt.getValue().getAbstractSurfacePatch().add(ppt);
+/*
+                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = createAndWrap(SurfacePatchArrayPropertyType.class,
+                                                        (_spapt)-> {
+                                                            _spapt.getAbstractSurfacePatch().add(ppt);
+                                                        });
+
+/*                                                SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
+                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
+                                                spapt.getValue().getAbstractSurfacePatch().add(ppt);
+                                                */
+                                                sft.setPatches(spapt);
+                                            } else {
+                                                List<Double> pts = new ArrayList<Double>();
+                                                for (Double coord : ((PolygonsGeometryImpl) geom).getPolygons().get(0)) {
+                                                    pts.add(coord);
+                                                }
+
+                                                JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
+                                                    poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
+                                                        arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
+                                                            DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
+                                                                dpl.getValue().addAll(pts);
+                                                            });
+                                                            lrt.setPosList(dplt);
+                                                        }));
+                                                    }));
+                                                });
+
+                                                SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
+                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
+                                                spapt.getValue().getAbstractSurfacePatch().add(ppt);
+
+                                                sft.setPatches(spapt);
+                                            }
+                                        } catch (Exception e) {
+                                            sft.setPatches(null);
+                                            e.printStackTrace();
+                                        }
+                                        sft.setId("fpa-sfc-" + cnt + "-" + sigmetUUID);
+                                        sft.setSrsDimension(new BigInteger("2"));
+                                        sft.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
+                                    }));
+                                }));
+                            }));
+                        }));
+                    }));
+                }));
+            }));
+        });
+        return _spcpt;
+    }
+
+    private static String getTimePeriodId(SIGMET input) {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmm'Z'");
+        PartialOrCompleteTimePeriod valTime = input.getValidityPeriod();
+        return "sigmet-" + valTime.getStartTime().get().getCompleteTime().get().format(dtf) + "-" + valTime.getEndTime()
+                .get()
+                .getCompleteTime()
+                .get()
+                .format(dtf);
+    }
+
+    protected static TimePeriodPropertyType getTimePeriodPropertyType(SIGMET input, String uuid) {
+        return getATimePeriodPropertyType(input.getValidityPeriod(), uuid);
+    }
+
+    protected static TimePeriodPropertyType getCancelledTimePeriodPropertyType(SIGMET input, String uuid) {
+        return getATimePeriodPropertyType(input.getCancelledReference().get().getValidityPeriod(), uuid);
+    }
+
+    protected static TimePeriodPropertyType getATimePeriodPropertyType(PartialOrCompleteTimePeriod valTime, String uuid) {
+        return create(TimePeriodPropertyType.class, (prop) -> {
+            TimePeriodType tp = create(TimePeriodType.class);
+            tp.setId("validt-" + uuid);
+            TimePositionType beginPos = create(TimePositionType.class);
+            beginPos.getValue().add(valTime.getStartTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            tp.setBeginPosition(beginPos);
+            TimePositionType endPos = create(TimePositionType.class);
+            endPos.getValue().add(valTime.getEndTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            tp.setEndPosition(endPos);
+            prop.setTimePeriod(tp);
+        });
+    }
+
     protected abstract T render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException;
 
     /**
      * Converts a TAF object into another format.
      *
-     * @param input
-     *         input message
-     * @param hints
-     *         parsing hints
-     *
+     * @param input input message
+     * @param hints parsing hints
      * @return the conversion result.
      */
     @Override
@@ -305,33 +492,31 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                 }));
                 //               } else {
                 //                   vpt.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
-        })));
-    }
-
-        try
-
-    {
-        result.setStatus(Status.SUCCESS);
-        this.updateMessageMetadata(input, result, sigmet);
-
-        ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
-        if (input.getSigmetPhenomenon().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
-            this.validateDocument(((VolcanicAshSIGMETType) sigmet), VolcanicAshSIGMETType.class, hints, eventHandler); //TODO true is for debugging: shows
-            // results even in
-            // case of failure
-        } else {
-            this.validateDocument(sigmet, SIGMETType.class, hints, eventHandler); //TODO true is for debugging: shows results even in case of failure
+            })));
         }
 
-        if (eventHandler.errorsFound()) {
-            result.setStatus(Status.FAIL);
-            for (ConversionIssue iss : eventHandler.getResult().getConversionIssues()) {
-                System.err.println("ISS: " + iss.getMessage());
+        try {
+            result.setStatus(Status.SUCCESS);
+            this.updateMessageMetadata(input, result, sigmet);
+
+            ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
+            if (input.getSigmetPhenomenon().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+                this.validateDocument(((VolcanicAshSIGMETType) sigmet), VolcanicAshSIGMETType.class, hints, eventHandler); //TODO true is for debugging: shows
+                // results even in
+                // case of failure
+            } else {
+                this.validateDocument(sigmet, SIGMETType.class, hints, eventHandler); //TODO true is for debugging: shows results even in case of failure
             }
-        } else {
-            result.setConvertedMessage(this.render(sigmet, hints));
-        }
-    } catch (ConversionException e) {
+
+            if (eventHandler.errorsFound()) {
+                result.setStatus(Status.FAIL);
+                for (ConversionIssue iss : eventHandler.getResult().getConversionIssues()) {
+                    System.err.println("ISS: " + iss.getMessage());
+                }
+            } else {
+                result.setConvertedMessage(this.render(sigmet, hints));
+            }
+        } catch (ConversionException e) {
             result.setStatus(Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render SIGMET IWXXM message to String", e));
         }
@@ -500,7 +685,7 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                 });
 
                             } else { //Add zero speedOfMotion if STNR and nothing if there is an end position
-                                if (!(input.getForecastGeometries().isPresent()&&(input.getForecastGeometries().get().size()!=0))) {
+                                if (!(input.getForecastGeometries().isPresent() && (input.getForecastGeometries().get().size() != 0))) {
                                     sect.setSpeedOfMotion(create(SpeedType.class, (spd) -> {
                                         spd.setUom("[kn_i]");
                                         spd.setValue(0);
@@ -543,9 +728,9 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                             try {
                                                 if (geometryWithHeight.getGeometry().isPresent()) {
                                                     Geometry geom = geometryWithHeight.getGeometry().get().getGeoGeometry().get();
-                                                    if (PointGeometryImpl.class.isAssignableFrom(geom.getClass())){
+                                                    if (PointGeometryImpl.class.isAssignableFrom(geom.getClass())) {
                                                         List<Double> pts = new ArrayList<Double>();
-                                                        for (Double coordElement : ((PointGeometryImpl)geom).getPoint()) {
+                                                        for (Double coordElement : ((PointGeometryImpl) geom).getPoint()) {
                                                             pts.add(coordElement);
                                                         }
                                                         JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
@@ -583,7 +768,7 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
                                                         sft.setPatches(spapt);
                                                     } else {
                                                         List<Double> pts = new ArrayList<Double>();
-                                                        for (Double coord: ((PolygonsGeometryImpl)geom).getPolygons().get(0)) {
+                                                        for (Double coord : ((PolygonsGeometryImpl) geom).getPolygons().get(0)) {
                                                             pts.add(coord);
                                                         }
                                                         ;
@@ -630,166 +815,6 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
         });
 
         return _seccpt;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static OMObservationPropertyType createForecastPositionAnalysis(SIGMET inputs, String designator, String issueTime, String sigmetUUID) {
-        OMObservationPropertyType forecastPositionAnalysis = create(OMObservationPropertyType.class, (omObsType) -> {
-            omObsType.setOMObservation(create(OMObservationType.class, (omObs) -> {
-                omObs.setId("forecastPositionAnalysis-" + sigmetUUID);
-                omObs.setType(create(ReferenceType.class, (ref) -> {
-                    ref.setHref(AviationCodeListUser.CODELIST_SIGMET_POSITION_COLLECTION_ANALYSIS);
-                }));
-                omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, (toProp) -> {
-                    JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, (period) -> {
-                        period.setId("time-" + UUID.randomUUID().toString());
-                        period.setTimePosition(create(TimePositionType.class, (tPos) -> {
-                            Object o = tPos.getValue();
-                            tPos.getValue()
-                                    .add(inputs.getForecastGeometries()
-                                            .get()
-                                            .get(0)
-                                            .getTime()
-                                            .get()
-                                            .getCompleteTime()
-                                            .get()
-                                            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-                        }));
-                    });
-                    toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
-                }));
-
-                omObs.setResultTime(create(TimeInstantPropertyType.class, (tip) -> {
-                    tip.setHref("#resltt-" + sigmetUUID);
-                }));
-
-                omObs.setValidTime(create(TimePeriodPropertyType.class, (tip) -> {
-                    tip.setHref("#validt-" + sigmetUUID);
-                }));
-
-                omObs.setProcedure(create(OMProcessPropertyType.class, (procProp) -> {
-                    procProp.setHref("#proc-" + sigmetUUID);
-                    //
-                }));
-                omObs.setFeatureOfInterest(create(FeaturePropertyType.class, (fppt) -> {
-                    fppt.setHref("#sampling-surface-" + sigmetUUID);
-                }));
-
-                omObs.setObservedProperty(create(ReferenceType.class, (ref) -> {
-                    ref.setHref(AviationCodeListUser.CODELIST_SIGMET_POSITION_COLLECTION_ANALYSIS);
-                }));
-
-                int cnt = 0;
-                for (PhenomenonGeometry geometry : inputs.getForecastGeometries().get()) {
-                    LOG.debug("About to setResult for FPA");
-                    omObs.setResult(createFPAResult(geometry, designator, cnt, sigmetUUID));
-                    cnt++;
-                }
-            }));
-        });
-        return forecastPositionAnalysis;
-    }
-
-    private static SIGMETPositionCollectionPropertyType createFPAResult(PhenomenonGeometry geometry, String designator, int cnt, String sigmetUUID) {
-        ObjectFactory of = new ObjectFactory();
-        SIGMETPositionCollectionPropertyType _spcpt = create(SIGMETPositionCollectionPropertyType.class, (spcpt) -> {
-            spcpt.setSIGMETPositionCollection(create(SIGMETPositionCollectionType.class, (spct) -> {
-                spct.setId("spc-" + designator + "-" + cnt + "-" + sigmetUUID);
-                spct.getMember().add(create(SIGMETPositionPropertyType.class, (sppt) -> {
-                    sppt.setSIGMETPosition(create(SIGMETPositionType.class, (spot) -> {
-                        spot.setId("fpa-pos-" + cnt + "-" + sigmetUUID);
-                        spot.setApproximateLocation(geometry.getApproximateLocation().orElse(false));
-                        spot.setGeometry(create(AirspaceVolumePropertyType.class, (avpt) -> {
-                            avpt.setAirspaceVolume(create(AirspaceVolumeType.class, (avt) -> {
-                                avt.setId("fpa-" + cnt + "-" + sigmetUUID);
-                                avt.setHorizontalProjection(create(SurfacePropertyType.class, (spt) -> {
-                                    spt.setSurface(createAndWrap(SurfaceType.class, (sft) -> {
-                                        try {
-                                            Geometry geom = geometry.getGeometry().get().getGeoGeometry().get();
-                                            if (PointGeometryImpl.class.isAssignableFrom(geom.getClass())) {
-                                                List<Double> pts = new ArrayList<>();
-                                                for (Double coordElement : ((PointGeometry)geom).getPoint()) {
-                                                    pts.add(coordElement);
-                                                }
-
-                                                JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
-                                                    poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
-                                                        arpt.setAbstractRing(createAndWrap(RingType.class, (rt) -> {
-                                                            rt.getCurveMember().add(create(CurvePropertyType.class, (curvept) -> {
-                                                                curvept.setAbstractCurve(createAndWrap(CurveType.class, (curvet) -> {
-                                                                    curvet.setId("curve-forecast-" + cnt + "-" + sigmetUUID);
-                                                                    curvet.setSegments(create(CurveSegmentArrayPropertyType.class, (curvesat) -> {
-                                                                        curvesat.getAbstractCurveSegment()
-                                                                                .add(createAndWrap(CircleByCenterPointType.class, (cbcpt) -> {
-                                                                                    cbcpt.setPos(create(DirectPositionType.class, (dpt) -> {
-                                                                                        dpt.getValue().addAll(Arrays.asList(pts.toArray(new Double[0])));
-                                                                                    }));
-                                                                                    cbcpt.setNumArc(BigInteger.valueOf(1));
-                                                                                    cbcpt.setRadius(create(LengthType.class, (lt) -> {
-                                                                                        lt.setValue(0.0);
-                                                                                        lt.setUom("[nmi_i]");
-                                                                                    }));
-                                                                                }));
-                                                                    }));
-                                                                }));
-                                                            }));
-                                                        }));
-                                                    }));
-                                                });
-
-                                                SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
-                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
-                                                spapt.getValue().getAbstractSurfacePatch().add(ppt);
-/*
-                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = createAndWrap(SurfacePatchArrayPropertyType.class,
-                                                        (_spapt)-> {
-                                                            _spapt.getAbstractSurfacePatch().add(ppt);
-                                                        });
-
-/*                                                SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
-                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
-                                                spapt.getValue().getAbstractSurfacePatch().add(ppt);
-                                                */
-                                                sft.setPatches(spapt);
-                                            } else {
-                                                List<Double> pts = new ArrayList<Double>();
-                                                for (Double coord: ((PolygonsGeometryImpl)geom).getPolygons().get(0)){
-                                                    pts.add(coord);
-                                                }
-
-                                                JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
-                                                    poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
-                                                        arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
-                                                            DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
-                                                                dpl.getValue().addAll(pts);
-                                                            });
-                                                            lrt.setPosList(dplt);
-                                                        }));
-                                                    }));
-                                                });
-
-                                                SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
-                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
-                                                spapt.getValue().getAbstractSurfacePatch().add(ppt);
-
-                                                sft.setPatches(spapt);
-                                            }
-                                        } catch (Exception e) {
-                                            sft.setPatches(null);
-                                            e.printStackTrace();
-                                        }
-                                        sft.setId("fpa-sfc-" + cnt + "-" + sigmetUUID);
-                                        sft.setSrsDimension(new BigInteger("2"));
-                                        sft.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
-                                    }));
-                                }));
-                            }));
-                        }));
-                    }));
-                }));
-            }));
-        });
-        return _spcpt;
     }
 
     private OMObservationPropertyType createCancelAnalysis(SIGMET input, String issueTime, String sigmetUUID) {
@@ -911,38 +936,6 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
             throw new ConversionException("Exception in setting the translation time", e);
         }
 
-    }
-
-    private static String getTimePeriodId(SIGMET input) {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmm'Z'");
-        PartialOrCompleteTimePeriod valTime = input.getValidityPeriod();
-        return "sigmet-" + valTime.getStartTime().get().getCompleteTime().get().format(dtf) + "-" + valTime.getEndTime()
-                .get()
-                .getCompleteTime()
-                .get()
-                .format(dtf);
-    }
-
-    protected static TimePeriodPropertyType getTimePeriodPropertyType(SIGMET input, String uuid) {
-        return getATimePeriodPropertyType(input.getValidityPeriod(), uuid);
-    }
-
-    protected static TimePeriodPropertyType getCancelledTimePeriodPropertyType(SIGMET input, String uuid) {
-        return getATimePeriodPropertyType(input.getCancelledReference().get().getValidityPeriod(), uuid);
-    }
-
-    protected static TimePeriodPropertyType getATimePeriodPropertyType(PartialOrCompleteTimePeriod valTime, String uuid) {
-        return create(TimePeriodPropertyType.class, (prop) -> {
-            TimePeriodType tp = create(TimePeriodType.class);
-            tp.setId("validt-" + uuid);
-            TimePositionType beginPos = create(TimePositionType.class);
-            beginPos.getValue().add(valTime.getStartTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-            tp.setBeginPosition(beginPos);
-            TimePositionType endPos = create(TimePositionType.class);
-            endPos.getValue().add(valTime.getEndTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-            tp.setEndPosition(endPos);
-            prop.setTimePeriod(tp);
-        });
     }
 
     @Override

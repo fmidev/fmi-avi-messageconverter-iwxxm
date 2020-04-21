@@ -72,6 +72,7 @@ import icao.iwxxm21.CloudLayerType;
 import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
 import icao.iwxxm21.SigConvectiveCloudTypeType;
+import icao.iwxxm30.SpaceWeatherAdvisoryType;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM.
@@ -83,10 +84,14 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
         try {
             final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+            if(input instanceof SpaceWeatherAdvisoryType) {
+                marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd");
+            } else {
             marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
                     "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd http://def.wmo.int/metce/2013 "
                             + "http://schemas.wmo.int/metce/1.2/metce.xsd http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd "
                             + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
+            }
             marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
             marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
             return asCleanedUpXML(sw.toString(), hints);

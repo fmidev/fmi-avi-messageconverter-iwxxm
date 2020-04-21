@@ -35,11 +35,13 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.helpers.DefaultHandler;
 
+import aero.aixm511.AirspaceType;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import icao.iwxxm21.ReportType;
+import icao.iwxxm30.SpaceWeatherAdvisoryType;
 import wmo.collect2014.MeteorologicalBulletinType;
 
 /**
@@ -87,7 +89,7 @@ public abstract class IWXXMConverterBase {
      */
     public static synchronized JAXBContext getJAXBContext() throws JAXBException {
         if (jaxbCtx == null) {
-            jaxbCtx = JAXBContext.newInstance("icao.iwxxm21:aero.aixm511:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
+            jaxbCtx = JAXBContext.newInstance("icao.iwxxm21:icao.iwxxm30:aero.aixm511:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
                     + ".iso19139.ogc2007.gss:org.iso19139.ogc2007.gts:org.iso19139.ogc2007.gsr:net.opengis.om20:net.opengis.sampling:net.opengis.sampling"
                     + ".spatial:wmo.metce2013:wmo.opm2013:wmo.collect2014:org.w3c.xlink11");
         }
@@ -186,6 +188,12 @@ public abstract class IWXXMConverterBase {
                         + "http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd "
                         + "http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd "
                         + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd";
+            } else if(SpaceWeatherAdvisoryType.class.isAssignableFrom(clz)) {
+                schemaSources = new Source[1];
+                schemaSources[0] = new StreamSource(SpaceWeatherAdvisoryType.class.getResource("/int/icao/iwxxm/3.0.0/iwxxm.xsd").toExternalForm());
+                //schemaSources[1] = new StreamSource(SpaceWeatherAdvisoryType.class.getResource("/int/icao/iwxxm/3.0.0/spaceWxAdvisory.xsd").toExternalForm());
+                //schemaSources[1] = new StreamSource(AirspaceType.class.getResource("/aero/aixm/schema/5.1.1/AIXM_Features.xsd").toExternalForm());
+                schemaLocation = "http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd";
             } else {
                 schemaSources = new Source[1];
                 schemaSources[0] = new StreamSource(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd").toExternalForm());
