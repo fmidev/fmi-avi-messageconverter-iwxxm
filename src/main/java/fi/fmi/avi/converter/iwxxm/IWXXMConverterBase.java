@@ -35,7 +35,6 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.helpers.DefaultHandler;
 
-import aero.aixm511.AirspaceType;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
@@ -64,6 +63,10 @@ public abstract class IWXXMConverterBase {
 
     */
     protected static final boolean F_SECURE_PROCESSING;
+    private static final Map<String, Object> CLASS_TO_OBJECT_FACTORY = new HashMap<>();
+    private static final Map<String, Object> OBJECT_FACTORY_MAP = new HashMap<>();
+    private static JAXBContext jaxbCtx = null;
+
     static {
         if (System.getSecurityManager() != null) {
             F_SECURE_PROCESSING = true;
@@ -74,13 +77,10 @@ public abstract class IWXXMConverterBase {
             F_SECURE_PROCESSING = false;
         }
     }
-    private static JAXBContext jaxbCtx = null;
-    private static final Map<String, Object> CLASS_TO_OBJECT_FACTORY = new HashMap<>();
-    private static final Map<String, Object> OBJECT_FACTORY_MAP = new HashMap<>();
 
     /**
      * Singleton for accessing the shared JAXBContext for IWXXM JAXB handling.
-     *
+     * <p>
      * NOTE: this can take several seconds when done for the first time after JVM start,
      * needs to scan all the jars in classpath.
      *
@@ -170,6 +170,7 @@ public abstract class IWXXMConverterBase {
         }
         return (JAXBElement<T>) result;
     }
+
     @SuppressWarnings("unchecked")
     protected static <S> void validateDocument(final S input, final Class<S> clz, final ConversionHints hints, final ValidationEventHandler eventHandler) {
         try {
@@ -188,11 +189,10 @@ public abstract class IWXXMConverterBase {
                         + "http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd "
                         + "http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd "
                         + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd";
-            } else if(SpaceWeatherAdvisoryType.class.isAssignableFrom(clz)) {
+            } else if (SpaceWeatherAdvisoryType.class.isAssignableFrom(clz)) {
+                //TODO: find a way to define which IWXXM version is being produced at an earlier point so that the schema selection is more generic
                 schemaSources = new Source[1];
                 schemaSources[0] = new StreamSource(SpaceWeatherAdvisoryType.class.getResource("/int/icao/iwxxm/3.0.0/iwxxm.xsd").toExternalForm());
-                //schemaSources[1] = new StreamSource(SpaceWeatherAdvisoryType.class.getResource("/int/icao/iwxxm/3.0.0/spaceWxAdvisory.xsd").toExternalForm());
-                //schemaSources[1] = new StreamSource(AirspaceType.class.getResource("/aero/aixm/schema/5.1.1/AIXM_Features.xsd").toExternalForm());
                 schemaLocation = "http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd";
             } else {
                 schemaSources = new Source[1];
@@ -255,12 +255,14 @@ public abstract class IWXXMConverterBase {
             throw new IllegalArgumentException("Unable to get ObjectFactory for " + clz.getCanonicalName(), e);
         }
     }
+
     public static <T> Optional<T> resolveProperty(final Object prop, final Class<T> clz, final ReferredObjectRetrievalContext refCtx) {
         return resolveProperty(prop, null, clz, refCtx);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Optional<T> resolveProperty(final Object prop, final String propertyName, final Class<T> clz, final ReferredObjectRetrievalContext refCtx) {
+    public static <T> Optional<T> resolveProperty(final Object prop, final String propertyName, final Class<T> clz,
+            final ReferredObjectRetrievalContext refCtx) {
         if (prop == null) {
             return Optional.empty();
         }
