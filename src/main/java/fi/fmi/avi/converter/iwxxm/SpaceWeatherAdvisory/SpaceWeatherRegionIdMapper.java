@@ -4,40 +4,43 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import fi.fmi.avi.model.PointGeometry;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherRegion;
 
 public class SpaceWeatherRegionIdMapper {
 
-    private static final List<RegionId> regionList = new ArrayList<>();
+    private final List<RegionId> regionList = new ArrayList<>();
 
-    public static RegionId getRegionId(int analysis, int region) {
-        for(RegionId item : regionList) {
-            if(item.getAnalysisNumber() == analysis && item.getRegionNumber() == region) {
-                return item;
-            }
-        }
-        return null;
+    public SpaceWeatherRegionIdMapper(final List<SpaceWeatherAdvisoryAnalysis> analyses) {
+        createIdMap(analyses);
     }
 
+    public List<RegionId> getRegionList(final int analysisNumber) {
+        List<RegionId> list = new ArrayList<>();
+        for (RegionId region : regionList) {
+            if (region.getAnalysisNumber() == analysisNumber) {
+                list.add(region);
+            }
+        }
+        return list;
+    }
 
-    public static void createIdMap(List<SpaceWeatherAdvisoryAnalysis> analyses) {
-        for(int i = 0; i < analyses.size(); i++) {
+    private void createIdMap(final List<SpaceWeatherAdvisoryAnalysis> analyses) {
+        for (int i = 0; i < analyses.size(); i++) {
             SpaceWeatherAdvisoryAnalysis analysis = analyses.get(i);
-            if(analysis.getRegion().isPresent()) {
-                for(int a = 0; a < analysis.getRegion().get().size(); a++) {
+            if (analysis.getRegion().isPresent()) {
+                for (int a = 0; a < analysis.getRegion().get().size(); a++) {
                     SpaceWeatherRegion region = analysis.getRegion().get().get(a);
                     regionList.add(new RegionId(region, i, a));
                 }
             }
         }
 
-        for(RegionId r : regionList) {
-            if(r.getId().equals("")) {
-                r.setId("uuid." + UUID.randomUUID().toString());
-                for(RegionId r2: regionList) {
-                    if(r2.getId().equals("") && r2.getS().equals(r.getS())) {
+        for (RegionId r : regionList) {
+            if (isEmpty(r.getId())) {
+                r.setId(AbstractSpaceWeatherIWXXMSerializer.UUID_PREFIX + UUID.randomUUID().toString());
+                for (RegionId r2 : regionList) {
+                    if (isEmpty(r2.getId()) && r2.getRegion().equals(r.getRegion())) {
                         r2.setId(r.getId());
                         r2.setDuplicate(true);
                     }
@@ -46,14 +49,19 @@ public class SpaceWeatherRegionIdMapper {
         }
     }
 
-    public static class RegionId {
-        private SpaceWeatherRegion s;
+    private boolean isEmpty(final String string) {
+        return string == null || string.trim().equals("");
+    }
+
+    public class RegionId {
+        private SpaceWeatherRegion region;
         private String id;
         private int analysisNumber;
         private int regionNumber;
+        private boolean duplicate;
 
-        public RegionId(SpaceWeatherRegion s, int analysisNumber, int regionNumber ) {
-            this.s = s;
+        public RegionId(final SpaceWeatherRegion region, final int analysisNumber, final int regionNumber) {
+            this.region = region;
             this.analysisNumber = analysisNumber;
             this.regionNumber = regionNumber;
             this.id = "";
@@ -75,14 +83,8 @@ public class SpaceWeatherRegionIdMapper {
             this.duplicate = duplicate;
         }
 
-        private boolean duplicate;
-
-        public SpaceWeatherRegion getS() {
-            return s;
-        }
-
-        public void setS(final SpaceWeatherRegion s) {
-            this.s = s;
+        public SpaceWeatherRegion getRegion() {
+            return region;
         }
 
         public String getId() {

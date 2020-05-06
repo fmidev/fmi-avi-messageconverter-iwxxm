@@ -84,13 +84,13 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
         try {
             final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            if(input instanceof SpaceWeatherAdvisoryType) {
+            if (input instanceof SpaceWeatherAdvisoryType) {
                 marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd");
             } else {
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
-                    "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd http://def.wmo.int/metce/2013 "
-                            + "http://schemas.wmo.int/metce/1.2/metce.xsd http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd "
-                            + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
+                marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
+                        "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd http://def.wmo.int/metce/2013 "
+                                + "http://schemas.wmo.int/metce/1.2/metce.xsd http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd "
+                                + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
             }
             marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
             marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
@@ -100,7 +100,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
         }
     }
 
-    protected String renderDOMToString(final Document source, ConversionHints hints) throws ConversionException {
+    protected String renderDOMToString(final Document source, final ConversionHints hints) throws ConversionException {
         if (source != null) {
             try {
                 StringWriter sw = new StringWriter();
@@ -108,7 +108,6 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
                 TransformerFactory tFactory = TransformerFactory.newInstance();
                 Transformer transformer = tFactory.newTransformer();
 
-                //TODO: switch these on based on the ConversionHints:
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
                 transformer.setOutputProperty(OutputKeys.INDENT, "yes");
                 transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
@@ -123,7 +122,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
         return null;
     }
 
-    private Document asCleanedUpXML(final String input , final ConversionHints hints) throws ConversionException {
+    private Document asCleanedUpXML(final String input, final ConversionHints hints) throws ConversionException {
         try {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
@@ -143,7 +142,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
         }
     }
 
-    protected abstract InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException;
+    protected abstract InputStream getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException;
 
     @SuppressWarnings("unchecked")
     protected void updateSamplingFeature(final Aerodrome input, final OMObservationType target, final String foiId, final String aerodromeId,
@@ -176,8 +175,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
                                     point.setSrsName(inputPos.get().getCoordinateReferenceSystemId());
                                     if (inputPos.get().getCoordinates() != null) {
                                         point.setSrsDimension(BigInteger.valueOf(inputPos.get().getCoordinates().size()));
-                                        point.setPos(create(DirectPositionType.class,
-                                                (pos) -> pos.getValue().addAll(inputPos.get().getCoordinates())));
+                                        point.setPos(create(DirectPositionType.class, (pos) -> pos.getValue().addAll(inputPos.get().getCoordinates())));
                                     }
                                 }
                             }), PointType.class);
@@ -236,8 +234,8 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
                                                 point.setSrsName(inputPosition.getCoordinateReferenceSystemId());
                                                 if (inputPosition.getCoordinates() != null) {
                                                     point.setSrsDimension(BigInteger.valueOf(inputPosition.getCoordinates().size()));
-                                                    point.setPos(create(DirectPositionType.class,
-                                                            (pos) -> pos.getValue().addAll(inputPosition.getCoordinates())));
+                                                    point.setPos(
+                                                            create(DirectPositionType.class, (pos) -> pos.getValue().addAll(inputPosition.getCoordinates())));
                                                 }
                                                 if (inputPosition.getElevationValue().isPresent() && inputPosition.getElevationUom().isPresent()) {
                                                     point.setElevation(create(ValDistanceVerticalType.class, (dist) -> {
@@ -354,7 +352,7 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
             return this.fatalErrorsFound;
         }
 
-        public ConversionResult<?>getResult() {
+        public ConversionResult<?> getResult() {
             return result;
         }
     }

@@ -9,7 +9,7 @@
       <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
-  <!--qqq
+  <!--
   <xsl:template match="*">
     <xsl:element name="{name()}" namespace="{namespace-uri()}">
       <xsl:variable name="vtheElem" select="."/>

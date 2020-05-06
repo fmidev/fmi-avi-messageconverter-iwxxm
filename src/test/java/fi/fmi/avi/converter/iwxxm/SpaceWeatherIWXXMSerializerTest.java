@@ -3,11 +3,9 @@ package fi.fmi.avi.converter.iwxxm;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Objects;
 
 import org.junit.Before;
@@ -24,8 +22,8 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.SpaceWeatherAdvisory.SpaceWeatherRegionIdMapper;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryImpl;
 import junit.framework.TestCase;
@@ -48,15 +46,8 @@ public class SpaceWeatherIWXXMSerializerTest {
     private String getInput(String fileName) throws IOException {
         InputStream is = null;
         try {
-            String path = System.getProperty("user.dir") + "/src/test/resources/fi/fmi/avi/converter/iwxxm/" + fileName;
-            File file = new File(path);
-            if (file.exists()) {
-                is = new FileInputStream(file);
-            } else {
-                throw new FileNotFoundException("could not locate file as resource or using path " + path);
-            }
+            is = SpaceWeatherIWXXMSerializerTest.class.getResourceAsStream("/fi/fmi/avi/converter/iwxxm/" + fileName);
             Objects.requireNonNull(is);
-
             return IOUtils.toString(is, "UTF-8");
         } finally {
             if (is != null) {
@@ -66,25 +57,51 @@ public class SpaceWeatherIWXXMSerializerTest {
     }
 
     @Test
-    public void serializerTest2() throws Exception {
-        String input = getInput("spacewx-A2-4.json");
-        SpaceWeatherAdvisoryImpl swx = OBJECT_MAPPER.readValue(input, SpaceWeatherAdvisoryImpl.class);
-
-        SpaceWeatherRegionIdMapper.createIdMap(swx.getAnalyses());
-    }
-
-    @Test
-    public void serializerTest() throws Exception {
-        String input = getInput("spacewx-A2-4.json");
-        SpaceWeatherAdvisoryImpl swx = OBJECT_MAPPER.readValue(input, SpaceWeatherAdvisoryImpl.class);
-
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING));
-        ConversionResult<String> result = converter.convertMessage(swx, IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING);
-
-        System.out.println(result.getConvertedMessage());
+    public void serialize_spacewx_A2_3() throws Exception {
+        String input = getInput("spacewx-A2-3.json");
+        ConversionResult<String> result = serialize(input);
 
         TestCase.assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
         TestCase.assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
     }
+
+    @Test
+    public void serialize_spacewx_A2_4() throws Exception {
+        String input = getInput("spacewx-A2-4.json");
+        ConversionResult<String> result = serialize(input);
+
+        TestCase.assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        TestCase.assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+    }
+
+    @Test
+    public void serialize_spacewx_A2_5() throws Exception {
+        String input = getInput("spacewx-A2-5.json");
+        ConversionResult<String> result = serialize(input);
+
+        TestCase.assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        TestCase.assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+    }
+
+    private ConversionResult<String> serialize(String input) throws Exception {
+        SpaceWeatherAdvisoryImpl swx = OBJECT_MAPPER.readValue(input, SpaceWeatherAdvisoryImpl.class);
+
+        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING));
+        ConversionResult<String> message = converter.convertMessage(swx, IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING);
+        printIssues(message.getConversionIssues());
+        return message;
+    }
+
+    private void printIssues(List<ConversionIssue> issues) {
+        if (issues.size() > 0) {
+            for (ConversionIssue item : issues) {
+                System.out.println("********************************************************");
+                System.out.println(item.getMessage());
+            }
+        }
+    }
+
 }
