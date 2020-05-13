@@ -87,7 +87,7 @@ public abstract class AbstractGenericBulletinIWXXMParser<T> extends IWXXMConvert
 
             }
 
-            retval.setStatus(ConversionResult.Status.SUCCESS);
+            //retval.setStatus(ConversionResult.Status.SUCCESS);
             retval.setConvertedMessage(builder.build());
         } catch (final ConversionException ce) {
             retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Error in parsing input", ce));
