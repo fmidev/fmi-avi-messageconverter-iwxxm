@@ -53,11 +53,12 @@ public class ReferredObjectRetrievalContext {
             prefMap.put("om", "http://www.opengis.net/om/2.0");
             prefMap.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
             prefMap.put("iwxxm", "http://icao.int/iwxxm/2.1");
+            prefMap.put("iwxxm3", "http://icao.int/iwxxm/3.0");
             SimpleNamespaceContext namespaces = new SimpleNamespaceContext(prefMap);
             xpath.setNamespaceContext(namespaces);
 
-            // Force identifying om:result elements in the Node <-> JAXElemement mapping by unmarshalling them explicitly
-            // (this are not bound to JAXBElements by default, due to being inside an anyType containing element).
+            // Force identifying om:result elements in the Node <-> JAXElement mapping by unmarshalling them explicitly
+            // (these are not bound to JAXBElements by default, due to being inside an anyType containing element).
             XPathExpression expr = xpath.compile("//om:result/*[@gml:id]");
             NodeList hits = (NodeList) expr.evaluate(dom.getDocumentElement(), XPathConstants.NODESET);
             for (int i = 0; i < hits.getLength(); i++) {
