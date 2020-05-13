@@ -69,7 +69,8 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
         METCE12("http://def.wmo.int/metce/2013", "int/wmo/metce/1.2/", wmo.metce2013.ProcessType.class),
         COLLECT12("http://def.wmo.int/collect/2014", "int/wmo/collect/1.2/", wmo.collect2014.MeteorologicalBulletinType.class),
         OPM12("http://def.wmo.int/opm/2013", "int/wmo/opm/1.2/", wmo.opm2013.AbstractObservablePropertyPropertyType.class),
-        IWXXM21("http://icao.int/iwxxm/2.1", "int/icao/iwxxm/2.1.1/", icao.iwxxm21.TAFType.class);
+        IWXXM21("http://icao.int/iwxxm/2.1", "int/icao/iwxxm/2.1.1/", icao.iwxxm21.TAFType.class),
+        IWXXM30("http://icao.int/iwxxm/3.0", "int/icao/iwxxm/3.0.0/", icao.iwxxm30.SpaceWeatherAdvisoryType.class);
 
         private final String namespaceURI;
         private String pathPrefix;
