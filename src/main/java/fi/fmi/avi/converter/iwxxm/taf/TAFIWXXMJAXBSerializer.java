@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.taf;
 
 import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import icao.iwxxm21.TAFType;
 
 /**
@@ -9,7 +10,7 @@ import icao.iwxxm21.TAFType;
 public class TAFIWXXMJAXBSerializer extends AbstractTAFIWXXMSerializer<TAFType> {
 
     @Override
-    protected TAFType render(final TAFType taf, final ConversionHints hints) {
+    protected TAFType render(final TAFType taf, final XMLSchemaInfo schemaInfo, final ConversionHints hints) {
         return taf;
     }
 

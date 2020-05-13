@@ -45,6 +45,8 @@ import net.opengis.om20.TimeObjectPropertyType;
 import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
 import net.opengis.sampling.spatial.ShapeType;
 
+import org.xml.sax.SAXException;
+
 import aero.aixm511.AirspaceTimeSlicePropertyType;
 import aero.aixm511.AirspaceTimeSliceType;
 import aero.aixm511.AirspaceType;
@@ -69,6 +71,7 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
@@ -91,13 +94,14 @@ import icao.iwxxm21.AngleWithNilReasonType;
 import icao.iwxxm21.PermissibleUsageReasonType;
 import icao.iwxxm21.PermissibleUsageType;
 import icao.iwxxm21.RelationalOperatorType;
+import icao.iwxxm21.SIGMETType;
 import icao.iwxxm21.TimeIndicatorType;
 import icao.iwxxm21.UnitPropertyType;
 import icao.iwxxm21.WeatherCausingVisibilityReductionType;
 import wmo.metce2013.ProcessType;
 
 public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSerializer implements AviMessageSpecificConverter<AIRMET, T> {
-    protected abstract T render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException;
+    protected abstract T render(final AIRMETType airmet, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
 
     /**
      * Converts a TAF object into another format.
@@ -211,19 +215,23 @@ public abstract class AbstractAIRMETIWXXMSerializer<T> extends AbstractIWXXMSeri
         airmet.setValidPeriod(getTimePeriodPropertyType(input, airmetUuid));
 
         try {
-            result.setStatus(Status.SUCCESS);
+            //result.setStatus(Status.SUCCESS);
             this.updateMessageMetadata(input, result, airmet);
-            ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
-            this.validateDocument(airmet, AIRMETType.class, hints, eventHandler);
-
-            if (eventHandler.errorsFound()) {
-                result.setStatus(Status.FAIL);
-                for (ConversionIssue iss: eventHandler.getResult().getConversionIssues()) {
-                    System.err.println("Validation issue: "+iss.getMessage());
-                }
-            } else {
-                result.setConvertedMessage(this.render(airmet, hints));
+            try {
+                //TODO: move into a an IWXXM 2.0 common abstract class when available
+                final XMLSchemaInfo schemaInfo = new XMLSchemaInfo();
+                schemaInfo.addSchemaSource(SIGMETType.class.getResourceAsStream("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
+                schemaInfo.addSchemaLocation("http://icao.int/iwxxm/2.1", "https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd");
+                schemaInfo.addSchemaLocation("http://def.wmo.int/metce/2013", "http://schemas.wmo.int/metce/1.2/metce.xsd");
+                schemaInfo.addSchemaLocation("http://www.opengis.net/samplingSpatial/2.0",
+                        "http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
+                schemaInfo.setSchematronRules(SIGMETType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
+                result.addIssue(validateDocument(airmet, AIRMETType.class, schemaInfo, hints));
+                result.setConvertedMessage(this.render(airmet, schemaInfo, hints));
+            } catch (SAXException se) {
+                throw new ConversionException("Creating XMLSchemaInfo failed", se);
             }
+
         } catch (ConversionException e) {
             result.setStatus(Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message", e));

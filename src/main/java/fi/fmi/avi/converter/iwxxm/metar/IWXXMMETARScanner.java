@@ -23,6 +23,7 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
@@ -185,7 +186,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
             }
         }
         if (obs.getPhenomenonTime() != null) {
-            Optional<PartialOrCompleteTimeInstant> phenomenonTime = getCompleteTimeInstant(obs.getPhenomenonTime(), refCtx);
+            Optional<PartialOrCompleteTimeInstant> phenomenonTime = AbstractIWXXMSerializer.getCompleteTimeInstant(obs.getPhenomenonTime(), refCtx);
             if (phenomenonTime.isPresent()) {
                 properties.set(OMObservationProperties.Name.PHENOMENON_TIME, phenomenonTime.get());
                 Optional<PartialOrCompleteTimeInstant> resultTime = properties.get(OMObservationProperties.Name.RESULT_TIME,
@@ -370,7 +371,7 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
         }
         //phenomenonTime (C)
         if (trend.getPhenomenonTime() != null) {
-            Optional<PartialOrCompleteTimePeriod> phenomenonTime = getCompleteTimePeriod(trend.getPhenomenonTime(), refCtx);
+            Optional<PartialOrCompleteTimePeriod> phenomenonTime = AbstractIWXXMSerializer.getCompleteTimePeriod(trend.getPhenomenonTime(), refCtx);
             if (phenomenonTime.isPresent()) {
                 Optional<PartialOrCompleteTimeInstant> start = phenomenonTime.get().getStartTime();
                 Optional<PartialOrCompleteTimeInstant> end = phenomenonTime.get().getEndTime();
@@ -381,7 +382,8 @@ public class IWXXMMETARScanner extends AbstractIWXXMScanner {
                     properties.set(OMObservationProperties.Name.PHENOMENON_TIME, phenomenonTime.get());
                 }
             } else {
-                Optional<PartialOrCompleteTimeInstant> phenomenonTimeInstant = getCompleteTimeInstant(trend.getPhenomenonTime(), refCtx);
+                Optional<PartialOrCompleteTimeInstant> phenomenonTimeInstant = AbstractIWXXMSerializer.getCompleteTimeInstant(trend.getPhenomenonTime(),
+                        refCtx);
                 phenomenonTimeInstant.ifPresent((time) -> properties.set(OMObservationProperties.Name.PHENOMENON_TIME, time));
             }
 

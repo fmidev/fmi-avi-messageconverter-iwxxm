@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,8 +13,6 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.ValidationEvent;
-import javax.xml.bind.ValidationEventHandler;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -28,6 +27,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import net.opengis.gml32.AbstractGeometryType;
+import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.AngleType;
 import net.opengis.gml32.DirectPositionType;
 import net.opengis.gml32.FeaturePropertyType;
@@ -36,8 +36,11 @@ import net.opengis.gml32.MeasureType;
 import net.opengis.gml32.PointType;
 import net.opengis.gml32.ReferenceType;
 import net.opengis.gml32.SpeedType;
+import net.opengis.gml32.TimeInstantType;
+import net.opengis.gml32.TimePeriodType;
 import net.opengis.gml32.TimePrimitivePropertyType;
 import net.opengis.om20.OMObservationType;
+import net.opengis.om20.TimeObjectPropertyType;
 import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
 import net.opengis.sampling.spatial.ShapeType;
 
@@ -57,7 +60,6 @@ import aero.aixm511.TextNameType;
 import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
@@ -65,6 +67,8 @@ import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
 import fi.fmi.avi.model.GeoPosition;
 import fi.fmi.avi.model.NumericMeasure;
+import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
+import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import icao.iwxxm21.AerodromeCloudForecastType;
 import icao.iwxxm21.AngleWithNilReasonType;
 import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
@@ -72,26 +76,57 @@ import icao.iwxxm21.CloudLayerType;
 import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
 import icao.iwxxm21.SigConvectiveCloudTypeType;
-import icao.iwxxm30.SpaceWeatherAdvisoryType;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM.
  */
 public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
 
-    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
+    public static Optional<PartialOrCompleteTimePeriod> getCompleteTimePeriod(final TimeObjectPropertyType timeObjectPropertyType,
+            final ReferredObjectRetrievalContext refCtx) {
+        final Optional<AbstractTimeObjectType> to = resolveProperty(timeObjectPropertyType, "abstractTimeObject", AbstractTimeObjectType.class, refCtx);
+        if (to.isPresent()) {
+            if (TimePeriodType.class.isAssignableFrom(to.get().getClass())) {
+                final TimePeriodType tp = (TimePeriodType) to.get();
+                final PartialOrCompleteTimePeriod.Builder retval = PartialOrCompleteTimePeriod.builder();
+                getStartTime(tp, refCtx).ifPresent((start) -> {
+                    retval.setStartTime(PartialOrCompleteTimeInstant.builder()//
+                            .setCompleteTime(start).build());
+                });
+
+                getEndTime(tp, refCtx).ifPresent((end) -> {
+                    retval.setEndTime(PartialOrCompleteTimeInstant.builder()//
+                            .setCompleteTime(end).build());
+                });
+                return Optional.of(retval.build());
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<PartialOrCompleteTimeInstant> getCompleteTimeInstant(final TimeObjectPropertyType timeObjectPropertyType,
+            final ReferredObjectRetrievalContext refCtx) {
+        final Optional<AbstractTimeObjectType> to = resolveProperty(timeObjectPropertyType, "abstractTimeObject", AbstractTimeObjectType.class, refCtx);
+        if (to.isPresent()) {
+            if (TimeInstantType.class.isAssignableFrom(to.get().getClass())) {
+                final TimeInstantType ti = (TimeInstantType) to.get();
+                final Optional<ZonedDateTime> time = getTime(ti.getTimePosition());
+                if (time.isPresent()) {
+                    return Optional.of(PartialOrCompleteTimeInstant.builder().setCompleteTime(time).build());
+                }
+            } else {
+                throw new IllegalArgumentException("Time object is not a time instant");
+            }
+        }
+        return Optional.empty();
+    }
+
+    protected Document renderXMLDocument(final Object input, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
         final StringWriter sw = new StringWriter();
         try {
             final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            if (input instanceof SpaceWeatherAdvisoryType) {
-                marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, "http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd");
-            } else {
-                marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
-                        "http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd http://def.wmo.int/metce/2013 "
-                                + "http://schemas.wmo.int/metce/1.2/metce.xsd http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd "
-                                + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
-            }
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaInfo.getSchemaLocations());
             marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
             marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
             return asCleanedUpXML(sw.toString(), hints);
@@ -321,39 +356,6 @@ public abstract class AbstractIWXXMSerializer extends IWXXMConverterBase {
                 });
                 target.setCloudType(new JAXBElement<>(eName, SigConvectiveCloudTypeType.class, cloudType));
             }
-        }
-    }
-
-    protected static class ConverterValidationEventHandler implements ValidationEventHandler {
-        private final ConversionResult<?> result;
-        private boolean errorsFound = false;
-        private boolean fatalErrorsFound = false;
-
-        public ConverterValidationEventHandler(final ConversionResult<?> result) {
-            this.result = result;
-        }
-
-        @Override
-        public boolean handleEvent(final ValidationEvent event) {
-            if (event.getSeverity() == ValidationEvent.ERROR) {
-                this.errorsFound = true;
-            } else if (event.getSeverity() == ValidationEvent.FATAL_ERROR) {
-                this.fatalErrorsFound = true;
-            }
-            this.result.addIssue(new ConversionIssue(ConversionIssue.Type.SYNTAX, "XML Schema validation issue: " + event.getMessage()));
-            return true;
-        }
-
-        public boolean errorsFound() {
-            return this.errorsFound || this.fatalErrorsFound;
-        }
-
-        public boolean fatalErrorsFound() {
-            return this.fatalErrorsFound;
-        }
-
-        public ConversionResult<?> getResult() {
-            return result;
         }
     }
 }

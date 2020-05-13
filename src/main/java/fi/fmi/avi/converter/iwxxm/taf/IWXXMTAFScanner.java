@@ -20,6 +20,7 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.OMObservationProperties;
@@ -287,7 +288,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
         //phenomenonTime
         if (fct.getPhenomenonTime() != null) {
-            Optional<PartialOrCompleteTimePeriod> phenomenonTime = getCompleteTimePeriod(fct.getPhenomenonTime(), refCtx);
+            Optional<PartialOrCompleteTimePeriod> phenomenonTime = AbstractIWXXMSerializer.getCompleteTimePeriod(fct.getPhenomenonTime(), refCtx);
             if (phenomenonTime.isPresent()) {
                 properties.set(OMObservationProperties.Name.PHENOMENON_TIME, phenomenonTime.get());
                 if (!phenomenonTime.get().equals(tafValidityTime)) {
@@ -308,7 +309,7 @@ public class IWXXMTAFScanner extends AbstractIWXXMScanner {
 
         //phenomenonTime
         if (fct.getPhenomenonTime() != null) {
-            Optional<PartialOrCompleteTimePeriod> phenomenonTime = getCompleteTimePeriod(fct.getPhenomenonTime(), refCtx);
+            Optional<PartialOrCompleteTimePeriod> phenomenonTime = AbstractIWXXMSerializer.getCompleteTimePeriod(fct.getPhenomenonTime(), refCtx);
             if (phenomenonTime.isPresent()) {
                 properties.set(OMObservationProperties.Name.PHENOMENON_TIME, phenomenonTime.get());
                 if (tafValidityTime.getStartTime().isPresent() && tafValidityTime.getStartTime().get().getCompleteTime().isPresent()) {

@@ -14,17 +14,17 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.iwxxm.sigmet.AbstractSIGMETIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import icao.iwxxm21.SIGMETType;
 
 public class SIGMETIWXXMStringSerializer extends AbstractSIGMETIWXXMSerializer<String> {
     @Override
-    protected String render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException {
-        return renderXMLString(sigmet, hints);
+    protected String render(final SIGMETType sigmet, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+        return renderXMLString(sigmet, schemaInfo, hints);
     }
 
-    private String renderXMLString(final SIGMETType sigmetElem, final ConversionHints hints) throws ConversionException {
-        Document result = renderXMLDocument(sigmetElem, hints);
+    private String renderXMLString(final SIGMETType sigmetElem, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+        Document result = renderXMLDocument(sigmetElem, schemaInfo, hints);
         String retval = null;
         if (result != null) {
             try {

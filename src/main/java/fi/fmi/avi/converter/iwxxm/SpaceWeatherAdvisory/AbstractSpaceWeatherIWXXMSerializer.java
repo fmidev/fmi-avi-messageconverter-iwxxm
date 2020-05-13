@@ -26,6 +26,8 @@ import net.opengis.gml32.TimeInstantType;
 import net.opengis.gml32.TimePositionType;
 import net.opengis.gml32.TimePrimitivePropertyType;
 
+import org.xml.sax.SAXException;
+
 import aero.aixm511.AirspaceVolumeType;
 import aero.aixm511.CodeUnitType;
 import aero.aixm511.CodeVerticalReferenceType;
@@ -43,6 +45,7 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CircleByCenterPoint;
@@ -77,7 +80,7 @@ public abstract class AbstractSpaceWeatherIWXXMSerializer<T> extends AbstractIWX
     private static final aero.aixm511.ObjectFactory AIXM_OF = new aero.aixm511.ObjectFactory();
     private static final net.opengis.gml32.ObjectFactory GML_OF = new net.opengis.gml32.ObjectFactory();
 
-    protected abstract T render(SpaceWeatherAdvisoryType swx, ConversionHints hints) throws ConversionException;
+    protected abstract T render(SpaceWeatherAdvisoryType swx, XMLSchemaInfo schemaInfo, ConversionHints hints) throws ConversionException;
 
     @Override
     public ConversionResult<T> convertMessage(final SpaceWeatherAdvisory input, final ConversionHints hints) {
@@ -132,14 +135,18 @@ public abstract class AbstractSpaceWeatherIWXXMSerializer<T> extends AbstractIWX
         swxType.setNextAdvisoryTime(create(TimeInstantPropertyType.class, (prop) -> getNextAdvisory(prop, input.getNextAdvisory())));
 
         try {
-            result.setStatus(ConversionResult.Status.SUCCESS);
+            //result.setStatus(ConversionResult.Status.SUCCESS);
             this.updateMessageMetadata(input, result, swxType);
-            final ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
-            this.validateDocument(swxType, SpaceWeatherAdvisoryType.class, hints, eventHandler);
-            if (eventHandler.errorsFound()) {
-                result.setStatus(ConversionResult.Status.FAIL);
-            } else {
-                result.setConvertedMessage(this.render(swxType, hints));
+            try {
+                //TODO: move into a an IWXXM 2.0 common abstract class when available
+                final XMLSchemaInfo schemaInfo = new XMLSchemaInfo();
+                schemaInfo.addSchemaSource(SpaceWeatherAdvisoryType.class.getResourceAsStream("/int/icao/iwxxm/3.0.0/iwxxm.xsd"));
+                schemaInfo.addSchemaLocation("http://icao.int/iwxxm/3.0", "http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd");
+                schemaInfo.setSchematronRules(SpaceWeatherAdvisoryType.class.getResource("/schematron/xslt/int/icao/iwxxm/3.0.0/rule/iwxxm.xsl"));
+                result.addIssue(validateDocument(swxType, SpaceWeatherAdvisoryType.class, schemaInfo, hints));
+                result.setConvertedMessage(this.render(swxType, schemaInfo, hints));
+            } catch (SAXException se) {
+                throw new ConversionException("Creating XMLSchemaInfo failed", se);
             }
         } catch (final ConversionException e) {
             result.setStatus(ConversionResult.Status.FAIL);

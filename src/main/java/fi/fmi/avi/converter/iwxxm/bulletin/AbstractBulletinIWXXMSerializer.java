@@ -12,15 +12,19 @@ import java.util.UUID;
 
 import net.opengis.gml32.AbstractFeatureType;
 
+import org.xml.sax.SAXException;
+
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 import fi.fmi.avi.util.GTSExchangeFileInfo;
+import icao.iwxxm21.TAFType;
 import wmo.collect2014.MeteorologicalBulletinType;
 import wmo.collect2014.MeteorologicalInformationMemberPropertyType;
 
@@ -46,7 +50,7 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
         return retval;
     }
 
-    protected abstract T render(final MeteorologicalBulletinType taf, ConversionHints hints) throws ConversionException;
+    protected abstract T render(final MeteorologicalBulletinType taf, final XMLSchemaInfo schemaInfo, ConversionHints hints) throws ConversionException;
 
     protected abstract Class<V> getMessageJAXBClass();
 
@@ -128,19 +132,31 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
             }
         }
         MeteorologicalInformationMemberPropertyType memberProp;
+        // FIXME: the schema stuff should be given individually for each member, not at the top of the bulletin document. This would be the correct way to
+        //  handle the IWXXM versions with bulletins
         for (final V outputMessage : outputMessages) {
             memberProp = create(MeteorologicalInformationMemberPropertyType.class);
             memberProp.setAbstractFeature(wrap(outputMessage, getMessageJAXBClass()));
             bulletin.getMeteorologicalInformation().add(memberProp);
         }
         try {
-            final ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
-            validateDocument(bulletin, MeteorologicalBulletinType.class, hints, eventHandler);
-            if (eventHandler.errorsFound()) {
-                result.setStatus(ConversionResult.Status.FAIL);
-            } else {
-                result.setConvertedMessage(this.render(bulletin, hints));
+            try {
+                //FIXME: this is bound only to IWXXM 2.1
+                final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
+                schemaInfo.addSchemaSource(TAFType.class.getResourceAsStream("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
+                schemaInfo.addSchemaSource(MeteorologicalBulletinType.class.getResourceAsStream("/int/wmo/collect/1.2/collect.xsd"));
+                schemaInfo.addSchemaLocation("http://icao.int/iwxxm/2.1", "https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd");
+                schemaInfo.addSchemaLocation("http://def.wmo.int/metce/2013", "http://schemas.wmo.int/metce/1.2/metce.xsd");
+                schemaInfo.addSchemaLocation("http://def.wmo.int/collect/2014", "http://schemas.wmo.int/collect/1.2/collect.xsd");
+                schemaInfo.addSchemaLocation("http://www.opengis.net/samplingSpatial/2.0",
+                        "http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
+                schemaInfo.setSchematronRules(TAFType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
+                result.addIssue(validateDocument(bulletin, MeteorologicalBulletinType.class, schemaInfo, hints));
+                result.setConvertedMessage(this.render(bulletin, schemaInfo, hints));
+            } catch (SAXException se) {
+                throw new ConversionException("Creating XMLSchemaInfo failed", se);
             }
+
         } catch (final ConversionException e) {
             result.setStatus(ConversionResult.Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to convert IWXXM message", e));
