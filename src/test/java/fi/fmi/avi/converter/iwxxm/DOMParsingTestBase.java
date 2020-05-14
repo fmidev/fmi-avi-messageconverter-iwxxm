@@ -6,6 +6,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 
+import fi.fmi.avi.converter.iwxxm.v21.TAFIWXXMParserTest;
+
 /**
  * Created by rinne on 01/08/2018.
  */
