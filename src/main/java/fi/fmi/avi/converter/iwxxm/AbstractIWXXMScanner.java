@@ -39,6 +39,7 @@ import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.v21.OMObservationProperties;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.NumericMeasure;
