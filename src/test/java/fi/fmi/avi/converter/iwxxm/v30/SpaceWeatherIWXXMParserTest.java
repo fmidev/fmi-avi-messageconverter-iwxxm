@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm;
+package fi.fmi.avi.converter.iwxxm.v30;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -33,6 +33,8 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.DOMParsingTestBase;
+import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.NumericMeasure;
@@ -55,13 +57,16 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
     private String getInput(String fileName) throws IOException {
         InputStream is = null;
         try {
-            String path = System.getProperty("user.dir") + "/src/test/resources/fi/fmi/avi/converter/iwxxm/" + fileName;
+            /*
+            String path = System.getProperty("user.dir") + "/src/test/resources/fi/fmi/avi/converter/iwxxm/v30/" + fileName;
             File file = new File(path);
             if (file.exists()) {
                 is = new FileInputStream(file);
             } else {
                 throw new FileNotFoundException("could not locate file as resource or using path " + path);
             }
+            */
+            is = SpaceWeatherIWXXMParserTest.class.getResourceAsStream(fileName);
             Objects.requireNonNull(is);
 
             return IOUtils.toString(is, "UTF-8");
@@ -82,7 +87,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON", swx.getIssuingCenterName());
+        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T01:00Z"), swx.getIssueTime().get().getCompleteTime().get());
@@ -110,7 +115,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON", swx.getIssuingCenterName());
+        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T00:00Z"), swx.getIssueTime().get().getCompleteTime().get());
@@ -146,7 +151,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON", swx.getIssuingCenterName());
+        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T00:00Z"), swx.getIssueTime().get().getCompleteTime().get());

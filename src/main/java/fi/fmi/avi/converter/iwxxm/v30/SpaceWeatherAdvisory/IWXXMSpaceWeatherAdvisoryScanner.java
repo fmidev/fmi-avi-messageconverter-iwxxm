@@ -1,6 +1,5 @@
-package fi.fmi.avi.converter.iwxxm.SpaceWeatherAdvisory;
+package fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory;
 
-import java.lang.reflect.Constructor;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +9,6 @@ import javax.xml.bind.JAXBElement;
 
 import net.opengis.gml32.AbstractCurveSegmentType;
 import net.opengis.gml32.AbstractSurfacePatchType;
-import net.opengis.gml32.ArcByCenterPointType;
 import net.opengis.gml32.CircleByCenterPointType;
 import net.opengis.gml32.CurvePropertyType;
 import net.opengis.gml32.CurveType;
@@ -25,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aero.aixm511.AirspaceVolumeType;
-import aero.aixm511.SurfacePropertyType;
 import aero.aixm511.SurfaceType;
 import aero.aixm511.UnitTimeSlicePropertyType;
 import aero.aixm511.UnitType;
@@ -35,11 +32,8 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.model.CircleByCenterPoint;
-import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PointGeometry;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.AdvisoryNumber;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.AirspaceVolume;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.NextAdvisory;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.AdvisoryNumberImpl;
@@ -47,10 +41,7 @@ import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.AirspaceVolumeImpl;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.NextAdvisoryImpl;
 import fi.fmi.avi.model.immutable.CircleByCenterPointImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
-import fi.fmi.avi.model.immutable.PhenomenonGeometryWithHeightImpl;
 import fi.fmi.avi.model.immutable.PointGeometryImpl;
-import fi.fmi.avi.model.immutable.PolygonsGeometryImpl;
-import fi.fmi.avi.model.immutable.TacOrGeoGeometryImpl;
 import icao.iwxxm30.SpaceWeatherAdvisoryType;
 import icao.iwxxm30.SpaceWeatherAnalysisPropertyType;
 import icao.iwxxm30.SpaceWeatherAnalysisType;

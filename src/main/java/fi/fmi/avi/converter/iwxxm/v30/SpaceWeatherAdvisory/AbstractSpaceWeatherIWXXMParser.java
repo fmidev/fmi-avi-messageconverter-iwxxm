@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.SpaceWeatherAdvisory;
+package fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,23 +11,22 @@ import javax.xml.bind.JAXBElement;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.AbstractJAXBIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
+import fi.fmi.avi.converter.iwxxm.v30.AbstractIWXXM30Parser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.AdvisoryNumber;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.AirspaceVolume;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.NextAdvisory;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherRegion;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.AirspaceVolumeImpl;
+import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.IssuingCenterImpl;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryAnalysisImpl;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryImpl;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherRegionImpl;
 import icao.iwxxm30.SpaceWeatherAdvisoryType;
 
-public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWXXMParser<T, SpaceWeatherAdvisory> {
+public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T, SpaceWeatherAdvisory> {
     @Override
     protected SpaceWeatherAdvisory createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx,
             final ConversionResult<SpaceWeatherAdvisory> result, final ConversionHints hints) {
@@ -122,7 +121,7 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractJAXBIWX
         }
         Optional<String> issuer = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER_NAME, String.class);
         if (issuer.isPresent()) {
-            spaceWeatherAdvisory.setIssuingCenterName(issuer.get());
+            spaceWeatherAdvisory.setIssuingCenter( IssuingCenterImpl.builder().setName(issuer.get()).build());
         }
         final Optional<AdvisoryNumber> advisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.ADVISORY_NUMBER, AdvisoryNumber.class);
         if (advisoryNumber.isPresent()) {

@@ -25,6 +25,8 @@ import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMJAXBSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMStringParser;
+import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
@@ -88,7 +90,7 @@ public class IWXXMConverter {
             "SPECI, XML/IWXXM 2.1", null);
 
     /**
-     * Pre-configured spec for IWXXM 3.0 XML format Space Weather Advisory document String to {@link SWX}.
+     * Pre-configured spec for IWXXM 3.0 XML format Space Weather Advisory document String to {@link SpaceWeatherAdvisory}.
      */
     public static final ConversionSpecification<String, SpaceWeatherAdvisory> IWXXM30_STRING_TO_SPACE_WEATHER_POJO = new ConversionSpecification<>(String.class, SpaceWeatherAdvisory.class,
             "SWX, XML/IWXXM 3.0", null);
