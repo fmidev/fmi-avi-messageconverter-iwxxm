@@ -4,7 +4,6 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.taf.AbstractTAFIWXXMSerializer;
 import wmo.collect2014.MeteorologicalBulletinType;
 
@@ -14,9 +13,8 @@ import wmo.collect2014.MeteorologicalBulletinType;
 public class TAFBulletinIWXXMDOMSerializer extends AbstractTAFBulletinIWXXMSerializer<Document> {
 
     @Override
-    protected Document render(final MeteorologicalBulletinType bulletin, final XMLSchemaInfo schemaInfo, final ConversionHints hints)
-            throws ConversionException {
-        return this.renderXMLDocument(bulletin, schemaInfo, hints);
+    protected Document render(final MeteorologicalBulletinType bulletin, final ConversionHints hints) throws ConversionException {
+        return this.renderXMLDocument(bulletin, hints);
     }
 
 }

@@ -3,13 +3,28 @@ package fi.fmi.avi.converter.iwxxm;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
@@ -17,6 +32,7 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import icao.iwxxm21.ReportType;
 
@@ -25,6 +41,8 @@ import icao.iwxxm21.ReportType;
  */
 public abstract class AbstractJAXBIWXXMParser<T, S extends AviationWeatherMessageOrCollection> extends IWXXMConverterBase
         implements AviMessageSpecificConverter<T, S> {
+
+    private static Templates iwxxmTemplates;
 
     /**
      * Returns the TAF input message as A DOM Document.
@@ -70,15 +88,18 @@ public abstract class AbstractJAXBIWXXMParser<T, S extends AviationWeatherMessag
 
         try {
             Document dom = parseAsDom(input);
-            //TODO: move into a an IWXXM 2.0 common abstract class when available
-            final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
-            schemaInfo.addSchemaSource(ReportType.class.getResourceAsStream("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
-            schemaInfo.setSchematronRules(ReportType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
+
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
+            schemaFactory.setResourceResolver(resolver);
+            //Secure processing does not allow "file" protocol loading for schemas:
+            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
+            Schema iwxxmSchema = schemaFactory.newSchema(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
 
             Binder<Node> binder = getJAXBContext().createBinder();
 
             //XML Schema validation upon JAXB unmarshal:
-            binder.setSchema(schemaInfo.getSchema());
+            binder.setSchema(iwxxmSchema);
             IWXXMValidationEventHandler collector = new IWXXMValidationEventHandler();
             binder.setEventHandler(collector);
             source = binder.unmarshal(dom);
@@ -91,7 +112,7 @@ public abstract class AbstractJAXBIWXXMParser<T, S extends AviationWeatherMessag
                 refCtx = new ReferredObjectRetrievalContext(dom, binder);
 
                 //Schematron validation:
-                result.addIssue(validateAgainstIWXXMSchematron(dom, schemaInfo, hints));
+                result.addIssue(validateAgainstIWXXMSchematron(dom, hints));
                 try {
                     result.setConvertedMessage(createPOJO(source, refCtx, result, hints));
                 } catch (IllegalStateException ise) {
@@ -116,7 +137,58 @@ public abstract class AbstractJAXBIWXXMParser<T, S extends AviationWeatherMessag
 
     }
 
+    /**
+     * Checks the DOM Document against the official IWXXM 2.1.1 Schematron validation rules.
+     * Uses a pre-generated XLS transformation file producing the Schematron SVRL report.
+     *
+     * @param input
+     *         IWXXM message Document
+     * @param hints
+     *         conversion hints to guide the validaton
+     *
+     * @return the list of Schematron validation issues (failed asserts)
+     */
+    protected static IssueList validateAgainstIWXXMSchematron(final Document input, final ConversionHints hints) {
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        xPath.setNamespaceContext(new IWXXMNamespaceContext());
+        IssueList retval = new IssueList();
+        try {
+            DOMResult schematronOutput = new DOMResult();
+            Transformer transformer = getIwxxmTemplates().newTransformer();
+            DOMSource dSource = new DOMSource(input);
+            transformer.transform(dSource, schematronOutput);
+            NodeList failedAsserts = (NodeList) xPath.evaluate("//svrl:failed-assert/svrl:text", schematronOutput.getNode(), XPathConstants.NODESET);
+            if (failedAsserts != null) {
+                for (int i = 0; i < failedAsserts.getLength(); i++) {
+                    Node node = failedAsserts.item(i).getFirstChild();
+                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Failed Schematron assertation: " + node.getNodeValue());
+                }
+            }
+        } catch (TransformerException | XPathExpressionException e) {
+            throw new RuntimeException("Unable to apply XSLT pre-compiled Schematron validation rules to the document to validate", e);
+        }
+        return retval;
+    }
 
+    /*
+       Performance optimization: use a pre-compiled the Templates object
+       for running the XSL transformations required for IWXXM Schematron
+       validation. This makes each validation 3-4 times faster.
+   */
+    private synchronized static Templates getIwxxmTemplates() {
+        if (iwxxmTemplates == null) {
+            TransformerFactory tFactory = TransformerFactory.newInstance();
+
+            try {
+                iwxxmTemplates = tFactory.newTemplates(
+                        new StreamSource(ReportType.class.getClassLoader().getResourceAsStream("schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl")));
+            } catch (Exception e) {
+                throw new RuntimeException("Unable to read XSL file for IWXXM 2.1.1 Schematron validation, make sure the the file exists in " + " classpath "
+                        + "location 'schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl' ");
+            }
+        }
+        return iwxxmTemplates;
+    }
 
     private static class IWXXMValidationEventHandler implements ValidationEventHandler {
 

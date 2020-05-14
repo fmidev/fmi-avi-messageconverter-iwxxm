@@ -48,7 +48,6 @@ import net.opengis.sampling.spatial.ShapeType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import aero.aixm511.AirspaceTimeSlicePropertyType;
 import aero.aixm511.AirspaceTimeSliceType;
@@ -74,7 +73,6 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
@@ -307,7 +305,7 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
         });
     }
 
-    protected abstract T render(final SIGMETType sigmet, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
+    protected abstract T render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException;
 
     /**
      * Converts a TAF object into another format.
@@ -498,31 +496,31 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXMSeri
         }
 
         try {
-            //result.setStatus(Status.SUCCESS);
+            result.setStatus(Status.SUCCESS);
             this.updateMessageMetadata(input, result, sigmet);
 
-            try {
-                //TODO: move into a an IWXXM 2.0 common abstract class when available
-                final XMLSchemaInfo schemaInfo = new XMLSchemaInfo();
-                schemaInfo.addSchemaSource(SIGMETType.class.getResourceAsStream("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
-                schemaInfo.addSchemaLocation("http://icao.int/iwxxm/2.1", "https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd");
-                schemaInfo.addSchemaLocation("http://def.wmo.int/metce/2013", "http://schemas.wmo.int/metce/1.2/metce.xsd");
-                schemaInfo.addSchemaLocation("http://www.opengis.net/samplingSpatial/2.0",
-                        "http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
-                schemaInfo.setSchematronRules(SIGMETType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
-                if (input.getSigmetPhenomenon().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
-                    result.addIssue(this.validateDocument(((VolcanicAshSIGMETType) sigmet), VolcanicAshSIGMETType.class, schemaInfo, hints));
-                } else {
-                    result.addIssue(this.validateDocument(sigmet, SIGMETType.class, schemaInfo, hints));
+            ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
+            if (input.getSigmetPhenomenon().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+                this.validateDocument(((VolcanicAshSIGMETType) sigmet), VolcanicAshSIGMETType.class, hints, eventHandler); //TODO true is for debugging: shows
+                // results even in
+                // case of failure
+            } else {
+                this.validateDocument(sigmet, SIGMETType.class, hints, eventHandler); //TODO true is for debugging: shows results even in case of failure
+            }
+
+            if (eventHandler.errorsFound()) {
+                result.setStatus(Status.FAIL);
+                for (ConversionIssue iss : eventHandler.getResult().getConversionIssues()) {
+                    System.err.println("ISS: " + iss.getMessage());
                 }
-                result.setConvertedMessage(this.render(sigmet, schemaInfo, hints));
-            } catch (SAXException se) {
-                throw new ConversionException("Creating XMLSchemaInfo failed", se);
+            } else {
+                result.setConvertedMessage(this.render(sigmet, hints));
             }
         } catch (ConversionException e) {
             result.setStatus(Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render SIGMET IWXXM message to String", e));
         }
+
         return result;
     }
 

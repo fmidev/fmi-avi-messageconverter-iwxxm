@@ -51,12 +51,6 @@
       <version>9.8.0-12</version>
     </dependency>
 
-    <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-      <version>2.3.3</version>
-      <optional>true</optional>
-    </dependency>
 
     <!-- Need for exposing the com.sum internal NamespacePrefixMapper classes -->
     <dependency>

@@ -30,8 +30,6 @@ import net.opengis.om20.OMObservationType;
 import net.opengis.om20.OMProcessPropertyType;
 import net.opengis.om20.TimeObjectPropertyType;
 
-import org.xml.sax.SAXException;
-
 import aero.aixm511.AirportHeliportType;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
@@ -41,7 +39,6 @@ import fi.fmi.avi.converter.ConversionIssue.Type;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationCodeListUser.TAFStatus;
@@ -83,7 +80,7 @@ import wmo.metce2013.ProcessType;
  */
 public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSerializer implements AviMessageSpecificConverter<TAF, T> {
 
-    protected abstract T render(TAFType taf, XMLSchemaInfo schemaInfo, ConversionHints hints) throws ConversionException;
+    protected abstract T render(TAFType taf, ConversionHints hints) throws ConversionException;
 
     /**
      * Converts a TAF object into another format.
@@ -172,20 +169,12 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXMSeriali
         }
         try {
             this.updateMessageMetadata(input, result, taf);
-            try {
-                //TODO: move into a an IWXXM 2.0 common abstract class when available
-                final XMLSchemaInfo schemaInfo = new XMLSchemaInfo();
-                schemaInfo.addSchemaSource(TAFType.class.getResourceAsStream("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
-                schemaInfo.addSchemaLocation("http://icao.int/iwxxm/2.1", "https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd");
-                schemaInfo.addSchemaLocation("http://def.wmo.int/metce/2013", "http://schemas.wmo.int/metce/1.2/metce.xsd");
-                schemaInfo.addSchemaLocation("http://www.opengis.net/samplingSpatial/2.0",
-                        "http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
-                schemaInfo.setSchematronRules(TAFType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
-
-                result.addIssue(validateDocument(taf, TAFType.class, schemaInfo, hints));
-                result.setConvertedMessage(this.render(taf, schemaInfo, hints));
-            } catch (SAXException se) {
-                throw new ConversionException("Creating XMLSchemaInfo failed", se);
+            final ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
+            validateDocument(taf, TAFType.class, hints, eventHandler);
+            if (eventHandler.errorsFound()) {
+                result.setStatus(Status.FAIL);
+            } else {
+                result.setConvertedMessage(this.render(taf, hints));
             }
         } catch (final ConversionException e) {
             result.setStatus(Status.FAIL);
