@@ -18,9 +18,12 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.AviationWeatherMessage;
+
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 import fi.fmi.avi.util.GTSExchangeFileInfo;
+import icao.iwxxm21.TAFType;
 import wmo.collect2014.MeteorologicalBulletinType;
 import wmo.collect2014.MeteorologicalInformationMemberPropertyType;
 
@@ -33,7 +36,7 @@ import wmo.collect2014.MeteorologicalInformationMemberPropertyType;
  *         bulletin content JAXB type
  */
 public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeatherMessage, V extends AbstractFeatureType, U extends MeteorologicalBulletin<S>>
-        extends AbstractIWXXMSerializer implements AviMessageSpecificConverter<U, T> {
+        extends AbstractIWXXMSerializer<U, T> {
 
     private AviMessageSpecificConverter<S, V> contentMessageConverter;
 
@@ -46,7 +49,7 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
         return retval;
     }
 
-    protected abstract T render(final MeteorologicalBulletinType taf, ConversionHints hints) throws ConversionException;
+    protected abstract T render(final MeteorologicalBulletinType taf, final XMLSchemaInfo schemaInfo, ConversionHints hints) throws ConversionException;
 
     protected abstract Class<V> getMessageJAXBClass();
 
@@ -128,19 +131,17 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
             }
         }
         MeteorologicalInformationMemberPropertyType memberProp;
+        // FIXME: the schema stuff should be given individually for each member, not at the top of the bulletin document. This would be the correct way to
+        //  handle the IWXXM versions with bulletins
         for (final V outputMessage : outputMessages) {
             memberProp = create(MeteorologicalInformationMemberPropertyType.class);
             memberProp.setAbstractFeature(wrap(outputMessage, getMessageJAXBClass()));
             bulletin.getMeteorologicalInformation().add(memberProp);
         }
         try {
-            final ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
-            validateDocument(bulletin, MeteorologicalBulletinType.class, hints, eventHandler);
-            if (eventHandler.errorsFound()) {
-                result.setStatus(ConversionResult.Status.FAIL);
-            } else {
-                result.setConvertedMessage(this.render(bulletin, hints));
-            }
+            final XMLSchemaInfo schemaInfo = getSchemaInfo();
+            result.addIssue(validateDocument(bulletin, MeteorologicalBulletinType.class, schemaInfo, hints));
+            result.setConvertedMessage(this.render(bulletin, schemaInfo, hints));
         } catch (final ConversionException e) {
             result.setStatus(ConversionResult.Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to convert IWXXM message", e));
@@ -148,4 +149,12 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
         return result;
     }
 
+    @Override
+    protected XMLSchemaInfo getSchemaInfo() {
+        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
+        schemaInfo.addSchemaSource(MeteorologicalBulletinType.class.getResourceAsStream("/int/wmo/collect/1.2/collect.xsd"));
+        schemaInfo.addSchemaLocation("http://def.wmo.int/collect/2014", "http://schemas.wmo.int/collect/1.2/collect.xsd");
+        schemaInfo.setSchematronRules(TAFType.class.getResource("/schematron/xslt/int/wmo/collect/1.2/rule/collect.xsl"));
+        return schemaInfo;
+    }
 }
