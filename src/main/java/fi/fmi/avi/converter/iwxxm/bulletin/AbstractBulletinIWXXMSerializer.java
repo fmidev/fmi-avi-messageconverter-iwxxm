@@ -49,7 +49,7 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
         return retval;
     }
 
-    protected abstract T render(final MeteorologicalBulletinType taf, final XMLSchemaInfo schemaInfo, ConversionHints hints) throws ConversionException;
+    protected abstract T render(final MeteorologicalBulletinType taf, ConversionHints hints) throws ConversionException;
 
     protected abstract Class<V> getMessageJAXBClass();
 
@@ -139,9 +139,8 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
             bulletin.getMeteorologicalInformation().add(memberProp);
         }
         try {
-            final XMLSchemaInfo schemaInfo = getSchemaInfo();
-            result.addIssue(validateDocument(bulletin, MeteorologicalBulletinType.class, schemaInfo, hints));
-            result.setConvertedMessage(this.render(bulletin, schemaInfo, hints));
+            result.addIssue(validateDocument(bulletin, MeteorologicalBulletinType.class, getSchemaInfo(), hints));
+            result.setConvertedMessage(this.render(bulletin, hints));
         } catch (final ConversionException e) {
             result.setStatus(ConversionResult.Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to convert IWXXM message", e));

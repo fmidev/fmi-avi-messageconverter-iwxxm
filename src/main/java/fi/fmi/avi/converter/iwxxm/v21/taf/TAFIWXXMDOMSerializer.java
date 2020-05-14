@@ -13,8 +13,8 @@ import icao.iwxxm21.TAFType;
 public class TAFIWXXMDOMSerializer extends AbstractTAFIWXXMSerializer<Document> {
 
     @Override
-    protected Document render(final TAFType taf, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
-        return this.renderXMLDocument(taf, schemaInfo, hints);
+    protected Document render(final TAFType taf,  final ConversionHints hints) throws ConversionException {
+        return this.renderXMLDocument(taf, hints);
     }
 
 }

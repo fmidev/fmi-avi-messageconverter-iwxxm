@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.SpaceWeatherAdvisory;
+package fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory;
 
 import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
@@ -37,12 +37,11 @@ import aero.aixm511.UnitTimeSlicePropertyType;
 import aero.aixm511.UnitTimeSliceType;
 import aero.aixm511.UnitType;
 import aero.aixm511.ValDistanceVerticalType;
-import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.v30.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CircleByCenterPoint;
@@ -71,7 +70,7 @@ import icao.iwxxm30.StringWithNilReasonType;
 import icao.iwxxm30.TimeIndicatorType;
 import icao.iwxxm30.UnitPropertyType;
 
-public abstract class AbstractSpaceWeatherIWXXMSerializer<T> extends AbstractIWXXMSerializer implements AviMessageSpecificConverter<SpaceWeatherAdvisory, T> {
+public abstract class AbstractSpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Serializer<SpaceWeatherAdvisory, T> {
     public static final String UUID_PREFIX = "uuid.";
     private static final int REQUIRED_NUMBER_OF_ANALYSES = 5;
     private static final aero.aixm511.ObjectFactory AIXM_OF = new aero.aixm511.ObjectFactory();
@@ -132,15 +131,9 @@ public abstract class AbstractSpaceWeatherIWXXMSerializer<T> extends AbstractIWX
         swxType.setNextAdvisoryTime(create(TimeInstantPropertyType.class, (prop) -> getNextAdvisory(prop, input.getNextAdvisory())));
 
         try {
-            result.setStatus(ConversionResult.Status.SUCCESS);
             this.updateMessageMetadata(input, result, swxType);
-            final ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(result);
-            this.validateDocument(swxType, SpaceWeatherAdvisoryType.class, hints, eventHandler);
-            if (eventHandler.errorsFound()) {
-                result.setStatus(ConversionResult.Status.FAIL);
-            } else {
-                result.setConvertedMessage(this.render(swxType, hints));
-            }
+            this.validateDocument(swxType, SpaceWeatherAdvisoryType.class, getSchemaInfo(), hints);
+            result.setConvertedMessage(this.render(swxType, hints));
         } catch (final ConversionException e) {
             result.setStatus(ConversionResult.Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message", e));
@@ -411,7 +404,7 @@ public abstract class AbstractSpaceWeatherIWXXMSerializer<T> extends AbstractIWX
 
     @Override
     protected InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException {
-        InputStream retval = this.getClass().getResourceAsStream("/fi/fmi/avi/converter/iwxxm/swx/SpaceWeatherAdvisoryCleanUp.xsl");
+        InputStream retval = this.getClass().getResourceAsStream("/fi/fmi/avi/converter/iwxxm/v30/swx/SpaceWeatherAdvisoryCleanUp.xsl");
         if (retval == null) {
             throw new ConversionException("Error accessing cleanup XSLT sheet file");
         }

@@ -14,9 +14,9 @@ import wmo.collect2014.MeteorologicalBulletinType;
 public class TAFBulletinIWXXMDOMSerializer extends AbstractTAFBulletinIWXXMSerializer<Document> {
 
     @Override
-    protected Document render(final MeteorologicalBulletinType bulletin, final XMLSchemaInfo schemaInfo, final ConversionHints hints)
+    protected Document render(final MeteorologicalBulletinType bulletin, final ConversionHints hints)
             throws ConversionException {
-        return this.renderXMLDocument(bulletin, schemaInfo, hints);
+        return this.renderXMLDocument(bulletin, hints);
     }
 
 }

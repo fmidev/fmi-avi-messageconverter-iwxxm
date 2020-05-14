@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.SpaceWeatherAdvisory;
+package fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory;
 
 import java.util.ArrayList;
 import java.util.List;

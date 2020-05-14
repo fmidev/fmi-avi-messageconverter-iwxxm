@@ -10,8 +10,8 @@ import icao.iwxxm21.AIRMETType;
 public class AIRMETIWXXMStringSerializer extends AbstractAIRMETIWXXMSerializer<String> {
 
     @Override
-    protected String render(final AIRMETType airmet, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
-        final Document result = renderXMLDocument(airmet, schemaInfo, hints);
+    protected String render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException {
+        final Document result = renderXMLDocument(airmet, hints);
         return renderDOMToString(result, hints);
     }
 }

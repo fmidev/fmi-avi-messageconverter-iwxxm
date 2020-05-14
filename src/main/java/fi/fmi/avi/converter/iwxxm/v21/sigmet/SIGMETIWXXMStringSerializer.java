@@ -19,12 +19,12 @@ import icao.iwxxm21.SIGMETType;
 
 public class SIGMETIWXXMStringSerializer extends AbstractSIGMETIWXXMSerializer<String> {
     @Override
-    protected String render(final SIGMETType sigmet, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
-        return renderXMLString(sigmet, schemaInfo, hints);
+    protected String render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException {
+        return renderXMLString(sigmet, hints);
     }
 
-    private String renderXMLString(final SIGMETType sigmetElem, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
-        Document result = renderXMLDocument(sigmetElem, schemaInfo, hints);
+    private String renderXMLString(final SIGMETType sigmetElem, final ConversionHints hints) throws ConversionException {
+        Document result = renderXMLDocument(sigmetElem, hints);
         String retval = null;
         if (result != null) {
             try {

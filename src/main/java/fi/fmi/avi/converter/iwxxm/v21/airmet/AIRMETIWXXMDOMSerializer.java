@@ -9,7 +9,7 @@ import icao.iwxxm21.AIRMETType;
 
 public class AIRMETIWXXMDOMSerializer extends AbstractAIRMETIWXXMSerializer<Document> {
     @Override
-    protected Document render(final AIRMETType airmet, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
-        return this.renderXMLDocument(airmet, schemaInfo, hints);
+    protected Document render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException {
+        return this.renderXMLDocument(airmet, hints);
     }
 }

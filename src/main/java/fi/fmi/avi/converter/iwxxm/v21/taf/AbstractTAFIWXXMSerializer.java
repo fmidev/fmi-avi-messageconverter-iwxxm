@@ -81,7 +81,7 @@ import wmo.metce2013.ProcessType;
  */
 public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TAF, T> {
 
-    protected abstract T render(TAFType taf, XMLSchemaInfo schemaInfo, ConversionHints hints) throws ConversionException;
+    protected abstract T render(TAFType taf, ConversionHints hints) throws ConversionException;
 
     /**
      * Converts a TAF object into another format.
@@ -170,18 +170,8 @@ public abstract class AbstractTAFIWXXMSerializer<T> extends AbstractIWXXM21Seria
         }
         try {
             this.updateMessageMetadata(input, result, taf);
-
-            //TODO: move into a an IWXXM 2.0 common abstract class when available
-            final XMLSchemaInfo schemaInfo = new XMLSchemaInfo();
-            schemaInfo.addSchemaSource(TAFType.class.getResourceAsStream("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
-            schemaInfo.addSchemaLocation("http://icao.int/iwxxm/2.1", "https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd");
-            schemaInfo.addSchemaLocation("http://def.wmo.int/metce/2013", "http://schemas.wmo.int/metce/1.2/metce.xsd");
-            schemaInfo.addSchemaLocation("http://www.opengis.net/samplingSpatial/2.0",
-                    "http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
-            schemaInfo.setSchematronRules(TAFType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
-
-            result.addIssue(validateDocument(taf, TAFType.class, schemaInfo, hints));
-            result.setConvertedMessage(this.render(taf, schemaInfo, hints));
+            result.addIssue(validateDocument(taf, TAFType.class, getSchemaInfo(), hints));
+            result.setConvertedMessage(this.render(taf, hints));
 
         } catch (final ConversionException e) {
             result.setStatus(Status.FAIL);

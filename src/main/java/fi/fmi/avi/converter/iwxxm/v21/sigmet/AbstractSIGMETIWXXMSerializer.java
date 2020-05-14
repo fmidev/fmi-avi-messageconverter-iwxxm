@@ -347,7 +347,7 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXM21Se
         return Optional.empty();
     }
 
-    protected abstract T render(final SIGMETType sigmet, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
+    protected abstract T render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException;
 
     /**
      * Converts a TAF object into another format.
@@ -539,21 +539,12 @@ public abstract class AbstractSIGMETIWXXMSerializer<T> extends AbstractIWXXM21Se
 
     try {
         this.updateMessageMetadata(input, result, sigmet);
-
-        //TODO: move into a an IWXXM 2.0 common abstract class when available
-        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo();
-        schemaInfo.addSchemaSource(SIGMETType.class.getResourceAsStream("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
-        schemaInfo.addSchemaLocation("http://icao.int/iwxxm/2.1", "https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd");
-        schemaInfo.addSchemaLocation("http://def.wmo.int/metce/2013", "http://schemas.wmo.int/metce/1.2/metce.xsd");
-        schemaInfo.addSchemaLocation("http://www.opengis.net/samplingSpatial/2.0",
-                "http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
-        schemaInfo.setSchematronRules(SIGMETType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
         if (input.getSigmetPhenomenon().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
-            result.addIssue(validateDocument(((VolcanicAshSIGMETType) sigmet), VolcanicAshSIGMETType.class, schemaInfo, hints));
+            result.addIssue(validateDocument(((VolcanicAshSIGMETType) sigmet), VolcanicAshSIGMETType.class, getSchemaInfo(), hints));
         } else {
-            result.addIssue(validateDocument(sigmet, SIGMETType.class, schemaInfo, hints));
+            result.addIssue(validateDocument(sigmet, SIGMETType.class, getSchemaInfo(), hints));
         }
-        result.setConvertedMessage(this.render(sigmet, schemaInfo, hints));
+        result.setConvertedMessage(this.render(sigmet, hints));
     } catch (ConversionException e) {
             result.setStatus(Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render SIGMET IWXXM message to String", e));

@@ -40,6 +40,7 @@ import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
 import fi.fmi.avi.model.GeoPosition;
@@ -57,7 +58,7 @@ import icao.iwxxm21.SigConvectiveCloudTypeType;
  */
 import icao.iwxxm30.SpaceWeatherAdvisoryType;
 
-public abstract class AbstractIWXXM30Serializer extends AbstractIWXXMSerializer {
+public abstract class AbstractIWXXM30Serializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMSerializer<T, S> {
 
     @Override
     protected XMLSchemaInfo getSchemaInfo() {

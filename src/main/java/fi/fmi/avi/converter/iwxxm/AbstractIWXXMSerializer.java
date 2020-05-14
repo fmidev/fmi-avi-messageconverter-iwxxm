@@ -53,12 +53,12 @@ import fi.fmi.avi.model.NumericMeasure;
 public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOrCollection, S> extends IWXXMConverterBase
         implements AviMessageSpecificConverter<T, S>  {
 
-    protected Document renderXMLDocument(final Object input, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
         final StringWriter sw = new StringWriter();
         try {
             final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaInfo.getSchemaLocations());
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getSchemaLocations());
             marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
             marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
             return asCleanedUpXML(sw.toString(), hints);
@@ -165,8 +165,4 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
 
     protected abstract XMLSchemaInfo getSchemaInfo();
 
-        public ConversionResult<?> getResult() {
-            return result;
-        }
-    }
 }

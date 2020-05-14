@@ -6,7 +6,7 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionSpecification;
-import fi.fmi.avi.converter.iwxxm.SpaceWeatherAdvisory.SpaceWeatherIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMStringSerializer;
 import fi.fmi.avi.converter.iwxxm.bulletin.GenericBulletinIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.bulletin.GenericBulletinIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.bulletin.TAFBulletinIWXXMDOMSerializer;
@@ -26,6 +26,7 @@ import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMJAXBSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMStringSerializer;
+import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;

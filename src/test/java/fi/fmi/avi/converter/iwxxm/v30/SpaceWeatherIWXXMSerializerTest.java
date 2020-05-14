@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm;
+package fi.fmi.avi.converter.iwxxm.v30;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -24,6 +24,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryImpl;
 import junit.framework.TestCase;
@@ -46,7 +47,7 @@ public class SpaceWeatherIWXXMSerializerTest {
     private String getInput(String fileName) throws IOException {
         InputStream is = null;
         try {
-            is = SpaceWeatherIWXXMSerializerTest.class.getResourceAsStream("/fi/fmi/avi/converter/iwxxm/" + fileName);
+            is = SpaceWeatherIWXXMSerializerTest.class.getResourceAsStream("/fi/fmi/avi/converter/iwxxm/v30/" + fileName);
             Objects.requireNonNull(is);
             return IOUtils.toString(is, "UTF-8");
         } finally {
