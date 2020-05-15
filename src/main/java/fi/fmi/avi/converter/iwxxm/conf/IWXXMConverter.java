@@ -25,8 +25,10 @@ import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMJAXBSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMStringSerializer;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
+import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherBulletin;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
@@ -106,6 +108,18 @@ public class IWXXMConverter {
      */
     public static final ConversionSpecification<TAFBulletin, Document> TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM = new ConversionSpecification<>(TAFBulletin.class,
             Document.class, null, "XML/WMO COLLECT 1.2 + IWXXM 2.1 TAF");
+
+    /**
+     * Pre-configured spec for {@link TAFBulletin} to WMO COLLECT 1.2 XML String containing IWXXM 2.1 TAFs.
+     */
+    public static final ConversionSpecification<SpaceWeatherBulletin, String> SWX_BULLETIN_POJO_TO_WMO_COLLECT_STRING = new ConversionSpecification<>(
+            SpaceWeatherBulletin.class, String.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX");
+
+    /**
+     * Pre-configured spec for {@link TAFBulletin} to WMO COLLECT 1.2 XML DOM document containing IWXXM 2.1 TAFs.
+     */
+    public static final ConversionSpecification<SpaceWeatherBulletin, Document> SWX_BULLETIN_POJO_TO_WMO_COLLECT_DOM = new ConversionSpecification<>(
+            SpaceWeatherBulletin.class, Document.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX");
 
     /**
      * Pre-configured spec for WMO COLLECT 1.2 XML DOM document to {@link GenericMeteorologicalBulletin}
@@ -209,15 +223,29 @@ public class IWXXMConverter {
 
     @Bean
     public AviMessageSpecificConverter<MeteorologicalBulletin<TAF>, Document> tafBulletinIWXXMDOMSerializer() {
-        final BulletinIWXXMDOMSerializer<TAF> retval = new BulletinIWXXMDOMSerializer<TAF>();
+        final BulletinIWXXMDOMSerializer<TAF> retval = new BulletinIWXXMDOMSerializer<>();
         retval.setMessageConverter(tafIWXXMDOMSerializer());
         return retval;
     }
 
     @Bean
     public AviMessageSpecificConverter<MeteorologicalBulletin<TAF>, String> tafBulletinIWXXMStringSerializer() {
-        final BulletinIWXXMStringSerializer<TAF> retval = new BulletinIWXXMStringSerializer<TAF>();
+        final BulletinIWXXMStringSerializer<TAF> retval = new BulletinIWXXMStringSerializer<>();
         retval.setMessageConverter(tafIWXXMDOMSerializer());
+        return retval;
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<MeteorologicalBulletin<SpaceWeatherAdvisory>, Document> swxBulletinIWXXMDOMSerializer() {
+        final BulletinIWXXMDOMSerializer<SpaceWeatherAdvisory> retval = new BulletinIWXXMDOMSerializer<>();
+        retval.setMessageConverter(spaceWeatherIWXXMDOMSerializer());
+        return retval;
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<MeteorologicalBulletin<SpaceWeatherAdvisory>, String> swxBulletinIWXXMStringSerializer() {
+        final BulletinIWXXMStringSerializer<SpaceWeatherAdvisory> retval = new BulletinIWXXMStringSerializer<>();
+        retval.setMessageConverter(spaceWeatherIWXXMDOMSerializer());
         return retval;
     }
 
@@ -257,6 +285,13 @@ public class IWXXMConverter {
     }
 
     @Bean
-    public AviMessageSpecificConverter<SpaceWeatherAdvisory, String> spaceWeatherIWXXMStringSerializer() { return new SpaceWeatherIWXXMStringSerializer(); }
+    public AviMessageSpecificConverter<SpaceWeatherAdvisory, String> spaceWeatherIWXXMStringSerializer() {
+        return new SpaceWeatherIWXXMStringSerializer();
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<SpaceWeatherAdvisory, Document> spaceWeatherIWXXMDOMSerializer() {
+        return new SpaceWeatherIWXXMDOMSerializer();
+    }
 
 }
