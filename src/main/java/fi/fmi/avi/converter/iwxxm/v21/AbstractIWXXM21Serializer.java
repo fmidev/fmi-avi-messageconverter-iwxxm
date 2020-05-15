@@ -20,22 +20,12 @@ import net.opengis.gml32.ReferenceType;
 import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.TimeInstantType;
 import net.opengis.gml32.TimePeriodType;
-import net.opengis.gml32.TimePrimitivePropertyType;
 import net.opengis.om20.OMObservationType;
 import net.opengis.om20.TimeObjectPropertyType;
 import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
 import net.opengis.sampling.spatial.ShapeType;
 
-import aero.aixm511.AirportHeliportTimeSlicePropertyType;
-import aero.aixm511.AirportHeliportTimeSliceType;
 import aero.aixm511.AirportHeliportType;
-import aero.aixm511.CodeAirportHeliportDesignatorType;
-import aero.aixm511.CodeIATAType;
-import aero.aixm511.CodeICAOType;
-import aero.aixm511.ElevatedPointPropertyType;
-import aero.aixm511.ElevatedPointType;
-import aero.aixm511.TextNameType;
-import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
@@ -105,7 +95,7 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
     protected XMLSchemaInfo getSchemaInfo() {
         final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
         schemaInfo.addSchemaSource(SpaceWeatherAdvisoryType.class.getResourceAsStream("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
-        schemaInfo.setSchematronRules(SpaceWeatherAdvisoryType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
+        schemaInfo.addSchematronRule(SpaceWeatherAdvisoryType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
         schemaInfo.addSchemaLocation("http://icao.int/iwxxm/2.1", "https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd");
         schemaInfo.addSchemaLocation("http://def.wmo.int/metce/2013", "http://schemas.wmo.int/metce/1.2/metce.xsd");
         schemaInfo.addSchemaLocation("http://www.opengis.net/samplingSpatial/2.0", "http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
