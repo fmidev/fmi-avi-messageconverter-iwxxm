@@ -4,12 +4,12 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.model.taf.TAF;
+import fi.fmi.avi.model.AviationWeatherMessage;
 
 /**
  * Specialization of {@link AbstractBulletinIWXXMSerializer} for String output.
  */
-public class TAFBulletinIWXXMStringSerializer extends AbstractBulletinIWXXMSerializer<String, TAF> {
+public class BulletinIWXXMStringSerializer<S extends AviationWeatherMessage> extends AbstractBulletinIWXXMSerializer<String, S> {
 
     @Override
     protected String render(final Document bulletin, final ConversionHints hints) throws ConversionException {

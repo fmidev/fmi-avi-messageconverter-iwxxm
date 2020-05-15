@@ -6,11 +6,10 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionSpecification;
-import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMDOMSerializer;
+import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMStringSerializer;
 import fi.fmi.avi.converter.iwxxm.bulletin.GenericBulletinIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.bulletin.GenericBulletinIWXXMStringParser;
-import fi.fmi.avi.converter.iwxxm.bulletin.TAFBulletinIWXXMDOMSerializer;
-import fi.fmi.avi.converter.iwxxm.bulletin.TAFBulletinIWXXMStringSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.airmet.AIRMETIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.airmet.AIRMETIWXXMStringSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.metar.METARIWXXMDOMParser;
@@ -26,6 +25,7 @@ import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMJAXBSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMStringSerializer;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
@@ -209,14 +209,14 @@ public class IWXXMConverter {
 
     @Bean
     public AviMessageSpecificConverter<MeteorologicalBulletin<TAF>, Document> tafBulletinIWXXMDOMSerializer() {
-        TAFBulletinIWXXMDOMSerializer retval = new TAFBulletinIWXXMDOMSerializer();
+        final BulletinIWXXMDOMSerializer<TAF> retval = new BulletinIWXXMDOMSerializer<TAF>();
         retval.setMessageConverter(tafIWXXMDOMSerializer());
         return retval;
     }
 
     @Bean
     public AviMessageSpecificConverter<MeteorologicalBulletin<TAF>, String> tafBulletinIWXXMStringSerializer() {
-        TAFBulletinIWXXMStringSerializer retval = new TAFBulletinIWXXMStringSerializer();
+        final BulletinIWXXMStringSerializer<TAF> retval = new BulletinIWXXMStringSerializer<TAF>();
         retval.setMessageConverter(tafIWXXMDOMSerializer());
         return retval;
     }
