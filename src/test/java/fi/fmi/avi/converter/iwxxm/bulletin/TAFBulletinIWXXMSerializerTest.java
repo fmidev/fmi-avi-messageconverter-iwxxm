@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.v21;
+package fi.fmi.avi.converter.iwxxm.bulletin;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
