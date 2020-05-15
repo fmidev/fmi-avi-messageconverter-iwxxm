@@ -121,15 +121,15 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractIWXXM30
         }
         Optional<String> issuer = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER_NAME, String.class);
         if (issuer.isPresent()) {
-            spaceWeatherAdvisory.setIssuingCenter( IssuingCenterImpl.builder().setName(issuer.get()).build());
+            spaceWeatherAdvisory.setIssuingCenter(IssuingCenterImpl.builder().setName(issuer.get()).build());
         }
         final Optional<AdvisoryNumber> advisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.ADVISORY_NUMBER, AdvisoryNumber.class);
         if (advisoryNumber.isPresent()) {
             spaceWeatherAdvisory.setAdvisoryNumber(advisoryNumber.get());
         }
-        Optional<AdvisoryNumber> replaceAdvosryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.REPLACE_ADVISORY_NUMBER, AdvisoryNumber.class);
-        if (replaceAdvosryNumber.isPresent()) {
-            spaceWeatherAdvisory.setReplaceAdvisoryNumber(replaceAdvosryNumber);
+        Optional<AdvisoryNumber> replaceAdvisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.REPLACE_ADVISORY_NUMBER, AdvisoryNumber.class);
+        if (replaceAdvisoryNumber.isPresent()) {
+            spaceWeatherAdvisory.setReplaceAdvisoryNumber(replaceAdvisoryNumber);
         }
         Optional<Enum> status = properties.get(SpaceWeatherAdvisoryProperties.Name.STATUS, Enum.class);
         if (status.isPresent()) {
