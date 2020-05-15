@@ -4,19 +4,16 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.converter.iwxxm.v21.taf.AbstractTAFIWXXMSerializer;
-import wmo.collect2014.MeteorologicalBulletinType;
+import fi.fmi.avi.model.taf.TAF;
 
 /**
- * Specialization of {@link AbstractTAFIWXXMSerializer} for generating DOM output.
+ * Specialization of {@link AbstractBulletinIWXXMSerializer} for generating DOM output.
  */
-public class TAFBulletinIWXXMDOMSerializer extends AbstractTAFBulletinIWXXMSerializer<Document> {
+public class TAFBulletinIWXXMDOMSerializer extends AbstractBulletinIWXXMSerializer<Document, TAF> {
 
     @Override
-    protected Document render(final MeteorologicalBulletinType bulletin, final ConversionHints hints)
-            throws ConversionException {
-        return this.renderXMLDocument(bulletin, hints);
+    protected Document render(final Document bulletin, final ConversionHints hints) throws ConversionException {
+        return bulletin;
     }
 
 }

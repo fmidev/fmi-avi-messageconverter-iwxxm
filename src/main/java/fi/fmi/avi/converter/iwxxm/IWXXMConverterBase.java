@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -9,7 +10,9 @@ import java.net.URI;
 import java.net.URL;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -23,12 +26,16 @@ import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -41,6 +48,8 @@ import net.opengis.gml32.TimePeriodPropertyType;
 import net.opengis.gml32.TimePeriodType;
 import net.opengis.gml32.TimePositionType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -57,6 +66,7 @@ import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
  * Helpers for creating and handling JAXB generated content classes.
  */
 public abstract class IWXXMConverterBase {
+    private static final Logger LOG = LoggerFactory.getLogger(IWXXMConverterBase.class);
     /*
       XMLConstants.FEATURE_SECURE_PROCESSING flag value "true" forces the XML schema
       loader to check the allowed protocols using the system property "javax.xml.accessExternalSchema".
@@ -77,13 +87,14 @@ public abstract class IWXXMConverterBase {
     private static final Map<String, Object> OBJECT_FACTORY_MAP = new HashMap<>();
     private static JAXBContext jaxbCtx = null;
 
-    private static Templates iwxxmTemplates;
+    private static List<Templates> iwxxmTemplates = null;
 
     static {
         if (System.getSecurityManager() != null) {
             F_SECURE_PROCESSING = true;
             //A bit dangerous, as this allows the entire application to use both file and http resources
             //when the code tries to load XML Schema files.
+            LOG.info("SecurityManager detected, setting system property 'javax.xml.accessExternalSchema' to 'file,http,https' to allow loading of XML Schemas");
             System.setProperty("javax.xml.accessExternalSchema", "file,http,https");
         } else {
             F_SECURE_PROCESSING = false;
@@ -127,7 +138,7 @@ public abstract class IWXXMConverterBase {
                 }
                 methodName = sb.append(clz.getSimpleName()).toString();
             } else {
-                methodName = new StringBuilder("create").append(clz.getSimpleName().substring(0, 1).toUpperCase()).append(clz.getSimpleName().substring(1)).toString();
+                methodName = "create" + clz.getSimpleName().substring(0, 1).toUpperCase() + clz.getSimpleName().substring(1);
             }
             try {
                 final Method toCall = objectFactory.getClass().getMethod(methodName);
@@ -162,9 +173,8 @@ public abstract class IWXXMConverterBase {
         Object result = null;
         final Object objectFactory = getObjectFactory(clz);
         if (objectFactory != null) {
-            final String methodName = new StringBuilder("create").append(clz.getSimpleName().substring(0, 1).toUpperCase())
-                    .append(clz.getSimpleName().substring(1, clz.getSimpleName().lastIndexOf("Type")))
-                    .toString();
+            final String methodName =
+                    "create" + clz.getSimpleName().substring(0, 1).toUpperCase() + clz.getSimpleName().substring(1, clz.getSimpleName().lastIndexOf("Type"));
             try {
                 final Method toCall = objectFactory.getClass().getMethod(methodName, clz);
                 result = toCall.invoke(objectFactory, element);
@@ -184,30 +194,6 @@ public abstract class IWXXMConverterBase {
     protected static <S> IssueList validateDocument(final S input, final Class<S> clz, final XMLSchemaInfo schemaInfo, final ConversionHints hints) {
         final IssueList retval = new IssueList();
         try {
-            //XML Schema validation:
-            /*
-            final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
-            schemaFactory.setResourceResolver(resolver);
-            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
-            final Source[] schemaSources;
-            final String schemaLocation;
-            if (MeteorologicalBulletinType.class.isAssignableFrom(clz)) {
-                schemaSources = new Source[2];
-                schemaSources[0] = new StreamSource(ReportType.class.getResource("/int/wmo/collect/1.2/collect.xsd").toExternalForm());
-                schemaSources[1] = new StreamSource(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd").toExternalForm());
-                schemaLocation = "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd "
-                        + "http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd "
-                        + "http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd "
-                        + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd";
-            } else {
-                schemaSources = new Source[1];
-                schemaSources[0] = new StreamSource(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd").toExternalForm());
-                schemaLocation = "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd "
-                        + "http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd "
-                        + "http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd";
-            }
-            */
             final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
             marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaInfo.getSchemaLocations());
@@ -237,52 +223,57 @@ public abstract class IWXXMConverterBase {
     }
 
     /**
-     * Checks the DOM Document against the official IWXXM 2.1.1 Schematron validation rules.
-     * Uses a pre-generated XLS transformation file producing the Schematron SVRL report.
+     * Checks the DOM Document against the official IWXXM Schematron validation rules.
+     * Uses a pre-generated XLS transformation files producing Schematron SVRL reports.
      *
      * @param input IWXXM message Document
      * @param hints conversion hints to guide the validaton
      * @return the list of Schematron validation issues (failed asserts)
      */
     protected static IssueList validateAgainstIWXXMSchematron(final Document input, final XMLSchemaInfo schemaInfo, final ConversionHints hints) {
-        XPath xPath = XPathFactory.newInstance().newXPath();
+        final XPath xPath = XPathFactory.newInstance().newXPath();
         xPath.setNamespaceContext(new IWXXMNamespaceContext());
-        IssueList retval = new IssueList();
+        final IssueList retval = new IssueList();
         try {
-            DOMResult schematronOutput = new DOMResult();
-            Transformer transformer = getIwxxmTemplates(schemaInfo).newTransformer();
-            DOMSource dSource = new DOMSource(input);
-            //Resolve the relative XSL external references, such as the ones provided using the 'document()' function, to the jar resources to URLs in the same
-            // directory where the xsl file is contained in:
-            transformer.setURIResolver((href, base) -> {
+            final DOMSource dSource = new DOMSource(input);
+            final URIResolver localResolver = (href, base) -> {
                 try {
-                    URI maybeRelative = URI.create(href);
+                    final URI maybeRelative = URI.create(href);
                     if (!maybeRelative.isAbsolute()) {
-                        String path = schemaInfo.getSchematronRules().toExternalForm();
-                        return new StreamSource(new URL(path.substring(0, path.lastIndexOf('/') + 1) + href).openStream());
+                        final Optional<URL> baseURL = schemaInfo.getSchematronRules().stream().filter((url) -> url.toExternalForm().equals(base)).findAny();
+                        if (baseURL.isPresent()) {
+                            final String ruleBase = baseURL.get().toExternalForm();
+                            return new StreamSource(new URL(ruleBase.substring(0, ruleBase.lastIndexOf('/') + 1) + href).openStream());
+                        } else {
+                            return new StreamSource(maybeRelative.toURL().openStream());
+                        }
                     } else {
                         return new StreamSource(maybeRelative.toURL().openStream());
                     }
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     throw new TransformerException("Unable to resolve XSL resource '" + href + "'", e);
                 }
-            });
-            transformer.transform(dSource, schematronOutput);
-            NodeList failedAsserts = (NodeList) xPath.evaluate("//svrl:failed-assert/svrl:text", schematronOutput.getNode(), XPathConstants.NODESET);
-            if (failedAsserts != null) {
-                for (int i = 0; i < failedAsserts.getLength(); i++) {
-                    Node node = failedAsserts.item(i).getFirstChild();
-                    retval.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX, "Failed Schematron assertation: " + node.getNodeValue());
+            };
+            DOMResult schematronOutput;
+            Transformer transformer;
+            NodeList failedAsserts;
+            for (final Templates xsl : getIwxxmTemplates(schemaInfo)) {
+                schematronOutput = new DOMResult();
+                transformer = xsl.newTransformer();
+                //Try to resolve the relative XSL external references, such as the ones provided using the 'document()' function, to the jar resources to URLs in
+                // the same directory where the xsl file is contained in. Fallback to opening the URL as-is as a stream:
+                transformer.setURIResolver(localResolver);
+                transformer.transform(dSource, schematronOutput);
+                failedAsserts = (NodeList) xPath.evaluate("//svrl:failed-assert/svrl:text", schematronOutput.getNode(), XPathConstants.NODESET);
+                if (failedAsserts != null) {
+                    for (int i = 0; i < failedAsserts.getLength(); i++) {
+                        final Node node = failedAsserts.item(i).getFirstChild();
+                        retval.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX, "Failed Schematron assertation: " + node.getNodeValue());
+                    }
                 }
             }
-        } catch (TransformerException | XPathExpressionException e) {
+        } catch (final TransformerException | XPathExpressionException e) {
             throw new RuntimeException("Unable to apply XSLT pre-compiled Schematron validation rules to the document to validate", e);
-        } finally {
-            try {
-                schemaInfo.getSchematronRulesSource().getInputStream().close();
-            } catch (final Exception e) {
-                //NOOP
-            }
         }
         return retval;
     }
@@ -292,19 +283,19 @@ public abstract class IWXXMConverterBase {
        for running the XSL transformations required for IWXXM Schematron
        validation. This makes each validation 3-4 times faster.
    */
-    private synchronized static Templates getIwxxmTemplates(final XMLSchemaInfo schemaInfo) throws TransformerException {
+    private synchronized static List<Templates> getIwxxmTemplates(final XMLSchemaInfo schemaInfo) throws TransformerException {
         if (schemaInfo.getSchematronRules() == null) {
             throw new TransformerException("No Schematron rules source available in XMLSchemaInfo");
         }
         if (iwxxmTemplates == null) {
-            TransformerFactory tFactory = TransformerFactory.newInstance();
-
-            try {
-                iwxxmTemplates = tFactory.newTemplates(schemaInfo.getSchematronRulesSource());
-
-                //        new StreamSource(ReportType.class.getClassLoader().getResourceAsStream("schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl")));
-            } catch (Exception e) {
-                throw new RuntimeException("Unable to read XSL file for IWXXM Schematron validation");
+            iwxxmTemplates = new ArrayList<>();
+            final TransformerFactory tFactory = TransformerFactory.newInstance();
+            for (final StreamSource ss : schemaInfo.getSchematronRuleSources()) {
+                try {
+                    iwxxmTemplates.add(tFactory.newTemplates(ss));
+                } catch (final Exception e) {
+                    LOG.warn("Unable to read XSL file '{}' for IWXXM Schematron validation", ss.getSystemId(), e);
+                }
             }
         }
         return iwxxmTemplates;
@@ -497,6 +488,29 @@ public abstract class IWXXMConverterBase {
             throw new ConversionException("Error in parsing input as to an XML document", e);
         }
         return retval;
+    }
+
+    protected static String renderDOMToString(final Document source, ConversionHints hints) throws ConversionException {
+        if (source != null) {
+            try {
+                StringWriter sw = new StringWriter();
+                Result output = new StreamResult(sw);
+                TransformerFactory tFactory = TransformerFactory.newInstance();
+                Transformer transformer = tFactory.newTransformer();
+
+                //TODO: switch these on based on the ConversionHints:
+                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+                DOMSource dsource = new DOMSource(source);
+                transformer.transform(dsource, output);
+                return sw.toString();
+            } catch (TransformerException e) {
+                throw new ConversionException("Exception in rendering to String", e);
+            }
+        }
+        return null;
     }
 
     protected static class ConverterValidationEventHandler implements ValidationEventHandler {

@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
@@ -26,7 +28,7 @@ public class XMLSchemaInfo {
     private final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
     private final List<Source> schemaSources = new ArrayList<>();
     private final Map<String, String> schemaLocations = new HashMap<>();
-    private URL schematronRules;
+    private List<URL> schematronRules = new ArrayList<>();
 
     public XMLSchemaInfo()  {
         this(false);
@@ -54,8 +56,8 @@ public class XMLSchemaInfo {
         this.schemaLocations.put(namespace, location);
     }
 
-    public void setSchematronRules(final URL sourceURL) {
-        this.schematronRules = sourceURL;
+    public void addSchematronRule(final URL sourceURL) {
+        this.schematronRules.add(sourceURL);
     }
 
     public Schema getSchema() throws SAXException {
@@ -66,11 +68,18 @@ public class XMLSchemaInfo {
         return schemaLocations.entrySet().stream().map((entry) -> entry.getKey() + " " + entry.getValue() + " ").reduce("", String::concat).trim();
     }
 
-    public URL getSchematronRules() {
+    public List<URL> getSchematronRules() {
         return this.schematronRules;
     }
 
-    public StreamSource getSchematronRulesSource() throws IOException {
-        return new StreamSource(this.schematronRules.openStream(), this.schematronRules.toString());
+    public List<StreamSource> getSchematronRuleSources() {
+        return this.schematronRules.stream().map(url -> {
+            try {
+                return new StreamSource(url.openStream(), url.toString());
+            } catch (final IOException e) {
+                LOG.warn("Unable to create StreamSource for the schematron rule from '" + url.toExternalForm() + "'", e);
+                return null;
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 }

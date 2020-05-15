@@ -1,6 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.bulletin;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -10,50 +10,42 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import net.opengis.gml32.AbstractFeatureType;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
+import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.AviationWeatherMessage;
-
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 import fi.fmi.avi.util.GTSExchangeFileInfo;
-import icao.iwxxm21.TAFType;
 import wmo.collect2014.MeteorologicalBulletinType;
-import wmo.collect2014.MeteorologicalInformationMemberPropertyType;
 
 /**
- * @param <T>
- *         bulletin input format
- * @param <S>
- *         bulletin content model type
- * @param <V>
- *         bulletin content JAXB type
+ * @param <T> bulletin input format
+ * @param <S> bulletin content model type
  */
-public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeatherMessage, V extends AbstractFeatureType, U extends MeteorologicalBulletin<S>>
-        extends AbstractIWXXMSerializer<U, T> {
+public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeatherMessage> extends IWXXMConverterBase
+        implements AviMessageSpecificConverter<MeteorologicalBulletin<S>, T> {
 
-    private AviMessageSpecificConverter<S, V> contentMessageConverter;
+    private AviMessageSpecificConverter<S, Document> contentMessageConverter;
 
-    @Override
-    protected InputStream getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
-        InputStream retval = this.getClass().getResourceAsStream("WMOCollectCleanup.xsl");
-        if (retval == null) {
-            throw new ConversionException("Error accessing cleanup XSLT sheet file");
-        }
-        return retval;
-    }
+    protected abstract T render(final Document bulletin, ConversionHints hints) throws ConversionException;
 
-    protected abstract T render(final MeteorologicalBulletinType taf, ConversionHints hints) throws ConversionException;
-
-    protected abstract Class<V> getMessageJAXBClass();
-
-    public void setMessageConverter(final AviMessageSpecificConverter<S, V> converter) {
+    public void setMessageConverter(final AviMessageSpecificConverter<S, Document> converter) {
         this.contentMessageConverter = converter;
     }
 
@@ -68,7 +60,7 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
      * @return the {@link ConversionResult} with the contentMessageConverter message and the possible conversion issues
      */
     @Override
-    public ConversionResult<T> convertMessage(final U input, final ConversionHints hints) {
+    public ConversionResult<T> convertMessage(final MeteorologicalBulletin<S> input, final ConversionHints hints) {
         if (this.contentMessageConverter == null) {
             throw new IllegalStateException("No AviMessageConverter set");
         }
@@ -78,82 +70,99 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
             result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No messages in bulletin"));
             return result;
         }
+        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
+        schemaInfo.addSchemaSource(MeteorologicalBulletinType.class.getResourceAsStream("/int/wmo/collect/1.2/collect.xsd"));
+        schemaInfo.addSchematronRule(MeteorologicalBulletinType.class.getResource("/schematron/xslt/int/wmo/collect/1.2/rule/collect.xsl"));
+        schemaInfo.addSchemaLocation("http://def.wmo.int/collect/2014", "http://schemas.wmo.int/collect/1.2/collect.xsd");
 
-        final MeteorologicalBulletinType bulletin = create(MeteorologicalBulletinType.class);
-        bulletin.setId("bulletin-" + UUID.randomUUID().toString());
-
-        final GTSExchangeFileInfo.Builder info = new GTSExchangeFileInfo.Builder()//
-                .setPFlag(GTSExchangeFileInfo.GTSExchangePFlag.A)//
-                .setHeading(input.getHeading())//
-                .setMetadataFile(false)//
-                .setFileType(GTSExchangeFileInfo.GTSExchangeFileType.XML);
-        if (input.getTimeStamp().isPresent()) {
-            final ZonedDateTime timeStamp = input.getTimeStamp().get();
-            final Set<ChronoField> fieldsToInclude = input.getTimeStampFields();
-            if (fieldsToInclude.contains(ChronoField.YEAR)) {
-                info.setTimeStampYear(timeStamp.getYear());
-            }
-            if (fieldsToInclude.contains(ChronoField.MONTH_OF_YEAR)) {
-                info.setTimeStampMonth(timeStamp.getMonth());
-            }
-            if (fieldsToInclude.contains(ChronoField.DAY_OF_MONTH)) {
-                info.setTimeStampDay(timeStamp.getDayOfMonth());
-            }
-            if (fieldsToInclude.contains(ChronoField.HOUR_OF_DAY)) {
-                info.setTimeStampHour(timeStamp.getHour());
-            }
-            if (fieldsToInclude.contains(ChronoField.MINUTE_OF_HOUR)) {
-                info.setTimeStampMinute(timeStamp.getMinute());
-            }
-            if (fieldsToInclude.contains(ChronoField.SECOND_OF_MINUTE)) {
-                info.setTimeStampSecond(timeStamp.getSecond());
-            }
-        } else {
-            info.setTimeStamp(LocalDateTime.now(ZoneId.of("UTC")));
-        }
-
-        bulletin.setBulletinIdentifier(info.build().toGTSExchangeFileName());
-
-        final List<V> outputMessages = new ArrayList<>();
-        ConversionResult<V> messageResult;
-        ConversionResult.Status worstStatus = ConversionResult.Status.SUCCESS;
-        for (final S inputMessage : input.getMessages()) {
-            messageResult = this.contentMessageConverter.convertMessage(inputMessage, hints);
-            if (ConversionResult.Status.SUCCESS != messageResult.getStatus()) {
-                if (ConversionResult.Status.isMoreCritical(messageResult.getStatus(), worstStatus)) {
-                    worstStatus = messageResult.getStatus();
-                }
-                result.addIssue(messageResult.getConversionIssues());
-            }
-            result.setStatus(worstStatus);
-            if (messageResult.getConvertedMessage().isPresent()) {
-                outputMessages.add(messageResult.getConvertedMessage().get());
-            }
-        }
-        MeteorologicalInformationMemberPropertyType memberProp;
-        // FIXME: the schema stuff should be given individually for each member, not at the top of the bulletin document. This would be the correct way to
-        //  handle the IWXXM versions with bulletins
-        for (final V outputMessage : outputMessages) {
-            memberProp = create(MeteorologicalInformationMemberPropertyType.class);
-            memberProp.setAbstractFeature(wrap(outputMessage, getMessageJAXBClass()));
-            bulletin.getMeteorologicalInformation().add(memberProp);
-        }
         try {
-            result.addIssue(validateDocument(bulletin, MeteorologicalBulletinType.class, getSchemaInfo(), hints));
-            result.setConvertedMessage(this.render(bulletin, hints));
+            Document dom;
+            try {
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                dbf.setNamespaceAware(true);
+                dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                DocumentBuilder db = dbf.newDocumentBuilder();
+                dom = db.parse(this.getClass().getResourceAsStream("collect-template.xml"));
+                Element collect = dom.getDocumentElement();
+                Attr id = dom.createAttributeNS(IWXXMNamespaceContext.getURI("gml"), "id");
+                id.setValue("bulletin-" + UUID.randomUUID().toString());
+                collect.setAttributeNodeNS(id);
+
+                final List<Document> outputMessages = new ArrayList<>();
+                ConversionResult<Document> messageResult;
+                ConversionResult.Status worstStatus = ConversionResult.Status.SUCCESS;
+
+                for (final S inputMessage : input.getMessages()) {
+                    messageResult = this.contentMessageConverter.convertMessage(inputMessage, hints);
+                    if (ConversionResult.Status.SUCCESS != messageResult.getStatus()) {
+                        if (ConversionResult.Status.isMoreCritical(messageResult.getStatus(), worstStatus)) {
+                            worstStatus = messageResult.getStatus();
+                        }
+                        result.addIssue(messageResult.getConversionIssues());
+                    }
+                    result.setStatus(worstStatus);
+                    if (messageResult.getConvertedMessage().isPresent()) {
+                        outputMessages.add(messageResult.getConvertedMessage().get());
+                    }
+                }
+
+                for (final Document outputMessage : outputMessages) {
+                    Node toAdd = dom.importNode(outputMessage.getDocumentElement(), true);
+                    Element metInfo = dom.createElementNS(IWXXMNamespaceContext.getURI("collect"), "meteorologicalInformation");
+                    metInfo.appendChild(toAdd);
+                    metInfo.setPrefix("collect");
+                    collect.appendChild(metInfo);
+                }
+
+                final GTSExchangeFileInfo.Builder info = new GTSExchangeFileInfo.Builder()//
+                        .setPFlag(GTSExchangeFileInfo.GTSExchangePFlag.A)//
+                        .setHeading(input.getHeading())//
+                        .setMetadataFile(false)//
+                        .setFileType(GTSExchangeFileInfo.GTSExchangeFileType.XML);
+                if (input.getTimeStamp().isPresent()) {
+                    final ZonedDateTime timeStamp = input.getTimeStamp().get();
+                    final Set<ChronoField> fieldsToInclude = input.getTimeStampFields();
+                    if (fieldsToInclude.contains(ChronoField.YEAR)) {
+                        info.setTimeStampYear(timeStamp.getYear());
+                    }
+                    if (fieldsToInclude.contains(ChronoField.MONTH_OF_YEAR)) {
+                        info.setTimeStampMonth(timeStamp.getMonth());
+                    }
+                    if (fieldsToInclude.contains(ChronoField.DAY_OF_MONTH)) {
+                        info.setTimeStampDay(timeStamp.getDayOfMonth());
+                    }
+                    if (fieldsToInclude.contains(ChronoField.HOUR_OF_DAY)) {
+                        info.setTimeStampHour(timeStamp.getHour());
+                    }
+                    if (fieldsToInclude.contains(ChronoField.MINUTE_OF_HOUR)) {
+                        info.setTimeStampMinute(timeStamp.getMinute());
+                    }
+                    if (fieldsToInclude.contains(ChronoField.SECOND_OF_MINUTE)) {
+                        info.setTimeStampSecond(timeStamp.getSecond());
+                    }
+                } else {
+                    info.setTimeStamp(LocalDateTime.now(ZoneId.of("UTC")));
+                }
+                Element identifier = dom.createElementNS(IWXXMNamespaceContext.getURI("collect"), "bulletinIdentifier");
+                identifier.setPrefix("collect");
+                identifier.setTextContent(info.build().toGTSExchangeFileName());
+                collect.appendChild(identifier);
+
+            } catch (IOException | SAXException | ParserConfigurationException e) {
+                throw new ConversionException("Error in creating bulletin document", e);
+            }
+
+            //Should we validate the produced DOM against XML Schema? The individual messages have already been validated
+
+            //Check against the collect schematron rules:
+            result.addIssue(validateAgainstIWXXMSchematron(dom, schemaInfo, hints));
+            result.setConvertedMessage(this.render(dom, hints));
+
         } catch (final ConversionException e) {
             result.setStatus(ConversionResult.Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to convert IWXXM message", e));
         }
-        return result;
-    }
 
-    @Override
-    protected XMLSchemaInfo getSchemaInfo() {
-        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
-        schemaInfo.addSchemaSource(MeteorologicalBulletinType.class.getResourceAsStream("/int/wmo/collect/1.2/collect.xsd"));
-        schemaInfo.addSchemaLocation("http://def.wmo.int/collect/2014", "http://schemas.wmo.int/collect/1.2/collect.xsd");
-        schemaInfo.setSchematronRules(TAFType.class.getResource("/schematron/xslt/int/wmo/collect/1.2/rule/collect.xsl"));
-        return schemaInfo;
+        return result;
     }
 }

@@ -1,7 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v21.taf;
 
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import icao.iwxxm21.TAFType;
 
 /**

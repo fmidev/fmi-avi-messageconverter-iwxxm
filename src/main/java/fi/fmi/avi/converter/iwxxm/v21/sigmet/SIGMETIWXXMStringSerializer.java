@@ -14,7 +14,6 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import icao.iwxxm21.SIGMETType;
 
 public class SIGMETIWXXMStringSerializer extends AbstractSIGMETIWXXMSerializer<String> {

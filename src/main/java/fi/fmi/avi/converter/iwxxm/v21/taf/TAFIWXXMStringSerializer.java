@@ -4,7 +4,6 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import icao.iwxxm21.TAFType;
 
 /**
@@ -13,8 +12,8 @@ import icao.iwxxm21.TAFType;
 public class TAFIWXXMStringSerializer extends AbstractTAFIWXXMSerializer<String> {
 
     @Override
-    protected String render(TAFType taf, ConversionHints hints) throws ConversionException {
-        Document result = renderXMLDocument(taf, hints);
+    protected String render(final TAFType taf, final ConversionHints hints) throws ConversionException {
+        final Document result = renderXMLDocument(taf, hints);
         return renderDOMToString(result, hints);
     }
 
