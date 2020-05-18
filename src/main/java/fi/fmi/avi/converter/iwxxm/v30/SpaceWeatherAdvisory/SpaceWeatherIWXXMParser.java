@@ -8,9 +8,13 @@ import java.util.Optional;
 
 import javax.xml.bind.JAXBElement;
 
+import org.w3c.dom.Document;
+
+import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v30.AbstractIWXXM30Parser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
@@ -26,7 +30,7 @@ import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryImpl;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherRegionImpl;
 import icao.iwxxm30.SpaceWeatherAdvisoryType;
 
-public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T, SpaceWeatherAdvisory> {
+public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T, SpaceWeatherAdvisory> {
     @Override
     protected SpaceWeatherAdvisory createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx,
             final ConversionResult<SpaceWeatherAdvisory> result, final ConversionHints hints) {
@@ -47,7 +51,7 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractIWXXM30
         }
         SpaceWeatherAdvisoryProperties properties = new SpaceWeatherAdvisoryProperties();
 
-        List<ConversionIssue> issues = IWXXMSpaceWeatherAdvisoryScanner.collectSpaceWeatherAdvisoryProperties(input, refCtx, properties, hints);
+        List<ConversionIssue> issues = SpaceWeatherAdvisoryIWXXMScanner.collectSpaceWeatherAdvisoryProperties(input, refCtx, properties, hints);
         result.addIssue(issues);
 
         if (result.getConversionIssues().size() > 0) {
@@ -149,5 +153,19 @@ public abstract class AbstractSpaceWeatherIWXXMParser<T> extends AbstractIWXXM30
         }
 
         return spaceWeatherAdvisory.build();
+    }
+
+    public static class AsDOM extends SpaceWeatherIWXXMParser<Document> {
+        @Override
+        protected Document parseAsDom(final Document input) throws ConversionException {
+            return input;
+        }
+    }
+
+    public static class AsString extends SpaceWeatherIWXXMParser<String> {
+        @Override
+        protected Document parseAsDom(final String input) throws ConversionException {
+            return IWXXMConverterBase.parseStringToDOM(input);
+        }
     }
 }

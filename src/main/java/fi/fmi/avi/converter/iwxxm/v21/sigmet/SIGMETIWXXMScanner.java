@@ -14,8 +14,8 @@ import fi.fmi.avi.model.AviationCodeListUser;
 import icao.iwxxm21.SIGMETReportStatusType;
 import icao.iwxxm21.SIGMETType;
 
-public class IWXXMSIGMETScanner extends AbstractIWXXMScanner {
-    private static final Logger LOG = LoggerFactory.getLogger(IWXXMSIGMETScanner.class);
+public class SIGMETIWXXMScanner extends AbstractIWXXMScanner {
+    private static final Logger LOG = LoggerFactory.getLogger(SIGMETIWXXMScanner.class);
 
     public static List<ConversionIssue> collectSIGMETProperties(final SIGMETType input, final ReferredObjectRetrievalContext refCtx,
             final SIGMETProperties properties, final ConversionHints hints) {

@@ -24,7 +24,7 @@ import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.converter.iwxxm.IWXXMSchemaResourceResolver;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
-import fi.fmi.avi.converter.iwxxm.v21.metar.IWXXMMETARScanner;
+import fi.fmi.avi.converter.iwxxm.v21.metar.METARIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v21.metar.METARProperties;
 import fi.fmi.avi.converter.iwxxm.v21.metar.ObservationRecordProperties;
 import fi.fmi.avi.converter.iwxxm.v21.metar.TrendForecastRecordProperties;
@@ -58,7 +58,7 @@ public class METARScannerTest extends DOMParsingTestBase {
 
         ReferredObjectRetrievalContext refCtx = new ReferredObjectRetrievalContext(doc, binder);
         METARProperties metarProperties = new METARProperties();
-        List<ConversionIssue> issues = IWXXMMETARScanner.collectMETARProperties(source, refCtx, metarProperties, ConversionHints.EMPTY);
+        List<ConversionIssue> issues = METARIWXXMScanner.collectMETARProperties(source, refCtx, metarProperties, ConversionHints.EMPTY);
         resultHandler.accept(metarProperties);
         return issues;
     }

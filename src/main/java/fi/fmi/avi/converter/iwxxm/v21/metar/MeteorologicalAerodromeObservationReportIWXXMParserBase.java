@@ -9,9 +9,9 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
-import fi.fmi.avi.converter.iwxxm.v21.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v21.AbstractIWXXM21Parser;
+import fi.fmi.avi.converter.iwxxm.v21.OMObservationProperties;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.CloudForecast;
@@ -47,7 +47,7 @@ public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T,
         final METARProperties properties = new METARProperties();
 
         //Collect properties and do detailed validation:
-        result.addIssue(IWXXMMETARScanner.collectMETARProperties(input, refCtx, properties, hints));
+        result.addIssue(METARIWXXMScanner.collectMETARProperties(input, refCtx, properties, hints));
 
         //Build the METAR:
         final Optional<AviationCodeListUser.MetarStatus> status = properties.get(METARProperties.Name.STATUS, AviationCodeListUser.MetarStatus.class);

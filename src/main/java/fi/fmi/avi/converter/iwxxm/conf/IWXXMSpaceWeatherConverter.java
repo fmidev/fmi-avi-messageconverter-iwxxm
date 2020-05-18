@@ -7,10 +7,8 @@ import org.w3c.dom.Document;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherBulletinIWXXMParser;
-import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMDOMParser;
-import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMDOMSerializer;
-import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMStringParser;
-import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMSerializer;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherBulletin;
 
@@ -21,12 +19,12 @@ public class IWXXMSpaceWeatherConverter {
 
     @Bean
     public AviMessageSpecificConverter<String, SpaceWeatherAdvisory> spaceWeatherIWXXMStringParser() {
-        return new SpaceWeatherIWXXMStringParser();
+        return new SpaceWeatherIWXXMParser.AsString();
     }
 
     @Bean
     public AviMessageSpecificConverter<Document, SpaceWeatherAdvisory> spaceWeatherIWXXMDOMParser() {
-        return new SpaceWeatherIWXXMDOMParser();
+        return new SpaceWeatherIWXXMParser.AsDOM();
     }
 
     @Bean
@@ -47,12 +45,12 @@ public class IWXXMSpaceWeatherConverter {
 
     @Bean
     public AviMessageSpecificConverter<SpaceWeatherAdvisory, String> spaceWeatherIWXXMStringSerializer() {
-        return new SpaceWeatherIWXXMStringSerializer();
+        return new SpaceWeatherIWXXMSerializer.AsString();
     }
 
     @Bean
     public AviMessageSpecificConverter<SpaceWeatherAdvisory, Document> spaceWeatherIWXXMDOMSerializer() {
-        return new SpaceWeatherIWXXMDOMSerializer();
+        return new SpaceWeatherIWXXMSerializer.AsDOM();
     }
 
     @Bean

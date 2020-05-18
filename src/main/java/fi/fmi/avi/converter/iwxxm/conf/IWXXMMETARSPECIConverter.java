@@ -5,10 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
-import fi.fmi.avi.converter.iwxxm.v21.metar.METARIWXXMDOMParser;
-import fi.fmi.avi.converter.iwxxm.v21.metar.METARIWXXMStringParser;
-import fi.fmi.avi.converter.iwxxm.v21.metar.SPECIIWXXMDOMParser;
-import fi.fmi.avi.converter.iwxxm.v21.metar.SPECIIWXXMStringParser;
+import fi.fmi.avi.converter.iwxxm.v21.metar.METARIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.v21.metar.SPECIIWXXMParser;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
 
@@ -19,22 +17,22 @@ public class IWXXMMETARSPECIConverter {
 
     @Bean
     public AviMessageSpecificConverter<String, METAR> metarIWXXMStringParser() {
-        return new METARIWXXMStringParser();
+        return new METARIWXXMParser.AsString();
     }
 
     @Bean
     public AviMessageSpecificConverter<Document, METAR> metarIWXXMDOMParser() {
-        return new METARIWXXMDOMParser();
+        return new METARIWXXMParser.AsDOM();
     }
 
     @Bean
     public AviMessageSpecificConverter<String, SPECI> speciIWXXMStringParser() {
-        return new SPECIIWXXMStringParser();
+        return new SPECIIWXXMParser.AsString();
     }
 
     @Bean
     public AviMessageSpecificConverter<Document, SPECI> speciIWXXMDOMParser() {
-        return new SPECIIWXXMDOMParser();
+        return new SPECIIWXXMParser.AsDOM();
     }
 
     //Serializers:

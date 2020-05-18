@@ -26,6 +26,8 @@ import net.opengis.gml32.TimeInstantType;
 import net.opengis.gml32.TimePositionType;
 import net.opengis.gml32.TimePrimitivePropertyType;
 
+import org.w3c.dom.Document;
+
 import aero.aixm511.AirspaceVolumeType;
 import aero.aixm511.CodeUnitType;
 import aero.aixm511.CodeVerticalReferenceType;
@@ -70,7 +72,7 @@ import icao.iwxxm30.StringWithNilReasonType;
 import icao.iwxxm30.TimeIndicatorType;
 import icao.iwxxm30.UnitPropertyType;
 
-public abstract class AbstractSpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Serializer<SpaceWeatherAdvisory, T> {
+public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Serializer<SpaceWeatherAdvisory, T> {
     public static final String UUID_PREFIX = "uuid.";
     private static final int REQUIRED_NUMBER_OF_ANALYSES = 5;
     private static final aero.aixm511.ObjectFactory AIXM_OF = new aero.aixm511.ObjectFactory();
@@ -410,4 +412,22 @@ public abstract class AbstractSpaceWeatherIWXXMSerializer<T> extends AbstractIWX
         }
         return retval;
     }
+
+    public static class AsDOM extends SpaceWeatherIWXXMSerializer<Document> {
+
+        @Override
+        protected Document render(final SpaceWeatherAdvisoryType swx, final ConversionHints hints) throws ConversionException {
+            return this.renderXMLDocument(swx, hints);
+
+        }
+    }
+
+    public static class AsString extends SpaceWeatherIWXXMSerializer<String> {
+        @Override
+        protected String render(final SpaceWeatherAdvisoryType swx, final ConversionHints hints) throws ConversionException {
+            Document result = renderXMLDocument(swx, hints);
+            return renderDOMToString(result, hints);
+        }
+    }
+
 }

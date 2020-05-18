@@ -38,7 +38,7 @@ public class SpaceWeatherRegionIdMapper {
 
         for (RegionId r : regionList) {
             if (isEmpty(r.getId())) {
-                r.setId(AbstractSpaceWeatherIWXXMSerializer.UUID_PREFIX + UUID.randomUUID().toString());
+                r.setId(SpaceWeatherIWXXMSerializer.UUID_PREFIX + UUID.randomUUID().toString());
                 for (RegionId r2 : regionList) {
                     if (isEmpty(r2.getId()) && r2.getRegion().equals(r.getRegion())) {
                         r2.setId(r.getId());

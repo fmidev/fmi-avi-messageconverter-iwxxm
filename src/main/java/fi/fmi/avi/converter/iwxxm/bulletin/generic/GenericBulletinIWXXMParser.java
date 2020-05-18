@@ -16,8 +16,7 @@ import fi.fmi.avi.model.bulletin.BulletinHeading;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.bulletin.immutable.GenericMeteorologicalBulletinImpl;
 
-public abstract class AbstractGenericBulletinIWXXMParser<T>
-        extends AbstractBulletinIWXXMParser<T, GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
+public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXXMParser<T, GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
 
     private final MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> scanner = new IWXXMGenericBulletinScanner();
 
@@ -38,14 +37,14 @@ public abstract class AbstractGenericBulletinIWXXMParser<T>
         return this.scanner;
     }
 
-    public static class DOM extends AbstractGenericBulletinIWXXMParser<Document> {
+    public static class AsDOM extends GenericBulletinIWXXMParser<Document> {
         @Override
         protected Document parseAsDom(final Document input) throws ConversionException {
             return input;
         }
     }
 
-    public static class String extends AbstractGenericBulletinIWXXMParser<java.lang.String> {
+    public static class AsString extends GenericBulletinIWXXMParser<java.lang.String> {
         @Override
         protected Document parseAsDom(final java.lang.String input) throws ConversionException {
             return parseStringToDOM(input);

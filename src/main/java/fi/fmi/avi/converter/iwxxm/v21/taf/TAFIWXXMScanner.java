@@ -22,9 +22,9 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
-import fi.fmi.avi.converter.iwxxm.v21.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v21.AbstractIWXXM21Serializer;
+import fi.fmi.avi.converter.iwxxm.v21.OMObservationProperties;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.CloudForecast;
@@ -53,9 +53,9 @@ import icao.iwxxm21.TAFType;
 /**
  * Carries out detailed validation and property value collecting for IWXXM TAF messages.
  */
-public class IWXXMTAFScanner extends AbstractIWXXMScanner {
+public class TAFIWXXMScanner extends AbstractIWXXMScanner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IWXXMTAFScanner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TAFIWXXMScanner.class);
 
     public static List<ConversionIssue> collectTAFProperties(final TAFType input, final ReferredObjectRetrievalContext refCtx, final TAFProperties properties,
             final ConversionHints hints) {

@@ -22,7 +22,7 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.converter.iwxxm.IWXXMSchemaResourceResolver;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v21.AbstractIWXXM21Parser;
@@ -32,7 +32,7 @@ import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.sigmet.immutable.SIGMETImpl;
 import icao.iwxxm21.SIGMETType;
 
-public abstract class AbstractSIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGMET> {
+public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGMET> {
 
     /**
      * Returns the SIGMET input message as A DOM Document.
@@ -67,7 +67,7 @@ public abstract class AbstractSIGMETIWXXMParser<T> extends AbstractIWXXM21Parser
         SIGMETProperties properties = new SIGMETProperties();
 
         //Other specific validation (using JAXB elements)
-        result.addIssue(IWXXMSIGMETScanner.collectSIGMETProperties(input, refCtx, properties, hints));
+        result.addIssue(SIGMETIWXXMScanner.collectSIGMETProperties(input, refCtx, properties, hints));
         //Build the TAF:
         Optional<AviationCodeListUser.SigmetAirmetReportStatus> status = properties.get(SIGMETProperties.Name.STATUS,
                 AviationCodeListUser.SigmetAirmetReportStatus.class);
@@ -102,13 +102,13 @@ public abstract class AbstractSIGMETIWXXMParser<T> extends AbstractIWXXM21Parser
 
             //XML Schema validation upon JAXB unmarshal:
             binder.setSchema(iwxxmSchema);
-            AbstractSIGMETIWXXMParser.IWXXMValidationEventHandler collector = new AbstractSIGMETIWXXMParser.IWXXMValidationEventHandler();
+            SIGMETIWXXMParser.IWXXMValidationEventHandler collector = new SIGMETIWXXMParser.IWXXMValidationEventHandler();
             binder.setEventHandler(collector);
             source = binder.unmarshal(dom, SIGMETType.class).getValue();
             SIGMETProperties properties = new SIGMETProperties();
 
             //Other specific validation (using JAXB elements)
-     //       result.addIssue(IWXXMSIGMETScanner.collectSIGMETProperties(input, refCtx, properties, hints));
+            //       result.addIssue(SIGMETIWXXMScanner.collectSIGMETProperties(input, refCtx, properties, hints));
 
             for (ValidationEvent evt : collector.getEvents()) {
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.SYNTAX, "XML Schema validation issue: " + evt.getMessage(), evt.getLinkedException()));
@@ -120,10 +120,10 @@ public abstract class AbstractSIGMETIWXXMParser<T> extends AbstractIWXXM21Parser
             refCtx = new ReferredObjectRetrievalContext(dom, binder);
 
             //Schematron validation:
- //TODO           result.addIssue(IWXXMSIGMETScanner.validateAgainstIWXXMSchematron(dom, hints));
+            //TODO           result.addIssue(SIGMETIWXXMScanner.validateAgainstIWXXMSchematron(dom, hints));
 
             //Other specific validation (using JAXB elements)
-            result.addIssue(IWXXMSIGMETScanner.collectSIGMETProperties(source, refCtx, properties, hints));
+            result.addIssue(SIGMETIWXXMScanner.collectSIGMETProperties(source, refCtx, properties, hints));
 
             //Build the SIGMET:
             Optional<AviationCodeListUser.SigmetAirmetReportStatus> status = properties.get(SIGMETProperties.Name.STATUS,
@@ -167,4 +167,33 @@ public abstract class AbstractSIGMETIWXXMParser<T> extends AbstractIWXXM21Parser
             return events;
         }
 
-    }}
+    }
+
+    public static class AsDOM extends SIGMETIWXXMParser<Document> {
+
+        /**
+         * This implementation simple passes the input Document through.
+         *
+         * @param input the raw input format
+         * @return the parsed DOM
+         */
+        @Override
+        protected Document parseAsDom(final Document input) throws ConversionException {
+            return input;
+        }
+    }
+
+    public static class AsString extends SIGMETIWXXMParser<String> {
+        /**
+         * Returns the TAF input message as A DOM Document.
+         *
+         * @param input the XML Document input as a String
+         * @return the input parsed as DOM
+         * @throws ConversionException if an exception occurs while converting input to DOM
+         */
+        @Override
+        protected Document parseAsDom(final String input) throws ConversionException {
+            return IWXXMConverterBase.parseStringToDOM(input);
+        }
+    }
+}

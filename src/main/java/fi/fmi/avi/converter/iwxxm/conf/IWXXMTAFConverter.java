@@ -7,11 +7,8 @@ import org.w3c.dom.Document;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFBulletinIWXXMParser;
-import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMDOMParser;
-import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMDOMSerializer;
-import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMJAXBSerializer;
-import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMStringParser;
-import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMSerializer;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import icao.iwxxm21.TAFType;
@@ -22,12 +19,12 @@ public class IWXXMTAFConverter {
     // Parsers:
     @Bean
     public AviMessageSpecificConverter<String, TAF> tafIWXXMStringParser() {
-        return new TAFIWXXMStringParser();
+        return new TAFIWXXMParser.AsString();
     }
 
     @Bean
     public AviMessageSpecificConverter<Document, TAF> tafIWXXMDOMParser() {
-        return new TAFIWXXMDOMParser();
+        return new TAFIWXXMParser.AsDOM();
     }
 
     @Bean
@@ -48,18 +45,18 @@ public class IWXXMTAFConverter {
 
     @Bean
     public AviMessageSpecificConverter<TAF, String> tafIWXXMStringSerializer() {
-        return new TAFIWXXMStringSerializer();
+        return new TAFIWXXMSerializer.AsString();
     }
 
     @Bean
     public AviMessageSpecificConverter<TAF, Document> tafIWXXMDOMSerializer() {
-        return new TAFIWXXMDOMSerializer();
+        return new TAFIWXXMSerializer.AsDOM();
     }
 
     // TODO: check if this bean / class is actually used / required somewhere?
     @Bean
     public AviMessageSpecificConverter<TAF, TAFType> tafIWXXMJAXBSerializer() {
-        return new TAFIWXXMJAXBSerializer();
+        return new TAFIWXXMSerializer.AsJAXBObject();
     }
 
     @Bean

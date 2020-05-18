@@ -5,12 +5,9 @@ import org.springframework.context.annotation.Configuration;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
-import fi.fmi.avi.converter.iwxxm.v21.airmet.AIRMETIWXXMDOMSerializer;
-import fi.fmi.avi.converter.iwxxm.v21.airmet.AIRMETIWXXMStringSerializer;
-import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMDOMParser;
-import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMDOMSerializer;
-import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMStringParser;
-import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.v21.airmet.AIRMETIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMSerializer;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SIGMET;
 
@@ -21,34 +18,34 @@ public class IWXXMSIGMETAIRMETConverter {
 
     @Bean
     public AviMessageSpecificConverter<String, SIGMET> sigmetIWXXMStringParser() {
-        return new SIGMETIWXXMStringParser();
+        return new SIGMETIWXXMParser.AsString();
     }
 
     @Bean
     public AviMessageSpecificConverter<Document, SIGMET> sigmetIWXXMDOMParser() {
-        return new SIGMETIWXXMDOMParser();
+        return new SIGMETIWXXMParser.AsDOM();
     }
 
     // Serializers:
 
     @Bean
     public AviMessageSpecificConverter<SIGMET, String> sigmetIWXXMStringSerializer() {
-        return new SIGMETIWXXMStringSerializer();
+        return new SIGMETIWXXMSerializer.AsString();
     }
 
     @Bean
     public AviMessageSpecificConverter<SIGMET, Document> sigmetIWXXMDOMSerializer() {
-        return new SIGMETIWXXMDOMSerializer();
+        return new SIGMETIWXXMSerializer.AsDOM();
     }
 
     @Bean
     public AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer() {
-        return new AIRMETIWXXMStringSerializer();
+        return new AIRMETIWXXMSerializer.AsString();
     }
 
     @Bean
     public AviMessageSpecificConverter<AIRMET, Document> airmetIWXXMDOMSerializer() {
-        return new AIRMETIWXXMDOMSerializer();
+        return new AIRMETIWXXMSerializer.AsDOM();
     }
 
 }

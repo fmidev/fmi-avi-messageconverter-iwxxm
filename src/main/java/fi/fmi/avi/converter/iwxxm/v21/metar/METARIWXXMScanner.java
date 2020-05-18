@@ -25,9 +25,9 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
-import fi.fmi.avi.converter.iwxxm.v21.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v21.AbstractIWXXM21Serializer;
+import fi.fmi.avi.converter.iwxxm.v21.OMObservationProperties;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.CloudLayer;
@@ -82,11 +82,10 @@ import icao.iwxxm21.SPECIType;
 /**
  * Created by rinne on 25/07/2018.
  */
-public class IWXXMMETARScanner extends AbstractIWXXMScanner {
+public class METARIWXXMScanner extends AbstractIWXXMScanner {
 
     public static List<ConversionIssue> collectMETARProperties(final MeteorologicalAerodromeObservationReportType input,
-            final ReferredObjectRetrievalContext refCtx,
-            final METARProperties properties, final ConversionHints hints) {
+            final ReferredObjectRetrievalContext refCtx, final METARProperties properties, final ConversionHints hints) {
         IssueList retval = new IssueList();
 
         MeteorologicalAerodromeReportStatusType status = input.getStatus();

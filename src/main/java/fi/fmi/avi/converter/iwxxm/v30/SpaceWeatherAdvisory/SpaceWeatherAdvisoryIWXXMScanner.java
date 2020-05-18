@@ -50,8 +50,8 @@ import icao.iwxxm30.SpaceWeatherRegionPropertyType;
 import icao.iwxxm30.SpaceWeatherRegionType;
 import icao.iwxxm30.TimeIndicatorType;
 
-public class IWXXMSpaceWeatherAdvisoryScanner extends AbstractIWXXMScanner {
-    private static final Logger LOG = LoggerFactory.getLogger(IWXXMSpaceWeatherAdvisoryScanner.class);
+public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
+    private static final Logger LOG = LoggerFactory.getLogger(SpaceWeatherAdvisoryIWXXMScanner.class);
 
     public static List<ConversionIssue> collectSpaceWeatherAdvisoryProperties(final SpaceWeatherAdvisoryType input, final ReferredObjectRetrievalContext refCtx,
             final SpaceWeatherAdvisoryProperties properties, final ConversionHints hints) {
