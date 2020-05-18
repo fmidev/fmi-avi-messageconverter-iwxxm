@@ -38,14 +38,14 @@ import wmo.collect2014.MeteorologicalBulletinType;
  * @param <T> bulletin input format
  * @param <S> bulletin content model type
  */
-public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeatherMessage> extends IWXXMConverterBase
-        implements AviMessageSpecificConverter<MeteorologicalBulletin<S>, T> {
+public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends IWXXMConverterBase
+        implements AviMessageSpecificConverter<S, T> {
 
-    private AviMessageSpecificConverter<S, Document> contentMessageConverter;
+    private AviMessageSpecificConverter<U, Document> contentMessageConverter;
 
     protected abstract T render(final Document bulletin, ConversionHints hints) throws ConversionException;
 
-    public void setMessageConverter(final AviMessageSpecificConverter<S, Document> converter) {
+    public void setMessageConverter(final AviMessageSpecificConverter<U, Document> converter) {
         this.contentMessageConverter = converter;
     }
 
@@ -60,7 +60,7 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
      * @return the {@link ConversionResult} with the contentMessageConverter message and the possible conversion issues
      */
     @Override
-    public ConversionResult<T> convertMessage(final MeteorologicalBulletin<S> input, final ConversionHints hints) {
+    public ConversionResult<T> convertMessage(final S input, final ConversionHints hints) {
         if (this.contentMessageConverter == null) {
             throw new IllegalStateException("No AviMessageConverter set");
         }
@@ -92,7 +92,7 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
                 ConversionResult<Document> messageResult;
                 ConversionResult.Status worstStatus = ConversionResult.Status.SUCCESS;
 
-                for (final S inputMessage : input.getMessages()) {
+                for (final U inputMessage : input.getMessages()) {
                     messageResult = this.contentMessageConverter.convertMessage(inputMessage, hints);
                     if (ConversionResult.Status.SUCCESS != messageResult.getStatus()) {
                         if (ConversionResult.Status.isMoreCritical(messageResult.getStatus(), worstStatus)) {
@@ -164,5 +164,23 @@ public abstract class AbstractBulletinIWXXMSerializer<T, S extends AviationWeath
         }
 
         return result;
+    }
+
+    static public class DOM<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends BulletinIWXXMSerializer<Document, U, S> {
+
+        @Override
+        protected Document render(final Document bulletin, final ConversionHints hints) throws ConversionException {
+            return bulletin;
+        }
+
+    }
+
+    public static class String<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends BulletinIWXXMSerializer<java.lang.String, U, S> {
+
+        @Override
+        protected java.lang.String render(final Document bulletin, final ConversionHints hints) throws ConversionException {
+            return renderDOMToString(bulletin, hints);
+        }
+
     }
 }

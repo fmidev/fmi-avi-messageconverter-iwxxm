@@ -6,8 +6,7 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionSpecification;
-import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMDOMSerializer;
-import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.bulletin.GenericBulletinIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.bulletin.GenericBulletinIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.v21.airmet.AIRMETIWXXMDOMSerializer;
@@ -30,7 +29,6 @@ import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMStri
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherBulletin;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
-import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
 import fi.fmi.avi.model.sigmet.AIRMET;
@@ -222,29 +220,29 @@ public class IWXXMConverter {
     }
 
     @Bean
-    public AviMessageSpecificConverter<MeteorologicalBulletin<TAF>, Document> tafBulletinIWXXMDOMSerializer() {
-        final BulletinIWXXMDOMSerializer<TAF> retval = new BulletinIWXXMDOMSerializer<>();
+    public AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXMDOMSerializer() {
+        final BulletinIWXXMSerializer.DOM<TAF, TAFBulletin> retval = new BulletinIWXXMSerializer.DOM<>();
         retval.setMessageConverter(tafIWXXMDOMSerializer());
         return retval;
     }
 
     @Bean
-    public AviMessageSpecificConverter<MeteorologicalBulletin<TAF>, String> tafBulletinIWXXMStringSerializer() {
-        final BulletinIWXXMStringSerializer<TAF> retval = new BulletinIWXXMStringSerializer<>();
+    public AviMessageSpecificConverter<TAFBulletin, String> tafBulletinIWXXMStringSerializer() {
+        final BulletinIWXXMSerializer.String<TAF, TAFBulletin> retval = new BulletinIWXXMSerializer.String<>();
         retval.setMessageConverter(tafIWXXMDOMSerializer());
         return retval;
     }
 
     @Bean
-    public AviMessageSpecificConverter<MeteorologicalBulletin<SpaceWeatherAdvisory>, Document> swxBulletinIWXXMDOMSerializer() {
-        final BulletinIWXXMDOMSerializer<SpaceWeatherAdvisory> retval = new BulletinIWXXMDOMSerializer<>();
+    public AviMessageSpecificConverter<SpaceWeatherBulletin, Document> swxBulletinIWXXMDOMSerializer() {
+        final BulletinIWXXMSerializer.DOM<SpaceWeatherAdvisory, SpaceWeatherBulletin> retval = new BulletinIWXXMSerializer.DOM<>();
         retval.setMessageConverter(spaceWeatherIWXXMDOMSerializer());
         return retval;
     }
 
     @Bean
-    public AviMessageSpecificConverter<MeteorologicalBulletin<SpaceWeatherAdvisory>, String> swxBulletinIWXXMStringSerializer() {
-        final BulletinIWXXMStringSerializer<SpaceWeatherAdvisory> retval = new BulletinIWXXMStringSerializer<>();
+    public AviMessageSpecificConverter<SpaceWeatherBulletin, String> swxBulletinIWXXMStringSerializer() {
+        final BulletinIWXXMSerializer.String<SpaceWeatherAdvisory, SpaceWeatherBulletin> retval = new BulletinIWXXMSerializer.String<>();
         retval.setMessageConverter(spaceWeatherIWXXMDOMSerializer());
         return retval;
     }
