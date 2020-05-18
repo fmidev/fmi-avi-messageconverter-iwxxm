@@ -17,39 +17,33 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
-import fi.fmi.avi.model.GenericAviationWeatherMessage;
-import fi.fmi.avi.model.bulletin.BulletinHeading;
-import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
-import fi.fmi.avi.model.bulletin.immutable.GenericMeteorologicalBulletinImpl;
+import fi.fmi.avi.model.AviationWeatherMessage;
+import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 
-public abstract class AbstractGenericBulletinIWXXMParser<T> extends IWXXMConverterBase
-        implements AviMessageSpecificConverter<T, GenericMeteorologicalBulletin> {
+public abstract class AbstractBulletinIWXXMParser<T, U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends IWXXMConverterBase
+        implements AviMessageSpecificConverter<T, S> {
 
     @Override
-    public ConversionResult<GenericMeteorologicalBulletin> convertMessage(final T input, final ConversionHints hints) {
-        final ConversionResult<GenericMeteorologicalBulletin> retval = new ConversionResult<>();
+    public ConversionResult<S> convertMessage(final T input, final ConversionHints hints) {
+        final ConversionResult<S> retval = new ConversionResult<>();
         try {
             final Document doc = parseAsDom(input);
             final BulletinProperties properties = new BulletinProperties();
-            retval.addIssue(IWXXMGenericBulletinScanner.collectBulletinProperties(doc, properties, hints));
+            retval.addIssue(getScanner().collectBulletinProperties(doc, properties, hints));
 
             //Heading
             if (!properties.contains(BulletinProperties.Name.HEADING)) {
                 retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No bulletin heading"));
                 return retval;
             }
-            final GenericMeteorologicalBulletinImpl.Builder builder = GenericMeteorologicalBulletinImpl.builder();
-            properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class).ifPresent(builder::setHeading);
-
-            //Messages
-            builder.addAllMessages(properties.getList(BulletinProperties.Name.MESSAGE, GenericAviationWeatherMessage.class));
 
             //Timestamp
+            ZonedDateTime timestamp = null;
+            Set<ChronoField> timestampFields = null;
             if (properties.containsAny(BulletinProperties.Name.TIMESTAMP_YEAR, BulletinProperties.Name.TIMESTAMP_MONTH, BulletinProperties.Name.TIMESTAMP_DAY,
                     BulletinProperties.Name.TIMESTAMP_HOUR, BulletinProperties.Name.TIMESTAMP_MINUTE, BulletinProperties.Name.TIMESTAMP_SECOND)) {
-
-                ZonedDateTime timestamp = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneId.of("UTC"));
-                final Set<ChronoField> timestampFields = new HashSet<>();
+                timestamp = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneId.of("UTC"));
+                timestampFields = new HashSet<>();
                 final Optional<Integer> year = properties.get(BulletinProperties.Name.TIMESTAMP_YEAR, Integer.class);
                 final Optional<Month> month = properties.get(BulletinProperties.Name.TIMESTAMP_MONTH, Month.class);
                 final Optional<Integer> day = properties.get(BulletinProperties.Name.TIMESTAMP_DAY, Integer.class);
@@ -82,18 +76,20 @@ public abstract class AbstractGenericBulletinIWXXMParser<T> extends IWXXMConvert
                     timestampFields.add(ChronoField.SECOND_OF_MINUTE);
                 }
 
-                builder.setTimeStamp(timestamp)//
-                        .addAllTimeStampFields(timestampFields);
-
             }
-
-            //retval.setStatus(ConversionResult.Status.SUCCESS);
-            retval.setConvertedMessage(builder.build());
+            // The rest
+            final S bulletin = buildBulletin(properties, timestamp, timestampFields, hints);
+            retval.setConvertedMessage(bulletin);
         } catch (final ConversionException ce) {
             retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Error in parsing input", ce));
         }
         return retval;
     }
+
+    protected abstract S buildBulletin(final BulletinProperties properties, final ZonedDateTime timeStamp, final Set<ChronoField> timestampFields,
+            final ConversionHints hints);
+
+    protected abstract MeteorologicalBulletinIWXXMScanner<U, S> getScanner();
 
     protected abstract Document parseAsDom(T input) throws ConversionException;
 }

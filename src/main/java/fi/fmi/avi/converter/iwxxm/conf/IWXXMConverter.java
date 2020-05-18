@@ -9,6 +9,7 @@ import fi.fmi.avi.converter.ConversionSpecification;
 import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.bulletin.GenericBulletinIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.bulletin.GenericBulletinIWXXMStringParser;
+import fi.fmi.avi.converter.iwxxm.bulletin.generic.AbstractGenericBulletinIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.v21.airmet.AIRMETIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.airmet.AIRMETIWXXMStringSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.metar.METARIWXXMDOMParser;
@@ -19,6 +20,7 @@ import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMStringParser;
 import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.v21.taf.TAFBulletinIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMDOMParser;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMDOMSerializer;
 import fi.fmi.avi.converter.iwxxm.v21.taf.TAFIWXXMJAXBSerializer;
@@ -91,6 +93,12 @@ public class IWXXMConverter {
             "SPECI, XML/IWXXM 2.1", null);
 
     /**
+     * Pre-configured spec for IWXXM 3.0 XML format Space Weather Advisory document String to {@link SpaceWeatherAdvisory}.
+     */
+    public static final ConversionSpecification<String, SpaceWeatherAdvisory> IWXXM30_STRING_TO_SPACE_WEATHER_POJO = new ConversionSpecification<>(String.class, SpaceWeatherAdvisory.class,
+            "SWX, XML/IWXXM 3.0", null);
+
+    /**
      * Pre-configured spec for IWXXM 2.1 XML format METAR document DOM Node to {@link TAF}.
      */
     public static final ConversionSpecification<Document, SPECI> IWXXM21_DOM_TO_SPECI_POJO = new ConversionSpecification<>(Document.class, SPECI.class,
@@ -108,16 +116,16 @@ public class IWXXMConverter {
             Document.class, null, "XML/WMO COLLECT 1.2 + IWXXM 2.1 TAF");
 
     /**
-     * Pre-configured spec for {@link TAFBulletin} to WMO COLLECT 1.2 XML String containing IWXXM 2.1 TAFs.
+     * Pre-configured spec for WMO COLLECT 1.2 XML String containing IWXXM 2.1 TAFs to {@link TAFBulletin}.
      */
-    public static final ConversionSpecification<SpaceWeatherBulletin, String> SWX_BULLETIN_POJO_TO_WMO_COLLECT_STRING = new ConversionSpecification<>(
-            SpaceWeatherBulletin.class, String.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX");
+    public static final ConversionSpecification<String, TAFBulletin> WMO_COLLECT_STRING_TO_TAF_BULLETIN_POJO = new ConversionSpecification<>(String.class,
+            TAFBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 2.1 TAF", null);
 
     /**
-     * Pre-configured spec for {@link TAFBulletin} to WMO COLLECT 1.2 XML DOM document containing IWXXM 2.1 TAFs.
+     * Pre-configured spec for WMO COLLECT 1.2 XML DOM document containing IWXXM 2.1 TAFs to {@link TAFBulletin}.
      */
-    public static final ConversionSpecification<SpaceWeatherBulletin, Document> SWX_BULLETIN_POJO_TO_WMO_COLLECT_DOM = new ConversionSpecification<>(
-            SpaceWeatherBulletin.class, Document.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX");
+    public static final ConversionSpecification<Document, TAFBulletin> WMO_COLLECT_DOM_TO_TAF_BULLETIN_POJO = new ConversionSpecification<>(Document.class,
+            TAFBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 2.1 TAF", null);
 
     /**
      * Pre-configured spec for WMO COLLECT 1.2 XML DOM document to {@link GenericMeteorologicalBulletin}
@@ -222,6 +230,19 @@ public class IWXXMConverter {
     @Bean
     public AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXMDOMSerializer() {
         final BulletinIWXXMSerializer.DOM<TAF, TAFBulletin> retval = new BulletinIWXXMSerializer.DOM<>();
+    public AviMessageSpecificConverter<String, SpaceWeatherAdvisory> spaceWeatherIWXXMStringParser() {
+        return new SpaceWeatherIWXXMStringParser();
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<Document, SpaceWeatherAdvisory> spaceWeatherIWXXMDOMParser() {
+        return new SpaceWeatherIWXXMDOMParser();
+    }
+
+    /*
+    @Bean
+    public AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXMDOMSerializer() {
+        TAFBulletinIWXXMDOMSerializer retval = new TAFBulletinIWXXMDOMSerializer();
         retval.setMessageConverter(tafIWXXMDOMSerializer());
         return retval;
     }
@@ -246,15 +267,44 @@ public class IWXXMConverter {
         retval.setMessageConverter(spaceWeatherIWXXMDOMSerializer());
         return retval;
     }
+    */
+
+    @Bean
+    public AviMessageSpecificConverter<Document, TAFBulletin> tafBulletinIWXXMDOMParser() {
+        final TAFBulletinIWXXMParser<Document> retval = new TAFBulletinIWXXMParser.DOM();
+        retval.setMessageConverter(tafIWXXMDOMParser());
+        return retval;
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<String, TAFBulletin> tafBulletinIWXXMStringParser() {
+        final TAFBulletinIWXXMParser<String> retval = new TAFBulletinIWXXMParser.String();
+        retval.setMessageConverter(tafIWXXMDOMParser());
+        return retval;
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<Document, SpaceWeatherBulletin> swxBulletinIWXXMDOMParser() {
+        final SpaceWeatherBulletinIWXXMParser<Document> retval = new SpaceWeatherBulletinIWXXMParser.DOM();
+        retval.setMessageConverter(spaceWeatherIWXXMDOMParser());
+        return retval;
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<String, SpaceWeatherBulletin> swxBulletinIWXXMStringParser() {
+        final SpaceWeatherBulletinIWXXMParser<String> retval = new SpaceWeatherBulletinIWXXMParser.String();
+        retval.setMessageConverter(spaceWeatherIWXXMDOMParser());
+        return retval;
+    }
 
     @Bean
     public AviMessageSpecificConverter<Document, GenericMeteorologicalBulletin> genericBulletinIWXXMDOMParser() {
-        return new GenericBulletinIWXXMDOMParser();
+        return new AbstractGenericBulletinIWXXMParser.DOM();
     }
 
     @Bean
     public AviMessageSpecificConverter<String, GenericMeteorologicalBulletin> genericBulletinIWXXMStringParser() {
-        return new GenericBulletinIWXXMStringParser();
+        return new AbstractGenericBulletinIWXXMParser.String();
     }
 
     @Bean

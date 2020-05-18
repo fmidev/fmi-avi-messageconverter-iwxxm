@@ -19,6 +19,7 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 
+
 /**
  * Created by rinne on 25/07/2018.
  */

@@ -1,7 +1,6 @@
 package fi.fmi.avi.converter.iwxxm;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -22,7 +21,6 @@ import fi.fmi.avi.model.metar.SPECI;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.taf.TAF;
-import fi.fmi.avi.model.taf.TAFBulletin;
 
 @Configuration
 @Import(IWXXMConverter.class)
@@ -60,12 +58,13 @@ public class IWXXMTestConfiguration {
     @Autowired
     private AviMessageSpecificConverter<String, SPECI> speciIWXXMStringParser;
 
+    /*
     @Autowired
     private AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXMDOMSerializer;
 
     @Autowired
     private AviMessageSpecificConverter<TAFBulletin, String> tafBulletinIWXXMStringSerializer;
-
+*/
     @Autowired
     private AviMessageSpecificConverter<Document, GenericMeteorologicalBulletin> genericBulletinIWXXMDOMParser;
 
@@ -85,6 +84,10 @@ public class IWXXMTestConfiguration {
     private AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer;
 
     @Autowired
+    private AviMessageSpecificConverter<String, SpaceWeatherAdvisory> spaceWeatherIWXXMStringParser;
+
+
+    @Autowired
     private AviMessageSpecificConverter<SpaceWeatherAdvisory, String> spaceWeatherIWXXMStringSerializer;
 
     @Bean
@@ -99,14 +102,19 @@ public class IWXXMTestConfiguration {
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_SPECI_POJO, speciIWXXMStringParser);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_SPECI_POJO, speciIWXXMDOMParser);
 
+        /*
         p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM, tafBulletinIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_STRING, tafBulletinIWXXMStringSerializer);
+
+         */
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMDOMParser);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMStringParser);
         p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_DOM,sigmetIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING,sigmetIWXXMStringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM,airmetIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING,airmetIWXXMStringSerializer);
+
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,spaceWeatherIWXXMStringParser);
 
         p.setMessageSpecificConverter(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING,spaceWeatherIWXXMStringSerializer);
 

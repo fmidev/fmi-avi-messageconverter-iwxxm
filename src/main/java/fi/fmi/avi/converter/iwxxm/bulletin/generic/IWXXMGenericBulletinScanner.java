@@ -1,9 +1,8 @@
-package fi.fmi.avi.converter.iwxxm.bulletin;
+package fi.fmi.avi.converter.iwxxm.bulletin.generic;
 
 import java.io.StringWriter;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
 
 import javax.xml.transform.OutputKeys;
@@ -19,73 +18,32 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
+import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
+import fi.fmi.avi.converter.iwxxm.bulletin.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
-import fi.fmi.avi.util.GTSExchangeFileInfo;
 
-public class IWXXMGenericBulletinScanner extends AbstractIWXXMScanner {
+public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
 
-    public static List<ConversionIssue> collectBulletinProperties(final Document input,
-            final BulletinProperties properties, final ConversionHints hints) {
-        final IssueList retval = new IssueList();
-
+    @Override
+    protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
+        final ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
         xpath.setNamespaceContext(new IWXXMNamespaceContext());
-        try {
-            XPathExpression expr = xpath.compile("/collect:MeteorologicalBulletin/collect:bulletinIdentifier");
-            final String bulletinIdentifier = expr.evaluate(input.getDocumentElement());
-            if ("".equals(bulletinIdentifier)) {
-                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No or empty bulletinIdentifier in MeteorologicalBulletin");
-                return retval;
-            }
-
-            retval.addAll(collectHeading(bulletinIdentifier, properties));
-
-            expr = xpath.compile("/collect:MeteorologicalBulletin/collect:meteorologicalInformation/*");
-            final NodeList features = (NodeList) expr.evaluate(input.getDocumentElement(), XPathConstants.NODESET);
-            for (int i = 0; i < features.getLength(); i++) {
-                collectGenericAviationWeatherMessage((Element) features.item(i), xpath, properties);
-            }
-        } catch (final XPathExpressionException xee) {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Unexpected error in parsing MeteorologicalBulletin", xee);
-        }
-        return retval;
-    }
-
-    private static IssueList collectHeading(final String bulletinIdentifier, final BulletinProperties properties) {
-        final IssueList retval = new IssueList();
-        try {
-            final GTSExchangeFileInfo info = GTSExchangeFileInfo.Builder.from(bulletinIdentifier).build();
-            properties.set(BulletinProperties.Name.HEADING, info.getHeading());
-            info.getTimeStampYear().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_YEAR, value));
-            info.getTimeStampMonth().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_MONTH, value));
-            info.getTimeStampDay().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_DAY, value));
-            info.getTimeStampHour().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_HOUR, value));
-            info.getTimeStampMinute().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_MINUTE, value));
-            info.getTimeStampSecond().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_SECOND, value));
-        } catch (final Exception e) {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Could not parse bulletin heading info from the bulletinIdentifier", e);
-        }
-        return retval;
-    }
-
-    private static IssueList collectGenericAviationWeatherMessage(final Element featureElement, final XPath xpath, final BulletinProperties properties) {
-        final IssueList retval = new IssueList();
         final GenericAviationWeatherMessageImpl.Builder builder = new GenericAviationWeatherMessageImpl.Builder();
         builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
         builder.setTranslated(true);
@@ -95,7 +53,7 @@ public class IWXXMGenericBulletinScanner extends AbstractIWXXMScanner {
             switch (messageType) {
                 case "TAF":
                     builder.setMessageType(MessageType.TAF);
-                    retval.addAll(collectTAFMessage(featureElement, xpath, builder));
+                    retval.addIssue(collectTAFMessage(featureElement, xpath, builder));
                     break;
 
                 case "METAR":
@@ -109,7 +67,7 @@ public class IWXXMGenericBulletinScanner extends AbstractIWXXMScanner {
                 case "TropicalCycloneSIGMET":
                 case "VolcanicAshSIGMET":
                     builder.setMessageType(MessageType.SIGMET);
-                    retval.addAll(collectSIGMETMessage(featureElement, xpath, builder));
+                    retval.addIssue(collectSIGMETMessage(featureElement, xpath, builder));
                     break;
 
                 case "AIRMET":
@@ -125,8 +83,8 @@ public class IWXXMGenericBulletinScanner extends AbstractIWXXMScanner {
                     break;
 
                 default:
-                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                            "Unknown message type '" + messageType + "', unable to parse as " + "generic bulletin");
+                    retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                            "Unknown message type '" + messageType + "', unable to parse as " + "generic bulletin"));
 
             }
 
@@ -145,12 +103,15 @@ public class IWXXMGenericBulletinScanner extends AbstractIWXXMScanner {
                 transformer.transform(dsource, output);
                 builder.setOriginalMessage(sw.toString());
             } catch (final TransformerException e) {
-                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Unable to write the message content as string", e);
+                retval.addIssue(
+                        new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Unable to write the message content as " + "string",
+                                e));
             }
+            retval.setConvertedMessage(builder.build());
         } catch (final XPathExpressionException xpee) {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Error in parsing content as a GenericAviationWeatherMessage", xpee);
+            retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER,
+                    "Error in parsing content as a GenericAviationWeatherMessage", xpee));
         }
-        properties.addToList(BulletinProperties.Name.MESSAGE, builder.build());
         return retval;
     }
 

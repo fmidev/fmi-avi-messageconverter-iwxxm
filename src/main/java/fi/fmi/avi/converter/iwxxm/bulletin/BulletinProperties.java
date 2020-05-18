@@ -3,7 +3,7 @@ package fi.fmi.avi.converter.iwxxm.bulletin;
 import java.time.Month;
 
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
-import fi.fmi.avi.model.GenericAviationWeatherMessage;
+import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
 
 public class BulletinProperties extends AbstractPropertyContainer {
@@ -16,7 +16,7 @@ public class BulletinProperties extends AbstractPropertyContainer {
         TIMESTAMP_HOUR(Integer.class),
         TIMESTAMP_MINUTE(Integer.class),
         TIMESTAMP_SECOND(Integer.class),
-        MESSAGE(GenericAviationWeatherMessage.class);
+        MESSAGE(AviationWeatherMessage.class);
 
         private final Class<?> acceptedType;
 
