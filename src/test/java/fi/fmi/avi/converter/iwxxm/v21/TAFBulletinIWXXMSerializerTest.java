@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin;
+package fi.fmi.avi.converter.iwxxm.v21;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -80,7 +80,8 @@ public class TAFBulletinIWXXMSerializerTest {
 
         TAFBulletinImpl.Builder bulletinBuilder = TAFBulletinImpl.builder()//
                 .setHeading(BulletinHeadingImpl.builder()//
-                        .setDataTypeDesignatorT2(DataTypeDesignatorT2.ForecastsDataTypeDesignatorT2.FCT_AERODROME_VT_LONG).setType(BulletinHeading.Type.NORMAL)//
+                        .setDataTypeDesignatorT2(DataTypeDesignatorT2.ForecastsDataTypeDesignatorT2.FCT_AERODROME_VT_LONG)//
+                        .setType(BulletinHeading.Type.NORMAL)//
                         .setGeographicalDesignator("FI")//
                         .setLocationIndicator("EFKL")//
                         .setBulletinNumber(31)//
