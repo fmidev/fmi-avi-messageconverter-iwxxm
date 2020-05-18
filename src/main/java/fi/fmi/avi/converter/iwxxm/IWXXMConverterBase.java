@@ -87,7 +87,7 @@ public abstract class IWXXMConverterBase {
     private static final Map<String, Object> OBJECT_FACTORY_MAP = new HashMap<>();
     private static JAXBContext jaxbCtx = null;
 
-    private static List<Templates> iwxxmTemplates = null;
+    private final static HashMap<URL, Templates> iwxxmTemplates = new HashMap<>();
 
     static {
         if (System.getSecurityManager() != null) {
@@ -283,22 +283,29 @@ public abstract class IWXXMConverterBase {
        for running the XSL transformations required for IWXXM Schematron
        validation. This makes each validation 3-4 times faster.
    */
-    private synchronized static List<Templates> getIwxxmTemplates(final XMLSchemaInfo schemaInfo) throws TransformerException {
+    private static List<Templates> getIwxxmTemplates(final XMLSchemaInfo schemaInfo) throws TransformerException {
         if (schemaInfo.getSchematronRules() == null) {
             throw new TransformerException("No Schematron rules source available in XMLSchemaInfo");
         }
-        if (iwxxmTemplates == null) {
-            iwxxmTemplates = new ArrayList<>();
-            final TransformerFactory tFactory = TransformerFactory.newInstance();
-            for (final StreamSource ss : schemaInfo.getSchematronRuleSources()) {
-                try {
-                    iwxxmTemplates.add(tFactory.newTemplates(ss));
-                } catch (final Exception e) {
-                    LOG.warn("Unable to read XSL file '{}' for IWXXM Schematron validation", ss.getSystemId(), e);
+        List<Templates> retval = new ArrayList<>();
+        final TransformerFactory tFactory = TransformerFactory.newInstance();
+        for (final URL ruleURI : schemaInfo.getSchematronRules()) {
+            synchronized (iwxxmTemplates) {
+                if (!iwxxmTemplates.containsKey(ruleURI)) {
+                    StreamSource ss = null;
+                    try {
+                        ss = new StreamSource(ruleURI.openStream(), ruleURI.toString());
+                    } catch (final IOException e) {
+                        LOG.warn("Unable to create StreamSource for the schematron rule from '{}'", ruleURI.toExternalForm(), e);
+                    }
+                    if (ss != null) {
+                        iwxxmTemplates.put(ruleURI, tFactory.newTemplates(ss));
+                    }
                 }
+                retval.add(iwxxmTemplates.get(ruleURI));
             }
         }
-        return iwxxmTemplates;
+        return retval;
     }
 
     private static Object getObjectFactory(final Class<?> clz) {
