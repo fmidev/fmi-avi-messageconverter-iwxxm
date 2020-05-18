@@ -20,7 +20,7 @@ import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 
-public abstract class AbstractBulletinIWXXMParser<T, S extends MeteorologicalBulletin<? extends AviationWeatherMessage>> extends IWXXMConverterBase
+public abstract class AbstractBulletinIWXXMParser<T, U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends IWXXMConverterBase
         implements AviMessageSpecificConverter<T, S> {
 
     @Override
@@ -29,8 +29,7 @@ public abstract class AbstractBulletinIWXXMParser<T, S extends MeteorologicalBul
         try {
             final Document doc = parseAsDom(input);
             final BulletinProperties properties = new BulletinProperties();
-            final AbstractBulletinScanner<S> scanner = getScanner();
-            retval.addIssue(scanner.collectBulletinProperties(doc, properties, hints));
+            retval.addIssue(getScanner().collectBulletinProperties(doc, properties, hints));
 
             //Heading
             if (!properties.contains(BulletinProperties.Name.HEADING)) {
@@ -90,7 +89,7 @@ public abstract class AbstractBulletinIWXXMParser<T, S extends MeteorologicalBul
     protected abstract S buildBulletin(final BulletinProperties properties, final ZonedDateTime timeStamp, final Set<ChronoField> timestampFields,
             final ConversionHints hints);
 
-    protected abstract AbstractBulletinScanner<S> getScanner();
+    protected abstract MeteorologicalBulletinIWXXMScanner<U, S> getScanner();
 
     protected abstract Document parseAsDom(T input) throws ConversionException;
 }

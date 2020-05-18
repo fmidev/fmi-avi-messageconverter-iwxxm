@@ -16,14 +16,17 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
+import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinScanner;
-import fi.fmi.avi.converter.iwxxm.bulletin.BulletinProperties;
+import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
+import fi.fmi.avi.converter.iwxxm.bulletin.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
@@ -33,11 +36,14 @@ import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
-public class IWXXMGenericBulletinScanner extends AbstractBulletinScanner<GenericMeteorologicalBulletin> {
+public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
 
     @Override
-    protected IssueList collectAviationWeatherMessage(final Element featureElement, final XPath xpath, final BulletinProperties properties) {
-        final IssueList retval = new IssueList();
+    protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
+        final ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
+        final XPathFactory factory = XPathFactory.newInstance();
+        final XPath xpath = factory.newXPath();
+        xpath.setNamespaceContext(new IWXXMNamespaceContext());
         final GenericAviationWeatherMessageImpl.Builder builder = new GenericAviationWeatherMessageImpl.Builder();
         builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
         builder.setTranslated(true);
@@ -47,7 +53,7 @@ public class IWXXMGenericBulletinScanner extends AbstractBulletinScanner<Generic
             switch (messageType) {
                 case "TAF":
                     builder.setMessageType(MessageType.TAF);
-                    retval.addAll(collectTAFMessage(featureElement, xpath, builder));
+                    retval.addIssue(collectTAFMessage(featureElement, xpath, builder));
                     break;
 
                 case "METAR":
@@ -61,7 +67,7 @@ public class IWXXMGenericBulletinScanner extends AbstractBulletinScanner<Generic
                 case "TropicalCycloneSIGMET":
                 case "VolcanicAshSIGMET":
                     builder.setMessageType(MessageType.SIGMET);
-                    retval.addAll(collectSIGMETMessage(featureElement, xpath, builder));
+                    retval.addIssue(collectSIGMETMessage(featureElement, xpath, builder));
                     break;
 
                 case "AIRMET":
@@ -77,8 +83,8 @@ public class IWXXMGenericBulletinScanner extends AbstractBulletinScanner<Generic
                     break;
 
                 default:
-                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                            "Unknown message type '" + messageType + "', unable to parse as " + "generic bulletin");
+                    retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                            "Unknown message type '" + messageType + "', unable to parse as " + "generic bulletin"));
 
             }
 
@@ -97,12 +103,15 @@ public class IWXXMGenericBulletinScanner extends AbstractBulletinScanner<Generic
                 transformer.transform(dsource, output);
                 builder.setOriginalMessage(sw.toString());
             } catch (final TransformerException e) {
-                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Unable to write the message content as string", e);
+                retval.addIssue(
+                        new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Unable to write the message content as " + "string",
+                                e));
             }
+            retval.setConvertedMessage(builder.build());
         } catch (final XPathExpressionException xpee) {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Error in parsing content as a GenericAviationWeatherMessage", xpee);
+            retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER,
+                    "Error in parsing content as a GenericAviationWeatherMessage", xpee));
         }
-        properties.addToList(BulletinProperties.Name.MESSAGE, builder.build());
         return retval;
     }
 

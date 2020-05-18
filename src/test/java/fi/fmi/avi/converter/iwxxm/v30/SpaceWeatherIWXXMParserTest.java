@@ -4,10 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.awt.Point;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -32,21 +28,17 @@ import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.DOMParsingTestBase;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.NumericMeasure;
-import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.PointGeometry;
-import fi.fmi.avi.model.PolygonsGeometry;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.AirspaceVolume;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherRegion;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
-import fi.fmi.avi.model.immutable.PolygonsGeometryImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -57,15 +49,6 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
     private String getInput(String fileName) throws IOException {
         InputStream is = null;
         try {
-            /*
-            String path = System.getProperty("user.dir") + "/src/test/resources/fi/fmi/avi/converter/iwxxm/v30/" + fileName;
-            File file = new File(path);
-            if (file.exists()) {
-                is = new FileInputStream(file);
-            } else {
-                throw new FileNotFoundException("could not locate file as resource or using path " + path);
-            }
-            */
             is = SpaceWeatherIWXXMParserTest.class.getResourceAsStream(fileName);
             Objects.requireNonNull(is);
 
