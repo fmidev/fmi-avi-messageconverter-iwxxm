@@ -76,15 +76,15 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
         schemaInfo.addSchemaLocation("http://def.wmo.int/collect/2014", "http://schemas.wmo.int/collect/1.2/collect.xsd");
 
         try {
-            Document dom;
+            final Document dom;
             try {
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                 dbf.setNamespaceAware(true);
                 dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-                DocumentBuilder db = dbf.newDocumentBuilder();
+                final DocumentBuilder db = dbf.newDocumentBuilder();
                 dom = db.parse(this.getClass().getResourceAsStream("collect-template.xml"));
-                Element collect = dom.getDocumentElement();
-                Attr id = dom.createAttributeNS(IWXXMNamespaceContext.getURI("gml"), "id");
+                final Element collect = dom.getDocumentElement();
+                final Attr id = dom.createAttributeNS(IWXXMNamespaceContext.getURI("gml"), "id");
                 id.setValue("bulletin-" + UUID.randomUUID().toString());
                 collect.setAttributeNodeNS(id);
 
@@ -107,8 +107,8 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
                 }
 
                 for (final Document outputMessage : outputMessages) {
-                    Node toAdd = dom.importNode(outputMessage.getDocumentElement(), true);
-                    Element metInfo = dom.createElementNS(IWXXMNamespaceContext.getURI("collect"), "meteorologicalInformation");
+                    final Node toAdd = dom.importNode(outputMessage.getDocumentElement(), true);
+                    final Element metInfo = dom.createElementNS(IWXXMNamespaceContext.getURI("collect"), "meteorologicalInformation");
                     metInfo.appendChild(toAdd);
                     metInfo.setPrefix("collect");
                     collect.appendChild(metInfo);
@@ -143,12 +143,12 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
                 } else {
                     info.setTimeStamp(LocalDateTime.now(ZoneId.of("UTC")));
                 }
-                Element identifier = dom.createElementNS(IWXXMNamespaceContext.getURI("collect"), "bulletinIdentifier");
+                final Element identifier = dom.createElementNS(IWXXMNamespaceContext.getURI("collect"), "bulletinIdentifier");
                 identifier.setPrefix("collect");
                 identifier.setTextContent(info.build().toGTSExchangeFileName());
                 collect.appendChild(identifier);
 
-            } catch (IOException | SAXException | ParserConfigurationException e) {
+            } catch (final IOException | SAXException | ParserConfigurationException e) {
                 throw new ConversionException("Error in creating bulletin document", e);
             }
 
@@ -166,7 +166,7 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
         return result;
     }
 
-    static public class DOM<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends BulletinIWXXMSerializer<Document, U, S> {
+    static public class AsDOM<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends BulletinIWXXMSerializer<Document, U, S> {
 
         @Override
         protected Document render(final Document bulletin, final ConversionHints hints) throws ConversionException {
@@ -175,7 +175,8 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
 
     }
 
-    public static class String<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends BulletinIWXXMSerializer<java.lang.String, U, S> {
+    public static class AsString<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>>
+            extends BulletinIWXXMSerializer<java.lang.String, U, S> {
 
         @Override
         protected java.lang.String render(final Document bulletin, final ConversionHints hints) throws ConversionException {
