@@ -43,7 +43,7 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO));
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
 
-        Document toValidate = readDocument("taf-A5-1.xml");
+        Document toValidate = readDocument(TAFIWXXMLoopbackTest.class, "taf-A5-1.xml");
         ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());

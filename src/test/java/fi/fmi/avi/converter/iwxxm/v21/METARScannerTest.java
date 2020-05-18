@@ -24,7 +24,6 @@ import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.converter.iwxxm.IWXXMSchemaResourceResolver;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
-import fi.fmi.avi.converter.iwxxm.v21.OMObservationProperties;
 import fi.fmi.avi.converter.iwxxm.v21.metar.IWXXMMETARScanner;
 import fi.fmi.avi.converter.iwxxm.v21.metar.METARProperties;
 import fi.fmi.avi.converter.iwxxm.v21.metar.ObservationRecordProperties;
@@ -41,7 +40,7 @@ import wmo.metce2013.ProcessType;
 public class METARScannerTest extends DOMParsingTestBase {
 
     private List<ConversionIssue> withCollectedPropertiesFrom(final String fileName, final Consumer<METARProperties> resultHandler) throws Exception {
-        Document doc = readDocument(fileName);
+        Document doc = readDocument(METARScannerTest.class, fileName);
         JAXBContext ctx = IWXXMConverterBase.getJAXBContext();
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();

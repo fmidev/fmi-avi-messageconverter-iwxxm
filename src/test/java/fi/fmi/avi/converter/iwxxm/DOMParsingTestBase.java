@@ -6,18 +6,17 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 
-import fi.fmi.avi.converter.iwxxm.v21.TAFIWXXMParserTest;
 
 /**
  * Created by rinne on 01/08/2018.
  */
 public abstract class DOMParsingTestBase {
 
-    protected static Document readDocument(final String name) throws Exception {
+    protected static Document readDocument(final Class<?> clz, final String name) throws Exception {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         DocumentBuilder db = dbf.newDocumentBuilder();
-        return db.parse(TAFIWXXMParserTest.class.getResourceAsStream(name));
+        return db.parse(clz.getResourceAsStream(name));
     }
 }

@@ -54,14 +54,14 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testNoIssuesWithValidMETAR_A3() throws Exception {
-        Document toValidate = readDocument("metar-A3-1.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue( "No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
     @Test
     public void testNoIssuesWithValidMETAR_RWS() throws Exception {
-        Document toValidate = readDocument("metar-EDDF-runwaystate.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-EDDF-runwaystate.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue( "No issues should have been found", result.getConversionIssues().isEmpty());
         Optional<METAR> m = result.getConvertedMessage();
@@ -74,21 +74,21 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testNoIssuesWithValidMETAR_NIL() throws Exception {
-        Document toValidate = readDocument("metar-NIL.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-NIL.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue( "No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
     @Test
     public void testNOSIG() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_NOSIG.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_NOSIG.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
     @Test
     public void testCatchesWrongObservationTypes() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_invalid-obs-types.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_invalid-obs-types.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
         assertTrue(result.getConversionIssues().stream().filter(issue -> issue.getMessage().contains("Invalid observation type")).count() == 2);
@@ -96,7 +96,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testCatchesWrongObservedPropertyRefs() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_invalid-obs-properties.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_invalid-obs-properties.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
         assertTrue(result.getConversionIssues().stream().filter(issue -> issue.getMessage().contains("Invalid observed property")).count() == 2);
@@ -104,7 +104,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testCatchesMissingPhenomenonTime() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_no-phenomenon-time.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_no-phenomenon-time.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
         assertTrue(result.getConversionIssues().stream().filter(issue -> issue.getMessage().contains("METAR observation phenomenonTime")).count() == 1);
@@ -112,35 +112,35 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testRecentWeather() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-recent-weather.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-recent-weather.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
     @Test
     public void testWindShear() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-wind-shear.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-wind-shear.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
     @Test
     public void testSeaState() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-sea-state.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-sea-state.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
     @Test
     public void testSnowClosure() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-snow-closure.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-snow-closure.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
     @Test
     public void testCatchesCavokConflicts() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-cavok-conflicts.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-cavok-conflicts.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
         assertFalse(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().contains("Schema validation issue")));
@@ -152,14 +152,14 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testTrendSurfaceWindForecast() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-trend-wind.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-trend-wind.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
     @Test
     public void testCatchesTrendCavokConflicts() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-trend-cavok-conflicts.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-trend-cavok-conflicts.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
         assertFalse(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().contains("Schema validation issue")));
@@ -170,7 +170,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testNoCloudsDetectedForecast() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-ncd.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-ncd.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }
@@ -179,7 +179,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
     public void testMissingCloudObservations() throws Exception {
         //have to split in two documents, max no. of layers per METAR obs is 4
 
-        Document toValidate = readDocument("metar-A3-1_with-missing-cloud-obs.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-missing-cloud-obs.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
 
@@ -224,8 +224,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(layer.isAmountNotDetectedByAutoSystem());
         assertFalse(layer.isAmountUnobservableByAutoSystem());
 
-
-        toValidate = readDocument("metar-A3-1_with-missing-cloud-obs2.xml");
+        toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-missing-cloud-obs2.xml");
         result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
 
@@ -283,7 +282,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testTrendCloudForecast() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-trend-cloud-and-nsc.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-trend-cloud-and-nsc.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
 
@@ -301,7 +300,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testRunwayStateAllRunways() throws Exception {
-        Document toValidate = readDocument("metar-EDDF-runwaystate-all-runways.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-EDDF-runwaystate-all-runways.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
         Optional<METAR> m = result.getConvertedMessage();
@@ -316,7 +315,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testRunwayStateCleared() throws Exception {
-        Document toValidate = readDocument("metar-EDDF-runwaystate-cleared.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-EDDF-runwaystate-cleared.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
         Optional<METAR> m = result.getConvertedMessage();
@@ -334,7 +333,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testRunwayStateClearedConflict() throws Exception {
-        Document toValidate = readDocument("metar-EDDF-runwaystate-cleared-conflict.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-EDDF-runwaystate-cleared-conflict.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
         assertFalse(result.getConversionIssues().stream().anyMatch(issue -> issue.getMessage().contains("Schema validation issue")));
@@ -344,7 +343,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testRunwayStateInfo() throws Exception {
-        Document toValidate = readDocument("metar-EDDF-runwaystate-depth-of-deposit.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-EDDF-runwaystate-depth-of-deposit.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue( "No issues should have been found", result.getConversionIssues().isEmpty());
         Optional<METAR> m = result.getConvertedMessage();
@@ -559,7 +558,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testSeaStateWithSignificantWaveHeight() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-sea-state-sig-wave-height.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-sea-state-sig-wave-height.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
 
@@ -576,7 +575,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testWindShearAllRunways() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-wind-shear-all-runways.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-wind-shear-all-runways.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
 
@@ -592,7 +591,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testTrendPhenomenonTime() throws Exception {
-        Document toValidate = readDocument("metar-A3-1_with-trend-time-instant.xml");
+        Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_with-trend-time-instant.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }
