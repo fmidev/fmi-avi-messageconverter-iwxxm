@@ -135,22 +135,14 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
         if (replaceAdvisoryNumber.isPresent()) {
             spaceWeatherAdvisory.setReplaceAdvisoryNumber(replaceAdvisoryNumber);
         }
-        Optional<Enum> status = properties.get(SpaceWeatherAdvisoryProperties.Name.STATUS, Enum.class);
-        if (status.isPresent()) {
-            spaceWeatherAdvisory.setStatus((SpaceWeatherAdvisory.Status) status.get());
-        }
-        Optional<List> phenomena = properties.get(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, List.class);
-        if (phenomena.isPresent()) {
-            spaceWeatherAdvisory.addAllPhenomena(phenomena.get());
-        }
-        Optional<String> remarks = properties.get(SpaceWeatherAdvisoryProperties.Name.REMARKS, String.class);
-        if (remarks.isPresent()) {
-            spaceWeatherAdvisory.setRemarks(Arrays.asList(remarks.get()));
-        }
-        Optional<NextAdvisory> nextAdvisory = properties.get(SpaceWeatherAdvisoryProperties.Name.NEXT_ADVISORY, NextAdvisory.class);
-        if (nextAdvisory.isPresent()) {
-            spaceWeatherAdvisory.setNextAdvisory(nextAdvisory.get());
-        }
+        final List<String> phenomena = properties.getList(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, String.class);
+        spaceWeatherAdvisory.addAllPhenomena(phenomena);
+
+        final Optional<String> remarks = properties.get(SpaceWeatherAdvisoryProperties.Name.REMARKS, String.class);
+        remarks.ifPresent(s -> spaceWeatherAdvisory.setRemarks(Collections.singletonList(s)));
+
+        final Optional<NextAdvisory> nextAdvisory = properties.get(SpaceWeatherAdvisoryProperties.Name.NEXT_ADVISORY, NextAdvisory.class);
+        nextAdvisory.ifPresent(spaceWeatherAdvisory::setNextAdvisory);
 
         return spaceWeatherAdvisory.build();
     }

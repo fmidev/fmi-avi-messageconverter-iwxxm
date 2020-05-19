@@ -1,6 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.v3_0.SpaceWeatherAdvisory;
-
-import java.util.List;
+package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
@@ -17,9 +15,8 @@ public class SpaceWeatherAdvisoryProperties extends AbstractPropertyContainer {
         ISSUING_CENTER_NAME(String.class),
         ADVISORY_NUMBER(AdvisoryNumber.class),
         REPLACE_ADVISORY_NUMBER(AdvisoryNumber.class),
-        STATUS(Enum.class),
-        PHENOMENA(List.class),
-        ANALYSES(List.class),
+        PHENOMENA(String.class),
+        ANALYSES(SpaceWeatherAnalysisProperties.class),
         REMARKS(String.class),
         NEXT_ADVISORY(NextAdvisory.class);
 
