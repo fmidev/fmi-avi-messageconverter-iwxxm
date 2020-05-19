@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v2_1.sigmet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,16 +46,18 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
      * @throws ConversionException
      *         if an exception occurs while converting input to DOM
      */
+    @Override
     protected abstract Document parseAsDom(final T input) throws ConversionException;
 
+    @Override
     protected SIGMET createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx, final ConversionResult<SIGMET> result,
             final ConversionHints hints) {
         Objects.requireNonNull(source, "source cannot be null");
-        SIGMETType input;
+        final SIGMETType input;
         if (SIGMETType.class.isAssignableFrom(source.getClass())) {
             input = (SIGMETType) source;
         } else if (JAXBElement.class.isAssignableFrom(source.getClass())) {
-            JAXBElement<?> je = (JAXBElement<?>) source;
+            final JAXBElement<?> je = (JAXBElement<?>) source;
             if (SIGMETType.class.isAssignableFrom(je.getDeclaredType())) {
                 input = (SIGMETType) je.getValue();
             } else {
@@ -64,19 +67,19 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
             throw new IllegalArgumentException("Source is not a SIGMET JAXB element");
         }
 
-        SIGMETProperties properties = new SIGMETProperties();
+        final SIGMETProperties properties = new SIGMETProperties();
 
         //Other specific validation (using JAXB elements)
         result.addIssue(SIGMETIWXXMScanner.collectSIGMETProperties(input, refCtx, properties, hints));
         //Build the TAF:
-        Optional<AviationCodeListUser.SigmetAirmetReportStatus> status = properties.get(SIGMETProperties.Name.STATUS,
+        final Optional<AviationCodeListUser.SigmetAirmetReportStatus> status = properties.get(SIGMETProperties.Name.STATUS,
                 AviationCodeListUser.SigmetAirmetReportStatus.class);
         if (!status.isPresent()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "SIGMET status not known, unable to " + "proceed"));
             return null;
         }
 
-        SIGMETImpl.Builder sigmetBuilder = SIGMETImpl.builder();
+        final SIGMETImpl.Builder sigmetBuilder = SIGMETImpl.builder();
         sigmetBuilder.setStatus(status.get());
         properties.get(SIGMETProperties.Name.ISSUE_TIME, PartialOrCompleteTimeInstant.class).ifPresent(sigmetBuilder::setIssueTime);
 
@@ -84,33 +87,33 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
 
     }
 
-    public ConversionResult<SIGMET> convertMessage2(T input, ConversionHints hints) {
-        ConversionResult<SIGMET> result = new ConversionResult<>();
-        SIGMETType source;
-        ReferredObjectRetrievalContext refCtx;
+    public ConversionResult<SIGMET> convertMessage2(final T input, final ConversionHints hints) {
+        final ConversionResult<SIGMET> result = new ConversionResult<>();
+        final SIGMETType source;
+        final ReferredObjectRetrievalContext refCtx;
 
         try {
-            Document dom = parseAsDom(input);
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
+            final Document dom = parseAsDom(input);
+            final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
             schemaFactory.setResourceResolver(resolver);
             //Secure processing does not allow "file" protocol loading for schemas:
             schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
-            Schema iwxxmSchema = schemaFactory.newSchema(SIGMETType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
+            final Schema iwxxmSchema = schemaFactory.newSchema(SIGMETType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
 
-            Binder<Node> binder = getJAXBContext().createBinder();
+            final Binder<Node> binder = getJAXBContext().createBinder();
 
             //XML Schema validation upon JAXB unmarshal:
             binder.setSchema(iwxxmSchema);
-            SIGMETIWXXMParser.IWXXMValidationEventHandler collector = new SIGMETIWXXMParser.IWXXMValidationEventHandler();
+            final SIGMETIWXXMParser.IWXXMValidationEventHandler collector = new SIGMETIWXXMParser.IWXXMValidationEventHandler();
             binder.setEventHandler(collector);
             source = binder.unmarshal(dom, SIGMETType.class).getValue();
-            SIGMETProperties properties = new SIGMETProperties();
+            final SIGMETProperties properties = new SIGMETProperties();
 
             //Other specific validation (using JAXB elements)
             //       result.addIssue(SIGMETIWXXMScanner.collectSIGMETProperties(input, refCtx, properties, hints));
 
-            for (ValidationEvent evt : collector.getEvents()) {
+            for (final ValidationEvent evt : collector.getEvents()) {
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.SYNTAX, "XML Schema validation issue: " + evt.getMessage(), evt.getLinkedException()));
             }
 
@@ -126,19 +129,19 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
             result.addIssue(SIGMETIWXXMScanner.collectSIGMETProperties(source, refCtx, properties, hints));
 
             //Build the SIGMET:
-            Optional<AviationCodeListUser.SigmetAirmetReportStatus> status = properties.get(SIGMETProperties.Name.STATUS,
+            final Optional<AviationCodeListUser.SigmetAirmetReportStatus> status = properties.get(SIGMETProperties.Name.STATUS,
                     AviationCodeListUser.SigmetAirmetReportStatus.class);
             if (!status.isPresent()) {
-                result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "SIGMET status not known, unable to " +
-                        "proceed"));
+                result.addIssue(
+                        new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "SIGMET status not known, unable to " + "proceed"));
                 return result;
             }
 
             result.setConvertedMessage(createSIGMET(properties, status.get(), result));
-        } catch (ConversionException ce) {
+        } catch (final ConversionException ce) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.SYNTAX, "Unable to parse input as an XML document", ce));
             return result;
-        } catch (JAXBException | SAXException e) {
+        } catch (final JAXBException | SAXException e) {
             throw new RuntimeException("Unexpected exception in parsing IWXXM content", e);
         }
 
@@ -147,7 +150,7 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
 
     private SIGMET createSIGMET(final SIGMETProperties properties, final AviationCodeListUser.SigmetAirmetReportStatus status,
             final ConversionResult<SIGMET> result) {
-        SIGMETImpl.Builder SIGMETBuilder = new SIGMETImpl.Builder();
+        final SIGMETImpl.Builder SIGMETBuilder = new SIGMETImpl.Builder();
         SIGMETBuilder.setStatus(status);
 
         return SIGMETBuilder.build();
@@ -155,7 +158,7 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
 
     private static class IWXXMValidationEventHandler implements ValidationEventHandler {
 
-        private List<ValidationEvent> events = new ArrayList<>();
+        final private List<ValidationEvent> events = new ArrayList<>();
 
         @Override
         public boolean handleEvent(final ValidationEvent event) {
@@ -164,7 +167,7 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
         }
 
         List<ValidationEvent> getEvents() {
-            return events;
+            return Collections.unmodifiableList(events);
         }
 
     }
@@ -178,7 +181,7 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
          * @return the parsed DOM
          */
         @Override
-        protected Document parseAsDom(final Document input) throws ConversionException {
+        protected Document parseAsDom(final Document input) {
             return input;
         }
     }
