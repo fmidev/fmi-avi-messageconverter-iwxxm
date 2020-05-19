@@ -1012,14 +1012,14 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         return retval;
     }
 
-    public static class AsDOM extends SIGMETIWXXMSerializer<Document> {
+    public static class ToDOM extends SIGMETIWXXMSerializer<Document> {
         @Override
         protected Document render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException {
             return renderXMLDocument(sigmet, hints);
         }
     }
 
-    public static class AsString extends SIGMETIWXXMSerializer<String> {
+    public static class ToString extends SIGMETIWXXMSerializer<String> {
         @Override
         protected String render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException {
             Document result = renderXMLDocument(sigmet, hints);

@@ -169,7 +169,7 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
 
     }
 
-    public static class AsDOM extends SIGMETIWXXMParser<Document> {
+    public static class FromDOM extends SIGMETIWXXMParser<Document> {
 
         /**
          * This implementation simple passes the input Document through.
@@ -183,7 +183,7 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
         }
     }
 
-    public static class AsString extends SIGMETIWXXMParser<String> {
+    public static class FromString extends SIGMETIWXXMParser<String> {
         /**
          * Returns the TAF input message as A DOM Document.
          *

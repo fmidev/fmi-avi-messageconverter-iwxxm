@@ -14,12 +14,12 @@ public class IWXXMGenericBulletinConverter {
     // Parsers:
     @Bean
     public AviMessageSpecificConverter<Document, GenericMeteorologicalBulletin> genericBulletinIWXXMDOMParser() {
-        return new GenericBulletinIWXXMParser.AsDOM();
+        return new GenericBulletinIWXXMParser.FromDOM();
     }
 
     @Bean
     public AviMessageSpecificConverter<String, GenericMeteorologicalBulletin> genericBulletinIWXXMStringParser() {
-        return new GenericBulletinIWXXMParser.AsString();
+        return new GenericBulletinIWXXMParser.FromString();
     }
 
     // Serializers:

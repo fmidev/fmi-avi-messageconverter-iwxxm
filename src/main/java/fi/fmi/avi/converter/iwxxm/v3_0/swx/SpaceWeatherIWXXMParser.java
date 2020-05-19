@@ -155,14 +155,14 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
         return spaceWeatherAdvisory.build();
     }
 
-    public static class AsDOM extends SpaceWeatherIWXXMParser<Document> {
+    public static class FromDOM extends SpaceWeatherIWXXMParser<Document> {
         @Override
         protected Document parseAsDom(final Document input) throws ConversionException {
             return input;
         }
     }
 
-    public static class AsString extends SpaceWeatherIWXXMParser<String> {
+    public static class FromString extends SpaceWeatherIWXXMParser<String> {
         @Override
         protected Document parseAsDom(final String input) throws ConversionException {
             return IWXXMConverterBase.parseStringToDOM(input);

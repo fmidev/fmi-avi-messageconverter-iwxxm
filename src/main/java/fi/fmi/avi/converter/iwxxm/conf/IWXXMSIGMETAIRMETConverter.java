@@ -18,34 +18,34 @@ public class IWXXMSIGMETAIRMETConverter {
 
     @Bean
     public AviMessageSpecificConverter<String, SIGMET> sigmetIWXXMStringParser() {
-        return new SIGMETIWXXMParser.AsString();
+        return new SIGMETIWXXMParser.FromString();
     }
 
     @Bean
     public AviMessageSpecificConverter<Document, SIGMET> sigmetIWXXMDOMParser() {
-        return new SIGMETIWXXMParser.AsDOM();
+        return new SIGMETIWXXMParser.FromDOM();
     }
 
     // Serializers:
 
     @Bean
     public AviMessageSpecificConverter<SIGMET, String> sigmetIWXXMStringSerializer() {
-        return new SIGMETIWXXMSerializer.AsString();
+        return new SIGMETIWXXMSerializer.ToString();
     }
 
     @Bean
     public AviMessageSpecificConverter<SIGMET, Document> sigmetIWXXMDOMSerializer() {
-        return new SIGMETIWXXMSerializer.AsDOM();
+        return new SIGMETIWXXMSerializer.ToDOM();
     }
 
     @Bean
     public AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer() {
-        return new AIRMETIWXXMSerializer.AsString();
+        return new AIRMETIWXXMSerializer.ToString();
     }
 
     @Bean
     public AviMessageSpecificConverter<AIRMET, Document> airmetIWXXMDOMSerializer() {
-        return new AIRMETIWXXMSerializer.AsDOM();
+        return new AIRMETIWXXMSerializer.ToDOM();
     }
 
 }

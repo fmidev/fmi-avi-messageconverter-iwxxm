@@ -528,7 +528,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         return retval;
     }
 
-    public static class AsDOM extends TAFIWXXMSerializer<Document> {
+    public static class ToDOM extends TAFIWXXMSerializer<Document> {
 
         @Override
         protected Document render(final TAFType taf, final ConversionHints hints) throws ConversionException {
@@ -537,7 +537,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
 
     }
 
-    public static class AsString extends TAFIWXXMSerializer<String> {
+    public static class ToString extends TAFIWXXMSerializer<String> {
 
         @Override
         protected String render(final TAFType taf, final ConversionHints hints) throws ConversionException {
@@ -546,7 +546,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         }
     }
 
-    public static class AsJAXBObject extends TAFIWXXMSerializer<TAFType> {
+    public static class ToJAXBObject extends TAFIWXXMSerializer<TAFType> {
 
         @Override
         protected TAFType render(final TAFType taf, final ConversionHints hints) {

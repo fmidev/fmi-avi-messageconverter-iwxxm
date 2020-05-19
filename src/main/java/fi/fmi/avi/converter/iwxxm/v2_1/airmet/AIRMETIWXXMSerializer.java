@@ -728,14 +728,14 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         return retval;
     }
 
-    public static class AsDOM extends AIRMETIWXXMSerializer<Document> {
+    public static class ToDOM extends AIRMETIWXXMSerializer<Document> {
         @Override
         protected Document render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException {
             return this.renderXMLDocument(airmet, hints);
         }
     }
 
-    public static class AsString extends AIRMETIWXXMSerializer<String> {
+    public static class ToString extends AIRMETIWXXMSerializer<String> {
 
         @Override
         protected String render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException {

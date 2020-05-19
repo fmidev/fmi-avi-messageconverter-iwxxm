@@ -166,7 +166,7 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
         return result;
     }
 
-    static public class AsDOM<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends BulletinIWXXMSerializer<Document, U, S> {
+    static public class ToDOM<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends BulletinIWXXMSerializer<Document, U, S> {
 
         @Override
         protected Document render(final Document bulletin, final ConversionHints hints) throws ConversionException {
@@ -175,7 +175,7 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
 
     }
 
-    public static class AsString<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>>
+    public static class ToString<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>>
             extends BulletinIWXXMSerializer<java.lang.String, U, S> {
 
         @Override

@@ -50,7 +50,7 @@ public abstract class METARIWXXMParser<T> extends MeteorologicalAerodromeObserva
         }
     }
 
-    public static class AsDOM extends METARIWXXMParser<Document> {
+    public static class FromDOM extends METARIWXXMParser<Document> {
 
         /**
          * Returns the METAR input message as A DOM Document.
@@ -65,7 +65,7 @@ public abstract class METARIWXXMParser<T> extends MeteorologicalAerodromeObserva
         }
     }
 
-    public static class AsString extends METARIWXXMParser<String> {
+    public static class FromString extends METARIWXXMParser<String> {
 
         /**
          * Returns the METAR input message as A DOM Document.

@@ -42,14 +42,14 @@ public abstract class SpaceWeatherBulletinIWXXMParser<T> extends AbstractBulleti
         return this.scanner;
     }
 
-    public static class AsDOM extends SpaceWeatherBulletinIWXXMParser<Document> {
+    public static class FromDOM extends SpaceWeatherBulletinIWXXMParser<Document> {
         @Override
         protected Document parseAsDom(final Document input) throws ConversionException {
             return input;
         }
     }
 
-    public static class AsString extends SpaceWeatherBulletinIWXXMParser<java.lang.String> {
+    public static class FromString extends SpaceWeatherBulletinIWXXMParser<java.lang.String> {
         @Override
         protected Document parseAsDom(final java.lang.String input) throws ConversionException {
             return parseStringToDOM(input);

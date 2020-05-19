@@ -17,22 +17,22 @@ public class IWXXMMETARSPECIConverter {
 
     @Bean
     public AviMessageSpecificConverter<String, METAR> metarIWXXMStringParser() {
-        return new METARIWXXMParser.AsString();
+        return new METARIWXXMParser.FromString();
     }
 
     @Bean
     public AviMessageSpecificConverter<Document, METAR> metarIWXXMDOMParser() {
-        return new METARIWXXMParser.AsDOM();
+        return new METARIWXXMParser.FromDOM();
     }
 
     @Bean
     public AviMessageSpecificConverter<String, SPECI> speciIWXXMStringParser() {
-        return new SPECIIWXXMParser.AsString();
+        return new SPECIIWXXMParser.FromString();
     }
 
     @Bean
     public AviMessageSpecificConverter<Document, SPECI> speciIWXXMDOMParser() {
-        return new SPECIIWXXMParser.AsDOM();
+        return new SPECIIWXXMParser.FromDOM();
     }
 
     //Serializers:

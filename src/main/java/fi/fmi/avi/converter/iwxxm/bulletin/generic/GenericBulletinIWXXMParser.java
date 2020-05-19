@@ -37,14 +37,14 @@ public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXX
         return this.scanner;
     }
 
-    public static class AsDOM extends GenericBulletinIWXXMParser<Document> {
+    public static class FromDOM extends GenericBulletinIWXXMParser<Document> {
         @Override
         protected Document parseAsDom(final Document input) throws ConversionException {
             return input;
         }
     }
 
-    public static class AsString extends GenericBulletinIWXXMParser<java.lang.String> {
+    public static class FromString extends GenericBulletinIWXXMParser<java.lang.String> {
         @Override
         protected Document parseAsDom(final java.lang.String input) throws ConversionException {
             return parseStringToDOM(input);

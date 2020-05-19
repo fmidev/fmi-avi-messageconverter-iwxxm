@@ -413,7 +413,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         return retval;
     }
 
-    public static class AsDOM extends SpaceWeatherIWXXMSerializer<Document> {
+    public static class ToDOM extends SpaceWeatherIWXXMSerializer<Document> {
 
         @Override
         protected Document render(final SpaceWeatherAdvisoryType swx, final ConversionHints hints) throws ConversionException {
@@ -422,7 +422,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         }
     }
 
-    public static class AsString extends SpaceWeatherIWXXMSerializer<String> {
+    public static class ToString extends SpaceWeatherIWXXMSerializer<String> {
         @Override
         protected String render(final SpaceWeatherAdvisoryType swx, final ConversionHints hints) throws ConversionException {
             Document result = renderXMLDocument(swx, hints);

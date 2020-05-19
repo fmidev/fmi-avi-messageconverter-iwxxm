@@ -46,14 +46,14 @@ import icao.iwxxm21.TAFType;
  */
 public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
 
-    protected TAF createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx, final ConversionResult<TAF> result,
-            final ConversionHints hints) {
+    @Override
+    protected TAF createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx, final ConversionResult<TAF> result, final ConversionHints hints) {
         Objects.requireNonNull(source, "source cannot be null");
-        TAFType input;
+        final TAFType input;
         if (TAFType.class.isAssignableFrom(source.getClass())) {
             input = (TAFType) source;
         } else if (JAXBElement.class.isAssignableFrom(source.getClass())) {
-            JAXBElement<?> je = (JAXBElement<?>) source;
+            final JAXBElement<?> je = (JAXBElement<?>) source;
             if (TAFType.class.isAssignableFrom(je.getDeclaredType())) {
                 input = (TAFType) je.getValue();
             } else {
@@ -63,28 +63,28 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
             throw new IllegalArgumentException("Source is not a TAF JAXB element");
         }
 
-        TAFProperties properties = new TAFProperties();
+        final TAFProperties properties = new TAFProperties();
 
         //Other specific validation (using JAXB elements)
         result.addIssue(TAFIWXXMScanner.collectTAFProperties(input, refCtx, properties, hints));
 
         //Build the TAF:
-        Optional<AviationCodeListUser.TAFStatus> status = properties.get(TAFProperties.Name.STATUS, AviationCodeListUser.TAFStatus.class);
+        final Optional<AviationCodeListUser.TAFStatus> status = properties.get(TAFProperties.Name.STATUS, AviationCodeListUser.TAFStatus.class);
         if (!status.isPresent()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "TAF status not known, unable to " + "proceed"));
             return null;
         }
 
-        TAFImpl.Builder tafBuilder = TAFImpl.builder();
+        final TAFImpl.Builder tafBuilder = TAFImpl.builder();
         tafBuilder.setStatus(status.get());
         properties.get(TAFProperties.Name.ISSUE_TIME, PartialOrCompleteTimeInstant.class).ifPresent(tafBuilder::setIssueTime);
 
         if (!AviationCodeListUser.TAFStatus.MISSING.equals(status.get())) {
             properties.get(TAFProperties.Name.VALID_TIME, PartialOrCompleteTimePeriod.class).ifPresent(tafBuilder::setValidityTime);
-            List<OMObservationProperties> fctProps = properties.getList(TAFProperties.Name.CHANGE_FORECAST, OMObservationProperties.class);
+            final List<OMObservationProperties> fctProps = properties.getList(TAFProperties.Name.CHANGE_FORECAST, OMObservationProperties.class);
             if (!fctProps.isEmpty()) {
-                List<TAFChangeForecast> changeForecasts = new ArrayList<>();
-                for (OMObservationProperties fctProp : fctProps) {
+                final List<TAFChangeForecast> changeForecasts = new ArrayList<>();
+                for (final OMObservationProperties fctProp : fctProps) {
                     changeForecasts.add(createChangeForecast(fctProp));
                 }
                 tafBuilder.setChangeForecasts(changeForecasts);
@@ -93,7 +93,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
 
         properties.get(TAFProperties.Name.BASE_FORECAST, OMObservationProperties.class).ifPresent((fctProp) -> {
             Optional<Aerodrome> aerodrome = fctProp.get(OMObservationProperties.Name.AERODROME, Aerodrome.class);
-            Optional<GeoPosition> samplingPos = fctProp.get(OMObservationProperties.Name.SAMPLING_POINT, GeoPosition.class);
+            final Optional<GeoPosition> samplingPos = fctProp.get(OMObservationProperties.Name.SAMPLING_POINT, GeoPosition.class);
             if (aerodrome.isPresent()) {
                 if (!aerodrome.get().getReferencePoint().isPresent()) {
                     if (samplingPos.isPresent()) {
@@ -108,16 +108,19 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
             });
         });
 
-        Optional<Aerodrome> previousReportAerodrome = properties.get(TAFProperties.Name.PREV_REPORT_AERODROME, Aerodrome.class);
-        Optional<PartialOrCompleteTimePeriod> previousReportValidTime = properties.get(TAFProperties.Name.PREV_REPORT_VALID_TIME, PartialOrCompleteTimePeriod.class);
+        final Optional<Aerodrome> previousReportAerodrome = properties.get(TAFProperties.Name.PREV_REPORT_AERODROME, Aerodrome.class);
+        final Optional<PartialOrCompleteTimePeriod> previousReportValidTime = properties.get(TAFProperties.Name.PREV_REPORT_VALID_TIME,
+                PartialOrCompleteTimePeriod.class);
         if (previousReportAerodrome.isPresent() && previousReportValidTime.isPresent()) {
             tafBuilder.setReferredReport(
                     TAFReferenceImpl.builder().setAerodrome(previousReportAerodrome.get()).setValidityTime(previousReportValidTime.get()).build());
         }
 
         properties.get(TAFProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent((metaProps) -> {
-            metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class).ifPresent(tafBuilder::setPermissibleUsage);
-            metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_REASON, AviationCodeListUser.PermissibleUsageReason.class).ifPresent(tafBuilder::setPermissibleUsageReason);
+            metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class)
+                    .ifPresent(tafBuilder::setPermissibleUsage);
+            metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_REASON, AviationCodeListUser.PermissibleUsageReason.class)
+                    .ifPresent(tafBuilder::setPermissibleUsageReason);
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_SUPPLEMENTARY, String.class).ifPresent(tafBuilder::setPermissibleUsageSupplementary);
             metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_ID, String.class).ifPresent(tafBuilder::setTranslatedBulletinID);
             metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_RECEPTION_TIME, ZonedDateTime.class).ifPresent(tafBuilder::setTranslatedBulletinReceptionTime);
@@ -131,19 +134,20 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
     }
 
     private TAFBaseForecast createBaseForecast(final TAFForecastRecordProperties source) {
-        TAFBaseForecastImpl.Builder builder = TAFBaseForecastImpl.builder();
+        final TAFBaseForecastImpl.Builder builder = TAFBaseForecastImpl.builder();
         source.get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class).ifPresent(builder::setPrevailingVisibility);
-        source.get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, AviationCodeListUser.RelationalOperator.class).ifPresent(builder::setPrevailingVisibilityOperator);
+        source.get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, AviationCodeListUser.RelationalOperator.class)
+                .ifPresent(builder::setPrevailingVisibilityOperator);
         source.get(TAFForecastRecordProperties.Name.SURFACE_WIND, SurfaceWind.class).ifPresent(builder::setSurfaceWind);
-        Optional<Boolean> nsw = source.get(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class);
-        List<Weather> weather = source.getList(TAFForecastRecordProperties.Name.WEATHER, Weather.class);
+        final Optional<Boolean> nsw = source.get(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class);
+        final List<Weather> weather = source.getList(TAFForecastRecordProperties.Name.WEATHER, Weather.class);
         if (nsw.isPresent() && nsw.get()) {
             builder.setNoSignificantWeather(true);
-        } else if (!weather.isEmpty()){
+        } else if (!weather.isEmpty()) {
             builder.setForecastWeather(weather);
         }
         source.get(TAFForecastRecordProperties.Name.CLOUD, CloudForecast.class).ifPresent(builder::setCloud);
-        List<TAFAirTemperatureForecast> temps = source.getList(TAFForecastRecordProperties.Name.TEMPERATURE, TAFAirTemperatureForecast.class);
+        final List<TAFAirTemperatureForecast> temps = source.getList(TAFForecastRecordProperties.Name.TEMPERATURE, TAFAirTemperatureForecast.class);
         if (!temps.isEmpty()) {
             builder.setTemperatures(temps);
         }
@@ -152,16 +156,20 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
     }
 
     private TAFChangeForecast createChangeForecast(final OMObservationProperties source) {
-        TAFChangeForecastImpl.Builder builder = TAFChangeForecastImpl.builder();
+        final TAFChangeForecastImpl.Builder builder = TAFChangeForecastImpl.builder();
         source.get(OMObservationProperties.Name.PHENOMENON_TIME, PartialOrCompleteTimePeriod.class).ifPresent(builder::setPeriodOfChange);
-        Optional<TAFForecastRecordProperties> recordProps = source.get(OMObservationProperties.Name.RESULT, TAFForecastRecordProperties.class);
+        final Optional<TAFForecastRecordProperties> recordProps = source.get(OMObservationProperties.Name.RESULT, TAFForecastRecordProperties.class);
         if (recordProps.isPresent()) {
-            recordProps.get().get(TAFForecastRecordProperties.Name.CHANGE_INDICATOR, AviationCodeListUser.TAFChangeIndicator.class).ifPresent(builder::setChangeIndicator);
+            recordProps.get()
+                    .get(TAFForecastRecordProperties.Name.CHANGE_INDICATOR, AviationCodeListUser.TAFChangeIndicator.class)
+                    .ifPresent(builder::setChangeIndicator);
             recordProps.get().get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class).ifPresent(builder::setPrevailingVisibility);
-            recordProps.get().get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, AviationCodeListUser.RelationalOperator.class).ifPresent(builder::setPrevailingVisibilityOperator);
+            recordProps.get()
+                    .get(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, AviationCodeListUser.RelationalOperator.class)
+                    .ifPresent(builder::setPrevailingVisibilityOperator);
             recordProps.get().get(TAFForecastRecordProperties.Name.SURFACE_WIND, SurfaceWind.class).ifPresent(builder::setSurfaceWind);
-            Optional<Boolean> nsw = recordProps.get().get(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class);
-            List<Weather> weather = recordProps.get().getList(TAFForecastRecordProperties.Name.WEATHER, Weather.class);
+            final Optional<Boolean> nsw = recordProps.get().get(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class);
+            final List<Weather> weather = recordProps.get().getList(TAFForecastRecordProperties.Name.WEATHER, Weather.class);
             if (nsw.isPresent() && nsw.get()) {
                 builder.setNoSignificantWeather(true);
             } else if (!weather.isEmpty()) {
@@ -173,7 +181,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         return builder.build();
     }
 
-    public static class AsString extends TAFIWXXMParser<String> {
+    public static class FromString extends TAFIWXXMParser<String> {
         /**
          * Returns the TAF input message as A DOM Document.
          *
@@ -187,16 +195,15 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         }
     }
 
-    public static class AsDOM extends TAFIWXXMParser<Document> {
+    public static class FromDOM extends TAFIWXXMParser<Document> {
         /**
          * Returns the TAF input message as A DOM Document.
          *
          * @param input the XML Document input as a String
          * @return the input parsed as DOM
-         * @throws ConversionException if an exception occurs while converting input to DOM
          */
         @Override
-        protected Document parseAsDom(final Document input) throws ConversionException {
+        protected Document parseAsDom(final Document input) {
             return input;
         }
     }

@@ -50,7 +50,7 @@ public abstract class SPECIIWXXMParser<T> extends MeteorologicalAerodromeObserva
         }
     }
 
-    public static class AsDOM extends SPECIIWXXMParser<Document> {
+    public static class FromDOM extends SPECIIWXXMParser<Document> {
 
         /**
          * Returns the SPECI input message as A DOM Document.
@@ -65,7 +65,7 @@ public abstract class SPECIIWXXMParser<T> extends MeteorologicalAerodromeObserva
         }
     }
 
-    public static class AsString extends SPECIIWXXMParser<String> {
+    public static class FromString extends SPECIIWXXMParser<String> {
 
         /**
          * Returns the SPECI input message as A DOM Document.

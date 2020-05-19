@@ -42,14 +42,14 @@ public abstract class TAFBulletinIWXXMParser<T> extends AbstractBulletinIWXXMPar
         return this.scanner;
     }
 
-    public static class AsDOM extends TAFBulletinIWXXMParser<Document> {
+    public static class FromDOM extends TAFBulletinIWXXMParser<Document> {
         @Override
         protected Document parseAsDom(final Document input) throws ConversionException {
             return input;
         }
     }
 
-    public static class AsString extends TAFBulletinIWXXMParser<String> {
+    public static class FromString extends TAFBulletinIWXXMParser<String> {
         @Override
         protected Document parseAsDom(final java.lang.String input) throws ConversionException {
             return parseStringToDOM(input);
