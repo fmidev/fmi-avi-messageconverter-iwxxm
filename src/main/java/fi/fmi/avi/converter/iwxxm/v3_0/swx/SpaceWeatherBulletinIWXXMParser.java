@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.v3_0.SpaceWeatherAdvisory;
+package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;

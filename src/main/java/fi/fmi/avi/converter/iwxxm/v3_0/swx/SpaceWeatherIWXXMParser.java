@@ -1,7 +1,7 @@
-package fi.fmi.avi.converter.iwxxm.v3_0.SpaceWeatherAdvisory;
+package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,12 +35,12 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
     protected SpaceWeatherAdvisory createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx,
             final ConversionResult<SpaceWeatherAdvisory> result, final ConversionHints hints) {
         Objects.requireNonNull(source, "source cannot be null");
-        SpaceWeatherAdvisoryType input;
+        final SpaceWeatherAdvisoryType input;
 
         if (SpaceWeatherAdvisoryType.class.isAssignableFrom(source.getClass())) {
             input = (SpaceWeatherAdvisoryType) source;
         } else if (JAXBElement.class.isAssignableFrom(source.getClass())) {
-            JAXBElement<?> je = (JAXBElement<?>) source;
+            final JAXBElement<?> je = (JAXBElement<?>) source;
             if (SpaceWeatherAdvisoryType.class.isAssignableFrom(je.getDeclaredType())) {
                 input = (SpaceWeatherAdvisoryType) je.getValue();
             } else {
@@ -49,42 +49,41 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
         } else {
             throw new IllegalArgumentException("Source is not a SWX JAXB element");
         }
-        SpaceWeatherAdvisoryProperties properties = new SpaceWeatherAdvisoryProperties();
+        final SpaceWeatherAdvisoryProperties properties = new SpaceWeatherAdvisoryProperties();
 
-        List<ConversionIssue> issues = SpaceWeatherAdvisoryIWXXMScanner.collectSpaceWeatherAdvisoryProperties(input, refCtx, properties, hints);
+        final List<ConversionIssue> issues = SpaceWeatherAdvisoryIWXXMScanner.collectSpaceWeatherAdvisoryProperties(input, refCtx, properties, hints);
         result.addIssue(issues);
 
         if (result.getConversionIssues().size() > 0) {
             return null;
         }
 
-        List<SpaceWeatherAnalysisProperties> analysisPropertiesList = properties.get(SpaceWeatherAdvisoryProperties.Name.ANALYSES, List.class).get();
+        final List<SpaceWeatherAnalysisProperties> analysisPropertiesList = properties.getList(SpaceWeatherAdvisoryProperties.Name.ANALYSES,
+                SpaceWeatherAnalysisProperties.class);
 
         //ANALYSES
-        List<SpaceWeatherAdvisoryAnalysis> analyses = new ArrayList<>();
-        for (SpaceWeatherAnalysisProperties analysisProperties : analysisPropertiesList) {
-            SpaceWeatherAdvisoryAnalysisImpl.Builder spaceWeatherAnalysis = SpaceWeatherAdvisoryAnalysisImpl.builder();
+        final List<SpaceWeatherAdvisoryAnalysis> analyses = new ArrayList<>();
+        for (final SpaceWeatherAnalysisProperties analysisProperties : analysisPropertiesList) {
+            final SpaceWeatherAdvisoryAnalysisImpl.Builder spaceWeatherAnalysis = SpaceWeatherAdvisoryAnalysisImpl.builder();
 
-            Optional<PartialOrCompleteTimeInstant> analysisTime = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TIME,
+            final Optional<PartialOrCompleteTimeInstant> analysisTime = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TIME,
                     PartialOrCompleteTimeInstant.class);
-            if(analysisTime.isPresent()) {
-                spaceWeatherAnalysis.setTime(analysisTime.get());
-            }
+            analysisTime.ifPresent(spaceWeatherAnalysis::setTime);
 
-            List<SpaceWeatherRegionProperties> regionPropertiesList = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.REGION, List.class).get();
+            final List<SpaceWeatherRegionProperties> regionPropertiesList = analysisProperties.getList(SpaceWeatherAnalysisProperties.Name.REGION,
+                    SpaceWeatherRegionProperties.class);
 
             //REGIONS
-            List<SpaceWeatherRegion> weatherRegions = new ArrayList<>();
-            for (SpaceWeatherRegionProperties regionProperties : regionPropertiesList) {
-                SpaceWeatherRegionImpl.Builder spaceWeatherRegion = SpaceWeatherRegionImpl.builder();
+            final List<SpaceWeatherRegion> weatherRegions = new ArrayList<>();
+            for (final SpaceWeatherRegionProperties regionProperties : regionPropertiesList) {
+                final SpaceWeatherRegionImpl.Builder spaceWeatherRegion = SpaceWeatherRegionImpl.builder();
 
-                Optional<AirspaceVolume> airspaceVolume = regionProperties.get(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, AirspaceVolume.class);
-                if(airspaceVolume.isPresent()) {
+                final Optional<AirspaceVolume> airspaceVolume = regionProperties.get(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, AirspaceVolume.class);
+                if (airspaceVolume.isPresent()) {
                     spaceWeatherRegion.setAirSpaceVolume(airspaceVolume);
                 }
 
-
-                Optional<String> locationIndicator = regionProperties.get(SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR, String.class);
+                final Optional<String> locationIndicator = regionProperties.get(SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR, String.class);
                 if (locationIndicator.isPresent()) {
                     spaceWeatherRegion.setLocationIndicator(locationIndicator);
                 }
@@ -93,19 +92,18 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
 
             //Set region
             spaceWeatherAnalysis.setRegion(weatherRegions);
-            Optional<Enum> type = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TYPE, Enum.class);
-            if (type.isPresent()) {
-                spaceWeatherAnalysis.setAnalysisType((SpaceWeatherAdvisoryAnalysis.Type) type.get());
-            }
+            final Optional<SpaceWeatherAdvisoryAnalysis.Type> type = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TYPE,
+                    SpaceWeatherAdvisoryAnalysis.Type.class);
+            type.ifPresent(spaceWeatherAnalysis::setAnalysisType);
 
-            Optional<Boolean> noInformation = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.NO_INFORMATION_AVAILABLE, Boolean.class);
+            final Optional<Boolean> noInformation = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.NO_INFORMATION_AVAILABLE, Boolean.class);
             if (noInformation.isPresent()) {
                 spaceWeatherAnalysis.setNoInformationAvailable(noInformation.get());
             } else {
                 spaceWeatherAnalysis.setNoInformationAvailable(false);
             }
 
-            Optional<Boolean> notExpected = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.NO_PHENOMENON_EXPECTED, Boolean.class);
+            final Optional<Boolean> notExpected = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.NO_PHENOMENON_EXPECTED, Boolean.class);
             if (notExpected.isPresent()) {
                 spaceWeatherAnalysis.setNoPhenomenaExpected(notExpected.get());
             } else {
@@ -116,22 +114,22 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
         }
 
         //ADVISORY
-        SpaceWeatherAdvisoryImpl.Builder spaceWeatherAdvisory = SpaceWeatherAdvisoryImpl.builder();
+        final SpaceWeatherAdvisoryImpl.Builder spaceWeatherAdvisory = SpaceWeatherAdvisoryImpl.builder();
         spaceWeatherAdvisory.addAllAnalyses(analyses);
 
-        Optional<PartialOrCompleteTimeInstant> issueTime = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUE_TIME, PartialOrCompleteTimeInstant.class);
+        final Optional<PartialOrCompleteTimeInstant> issueTime = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUE_TIME,
+                PartialOrCompleteTimeInstant.class);
         if (issueTime.isPresent()) {
             spaceWeatherAdvisory.setIssueTime(issueTime);
         }
-        Optional<String> issuer = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER_NAME, String.class);
-        if (issuer.isPresent()) {
-            spaceWeatherAdvisory.setIssuingCenter(IssuingCenterImpl.builder().setName(issuer.get()).build());
-        }
+        final Optional<String> issuer = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER_NAME, String.class);
+        issuer.ifPresent(s -> spaceWeatherAdvisory.setIssuingCenter(IssuingCenterImpl.builder().setName(s).build()));
+
         final Optional<AdvisoryNumber> advisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.ADVISORY_NUMBER, AdvisoryNumber.class);
-        if (advisoryNumber.isPresent()) {
-            spaceWeatherAdvisory.setAdvisoryNumber(advisoryNumber.get());
-        }
-        Optional<AdvisoryNumber> replaceAdvisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.REPLACE_ADVISORY_NUMBER, AdvisoryNumber.class);
+        advisoryNumber.ifPresent(spaceWeatherAdvisory::setAdvisoryNumber);
+
+        final Optional<AdvisoryNumber> replaceAdvisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.REPLACE_ADVISORY_NUMBER,
+                AdvisoryNumber.class);
         if (replaceAdvisoryNumber.isPresent()) {
             spaceWeatherAdvisory.setReplaceAdvisoryNumber(replaceAdvisoryNumber);
         }
@@ -149,7 +147,7 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
 
     public static class FromDOM extends SpaceWeatherIWXXMParser<Document> {
         @Override
-        protected Document parseAsDom(final Document input) throws ConversionException {
+        protected Document parseAsDom(final Document input) {
             return input;
         }
     }

@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.v3_0.SpaceWeatherAdvisory;
+package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -31,6 +31,7 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
+import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.AdvisoryNumber;
@@ -93,21 +94,21 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         }
 
         if (input.getReplacedAdvisoryNumber() != null) {
-            AdvisoryNumber replaceAdvisoryNumber = parseAdvisoryNumber(input.getReplacedAdvisoryNumber());
+            final AdvisoryNumber replaceAdvisoryNumber = parseAdvisoryNumber(input.getReplacedAdvisoryNumber());
             properties.set(SpaceWeatherAdvisoryProperties.Name.REPLACE_ADVISORY_NUMBER, replaceAdvisoryNumber);
         }
 
         if (input.getPhenomenon() != null) {
-            List<String> phenomena = parsePhenomenonList(input.getPhenomenon());
-            properties.set(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, phenomena);
+            final List<String> phenomena = parsePhenomenonList(input.getPhenomenon());
+            properties.addAllToList(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, phenomena);
         } else {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Space weather phenomena are missing is missing"));
         }
 
         //Set analysis
         if (input.getAnalysis().size() == 5) {
-            List<SpaceWeatherAnalysisProperties> analyses = getAnalyses(input.getAnalysis(), issueList, refCtx);
-            properties.set(SpaceWeatherAdvisoryProperties.Name.ANALYSES, analyses);
+            final List<SpaceWeatherAnalysisProperties> analyses = getAnalyses(input.getAnalysis(), issueList, refCtx);
+            properties.addAllToList(SpaceWeatherAdvisoryProperties.Name.ANALYSES, analyses);
         } else {
             issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER, "Found incorrect number of analyses."));
         }
@@ -125,12 +126,13 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         return issueList;
     }
 
-    private static NextAdvisory getNextAdvisory(TimeInstantPropertyType nextAdvisory, ReferredObjectRetrievalContext refCtx, IssueList issueList) {
-        NextAdvisoryImpl.Builder na = NextAdvisoryImpl.builder();
+    private static NextAdvisory getNextAdvisory(final TimeInstantPropertyType nextAdvisory, final ReferredObjectRetrievalContext refCtx,
+            final IssueList issueList) {
+        final NextAdvisoryImpl.Builder na = NextAdvisoryImpl.builder();
         if (nextAdvisory.getNilReason() != null && nextAdvisory.getNilReason().size() > 0) {
-            if(nextAdvisory.getNilReason().size() > 1) {
-                issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "More than one nil reason was found,"
-                        + " but not reported"));
+            if (nextAdvisory.getNilReason().size() > 1) {
+                issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
+                        "More than one nil reason was found," + " but not reported"));
             }
             //TODO: move string to constants
             if (nextAdvisory.getNilReason().get(0).equals("http://codes.wmo.int/common/nil/inapplicable")) {
@@ -141,10 +143,10 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
             }
         } else {
             na.setTimeSpecifier(NextAdvisory.Type.NEXT_ADVISORY_AT);
-            TimePositionType timePosition =nextAdvisory.getTimeInstant().getTimePosition();
+            final TimePositionType timePosition = nextAdvisory.getTimeInstant().getTimePosition();
             if (timePosition != null && timePosition.getValue().size() == 1) {
-                String time = timePosition.getValue().get(0);
-                PartialOrCompleteTimeInstant completeTime = PartialOrCompleteTimeInstant.builder().setCompleteTime(ZonedDateTime.parse(time)).build();
+                final String time = timePosition.getValue().get(0);
+                final PartialOrCompleteTimeInstant completeTime = PartialOrCompleteTimeInstant.builder().setCompleteTime(ZonedDateTime.parse(time)).build();
                 na.setTime(completeTime);
             } else {
                 issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Next advisory time is expected, but is missing"));
@@ -153,9 +155,9 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         return na.build();
     }
 
-    private static AdvisoryNumber parseAdvisoryNumber(String advisoryNumber) {
-        List<Integer> i = new ArrayList<>();
-        for (String element : advisoryNumber.split("/")) {
+    private static AdvisoryNumber parseAdvisoryNumber(final String advisoryNumber) {
+        final List<Integer> i = new ArrayList<>();
+        for (final String element : advisoryNumber.split("/")) {
             i.add(Integer.parseInt(element));
         }
 
@@ -163,31 +165,31 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
     }
 
     private static List<String> parsePhenomenonList(final List<SpaceWeatherPhenomenaType> elements) {
-        List<String> phenomena = new ArrayList<>();
-        for (SpaceWeatherPhenomenaType element : elements) {
+        final List<String> phenomena = new ArrayList<>();
+        for (final SpaceWeatherPhenomenaType element : elements) {
             phenomena.add(element.getHref());
         }
 
         return phenomena;
     }
 
-    private static List<SpaceWeatherAnalysisProperties> getAnalyses(final List<SpaceWeatherAnalysisPropertyType> elements, IssueList issueList,
+    private static List<SpaceWeatherAnalysisProperties> getAnalyses(final List<SpaceWeatherAnalysisPropertyType> elements, final IssueList issueList,
             final ReferredObjectRetrievalContext refCtx) {
-        List<SpaceWeatherAnalysisProperties> analyses = new ArrayList<>();
-        for (SpaceWeatherAnalysisPropertyType spaceWeatherAnalysisElement : elements) {
+        final List<SpaceWeatherAnalysisProperties> analyses = new ArrayList<>();
+        for (final SpaceWeatherAnalysisPropertyType spaceWeatherAnalysisElement : elements) {
 
-            SpaceWeatherAnalysisProperties properties = new SpaceWeatherAnalysisProperties();
+            final SpaceWeatherAnalysisProperties properties = new SpaceWeatherAnalysisProperties();
 
-            SpaceWeatherAnalysisType spaceWeatherAnalysis = spaceWeatherAnalysisElement.getSpaceWeatherAnalysis();
+            final SpaceWeatherAnalysisType spaceWeatherAnalysis = spaceWeatherAnalysisElement.getSpaceWeatherAnalysis();
 
             properties.set(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TIME, getAnalysisTime(spaceWeatherAnalysis, issueList));
 
-            List<SpaceWeatherRegionProperties> regions = getSpaceWeatherRegion(spaceWeatherAnalysis, issueList, refCtx);
-            properties.set(SpaceWeatherAnalysisProperties.Name.REGION, regions);
+            final List<SpaceWeatherRegionProperties> regions = getSpaceWeatherRegion(spaceWeatherAnalysis, issueList, refCtx);
+            properties.addAllToList(SpaceWeatherAnalysisProperties.Name.REGION, regions);
 
-            TimeIndicatorType timIndicator = spaceWeatherAnalysis.getTimeIndicator();
-            if (timIndicator != null) {
-                if (timIndicator.name().toUpperCase().equals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION.toString())) {
+            final TimeIndicatorType timeIndicator = spaceWeatherAnalysis.getTimeIndicator();
+            if (timeIndicator != null) {
+                if (timeIndicator.name().toUpperCase().equals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION.toString())) {
                     properties.set(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TYPE, SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION);
                 } else {
                     properties.set(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TYPE, SpaceWeatherAdvisoryAnalysis.Type.FORECAST);
@@ -198,17 +200,18 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
 
             //TODO: Make better
             Optional<String> nilReason = Optional.empty();
-            Optional<List> analysisProp = properties.get(SpaceWeatherAnalysisProperties.Name.REGION, List.class);
-            if (analysisProp.isPresent() && analysisProp.get().size() == 1) {
-                nilReason = ((List<SpaceWeatherRegionProperties>) analysisProp.get()).get(0).get(SpaceWeatherRegionProperties.Name.NIL_REASON, String.class);
+            final List<SpaceWeatherRegionProperties> analysisProp = properties.getList(SpaceWeatherAnalysisProperties.Name.REGION,
+                    SpaceWeatherRegionProperties.class);
+            if (analysisProp.size() == 1) {
+                nilReason = analysisProp.get(0).get(SpaceWeatherRegionProperties.Name.NIL_REASON, String.class);
                 properties.set(SpaceWeatherAnalysisProperties.Name.NO_INFORMATION_AVAILABLE, false);
                 properties.set(SpaceWeatherAnalysisProperties.Name.NO_PHENOMENON_EXPECTED, false);
             }
             if (nilReason.isPresent()) {
-                if (nilReason.get().equals("http://codes.wmo.int/common/nil/nothingOfOperationalSignificance")) {
+                if (nilReason.get().equals(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
                     properties.set(SpaceWeatherAnalysisProperties.Name.NO_INFORMATION_AVAILABLE, false);
                     properties.set(SpaceWeatherAnalysisProperties.Name.NO_PHENOMENON_EXPECTED, true);
-                } else if (nilReason.get().equals("Some other valid string")) {
+                } else if (nilReason.get().equals("Some other valid string")) { //FIXME!!
                     properties.set(SpaceWeatherAnalysisProperties.Name.NO_INFORMATION_AVAILABLE, true);
                     properties.set(SpaceWeatherAnalysisProperties.Name.NO_PHENOMENON_EXPECTED, false);
                 } else {
@@ -226,14 +229,14 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         return analyses;
     }
 
-    private static PartialOrCompleteTimeInstant getAnalysisTime(SpaceWeatherAnalysisType spaceWeatherAnalysisType, IssueList issueList) {
-        TimeInstantType timeInstantType = (TimeInstantType) spaceWeatherAnalysisType.getPhenomenonTime().getAbstractTimeObject().getValue();
+    private static PartialOrCompleteTimeInstant getAnalysisTime(final SpaceWeatherAnalysisType spaceWeatherAnalysisType, final IssueList issueList) {
+        final TimeInstantType timeInstantType = (TimeInstantType) spaceWeatherAnalysisType.getPhenomenonTime().getAbstractTimeObject().getValue();
         if (timeInstantType != null) {
-            List<String> timePositionList = timeInstantType.getTimePosition().getValue();
-            if(timePositionList == null || timePositionList.size() == 0) {
+            final List<String> timePositionList = timeInstantType.getTimePosition().getValue();
+            if (timePositionList == null || timePositionList.size() == 0) {
                 issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No time position is missing from list."));
             } else {
-                if(timePositionList.size() > 1) {
+                if (timePositionList.size() > 1) {
                     issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "More than one time position was found."));
                 }
                 return PartialOrCompleteTimeInstant.builder().setCompleteTime(ZonedDateTime.parse(timePositionList.get(0))).build();
@@ -244,24 +247,23 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         return null;
     }
 
-
-    private static List<SpaceWeatherRegionProperties> getSpaceWeatherRegion(SpaceWeatherAnalysisType spaceWeatherAnalysisType, IssueList issueList,
-            ReferredObjectRetrievalContext refCtx) {
-        List<SpaceWeatherRegionProperties> regions = new ArrayList<>();
-        for (SpaceWeatherRegionPropertyType regionPropertyType : spaceWeatherAnalysisType.getRegion()) {
-            SpaceWeatherRegionProperties regionProperties = parseSpaceWeatherRegion(regionPropertyType, issueList, null, refCtx);
+    private static List<SpaceWeatherRegionProperties> getSpaceWeatherRegion(final SpaceWeatherAnalysisType spaceWeatherAnalysisType, final IssueList issueList,
+            final ReferredObjectRetrievalContext refCtx) {
+        final List<SpaceWeatherRegionProperties> regions = new ArrayList<>();
+        for (final SpaceWeatherRegionPropertyType regionPropertyType : spaceWeatherAnalysisType.getRegion()) {
+            final SpaceWeatherRegionProperties regionProperties = parseSpaceWeatherRegion(regionPropertyType, issueList, null, refCtx);
             regions.add(regionProperties);
         }
         return regions;
     }
 
-    private static SpaceWeatherRegionProperties parseSpaceWeatherRegion(final SpaceWeatherRegionPropertyType regionProperty, IssueList issueList,
-            PartialOrCompleteTimeInstant analysisTime, ReferredObjectRetrievalContext refCtx) {
-        SpaceWeatherRegionProperties properties = new SpaceWeatherRegionProperties();
+    private static SpaceWeatherRegionProperties parseSpaceWeatherRegion(final SpaceWeatherRegionPropertyType regionProperty, final IssueList issueList,
+            final PartialOrCompleteTimeInstant analysisTime, final ReferredObjectRetrievalContext refCtx) {
+        final SpaceWeatherRegionProperties properties = new SpaceWeatherRegionProperties();
         SpaceWeatherRegionType regionType = null;
 
         if (regionProperty.getHref() != null) {
-            Optional<SpaceWeatherRegionType> optional = refCtx.getReferredObject(regionProperty.getHref(), SpaceWeatherRegionType.class);
+            final Optional<SpaceWeatherRegionType> optional = refCtx.getReferredObject(regionProperty.getHref(), SpaceWeatherRegionType.class);
             if (optional.isPresent()) {
                 regionType = optional.get();
             } else {
@@ -269,7 +271,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
                 return properties;
             }
         } else if (regionProperty.getNilReason().size() > 0) {
-            if(regionProperty.getNilReason().size() > 1) {
+            if (regionProperty.getNilReason().size() > 1) {
                 issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "More than on nil reason was detected."));
             }
             properties.set(SpaceWeatherRegionProperties.Name.NIL_REASON, regionProperty.getNilReason().get(0));
@@ -279,19 +281,16 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         }
 
         //TODO: fix bulder method
-        AirspaceVolumeImpl.Builder airspaceVolume = AirspaceVolumeImpl.builder();
-        SurfaceType surface = regionType.getGeographicLocation()
-                .getAirspaceVolume()
-                .getHorizontalProjection()
-                .getSurface().getValue();
+        final AirspaceVolumeImpl.Builder airspaceVolume = AirspaceVolumeImpl.builder();
+        final SurfaceType surface = regionType.getGeographicLocation().getAirspaceVolume().getHorizontalProjection().getSurface().getValue();
 
-        if(surface.getAxisLabels() != null && surface.getAxisLabels().size() > 0) {
+        if (surface.getAxisLabels() != null && surface.getAxisLabels().size() > 0) {
             airspaceVolume.setAxisLabels(surface.getAxisLabels());
         } else {
             issueList.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "Axis labels are missing");
         }
 
-        if(surface.getSrsName() != null) {
+        if (surface.getSrsName() != null) {
             airspaceVolume.setSrsName(surface.getSrsName());
         } else {
             issueList.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "Srs name is missing");
@@ -303,34 +302,31 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
             issueList.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "Srs dimension is missing");
         }
 
-        List<?> abstractSurfacePatch = surface
-                .getPatches()
-                .getValue()
-                .getAbstractSurfacePatch();
+        final List<?> abstractSurfacePatch = surface.getPatches().getValue().getAbstractSurfacePatch();
 
-        if(abstractSurfacePatch == null || abstractSurfacePatch.size() == 0) {
+        if (abstractSurfacePatch == null || abstractSurfacePatch.size() == 0) {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No surface patch geometry was found."));
             return null;
-        } else if(abstractSurfacePatch.size() > 1) {
-            issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "More than one surfacpatch geometry was found "
-                    + "but not handled."));
+        } else if (abstractSurfacePatch.size() > 1) {
+            issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
+                    "More than one surfacpatch geometry was found " + "but not handled."));
         }
 
-        PolygonPatchType polygonPatchType = (PolygonPatchType) ((JAXBElement<AbstractSurfacePatchType>)abstractSurfacePatch.get(0)).getValue();
-        Object obj = polygonPatchType.getExterior().getAbstractRing().getValue();
+        final PolygonPatchType polygonPatchType = (PolygonPatchType) ((JAXBElement<AbstractSurfacePatchType>) abstractSurfacePatch.get(0)).getValue();
+        final Object obj = polygonPatchType.getExterior().getAbstractRing().getValue();
 
         if (obj instanceof LinearRingType) {
-            PointGeometryImpl.Builder pointGeometry = PointGeometryImpl.builder();
+            final PointGeometryImpl.Builder pointGeometry = PointGeometryImpl.builder();
             pointGeometry.setPoint(((LinearRingType) obj).getPosList().getValue());
             airspaceVolume.setGeometry(pointGeometry.build());
         } else if (obj instanceof RingType) {
-            CircleByCenterPoint cbcp = parseRingType((RingType) obj, issueList);
+            final CircleByCenterPoint cbcp = parseRingType((RingType) obj, issueList);
             airspaceVolume.setGeometry(cbcp);
         }
-        AirspaceVolumeType volume = regionType.getGeographicLocation().getAirspaceVolume();
+        final AirspaceVolumeType volume = regionType.getGeographicLocation().getAirspaceVolume();
 
         if (volume.getUpperLimit() != null) {
-            NumericMeasureImpl.Builder nm = NumericMeasureImpl.builder()
+            final NumericMeasureImpl.Builder nm = NumericMeasureImpl.builder()
                     .setValue(Double.parseDouble(volume.getUpperLimit().getValue()))
                     .setUom(volume.getUpperLimit().getUom());
             airspaceVolume.setUpperLimit(nm.build());
@@ -343,30 +339,33 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         return properties;
     }
 
-    private static CircleByCenterPoint parseRingType(final RingType ringType, IssueList issueList) {
+    private static CircleByCenterPoint parseRingType(final RingType ringType, final IssueList issueList) {
         CurveType curveType = null;
-        List<CurvePropertyType> curvePropertyTypeList = ringType.getCurveMember();
-        if(curvePropertyTypeList == null) {
+        final List<CurvePropertyType> curvePropertyTypeList = ringType.getCurveMember();
+        if (curvePropertyTypeList == null) {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "CurveMemeber list was empty"));
             return null;
         }
-        curveType = (CurveType)curvePropertyTypeList.get(0).getAbstractCurve().getValue();
+        curveType = (CurveType) curvePropertyTypeList.get(0).getAbstractCurve().getValue();
 
-        if(curvePropertyTypeList.size() > 1) {
+        if (curvePropertyTypeList.size() > 1) {
             issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "More than one curve type property was found"));
         }
 
-        List<?> abstractCurveSegmentTypeList = curveType.getSegments().getAbstractCurveSegment();
+        final List<?> abstractCurveSegmentTypeList = curveType.getSegments().getAbstractCurveSegment();
         if(abstractCurveSegmentTypeList != null && abstractCurveSegmentTypeList.size() > 0) {
-            if(abstractCurveSegmentTypeList.size() > 1) {
-                issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "More than one curve segment found in "
-                        + "analysis, but not handled"));
+            if (abstractCurveSegmentTypeList.size() > 1) {
+                issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
+                        "More than one curve segment found in " + "analysis, but not handled"));
             }
-            CircleByCenterPointType cbct = (CircleByCenterPointType) ((JAXBElement<AbstractCurveSegmentType>)abstractCurveSegmentTypeList.get(0)).getValue();
+            final CircleByCenterPointType cbct = (CircleByCenterPointType) ((JAXBElement<AbstractCurveSegmentType>) abstractCurveSegmentTypeList.get(
+                    0)).getValue();
 
-            NumericMeasureImpl.Builder radius = NumericMeasureImpl.builder().setUom(cbct.getRadius().getUom()).setValue(cbct.getRadius().getValue());
+            final NumericMeasureImpl.Builder radius = NumericMeasureImpl.builder().setUom(cbct.getRadius().getUom()).setValue(cbct.getRadius().getValue());
 
-            CircleByCenterPointImpl.Builder circleRadius = CircleByCenterPointImpl.builder().addAllCoordinates(cbct.getPos().getValue()).setRadius(radius.build());
+            final CircleByCenterPointImpl.Builder circleRadius = CircleByCenterPointImpl.builder()
+                    .addAllCoordinates(cbct.getPos().getValue())
+                    .setRadius(radius.build());
             return circleRadius.build();
         }
         issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Curve segment missing from analysis."));

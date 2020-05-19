@@ -1,9 +1,8 @@
-package fi.fmi.avi.converter.iwxxm.v3_0.SpaceWeatherAdvisory;
-
-import java.util.List;
+package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
+import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisoryAnalysis;
 
 public class SpaceWeatherAnalysisProperties extends AbstractPropertyContainer {
 
@@ -11,7 +10,10 @@ public class SpaceWeatherAnalysisProperties extends AbstractPropertyContainer {
     }
 
     public enum Name implements AbstractPropertyContainer.PropertyName {
-        ANALYSIS_TIME(PartialOrCompleteTimeInstant.class), ANALYSIS_TYPE(Enum.class), REGION(List.class), NO_PHENOMENON_EXPECTED(Boolean.class),
+        ANALYSIS_TIME(PartialOrCompleteTimeInstant.class),//
+        ANALYSIS_TYPE(SpaceWeatherAdvisoryAnalysis.Type.class),//
+        REGION(SpaceWeatherRegionProperties.class),//
+        NO_PHENOMENON_EXPECTED(Boolean.class),//
         NO_INFORMATION_AVAILABLE(Boolean.class);
 
         private final Class<?> acceptedType;
