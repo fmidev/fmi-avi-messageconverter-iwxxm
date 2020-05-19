@@ -12,10 +12,10 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.bulletin.BulletinProperties;
 import fi.fmi.avi.converter.iwxxm.bulletin.MeteorologicalBulletinIWXXMScanner;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherBulletin;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherBulletinImpl;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
+import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
+import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
+import fi.fmi.avi.model.swx.immutable.SpaceWeatherBulletinImpl;
 
 public abstract class SpaceWeatherBulletinIWXXMParser<T> extends AbstractBulletinIWXXMParser<T, SpaceWeatherAdvisory, SpaceWeatherBulletin> {
 

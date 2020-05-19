@@ -26,7 +26,7 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryImpl;
+import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryImpl;
 import junit.framework.TestCase;
 
 @RunWith(SpringJUnit4ClassRunner.class)

@@ -5,13 +5,13 @@ import org.springframework.context.annotation.Import;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.ConversionSpecification;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherBulletin;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SIGMET;
+import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
+import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import icao.iwxxm21.TAFType;

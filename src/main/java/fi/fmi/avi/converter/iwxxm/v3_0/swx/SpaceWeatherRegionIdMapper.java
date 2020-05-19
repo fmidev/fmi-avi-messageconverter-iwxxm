@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisoryAnalysis;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherRegion;
+import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
+import fi.fmi.avi.model.swx.SpaceWeatherRegion;
 
 public class SpaceWeatherRegionIdMapper {
 

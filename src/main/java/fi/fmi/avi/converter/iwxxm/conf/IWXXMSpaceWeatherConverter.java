@@ -9,8 +9,8 @@ import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.v3_0.swx.SpaceWeatherBulletinIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.v3_0.swx.SpaceWeatherIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.v3_0.swx.SpaceWeatherIWXXMSerializer;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherBulletin;
+import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
+import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
 
 @Configuration
 public class IWXXMSpaceWeatherConverter {

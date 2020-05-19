@@ -2,7 +2,7 @@ package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisoryAnalysis;
+import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
 
 public class SpaceWeatherAnalysisProperties extends AbstractPropertyContainer {
 

@@ -34,11 +34,11 @@ import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PointGeometry;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.AirspaceVolume;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisoryAnalysis;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherRegion;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
+import fi.fmi.avi.model.swx.AirspaceVolume;
+import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
+import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
+import fi.fmi.avi.model.swx.SpaceWeatherRegion;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)

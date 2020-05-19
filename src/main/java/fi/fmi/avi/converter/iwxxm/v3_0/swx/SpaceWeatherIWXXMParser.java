@@ -18,16 +18,16 @@ import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Parser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.AdvisoryNumber;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.AirspaceVolume;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.NextAdvisory;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisoryAnalysis;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherRegion;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.IssuingCenterImpl;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryAnalysisImpl;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherAdvisoryImpl;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.immutable.SpaceWeatherRegionImpl;
+import fi.fmi.avi.model.swx.AdvisoryNumber;
+import fi.fmi.avi.model.swx.AirspaceVolume;
+import fi.fmi.avi.model.swx.NextAdvisory;
+import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
+import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
+import fi.fmi.avi.model.swx.SpaceWeatherRegion;
+import fi.fmi.avi.model.swx.immutable.IssuingCenterImpl;
+import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryAnalysisImpl;
+import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryImpl;
+import fi.fmi.avi.model.swx.immutable.SpaceWeatherRegionImpl;
 import icao.iwxxm30.SpaceWeatherAdvisoryType;
 
 public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T, SpaceWeatherAdvisory> {

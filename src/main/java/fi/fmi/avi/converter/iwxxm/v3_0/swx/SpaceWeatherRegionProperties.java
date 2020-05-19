@@ -1,7 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
-import fi.fmi.avi.model.SpaceWeatherAdvisory.AirspaceVolume;
+import fi.fmi.avi.model.swx.AirspaceVolume;
 
 public class SpaceWeatherRegionProperties extends AbstractPropertyContainer {
     public SpaceWeatherRegionProperties() {
