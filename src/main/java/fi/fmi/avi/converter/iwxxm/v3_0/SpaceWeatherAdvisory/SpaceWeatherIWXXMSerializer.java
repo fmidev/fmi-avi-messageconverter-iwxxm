@@ -406,7 +406,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
 
     @Override
     protected InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException {
-        InputStream retval = this.getClass().getResourceAsStream("/fi/fmi/avi/converter/iwxxm/v30/swx/SpaceWeatherAdvisoryCleanUp.xsl");
+        InputStream retval = this.getClass().getResourceAsStream("SpaceWeatherAdvisoryCleanUp.xsl");
         if (retval == null) {
             throw new ConversionException("Error accessing cleanup XSLT sheet file");
         }

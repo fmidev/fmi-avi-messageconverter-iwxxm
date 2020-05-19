@@ -47,7 +47,7 @@ public class SpaceWeatherIWXXMSerializerTest {
     private String getInput(String fileName) throws IOException {
         InputStream is = null;
         try {
-            is = SpaceWeatherIWXXMSerializerTest.class.getResourceAsStream("/fi/fmi/avi/converter/iwxxm/v30/" + fileName);
+            is = SpaceWeatherIWXXMSerializerTest.class.getResourceAsStream(fileName);
             Objects.requireNonNull(is);
             return IOUtils.toString(is, "UTF-8");
         } finally {
