@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -92,7 +93,7 @@ public abstract class AbstractPropertyContainer {
      * @param key
      *         the key
      * @param value
-     *         the new list itme
+     *         the new list item
      *
      * @throws IllegalArgumentException
      *         if the property with this key already has non-list value, or if the value is of wrong type
@@ -111,6 +112,21 @@ public abstract class AbstractPropertyContainer {
             throw new IllegalArgumentException(
                     "Cannot assign value of type " + value.getClass().getCanonicalName() + " to property " + key + ", must be assignable to "
                             + key.getAcceptedType().getCanonicalName());
+        }
+    }
+
+    /**
+     * Adds all given values to the list of values for the given key.
+     *
+     * @param key    the key
+     * @param values the new list items
+     * @throws IllegalArgumentException if the property with this key already has non-list value, or if the value is of wrong type
+     */
+    public void addAllToList(final PropertyName key, final Collection<?> values) throws IllegalArgumentException {
+        if (values != null) {
+            for (final Object value : values) {
+                addToList(key, value);
+            }
         }
     }
 
