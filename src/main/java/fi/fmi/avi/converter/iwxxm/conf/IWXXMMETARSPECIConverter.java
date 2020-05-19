@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
-import fi.fmi.avi.converter.iwxxm.v21.metar.METARIWXXMParser;
-import fi.fmi.avi.converter.iwxxm.v21.metar.SPECIIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.v2_1.metar.METARIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.v2_1.metar.SPECIIWXXMParser;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
 

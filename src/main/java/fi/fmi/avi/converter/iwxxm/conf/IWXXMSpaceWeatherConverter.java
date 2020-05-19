@@ -6,9 +6,9 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherBulletinIWXXMParser;
-import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMParser;
-import fi.fmi.avi.converter.iwxxm.v30.SpaceWeatherAdvisory.SpaceWeatherIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.v3_0.SpaceWeatherAdvisory.SpaceWeatherBulletinIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.v3_0.SpaceWeatherAdvisory.SpaceWeatherIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.v3_0.SpaceWeatherAdvisory.SpaceWeatherIWXXMSerializer;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.SpaceWeatherAdvisory.SpaceWeatherBulletin;
 

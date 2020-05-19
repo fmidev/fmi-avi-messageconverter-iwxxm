@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Configuration;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
-import fi.fmi.avi.converter.iwxxm.v21.airmet.AIRMETIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMParser;
-import fi.fmi.avi.converter.iwxxm.v21.sigmet.SIGMETIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.v2_1.airmet.AIRMETIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.v2_1.sigmet.SIGMETIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.v2_1.sigmet.SIGMETIWXXMSerializer;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SIGMET;
 
