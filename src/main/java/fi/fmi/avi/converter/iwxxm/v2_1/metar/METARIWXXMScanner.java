@@ -26,6 +26,7 @@ import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
+import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Scanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
 import fi.fmi.avi.converter.iwxxm.v2_1.OMObservationProperties;
 import fi.fmi.avi.model.Aerodrome;
@@ -99,7 +100,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
 
         // report metadata
         GenericReportProperties meta = new GenericReportProperties();
-        retval.addAll(collectReportMetadata(input, meta, hints));
+        retval.addAll(AbstractIWXXM21Scanner.collectReportMetadata(input, meta, hints));
         properties.set(METARProperties.Name.REPORT_METADATA, meta);
 
         if (MeteorologicalAerodromeReportStatusType.MISSING == status) {
@@ -167,7 +168,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
     private static IssueList collectObservationProperties(final OMObservationType obs, final MeteorologicalAerodromeReportStatusType metarStatus,
             final ReferredObjectRetrievalContext refCtx,
             final METARProperties metarProps, final OMObservationProperties properties, final ConversionHints hints) {
-        IssueList retval = collectCommonObsMetadata(obs, refCtx, properties, "METAR Observation", hints);
+        IssueList retval = AbstractIWXXM21Scanner.collectCommonObsMetadata(obs, refCtx, properties, "METAR Observation", hints);
         //check type & observedProperty:
         Optional<String> type = properties.get(OMObservationProperties.Name.TYPE, String.class);
         if (type.isPresent()) {
@@ -204,7 +205,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
         }
         Optional<Aerodrome> aerodrome = properties.get(OMObservationProperties.Name.AERODROME, Aerodrome.class);
 
-        Optional<MeteorologicalAerodromeObservationRecordType> obsRecord = getAerodromeObservationRecordResult(obs, refCtx);
+        Optional<MeteorologicalAerodromeObservationRecordType> obsRecord = AbstractIWXXM21Scanner.getAerodromeObservationRecordResult(obs, refCtx);
         if (obsRecord.isPresent()) {
             ObservationRecordProperties obsProps = new ObservationRecordProperties();
 
@@ -245,7 +246,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
 
             //Recent weather (C)
             for (AerodromeRecentWeatherType weather:obsRecord.get().getRecentWeather()) {
-                withWeatherBuilderFor(weather, hints, (builder) -> {
+                AbstractIWXXM21Scanner.withWeatherBuilderFor(weather, hints, (builder) -> {
                     obsProps.addToList(ObservationRecordProperties.Name.RECENT_WEATHER, builder.build());
                 }, retval::add);
             }
@@ -330,7 +331,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
 
                 // Present weather (C)
                 for (AerodromePresentWeatherType weather:obsRecord.get().getPresentWeather()) {
-                    withWeatherBuilderFor(weather, hints, (builder) -> {
+                    AbstractIWXXM21Scanner.withWeatherBuilderFor(weather, hints, (builder) -> {
                         obsProps.addToList(ObservationRecordProperties.Name.PRESENT_WEATHER, builder.build());
                     }, retval::add);
                 }
@@ -352,7 +353,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
 
     private static IssueList collectTrendProperties(final OMObservationType trend, final ReferredObjectRetrievalContext refCtx,
             final OMObservationProperties properties, final ConversionHints hints) {
-        IssueList retval = collectCommonObsMetadata(trend, refCtx, properties, "METAR Trend", hints);
+        IssueList retval = AbstractIWXXM21Scanner.collectCommonObsMetadata(trend, refCtx, properties, "METAR Trend", hints);
         //check type & observedProperty:
         Optional<String> type = properties.get(OMObservationProperties.Name.TYPE, String.class);
         if (type.isPresent()) {
@@ -387,7 +388,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
             }
 
         }
-        Optional<MeteorologicalAerodromeTrendForecastRecordType> trendRecord = getAerodromeTrendRecordResult(trend, refCtx);
+        Optional<MeteorologicalAerodromeTrendForecastRecordType> trendRecord = AbstractIWXXM21Scanner.getAerodromeTrendRecordResult(trend, refCtx);
         if (trendRecord.isPresent()) {
 
             TrendForecastRecordProperties trendProps = new TrendForecastRecordProperties();
@@ -435,7 +436,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
                 //forecast weather (C) (incl. NSW)
                 withEachNillableChild(trendRecord.get(), trendRecord.get().getForecastWeather(), AerodromeForecastWeatherType.class,
                         new QName(IWXXMNamespaceContext.getURI("iwxxm"), "forecastWeather"), refCtx, (value) -> {
-                            withWeatherBuilderFor(value, hints, (builder) -> {
+                            AbstractIWXXM21Scanner.withWeatherBuilderFor(value, hints, (builder) -> {
                                 trendProps.addToList(TrendForecastRecordProperties.Name.FORECAST_WEATHER, builder.build());
                             }, retval::add);
                         }, (nilReasons) -> {
@@ -895,7 +896,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
                             List<AerodromeCloudForecastType.Layer> inputLayers = cloudFct.get().getLayer();
                             for (CloudLayerPropertyType layerProp : inputLayers) {
                                 if (layerProp != null) {
-                                    withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
+                                    AbstractIWXXM21Scanner.withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
                                         layers.add(layerBuilder.build());
                                     }, issues::add, "trend cloud");
                                 } else {
@@ -981,7 +982,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
         ObservedCloudLayerImpl.Builder layerBuilder = ObservedCloudLayerImpl.builder();
         Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
         if (layer.isPresent()) {
-            withCloudBase(layer.get(), refCtx, layerBuilder::setBase, (nilReasons) -> {
+            AbstractIWXXM21Scanner.withCloudBase(layer.get(), refCtx, layerBuilder::setBase, (nilReasons) -> {
                 if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                     layerBuilder.setHeightUnobservableByAutoSystem(true);
                 }
@@ -990,7 +991,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
                 }
             }, issues::add, contextPath);
 
-            withCloudAmount(layer.get(), refCtx, layerBuilder::setAmount, (nilReasons) -> {
+            AbstractIWXXM21Scanner.withCloudAmount(layer.get(), refCtx, layerBuilder::setAmount, (nilReasons) -> {
                 if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                     layerBuilder.setAmountUnobservableByAutoSystem(true);
                 }
@@ -999,7 +1000,7 @@ public class METARIWXXMScanner extends AbstractIWXXMScanner {
                 }
             }, issues::add, contextPath);
 
-            withCloudType(layer.get(), refCtx, layerBuilder::setCloudType, (nilReasons) -> {
+            AbstractIWXXM21Scanner.withCloudType(layer.get(), refCtx, layerBuilder::setCloudType, (nilReasons) -> {
                 if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                     layerBuilder.setCloudTypeUnobservableByAutoSystem(true);
                 }

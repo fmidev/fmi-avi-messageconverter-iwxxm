@@ -23,6 +23,7 @@ import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
+import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Scanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
 import fi.fmi.avi.converter.iwxxm.v2_1.OMObservationProperties;
 import fi.fmi.avi.model.Aerodrome;
@@ -155,7 +156,7 @@ public class TAFIWXXMScanner extends AbstractIWXXMScanner {
 
         // report metadata
         GenericReportProperties meta = new GenericReportProperties();
-        retval.addAll(collectReportMetadata(input, meta, hints));
+        retval.addAll(AbstractIWXXM21Scanner.collectReportMetadata(input, meta, hints));
         if (!meta.contains(GenericReportProperties.Name.TRANSLATION_TIME)) {
             if (hints != null && hints.containsKey(ConversionHints.KEY_TRANSLATION_TIME)) {
                 Object value = hints.get(ConversionHints.KEY_TRANSLATION_TIME);
@@ -174,7 +175,7 @@ public class TAFIWXXMScanner extends AbstractIWXXMScanner {
             final OMObservationProperties properties, final ConversionHints hints) {
 
         IssueList retval = collectBaseFctObsMetadata(baseFct, issueTime, tafValidityTime, refCtx, properties, hints);
-        Optional<MeteorologicalAerodromeForecastRecordType> baseRecord = getAerodromeForecastRecordResult(baseFct, refCtx);
+        Optional<MeteorologicalAerodromeForecastRecordType> baseRecord = AbstractIWXXM21Scanner.getAerodromeForecastRecordResult(baseFct, refCtx);
         if (baseRecord.isPresent()) {
             TAFForecastRecordProperties baseProps = new TAFForecastRecordProperties();
 
@@ -223,8 +224,9 @@ public class TAFIWXXMScanner extends AbstractIWXXMScanner {
     private static List<ConversionIssue> collectChangeForecast(final OMObservationType changeFct, final ZonedDateTime issueTime, final PartialOrCompleteTimePeriod tafValidityTime, final ReferredObjectRetrievalContext refCtx,
             final OMObservationProperties properties, final ConversionHints hints) {
 
-        IssueList retval = collectChangeFctObsMetadata(changeFct, issueTime, tafValidityTime, refCtx, properties, "change forecast " + changeFct.getId(), hints);
-        Optional<MeteorologicalAerodromeForecastRecordType> changeRecord = getAerodromeForecastRecordResult(changeFct, refCtx);
+        IssueList retval = collectChangeFctObsMetadata(changeFct, issueTime, tafValidityTime, refCtx, properties, "change forecast " + changeFct.getId(),
+                hints);
+        Optional<MeteorologicalAerodromeForecastRecordType> changeRecord = AbstractIWXXM21Scanner.getAerodromeForecastRecordResult(changeFct, refCtx);
         if (changeRecord.isPresent()) {
             TAFForecastRecordProperties changeProps = new TAFForecastRecordProperties();
             retval.addAll(collectCommonForecastRecordProperties(changeRecord.get(), refCtx, changeProps, "change forecast " + changeFct.getId(), hints));
@@ -342,7 +344,7 @@ public class TAFIWXXMScanner extends AbstractIWXXMScanner {
     private static IssueList collectAndCheckCommonObsMetadata(final OMObservationType fct, final ZonedDateTime issueTime,
             final PartialOrCompleteTimePeriod tafValidityTime, final ReferredObjectRetrievalContext refCtx, final OMObservationProperties properties,
             final String contextPath, final ConversionHints hints) {
-        IssueList retval = collectCommonObsMetadata(fct, refCtx, properties, contextPath, hints);
+        IssueList retval = AbstractIWXXM21Scanner.collectCommonObsMetadata(fct, refCtx, properties, contextPath, hints);
 
         Optional<String> type = properties.get(OMObservationProperties.Name.TYPE, String.class);
         if (type.isPresent() && !AviationCodeListUser.MET_AERODROME_FORECAST_TYPE.equals(type.get())) {
@@ -381,7 +383,7 @@ public class TAFIWXXMScanner extends AbstractIWXXMScanner {
         //weather
         withEachNillableChild(record, record.getWeather(), AerodromeForecastWeatherType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "weather"),
                 refCtx, (value) -> {
-                    withWeatherBuilderFor(value, hints, (builder) -> {
+                    AbstractIWXXM21Scanner.withWeatherBuilderFor(value, hints, (builder) -> {
                         properties.addToList(TAFForecastRecordProperties.Name.WEATHER, builder.build());
                     }, retval::add);
                 }, (nilReasons) -> {
@@ -413,7 +415,7 @@ public class TAFIWXXMScanner extends AbstractIWXXMScanner {
                 } else {
                     List<CloudLayer> layers = new ArrayList<>();
                     for (CloudLayerPropertyType layerProp : cloudForecast.get().getLayer()) {
-                        withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
+                        AbstractIWXXM21Scanner.withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
                             layers.add(layerBuilder.build());
                         }, retval::add, contextPath + " / cloud forecast");
                     }
