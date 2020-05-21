@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import aero.aixm511.AirspaceVolumeType;
 import aero.aixm511.SurfaceType;
 import aero.aixm511.UnitTimeSlicePropertyType;
+import aero.aixm511.UnitTimeSliceType;
 import aero.aixm511.UnitType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -44,6 +45,7 @@ import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
 import fi.fmi.avi.model.swx.SpaceWeatherRegion;
 import fi.fmi.avi.model.swx.immutable.AdvisoryNumberImpl;
 import fi.fmi.avi.model.swx.immutable.AirspaceVolumeImpl;
+import fi.fmi.avi.model.swx.immutable.IssuingCenterImpl;
 import fi.fmi.avi.model.swx.immutable.NextAdvisoryImpl;
 import icao.iwxxm30.SpaceWeatherAdvisoryType;
 import icao.iwxxm30.SpaceWeatherAnalysisPropertyType;
@@ -81,11 +83,27 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
                     issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
                             "More than one unit time slice was found," + " but not handled"));
                 }
-                String issuingCenter = unitTimeSlicePropertyTypeList.get(0).getUnitTimeSlice().getUnitName().getValue();
-                properties.set(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER_NAME, issuingCenter);
+                final UnitTimeSliceType issuingCenterType = unitTimeSlicePropertyTypeList.get(0).getUnitTimeSlice();
+                final IssuingCenterImpl.Builder issuingCenterBuilder = IssuingCenterImpl.builder();
+                if (issuingCenterType.getDesignator() != null) {
+                    if (issuingCenterType.getDesignator().getValue() != null) {
+                        issuingCenterBuilder.setDesignator(issuingCenterType.getDesignator().getValue());
+                    }
+                }
+                if (issuingCenterType.getUnitName() != null) {
+                    if (issuingCenterType.getUnitName().getValue() != null) {
+                        issuingCenterBuilder.setName(issuingCenterType.getUnitName().getValue());
+                    }
+                }
+                if (issuingCenterType.getType() != null) {
+                    if (issuingCenterType.getType().getValue() != null) {
+                        issuingCenterBuilder.setType(issuingCenterType.getType().getValue());
+                    }
+                }
+                properties.set(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER, issuingCenterBuilder.build());
             }
         } else {
-            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Issuing center name is missing"));
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Issuing center info is missing"));
         }
 
         if (input.getAdvisoryNumber() != null) {

@@ -2,7 +2,11 @@
   "issueTime": {
     "completeTime": "2016-11-08T00:00:00Z"
   },
-  "issuingCenter":{"name":"DONLON","type":"OTHER:SWXC","interpretation":"SNAPSHOT"},
+  "issuingCenter": {
+    "name": "DONLON Weather Forecast Center",
+    "designator": "DONLON",
+    "type": "OTHER:SWXC"
+  },
   "advisoryNumber": {
     "year": 2016,
     "serialNumber": 2

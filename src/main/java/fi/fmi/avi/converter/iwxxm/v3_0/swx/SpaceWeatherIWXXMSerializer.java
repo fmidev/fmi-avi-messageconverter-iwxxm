@@ -277,9 +277,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             codeUnitType.setValue(issuingCenter.getType().get());
             unitTimeSliceType.setType(codeUnitType);
         }
-        if (issuingCenter.getInterpretation().isPresent()) {
-            unitTimeSliceType.setInterpretation(issuingCenter.getInterpretation().get());
-        }
+        unitTimeSliceType.setInterpretation("SNAPSHOT");
         unitTimeSliceType.setValidTime(new TimePrimitivePropertyType());
         unitTimeSlicePropertyType.setUnitTimeSlice(unitTimeSliceType);
         unitType.getTimeSlice().add(unitTimeSlicePropertyType);

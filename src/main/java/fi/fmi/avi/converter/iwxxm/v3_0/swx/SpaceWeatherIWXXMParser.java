@@ -20,6 +20,7 @@ import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Parser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.swx.AdvisoryNumber;
 import fi.fmi.avi.model.swx.AirspaceVolume;
+import fi.fmi.avi.model.swx.IssuingCenter;
 import fi.fmi.avi.model.swx.NextAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
@@ -124,8 +125,8 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
         if (issueTime.isPresent()) {
             spaceWeatherAdvisory.setIssueTime(issueTime);
         }
-        final Optional<String> issuer = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER_NAME, String.class);
-        issuer.ifPresent(s -> spaceWeatherAdvisory.setIssuingCenter(IssuingCenterImpl.builder().setName(s).build()));
+        final Optional<IssuingCenter> issuer = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER, IssuingCenter.class);
+        issuer.ifPresent(spaceWeatherAdvisory::setIssuingCenter);
 
         final Optional<AdvisoryNumber> advisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.ADVISORY_NUMBER, AdvisoryNumber.class);
         advisoryNumber.ifPresent(spaceWeatherAdvisory::setAdvisoryNumber);

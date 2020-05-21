@@ -72,7 +72,9 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
+        assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
+        assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
+        assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T01:00Z"), swx.getIssueTime().get().getCompleteTime().get());
@@ -102,7 +104,9 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
+        assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
+        assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
+        assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T00:00Z"), swx.getIssueTime().get().getCompleteTime().get());
@@ -140,7 +144,9 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
+        assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
+        assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
+        assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T00:00Z"), swx.getIssueTime().get().getCompleteTime().get());
