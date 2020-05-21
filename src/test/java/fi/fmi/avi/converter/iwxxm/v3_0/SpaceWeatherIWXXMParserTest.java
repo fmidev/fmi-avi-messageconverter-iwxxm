@@ -86,9 +86,10 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
                 region.getLocationIndicator().get());
 
         AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
-        assertEquals(BigInteger.valueOf(2), airspaceVolume.getSrsDimension().get());
-        assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", airspaceVolume.getSrsName().get());
-        PointGeometry geometry = (PointGeometry) airspaceVolume.getGeometry().get();
+        assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
+        PointGeometry geometry = (PointGeometry) airspaceVolume.getHorizontalProjection().get();
+        assertEquals(BigInteger.valueOf(2), geometry.getSrsDimension().get());
+        assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", geometry.getSrsName().get());
         assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getPoint());
         assertFalse(airspaceVolume.getUpperLimitReference().isPresent());
         assertFalse(airspaceVolume.getUpperLimit().isPresent());
@@ -120,8 +121,10 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
                 region.getLocationIndicator().get());
 
         AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
-        assertEquals(BigInteger.valueOf(2), airspaceVolume.getSrsDimension().get());
-        assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", airspaceVolume.getSrsName().get());
+        assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
+        PointGeometry geometry = (PointGeometry) airspaceVolume.getHorizontalProjection().get();
+        assertEquals(BigInteger.valueOf(2), geometry.getSrsDimension().get());
+        assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", geometry.getSrsName().get());
         assertEquals("STD", airspaceVolume.getUpperLimitReference().get());
         PointGeometry geometry = (PointGeometry) airspaceVolume.getGeometry().get();
         assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getPoint());
@@ -158,10 +161,10 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
                 region.getLocationIndicator().get());
 
         AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
-        assertEquals(BigInteger.valueOf(2), airspaceVolume.getSrsDimension().get());
-        assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", airspaceVolume.getSrsName().get());
-
-        CircleByCenterPoint geometry = (CircleByCenterPoint) airspaceVolume.getGeometry().get();
+        assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
+        CircleByCenterPoint geometry = (CircleByCenterPoint) airspaceVolume.getHorizontalProjection().get();
+        assertEquals(BigInteger.valueOf(2), geometry.getSrsDimension().get());
+        assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", geometry.getSrsName().get());
         assertEquals(Arrays.asList(-16.6392, 160.9368), geometry.getCoordinates());
         NumericMeasure gnm = NumericMeasureImpl.builder().setUom("[nmi_i]").setValue(5409.75).build();
         assertEquals(gnm, geometry.getRadius());

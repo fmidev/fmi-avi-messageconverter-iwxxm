@@ -336,12 +336,17 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         final Object obj = polygonPatchType.getExterior().getAbstractRing().getValue();
 
         if (obj instanceof LinearRingType) {
+            //FIXME: This not correct: using a PointGeometry to record all the positions of a linear ring:
             final PointGeometryImpl.Builder pointGeometry = PointGeometryImpl.builder();
+            pointGeometry.setSrsName(surface.getSrsName());
+            pointGeometry.setAxisLabels(surface.getAxisLabels());
+            pointGeometry.setSrsDimension(surface.getSrsDimension());
             pointGeometry.setPoint(((LinearRingType) obj).getPosList().getValue());
-            airspaceVolume.setGeometry(pointGeometry.build());
-        } else if (obj instanceof RingType) {
-            final CircleByCenterPoint cbcp = parseRingType((RingType) obj, issueList);
-            airspaceVolume.setGeometry(cbcp);
+            airspaceVolume.setHorizontalProjection(pointGeometry.build());
+
+        } else if (obj instanceof RingType) { //FIXME: this if very fragile: circle detection by existence of a RingType
+            final CircleByCenterPoint cbcp = parseRingType(surface, (RingType) obj, issueList);
+            airspaceVolume.setHorizontalProjection(cbcp);
         }
         final AirspaceVolumeType volume = regionType.getGeographicLocation().getAirspaceVolume();
 
@@ -364,11 +369,11 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         return properties;
     }
 
-    private static CircleByCenterPoint parseRingType(final RingType ringType, final IssueList issueList) {
+    private static CircleByCenterPoint parseRingType(final SurfaceType surface, final RingType ringType, final IssueList issueList) {
         CurveType curveType = null;
         final List<CurvePropertyType> curvePropertyTypeList = ringType.getCurveMember();
         if (curvePropertyTypeList == null) {
-            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "CurveMemeber list was empty"));
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "CurveMember list was empty"));
             return null;
         }
         curveType = (CurveType) curvePropertyTypeList.get(0).getAbstractCurve().getValue();
@@ -390,7 +395,10 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
 
             final CircleByCenterPointImpl.Builder circleRadius = CircleByCenterPointImpl.builder()
                     .addAllCoordinates(cbct.getPos().getValue())
-                    .setRadius(radius.build());
+                    .setRadius(radius.build())
+                    .setSrsName(surface.getSrsName())
+                    .setAxisLabels(surface.getAxisLabels())
+                    .setSrsDimension(surface.getSrsDimension());
             return circleRadius.build();
         }
         issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Curve segment missing from analysis."));

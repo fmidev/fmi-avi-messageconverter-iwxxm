@@ -23,14 +23,14 @@
       "region": [
         {
           "airSpaceVolume": {
-            "srsDimension": 2,
-            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-            "axisLabels": [
-              "Lat",
-              "Long"
-            ],
-            "geometry": {
+            "horizontalProjection": {
               "type": "Point",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
               "point": [
                 -180,
                 90,
@@ -54,14 +54,14 @@
         },
         {
           "airSpaceVolume": {
-            "srsDimension": 2,
-            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-            "axisLabels": [
-              "Lat",
-              "Long"
-            ],
-            "geometry": {
+            "horizontalProjection": {
               "type": "Point",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
               "point": [
                 -180,
                 -90,
@@ -93,14 +93,14 @@
       "region": [
         {
           "airSpaceVolume": {
-            "srsDimension": 2,
-            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-            "axisLabels": [
-              "Lat",
-              "Long"
-            ],
-            "geometry": {
+            "horizontalProjection": {
               "type": "Point",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
               "point": [
                 -180,
                 90,
@@ -124,14 +124,14 @@
         },
         {
           "airSpaceVolume": {
-            "srsDimension": 2,
-            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-            "axisLabels": [
-              "Lat",
-              "Long"
-            ],
-            "geometry": {
+            "horizontalProjection": {
               "type": "Point",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
               "point": [
                 -180,
                 -90,
@@ -163,14 +163,14 @@
       "region": [
         {
           "airSpaceVolume": {
-            "srsDimension": 2,
-            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-            "axisLabels": [
-              "Lat",
-              "Long"
-            ],
-            "geometry": {
+            "horizontalProjection": {
               "type": "Point",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
               "point": [
                 -180,
                 90,
@@ -194,14 +194,14 @@
         },
         {
           "airSpaceVolume": {
-            "srsDimension": 2,
-            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-            "axisLabels": [
-              "Lat",
-              "Long"
-            ],
-            "geometry": {
+            "horizontalProjection": {
               "type": "Point",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
               "point": [
                 -180,
                 -90,
@@ -233,14 +233,14 @@
       "region": [
         {
           "airSpaceVolume": {
-            "srsDimension": 2,
-            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-            "axisLabels": [
-              "Lat",
-              "Long"
-            ],
-            "geometry": {
+            "horizontalProjection": {
               "type": "Point",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
               "point": [
                 -180,
                 90,
@@ -264,14 +264,14 @@
         },
         {
           "airSpaceVolume": {
-            "srsDimension": 2,
-            "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-            "axisLabels": [
-              "Lat",
-              "Long"
-            ],
-            "geometry": {
+            "horizontalProjection": {
               "type": "Point",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
               "point": [
                 -180,
                 -90,

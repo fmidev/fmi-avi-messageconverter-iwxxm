@@ -47,6 +47,7 @@ import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CircleByCenterPoint;
+import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PointGeometry;
 import fi.fmi.avi.model.swx.AdvisoryNumber;
@@ -315,32 +316,34 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
     }
 
     private void getSurfaceProperty(final SurfacePropertyType surfacePropertyType, final AirspaceVolume volume) {
-        final SurfaceType surfaceType = create(SurfaceType.class);
-        volume.getSrsDimension().ifPresent(surfaceType::setSrsDimension);
-        volume.getSrsName().ifPresent(surfaceType::setSrsName);
-        surfaceType.setId(UUID_PREFIX + UUID.randomUUID().toString());
-        if (volume.getAxisLabels().isPresent()) {
-            for (final String label : volume.getAxisLabels().get()) {
-                surfaceType.getAxisLabels().add(label);
+        if (volume.getHorizontalProjection().isPresent()) {
+            final SurfaceType surfaceType = create(SurfaceType.class);
+            final Geometry geom = volume.getHorizontalProjection().get();
+            geom.getSrsDimension().ifPresent(surfaceType::setSrsDimension);
+            geom.getSrsName().ifPresent(surfaceType::setSrsName);
+            surfaceType.setId(UUID_PREFIX + UUID.randomUUID().toString());
+            if (geom.getAxisLabels().isPresent()) {
+                for (final String label : geom.getAxisLabels().get()) {
+                    surfaceType.getAxisLabels().add(label);
+                }
             }
-        }
 
-        final SurfacePatchArrayPropertyType surfacePatchArrayPropertyType = new SurfacePatchArrayPropertyType();
-        final PolygonPatchType polygonPatchType = create(PolygonPatchType.class);
-        final AbstractRingPropertyType ringPropertyType = create(AbstractRingPropertyType.class);
-        if (volume.getGeometry().isPresent()) {
-            if (volume.getGeometry().get() instanceof PointGeometry) {
-                getPointGeometry(ringPropertyType, (PointGeometry) volume.getGeometry().get());
-            } else if (volume.getGeometry().get() instanceof CircleByCenterPoint) {
-                getCircleByCenterPointGeometry(ringPropertyType, (CircleByCenterPoint) volume.getGeometry().get());
+            final SurfacePatchArrayPropertyType surfacePatchArrayPropertyType = new SurfacePatchArrayPropertyType();
+            final PolygonPatchType polygonPatchType = create(PolygonPatchType.class);
+            final AbstractRingPropertyType ringPropertyType = create(AbstractRingPropertyType.class);
+            if (volume.getHorizontalProjection().isPresent()) {
+                if (volume.getHorizontalProjection().get() instanceof PointGeometry) {
+                    getPointGeometry(ringPropertyType, (PointGeometry) volume.getHorizontalProjection().get());
+                } else if (volume.getHorizontalProjection().get() instanceof CircleByCenterPoint) {
+                    getCircleByCenterPointGeometry(ringPropertyType, (CircleByCenterPoint) volume.getHorizontalProjection().get());
+                }
             }
+            polygonPatchType.setExterior(ringPropertyType);
+            surfacePatchArrayPropertyType.getAbstractSurfacePatch().add(GML_OF.createPolygonPatch(polygonPatchType));
+            surfaceType.setPatches(GML_OF.createPatches(surfacePatchArrayPropertyType));
+
+            surfacePropertyType.setSurface(AIXM_OF.createSurface(surfaceType));
         }
-        polygonPatchType.setExterior(ringPropertyType);
-        surfacePatchArrayPropertyType.getAbstractSurfacePatch().add(GML_OF.createPolygonPatch(polygonPatchType));
-        surfaceType.setPatches(GML_OF.createPatches(surfacePatchArrayPropertyType));
-
-        surfacePropertyType.setSurface(AIXM_OF.createSurface(surfaceType));
-
     }
 
     private void getPointGeometry(final AbstractRingPropertyType prop, final PointGeometry geometry) {
