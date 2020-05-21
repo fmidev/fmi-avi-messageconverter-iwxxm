@@ -107,7 +107,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         }
 
         if (input.getAdvisoryNumber() != null) {
-            AdvisoryNumber advisoryNumber = parseAdvisoryNumber(input.getAdvisoryNumber().getValue());
+            final AdvisoryNumber advisoryNumber = parseAdvisoryNumber(input.getAdvisoryNumber().getValue());
             properties.set(SpaceWeatherAdvisoryProperties.Name.ADVISORY_NUMBER, advisoryNumber);
         } else {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Advisory number is missing"));
@@ -154,8 +154,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
                 issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
                         "More than one nil reason was found," + " but not reported"));
             }
-            //TODO: move string to constants
-            if (nextAdvisory.getNilReason().get(0).equals("http://codes.wmo.int/common/nil/inapplicable")) {
+            if (nextAdvisory.getNilReason().get(0).equals(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE)) {
                 na.setTime(Optional.empty());
                 na.setTimeSpecifier(NextAdvisory.Type.NO_FURTHER_ADVISORIES);
             } else {
@@ -189,7 +188,6 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         for (final SpaceWeatherPhenomenaType element : elements) {
             phenomena.add(SpaceWeatherPhenomenon.fromWMOCodeListValue(element.getHref()));
         }
-
         return phenomena;
     }
 
@@ -231,7 +229,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
                 if (nilReason.get().equals(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
                     properties.set(SpaceWeatherAnalysisProperties.Name.NO_INFORMATION_AVAILABLE, false);
                     properties.set(SpaceWeatherAnalysisProperties.Name.NO_PHENOMENON_EXPECTED, true);
-                } else if (nilReason.get().equals("Some other valid string")) { //FIXME!!
+                } else if (nilReason.get().equals("Some other valid string")) { //FIXME??
                     properties.set(SpaceWeatherAnalysisProperties.Name.NO_INFORMATION_AVAILABLE, true);
                     properties.set(SpaceWeatherAnalysisProperties.Name.NO_PHENOMENON_EXPECTED, false);
                 } else {
@@ -304,24 +302,6 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         final AirspaceVolumeImpl.Builder airspaceVolume = AirspaceVolumeImpl.builder();
         final SurfaceType surface = regionType.getGeographicLocation().getAirspaceVolume().getHorizontalProjection().getSurface().getValue();
 
-        if (surface.getAxisLabels() != null && surface.getAxisLabels().size() > 0) {
-            airspaceVolume.setAxisLabels(surface.getAxisLabels());
-        } else {
-            issueList.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "Axis labels are missing");
-        }
-
-        if (surface.getSrsName() != null) {
-            airspaceVolume.setSrsName(surface.getSrsName());
-        } else {
-            issueList.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "Srs name is missing");
-        }
-
-        if(surface.getSrsDimension() != null) {
-            airspaceVolume.setSrsDimension(surface.getSrsDimension());
-        } else {
-            issueList.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "Srs dimension is missing");
-        }
-
         final List<?> abstractSurfacePatch = surface.getPatches().getValue().getAbstractSurfacePatch();
 
         if (abstractSurfacePatch == null || abstractSurfacePatch.size() == 0) {
@@ -329,7 +309,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
             return null;
         } else if (abstractSurfacePatch.size() > 1) {
             issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
-                    "More than one surfacpatch geometry was found " + "but not handled."));
+                    "More than one surface patch geometry was found but not handled."));
         }
 
         final PolygonPatchType polygonPatchType = (PolygonPatchType) ((JAXBElement<AbstractSurfacePatchType>) abstractSurfacePatch.get(0)).getValue();

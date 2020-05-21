@@ -121,6 +121,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             swxType.getPhenomenon().add(spaceWeatherPhenomenaType);
         }
 
+        //Is the fixed number of analysis elements really a specific requirement for IWXXM? Seems oddly precise to me / Ilkka
         if (input.getAnalyses().size() == REQUIRED_NUMBER_OF_ANALYSES) {
             final SpaceWeatherRegionIdMapper regionIdList = new SpaceWeatherRegionIdMapper(input.getAnalyses());
             for (int i = 0; i < input.getAnalyses().size(); i++) {

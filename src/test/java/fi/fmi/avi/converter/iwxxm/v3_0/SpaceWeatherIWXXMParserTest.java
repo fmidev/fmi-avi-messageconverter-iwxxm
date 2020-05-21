@@ -126,7 +126,6 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(BigInteger.valueOf(2), geometry.getSrsDimension().get());
         assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", geometry.getSrsName().get());
         assertEquals("STD", airspaceVolume.getUpperLimitReference().get());
-        PointGeometry geometry = (PointGeometry) airspaceVolume.getGeometry().get();
         assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getPoint());
         NumericMeasure upperLimit = airspaceVolume.getUpperLimit().get();
         assertEquals("FL", upperLimit.getUom());

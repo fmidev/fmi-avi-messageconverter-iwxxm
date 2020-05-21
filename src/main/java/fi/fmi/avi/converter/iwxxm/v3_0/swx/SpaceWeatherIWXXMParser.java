@@ -26,7 +26,6 @@ import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
 import fi.fmi.avi.model.swx.SpaceWeatherRegion;
-import fi.fmi.avi.model.swx.immutable.IssuingCenterImpl;
 import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryAnalysisImpl;
 import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryImpl;
 import fi.fmi.avi.model.swx.immutable.SpaceWeatherRegionImpl;
