@@ -23,6 +23,7 @@ import fi.fmi.avi.model.swx.AirspaceVolume;
 import fi.fmi.avi.model.swx.NextAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
+import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
 import fi.fmi.avi.model.swx.SpaceWeatherRegion;
 import fi.fmi.avi.model.swx.immutable.IssuingCenterImpl;
 import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryAnalysisImpl;
@@ -83,7 +84,8 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
                     spaceWeatherRegion.setAirSpaceVolume(airspaceVolume);
                 }
 
-                final Optional<String> locationIndicator = regionProperties.get(SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR, String.class);
+                final Optional<SpaceWeatherRegion.SpaceWeatherLocation> locationIndicator = regionProperties.get(
+                        SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR, SpaceWeatherRegion.SpaceWeatherLocation.class);
                 if (locationIndicator.isPresent()) {
                     spaceWeatherRegion.setLocationIndicator(locationIndicator);
                 }
@@ -133,7 +135,7 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
         if (replaceAdvisoryNumber.isPresent()) {
             spaceWeatherAdvisory.setReplaceAdvisoryNumber(replaceAdvisoryNumber);
         }
-        final List<String> phenomena = properties.getList(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, String.class);
+        final List<SpaceWeatherPhenomenon> phenomena = properties.getList(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, SpaceWeatherPhenomenon.class);
         spaceWeatherAdvisory.addAllPhenomena(phenomena);
 
         final Optional<String> remarks = properties.get(SpaceWeatherAdvisoryProperties.Name.REMARKS, String.class);

@@ -8,7 +8,7 @@
     "serialNumber": 2
   },
   "phenomena": [
-    "http://codes.wmo.int/49-2/SpaceWxPhenomena/RADIATION_MOD"
+    "RADIATION MOD"
   ],
   "analyses": [
     {
@@ -46,7 +46,7 @@
             },
             "upperLimitReference": "STD"
           },
-          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HNH"
+          "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
         {
           "airSpaceVolume": {
@@ -77,7 +77,7 @@
             },
             "upperLimitReference": "STD"
           },
-          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HSH"
+          "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
       ]
     },
@@ -116,7 +116,7 @@
             },
             "upperLimitReference": "STD"
           },
-          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HNH"
+          "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
         {
           "airSpaceVolume": {
@@ -147,7 +147,7 @@
             },
             "upperLimitReference": "STD"
           },
-          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HSH"
+          "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
       ]
     },
@@ -186,7 +186,7 @@
             },
             "upperLimitReference": "STD"
           },
-          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HNH"
+          "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
         {
           "airSpaceVolume": {
@@ -217,7 +217,7 @@
             },
             "upperLimitReference": "STD"
           },
-          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HSH"
+          "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
       ]
     },
@@ -256,7 +256,7 @@
             },
             "upperLimitReference": "STD"
           },
-          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HNH"
+          "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
         {
           "airSpaceVolume": {
@@ -287,7 +287,7 @@
             },
             "upperLimitReference": "STD"
           },
-          "locationIndicator": "http://codes.wmo.int/49-2/SpaceWxLocation/HSH"
+          "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
       ]
     },

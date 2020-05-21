@@ -40,6 +40,8 @@ import fi.fmi.avi.model.immutable.PointGeometryImpl;
 import fi.fmi.avi.model.swx.AdvisoryNumber;
 import fi.fmi.avi.model.swx.NextAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
+import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
+import fi.fmi.avi.model.swx.SpaceWeatherRegion;
 import fi.fmi.avi.model.swx.immutable.AdvisoryNumberImpl;
 import fi.fmi.avi.model.swx.immutable.AirspaceVolumeImpl;
 import fi.fmi.avi.model.swx.immutable.NextAdvisoryImpl;
@@ -75,9 +77,9 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
             if(unitTimeSlicePropertyTypeList == null || unitTimeSlicePropertyTypeList.size() == 0) {
                 issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Unit time slice list was empty."));
             } else {
-                if(unitTimeSlicePropertyTypeList.size() > 1) {
-                    issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER, "More than one unit time slice was found,"
-                            + " but not handled"));
+                if (unitTimeSlicePropertyTypeList.size() > 1) {
+                    issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
+                            "More than one unit time slice was found," + " but not handled"));
                 }
                 String issuingCenter = unitTimeSlicePropertyTypeList.get(0).getUnitTimeSlice().getUnitName().getValue();
                 properties.set(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER_NAME, issuingCenter);
@@ -99,7 +101,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         }
 
         if (input.getPhenomenon() != null) {
-            final List<String> phenomena = parsePhenomenonList(input.getPhenomenon());
+            final List<SpaceWeatherPhenomenon> phenomena = parsePhenomenonList(input.getPhenomenon());
             properties.addAllToList(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, phenomena);
         } else {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Space weather phenomena are missing is missing"));
@@ -164,10 +166,10 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         return AdvisoryNumberImpl.builder().setYear(i.get(0)).setSerialNumber(i.get(1)).build();
     }
 
-    private static List<String> parsePhenomenonList(final List<SpaceWeatherPhenomenaType> elements) {
-        final List<String> phenomena = new ArrayList<>();
+    private static List<SpaceWeatherPhenomenon> parsePhenomenonList(final List<SpaceWeatherPhenomenaType> elements) {
+        final List<SpaceWeatherPhenomenon> phenomena = new ArrayList<>();
         for (final SpaceWeatherPhenomenaType element : elements) {
-            phenomena.add(element.getHref());
+            phenomena.add(SpaceWeatherPhenomenon.fromWMOCodeListValue(element.getHref()));
         }
 
         return phenomena;
@@ -333,7 +335,12 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
             airspaceVolume.setUpperLimitReference(volume.getUpperLimitReference().getValue());
         }
 
-        properties.set(SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR, regionType.getLocationIndicator().getHref());
+        String locationIndicator = regionType.getLocationIndicator().getHref();
+        if (locationIndicator != null) {
+            properties.set(SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR,
+                    SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue(locationIndicator));
+        }
+
         properties.set(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, airspaceVolume.build());
 
         return properties;

@@ -55,6 +55,7 @@ import fi.fmi.avi.model.swx.IssuingCenter;
 import fi.fmi.avi.model.swx.NextAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
+import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
 import fi.fmi.avi.model.swx.SpaceWeatherRegion;
 import icao.iwxxm30.AbstractTimeObjectPropertyType;
 import icao.iwxxm30.AirspaceVolumePropertyType;
@@ -113,9 +114,9 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Remark is missing"));
         }
 
-        for (final String phenomenon : input.getPhenomena()) {
+        for (final SpaceWeatherPhenomenon phenomenon : input.getPhenomena()) {
             final SpaceWeatherPhenomenaType spaceWeatherPhenomenaType = create(SpaceWeatherPhenomenaType.class);
-            spaceWeatherPhenomenaType.setHref(phenomenon);
+            spaceWeatherPhenomenaType.setHref(phenomenon.asWMOCodeListValue());
             swxType.getPhenomenon().add(spaceWeatherPhenomenaType);
         }
 
@@ -228,7 +229,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
 
                     final SpaceWeatherLocationType locationType = create(SpaceWeatherLocationType.class);
                     if (region.getLocationIndicator().isPresent()) {
-                        locationType.setHref(region.getLocationIndicator().get());
+                        locationType.setHref(region.getLocationIndicator().get().asWMOCodeListValue());
                     }
                     regionType.setLocationIndicator(locationType);
 
