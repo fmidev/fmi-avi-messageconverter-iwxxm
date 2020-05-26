@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,10 +23,12 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryImpl;
 import junit.framework.TestCase;
 
@@ -87,8 +90,33 @@ public class SpaceWeatherIWXXMSerializerTest {
         assertNotNull(result.getConvertedMessage().get());
     }
 
+    @Test
+    public void parse_and_serialize_test() throws Exception {
+        String input = getInput("spacewx-A2-3.xml");
+
+        ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+                ConversionHints.EMPTY);
+
+        ConversionResult<String> message = serialize(result.getConvertedMessage().get());
+
+        TestCase.assertTrue(ConversionResult.Status.SUCCESS == message.getStatus());
+        TestCase.assertTrue(message.getConvertedMessage().isPresent());
+        assertNotNull(message.getConvertedMessage().get());
+
+        ConversionResult<SpaceWeatherAdvisory> result2 = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+                ConversionHints.EMPTY);
+
+        Assert.assertEquals(result.getConvertedMessage().get(), result2.getConvertedMessage().get());
+    }
+
     private ConversionResult<String> serialize(String input) throws Exception {
-        SpaceWeatherAdvisoryImpl swx = OBJECT_MAPPER.readValue(input, SpaceWeatherAdvisoryImpl.class);
+        SpaceWeatherAdvisory swx = OBJECT_MAPPER.readValue(input, SpaceWeatherAdvisoryImpl.class);
+
+        return serialize(swx);
+    }
+
+    private ConversionResult<String> serialize(SpaceWeatherAdvisory swx) throws Exception {
+
 
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING));
         ConversionResult<String> message = converter.convertMessage(swx, IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING);
