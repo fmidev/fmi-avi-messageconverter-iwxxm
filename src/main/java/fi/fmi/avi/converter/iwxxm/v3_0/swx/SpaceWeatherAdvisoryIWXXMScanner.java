@@ -33,6 +33,7 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.immutable.CircleByCenterPointImpl;
@@ -57,10 +58,29 @@ import icao.iwxxm30.TimeIndicatorType;
 
 public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
     private static final Logger LOG = LoggerFactory.getLogger(SpaceWeatherAdvisoryIWXXMScanner.class);
+    private static int requiredNumberOfAnalyses = 5;
 
     public static List<ConversionIssue> collectSpaceWeatherAdvisoryProperties(final SpaceWeatherAdvisoryType input, final ReferredObjectRetrievalContext refCtx,
             final SpaceWeatherAdvisoryProperties properties, final ConversionHints hints) {
         IssueList issueList = new IssueList();
+
+        if (input.getPermissibleUsage().value().equals(AviationCodeListUser.PermissibleUsage.OPERATIONAL.toString())) {
+            properties.set(SpaceWeatherAdvisoryProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.OPERATIONAL);
+        } else if (input.getPermissibleUsage().value().equals(AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL.toString())) {
+            properties.set(SpaceWeatherAdvisoryProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL);
+        } else {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Permissible usage is missing"));
+        }
+
+        if (input.getReportStatus().name().equals(AviationWeatherMessage.ReportStatus.AMENDMENT.toString())) {
+            properties.set(SpaceWeatherAdvisoryProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.AMENDMENT);
+        } else if (input.getReportStatus().name().equals(AviationWeatherMessage.ReportStatus.CORRECTION.toString())) {
+            properties.set(SpaceWeatherAdvisoryProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.CORRECTION);
+        } else if (input.getReportStatus().name().equals(AviationWeatherMessage.ReportStatus.NORMAL.toString())) {
+            properties.set(SpaceWeatherAdvisoryProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.NORMAL);
+        } else {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Report status is missing"));
+        }
 
         if (input.getIssueTime() != null) {
             Optional<PartialOrCompleteTimeInstant> issueTime = getCompleteTimeInstant(input.getIssueTime(), refCtx);
@@ -76,7 +96,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         Optional<UnitType> unitType = resolveProperty(input.getIssuingSpaceWeatherCentre(), UnitType.class, refCtx);
         if (unitType.isPresent()) {
             List<UnitTimeSlicePropertyType> unitTimeSlicePropertyTypeList = unitType.get().getTimeSlice();
-            if(unitTimeSlicePropertyTypeList == null || unitTimeSlicePropertyTypeList.size() == 0) {
+            if (unitTimeSlicePropertyTypeList == null || unitTimeSlicePropertyTypeList.size() == 0) {
                 issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Unit time slice list was empty."));
             } else {
                 if (unitTimeSlicePropertyTypeList.size() > 1) {
@@ -126,7 +146,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         }
 
         //Set analysis
-        if (input.getAnalysis().size() == 5) {
+        if (input.getAnalysis().size() == requiredNumberOfAnalyses) {
             final List<SpaceWeatherAnalysisProperties> analyses = getAnalyses(input.getAnalysis(), issueList, refCtx);
             properties.addAllToList(SpaceWeatherAdvisoryProperties.Name.ANALYSES, analyses);
         } else {
@@ -363,7 +383,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         }
 
         final List<?> abstractCurveSegmentTypeList = curveType.getSegments().getAbstractCurveSegment();
-        if(abstractCurveSegmentTypeList != null && abstractCurveSegmentTypeList.size() > 0) {
+        if (abstractCurveSegmentTypeList != null && abstractCurveSegmentTypeList.size() > 0) {
             if (abstractCurveSegmentTypeList.size() > 1) {
                 issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
                         "More than one curve segment found in " + "analysis, but not handled"));

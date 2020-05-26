@@ -17,6 +17,8 @@ import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Parser;
+import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.swx.AdvisoryNumber;
 import fi.fmi.avi.model.swx.AirspaceVolume;
@@ -117,6 +119,12 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
 
         //ADVISORY
         final SpaceWeatherAdvisoryImpl.Builder spaceWeatherAdvisory = SpaceWeatherAdvisoryImpl.builder();
+
+        spaceWeatherAdvisory.setPermissibleUsage(
+                properties.get(SpaceWeatherAdvisoryProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class));
+
+        spaceWeatherAdvisory.setReportStatus(properties.get(SpaceWeatherAdvisoryProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.class));
+
         spaceWeatherAdvisory.addAllAnalyses(analyses);
 
         final Optional<PartialOrCompleteTimeInstant> issueTime = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUE_TIME,
