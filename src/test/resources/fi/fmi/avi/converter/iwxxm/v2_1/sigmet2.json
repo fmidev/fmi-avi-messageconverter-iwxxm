@@ -48,7 +48,7 @@
       "geometry": {
         "geoGeometry": {
           "type": "Point",
-          "point": [
+          "coordinates": [
             5.0,
             52.0
           ]

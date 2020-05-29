@@ -33,7 +33,7 @@ import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.NumericMeasure;
-import fi.fmi.avi.model.PointGeometry;
+import fi.fmi.avi.model.PolygonGeometry;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.swx.AirspaceVolume;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
@@ -87,10 +87,10 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
         AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
         assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
-        PointGeometry geometry = (PointGeometry) airspaceVolume.getHorizontalProjection().get();
+        PolygonGeometry geometry = (PolygonGeometry) airspaceVolume.getHorizontalProjection().get();
         assertEquals(BigInteger.valueOf(2), geometry.getSrsDimension().get());
         assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", geometry.getSrsName().get());
-        assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getPoint());
+        assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getExteriorRingPositions());
         assertFalse(airspaceVolume.getUpperLimitReference().isPresent());
         assertFalse(airspaceVolume.getUpperLimit().isPresent());
     }
@@ -122,11 +122,11 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
         AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
         assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
-        PointGeometry geometry = (PointGeometry) airspaceVolume.getHorizontalProjection().get();
+        PolygonGeometry geometry = (PolygonGeometry) airspaceVolume.getHorizontalProjection().get();
         assertEquals(BigInteger.valueOf(2), geometry.getSrsDimension().get());
         assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", geometry.getSrsName().get());
         assertEquals("STD", airspaceVolume.getUpperLimitReference().get());
-        assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getPoint());
+        assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getExteriorRingPositions());
         NumericMeasure upperLimit = airspaceVolume.getUpperLimit().get();
         assertEquals("FL", upperLimit.getUom());
         assertEquals(Double.valueOf(350), upperLimit.getValue());
@@ -164,7 +164,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         CircleByCenterPoint geometry = (CircleByCenterPoint) airspaceVolume.getHorizontalProjection().get();
         assertEquals(BigInteger.valueOf(2), geometry.getSrsDimension().get());
         assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", geometry.getSrsName().get());
-        assertEquals(Arrays.asList(-16.6392, 160.9368), geometry.getCoordinates());
+        assertEquals(Arrays.asList(-16.6392, 160.9368), geometry.getCenterPointCoordinates());
         NumericMeasure gnm = NumericMeasureImpl.builder().setUom("[nmi_i]").setValue(5409.75).build();
         assertEquals(gnm, geometry.getRadius());
         assertFalse(airspaceVolume.getUpperLimitReference().isPresent());

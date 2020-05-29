@@ -93,6 +93,7 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
         final SpaceWeatherBulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
         final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.SWX_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
+        final ConversionResult<String> result2 = converter.convertMessage(tb, IWXXMConverter.SWX_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
 
         final XPathFactory factory = XPathFactory.newInstance();
@@ -111,7 +112,7 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
         assertTrue(3 == Integer.parseInt(expr.evaluate(docElement)));
         expr = xpath.compile("/collect:MeteorologicalBulletin/collect:meteorologicalInformation[1]/iwxxm3:SpaceWeatherAdvisory/"
                 + "iwxxm3:analysis[1]/iwxxm3:SpaceWeatherAnalysis/iwxxm3:region[1]/iwxxm3:SpaceWeatherRegion/iwxxm3:location[1]"
-                + "/aixm:AirspaceVolume/aixm:horizontalProjection/aixm:Surface/gml:patches[1]/gml:PolygonPatch/gml:exterior/" + "gml:LinearRing/gml:posList");
+                + "/aixm:AirspaceVolume/aixm:horizontalProjection/aixm:Surface/gml:patches[1]/gml:PolygonPatch/gml:exterior/gml:LinearRing/gml:posList");
 
         assertEquals("-180.0 90.0 -180.0 60.0 180.0 60.0 180.0 90.0 -180.0 90.0", expr.evaluate(docElement));
     }

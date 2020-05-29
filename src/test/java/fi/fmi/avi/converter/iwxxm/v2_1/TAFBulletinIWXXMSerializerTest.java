@@ -42,7 +42,7 @@ import fi.fmi.avi.model.bulletin.BulletinHeading;
 import fi.fmi.avi.model.bulletin.DataTypeDesignatorT2;
 import fi.fmi.avi.model.bulletin.immutable.BulletinHeadingImpl;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
-import fi.fmi.avi.model.immutable.GeoPositionImpl;
+import fi.fmi.avi.model.immutable.ElevatedPointImpl;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import fi.fmi.avi.model.taf.immutable.TAFBulletinImpl;
@@ -62,14 +62,16 @@ public class TAFBulletinIWXXMSerializerTest {
         List<TAF> tafs = new ArrayList<>();
         for (String fName : fileNames) {
             TAF t = readFromJSON(fName);
-            AerodromeImpl.Builder airportBuilder = AerodromeImpl.builder().setDesignator("EETN")
+            AerodromeImpl.Builder airportBuilder = AerodromeImpl.builder()
+                    .setDesignator("EETN")
                     .setName("Tallinn Airport")
                     .setFieldElevationValue(40.0)
                     .setLocationIndicatorICAO("EETN")
-                    .setReferencePoint(GeoPositionImpl.builder().setCoordinateReferenceSystemId("http://www.opengis.net/def/crs/EPSG/0/4326")
-                            .addCoordinates(24.8325, 59.413333)
-                            .setElevationValue(40.0)
-                            .setElevationUom("m")
+                    .setReferencePoint(ElevatedPointImpl.builder()//
+                            .setSrsName("http://www.opengis.net/def/crs/EPSG/0/4326")//
+                            .addCoordinates(24.8325, 59.413333)//
+                            .setElevationValue(40.0)//
+                            .setElevationUom("m")//
                             .build());
             TAFImpl.Builder tafBuilder = TAFImpl.immutableCopyOf(t).toBuilder();
             tafBuilder.setAerodrome(airportBuilder.build())

@@ -30,7 +30,7 @@ import fi.fmi.avi.converter.iwxxm.v2_1.metar.ObservationRecordProperties;
 import fi.fmi.avi.converter.iwxxm.v2_1.metar.TrendForecastRecordProperties;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.GeoPosition;
+import fi.fmi.avi.model.ElevatedPoint;
 import fi.fmi.avi.model.PartialOrCompleteTime;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import icao.iwxxm21.METARType;
@@ -83,7 +83,7 @@ public class METARScannerTest extends DOMParsingTestBase {
             assertTrue(obs.get(OMObservationProperties.Name.PROCEDURE, ProcessType.class).isPresent());
             assertTrue(obs.get(OMObservationProperties.Name.OBSERVED_PROPERTY, String.class).isPresent());
             assertTrue(obs.get(OMObservationProperties.Name.AERODROME, Aerodrome.class).isPresent());
-            assertTrue(obs.get(OMObservationProperties.Name.SAMPLING_POINT, GeoPosition.class).isPresent());
+            assertTrue(obs.get(OMObservationProperties.Name.SAMPLING_POINT, ElevatedPoint.class).isPresent());
             assertTrue(obs.get(OMObservationProperties.Name.RESULT, ObservationRecordProperties.class).isPresent());
 
             List<OMObservationProperties> trends = props.getList(METARProperties.Name.TREND_FORECAST, OMObservationProperties.class);
@@ -96,7 +96,7 @@ public class METARScannerTest extends DOMParsingTestBase {
                 assertTrue(trend.get(OMObservationProperties.Name.PROCEDURE, ProcessType.class).isPresent());
                 assertTrue(trend.get(OMObservationProperties.Name.OBSERVED_PROPERTY, String.class).isPresent());
                 assertTrue(trend.get(OMObservationProperties.Name.AERODROME, Aerodrome.class).isPresent());
-                assertTrue(trend.get(OMObservationProperties.Name.SAMPLING_POINT, GeoPosition.class).isPresent());
+                assertTrue(trend.get(OMObservationProperties.Name.SAMPLING_POINT, ElevatedPoint.class).isPresent());
                 assertTrue(trend.get(OMObservationProperties.Name.RESULT, TrendForecastRecordProperties.class).isPresent());
             }
 

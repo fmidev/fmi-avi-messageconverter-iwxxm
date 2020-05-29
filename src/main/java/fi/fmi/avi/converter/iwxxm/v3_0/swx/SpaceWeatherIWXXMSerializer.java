@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -49,7 +50,7 @@ import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PointGeometry;
+import fi.fmi.avi.model.PolygonGeometry;
 import fi.fmi.avi.model.swx.AdvisoryNumber;
 import fi.fmi.avi.model.swx.AirspaceVolume;
 import fi.fmi.avi.model.swx.IssuingCenter;
@@ -75,7 +76,6 @@ import icao.iwxxm30.TimeIndicatorType;
 import icao.iwxxm30.UnitPropertyType;
 
 public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Serializer<SpaceWeatherAdvisory, T> {
-    public static final String UUID_PREFIX = "uuid.";
     private static final int REQUIRED_NUMBER_OF_ANALYSES = 5;
     private static final aero.aixm511.ObjectFactory AIXM_OF = new aero.aixm511.ObjectFactory();
     private static final net.opengis.gml32.ObjectFactory GML_OF = new net.opengis.gml32.ObjectFactory();
@@ -297,10 +297,11 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
 
     private void getAirspaceVolumeProperty(final AirspaceVolumePropertyType prop, final AirspaceVolume volume) {
         final AirspaceVolumeType airspaceVolumeType = create(AirspaceVolumeType.class);
-        airspaceVolumeType.setId(UUID_PREFIX + UUID.randomUUID().toString());
-        final SurfacePropertyType surfaceProperty = create(SurfacePropertyType.class, (surfacePropertyType) -> getSurfaceProperty(surfacePropertyType, volume));
-
-        airspaceVolumeType.setHorizontalProjection(surfaceProperty);
+        if (volume.getHorizontalProjection().isPresent()) {
+            airspaceVolumeType.setId(UUID_PREFIX + UUID.randomUUID().toString());
+            final SurfacePropertyType surfaceProperty = createSurface(volume.getHorizontalProjection().get(), UUID_PREFIX + UUID.randomUUID().toString());
+            airspaceVolumeType.setHorizontalProjection(surfaceProperty);
+        }
 
         if (volume.getUpperLimit().isPresent()) {
             final CodeVerticalReferenceType codeVerticalReferenceType = create(CodeVerticalReferenceType.class);
@@ -312,7 +313,6 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             valDistanceVerticalType.setValue(volume.getUpperLimit().get().getValue().toString());
             airspaceVolumeType.setUpperLimit(valDistanceVerticalType);
         }
-
         prop.setAirspaceVolume(airspaceVolumeType);
     }
 
@@ -333,8 +333,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             final PolygonPatchType polygonPatchType = create(PolygonPatchType.class);
             final AbstractRingPropertyType ringPropertyType = create(AbstractRingPropertyType.class);
             if (volume.getHorizontalProjection().isPresent()) {
-                if (volume.getHorizontalProjection().get() instanceof PointGeometry) {
-                    getPointGeometry(ringPropertyType, (PointGeometry) volume.getHorizontalProjection().get());
+                if (volume.getHorizontalProjection().get() instanceof PolygonGeometry) {
+                    getPolygonGeometry(ringPropertyType, (PolygonGeometry) volume.getHorizontalProjection().get());
                 } else if (volume.getHorizontalProjection().get() instanceof CircleByCenterPoint) {
                     getCircleByCenterPointGeometry(ringPropertyType, (CircleByCenterPoint) volume.getHorizontalProjection().get());
                 }
@@ -347,12 +347,10 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         }
     }
 
-    private void getPointGeometry(final AbstractRingPropertyType prop, final PointGeometry geometry) {
+    private void getPolygonGeometry(final AbstractRingPropertyType prop, final PolygonGeometry geometry) {
         final LinearRingType ring = create(LinearRingType.class);
         final DirectPositionListType posList = create(DirectPositionListType.class);
-        for (final Double coordinate : geometry.getPoint()) {
-            posList.getValue().add(coordinate);
-        }
+        posList.getValue().addAll(geometry.getExteriorRingPositions());
         ring.setPosList(posList);
         prop.setAbstractRing(GML_OF.createLinearRing(ring));
     }
@@ -367,15 +365,14 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         final LengthType lengthType = create(LengthType.class);
         lengthType.setUom((geometry.getRadius().getUom()));
         lengthType.setValue(geometry.getRadius().getValue());
-        if (geometry.getNumarc().isPresent()) {
-            circleByCenterPointType.setNumArc(geometry.getNumarc().get());
-        }
+
+        //Number of arcs for the circle by center point is always 1:
+        circleByCenterPointType.setNumArc(BigInteger.ONE);
+
         circleByCenterPointType.setRadius(lengthType);
 
         final DirectPositionType directPosition = create(DirectPositionType.class);
-        for (final Double value : geometry.getCoordinates()) {
-            directPosition.getValue().add(value);
-        }
+        directPosition.getValue().addAll(geometry.getCenterPointCoordinates());
         circleByCenterPointType.setPos(directPosition);
         curveSegmentArrayPropertyType.getAbstractCurveSegment().add(GML_OF.createCircleByCenterPoint(circleByCenterPointType));
         curveType.setSegments(curveSegmentArrayPropertyType);

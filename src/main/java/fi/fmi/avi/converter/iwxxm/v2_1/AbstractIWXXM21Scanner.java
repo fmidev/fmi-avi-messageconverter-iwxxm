@@ -38,7 +38,7 @@ import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.immutable.CloudLayerImpl;
-import fi.fmi.avi.model.immutable.GeoPositionImpl;
+import fi.fmi.avi.model.immutable.ElevatedPointImpl;
 import fi.fmi.avi.model.immutable.WeatherImpl;
 import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
 import icao.iwxxm21.CloudLayerPropertyType;
@@ -181,15 +181,15 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
                         retval.add(
                                 new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "The spatial sampling feature shape is not a Point in " + contextPath));
                     } else {
-                        GeoPositionImpl.Builder posBuilder = GeoPositionImpl.builder();
+                        ElevatedPointImpl.Builder posBuilder = ElevatedPointImpl.builder();
                         boolean canBuildPos = true;
                         if (point.get().getPos() != null) {
                             DirectPositionType dp = point.get().getPos();
                             if (dp.getSrsName() != null) {
-                                posBuilder.setCoordinateReferenceSystemId(dp.getSrsName());
+                                posBuilder.setSrsName(dp.getSrsName());
                             } else {
                                 if (point.get().getSrsName() != null) {
-                                    posBuilder.setCoordinateReferenceSystemId(point.get().getSrsName());
+                                    posBuilder.setSrsName(point.get().getSrsName());
                                 } else {
                                     canBuildPos = false;
                                     retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
