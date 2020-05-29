@@ -36,7 +36,6 @@ import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.model.Aerodrome;
-import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
@@ -44,7 +43,6 @@ import fi.fmi.avi.model.immutable.CircleByCenterPointImpl;
 import fi.fmi.avi.model.immutable.ElevatedPointImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.PolygonGeometryImpl;
-import icao.iwxxm21.RelationalOperatorType;
 
 /**
  * Common functionality for parsing validation of IWXXM messages.
@@ -143,13 +141,6 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             return Optional.empty();
         }
         return Optional.of(NumericMeasureImpl.builder().setValue(source.getValue()).setUom(source.getUom()).build());
-    }
-
-    protected static Optional<AviationCodeListUser.RelationalOperator> asRelationalOperator(final RelationalOperatorType source) {
-        if (source == null) {
-            return Optional.empty();
-        }
-        return Optional.of(AviationCodeListUser.RelationalOperator.valueOf(source.name()));
     }
 
     protected static <T> void withNillableChild(final Object parent, final T child, final Class<T> clz, final QName childElementName,

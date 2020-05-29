@@ -22,7 +22,6 @@ import aero.aixm511.ValBearingType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
@@ -83,7 +82,7 @@ import icao.iwxxm21.SPECIType;
 /**
  * Created by rinne on 25/07/2018.
  */
-public class METARIWXXMScanner extends AbstractIWXXMScanner {
+public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
 
     public static List<ConversionIssue> collectMETARProperties(final MeteorologicalAerodromeObservationReportType input,
             final ReferredObjectRetrievalContext refCtx, final METARProperties properties, final ConversionHints hints) {

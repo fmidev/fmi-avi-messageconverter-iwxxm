@@ -8,13 +8,13 @@ import org.slf4j.LoggerFactory;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
+import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Scanner;
 import fi.fmi.avi.model.AviationCodeListUser;
 import icao.iwxxm21.SIGMETReportStatusType;
 import icao.iwxxm21.SIGMETType;
 
-public class SIGMETIWXXMScanner extends AbstractIWXXMScanner {
+public class SIGMETIWXXMScanner extends AbstractIWXXM21Scanner {
     private static final Logger LOG = LoggerFactory.getLogger(SIGMETIWXXMScanner.class);
 
     public static List<ConversionIssue> collectSIGMETProperties(final SIGMETType input, final ReferredObjectRetrievalContext refCtx,

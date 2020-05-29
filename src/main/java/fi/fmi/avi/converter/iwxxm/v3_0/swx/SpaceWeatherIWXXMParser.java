@@ -1,5 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +15,7 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Parser;
@@ -120,11 +122,6 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
         //ADVISORY
         final SpaceWeatherAdvisoryImpl.Builder spaceWeatherAdvisory = SpaceWeatherAdvisoryImpl.builder();
 
-        spaceWeatherAdvisory.setPermissibleUsage(
-                properties.get(SpaceWeatherAdvisoryProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class));
-
-        spaceWeatherAdvisory.setReportStatus(properties.get(SpaceWeatherAdvisoryProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.class));
-
         spaceWeatherAdvisory.addAllAnalyses(analyses);
 
         final Optional<PartialOrCompleteTimeInstant> issueTime = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUE_TIME,
@@ -152,6 +149,24 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
         final Optional<NextAdvisory> nextAdvisory = properties.get(SpaceWeatherAdvisoryProperties.Name.NEXT_ADVISORY, NextAdvisory.class);
         nextAdvisory.ifPresent(spaceWeatherAdvisory::setNextAdvisory);
 
+        properties.get(SpaceWeatherAdvisoryProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent((metaProps) -> {
+            metaProps.get(GenericReportProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.class)
+                    .ifPresent(spaceWeatherAdvisory::setReportStatus);
+            metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class)
+                    .ifPresent(spaceWeatherAdvisory::setPermissibleUsage);
+            metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_REASON, AviationCodeListUser.PermissibleUsageReason.class)
+                    .ifPresent(spaceWeatherAdvisory::setPermissibleUsageReason);
+            metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_SUPPLEMENTARY, String.class)
+                    .ifPresent(spaceWeatherAdvisory::setPermissibleUsageSupplementary);
+            metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_ID, String.class).ifPresent(spaceWeatherAdvisory::setTranslatedBulletinID);
+            metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_RECEPTION_TIME, ZonedDateTime.class)
+                    .ifPresent(spaceWeatherAdvisory::setTranslatedBulletinReceptionTime);
+            metaProps.get(GenericReportProperties.Name.TRANSLATION_CENTRE_DESIGNATOR, String.class)
+                    .ifPresent(spaceWeatherAdvisory::setTranslationCentreDesignator);
+            metaProps.get(GenericReportProperties.Name.TRANSLATION_CENTRE_NAME, String.class).ifPresent(spaceWeatherAdvisory::setTranslationCentreName);
+            metaProps.get(GenericReportProperties.Name.TRANSLATION_TIME, ZonedDateTime.class).ifPresent(spaceWeatherAdvisory::setTranslationTime);
+            metaProps.get(GenericReportProperties.Name.TRANSLATION_FAILED_TAC, String.class).ifPresent(spaceWeatherAdvisory::setTranslatedTAC); //!!!
+        });
         return spaceWeatherAdvisory.build();
     }
 

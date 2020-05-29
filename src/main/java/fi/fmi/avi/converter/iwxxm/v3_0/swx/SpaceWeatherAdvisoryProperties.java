@@ -1,8 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
-import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationWeatherMessage;
+import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.swx.AdvisoryNumber;
 import fi.fmi.avi.model.swx.IssuingCenter;
@@ -15,6 +14,7 @@ public class SpaceWeatherAdvisoryProperties extends AbstractPropertyContainer {
     }
 
     public enum Name implements PropertyName {
+        REPORT_METADATA(GenericReportProperties.class),
         ISSUE_TIME(PartialOrCompleteTimeInstant.class),
         ISSUING_CENTER(IssuingCenter.class),
         ADVISORY_NUMBER(AdvisoryNumber.class),
@@ -22,9 +22,7 @@ public class SpaceWeatherAdvisoryProperties extends AbstractPropertyContainer {
         PHENOMENA(SpaceWeatherPhenomenon.class),
         ANALYSES(SpaceWeatherAnalysisProperties.class),
         REMARKS(String.class),
-        NEXT_ADVISORY(NextAdvisory.class),
-        REPORT_STATUS(AviationWeatherMessage.ReportStatus.class),
-        PERMISSIBLE_USAGE(AviationCodeListUser.PermissibleUsage.class);
+        NEXT_ADVISORY(NextAdvisory.class);
 
         private final Class<?> acceptedType;
 

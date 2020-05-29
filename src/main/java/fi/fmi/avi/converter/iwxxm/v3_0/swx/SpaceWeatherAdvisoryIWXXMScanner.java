@@ -20,10 +20,10 @@ import aero.aixm511.UnitType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
+import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Scanner;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.swx.AdvisoryNumber;
@@ -43,34 +43,21 @@ import icao.iwxxm30.SpaceWeatherRegionPropertyType;
 import icao.iwxxm30.SpaceWeatherRegionType;
 import icao.iwxxm30.TimeIndicatorType;
 
-public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
+public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
     private static final Logger LOG = LoggerFactory.getLogger(SpaceWeatherAdvisoryIWXXMScanner.class);
-    private static int requiredNumberOfAnalyses = 5;
+    private static final int REQUIRED_NUMBER_OF_ANALYSES = 5;
 
     public static List<ConversionIssue> collectSpaceWeatherAdvisoryProperties(final SpaceWeatherAdvisoryType input, final ReferredObjectRetrievalContext refCtx,
             final SpaceWeatherAdvisoryProperties properties, final ConversionHints hints) {
-        IssueList issueList = new IssueList();
+        final IssueList issueList = new IssueList();
 
-        if (input.getPermissibleUsage().value().equals(AviationCodeListUser.PermissibleUsage.OPERATIONAL.toString())) {
-            properties.set(SpaceWeatherAdvisoryProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.OPERATIONAL);
-        } else if (input.getPermissibleUsage().value().equals(AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL.toString())) {
-            properties.set(SpaceWeatherAdvisoryProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL);
-        } else {
-            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Permissible usage is missing"));
-        }
-
-        if (input.getReportStatus().name().equals(AviationWeatherMessage.ReportStatus.AMENDMENT.toString())) {
-            properties.set(SpaceWeatherAdvisoryProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.AMENDMENT);
-        } else if (input.getReportStatus().name().equals(AviationWeatherMessage.ReportStatus.CORRECTION.toString())) {
-            properties.set(SpaceWeatherAdvisoryProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.CORRECTION);
-        } else if (input.getReportStatus().name().equals(AviationWeatherMessage.ReportStatus.NORMAL.toString())) {
-            properties.set(SpaceWeatherAdvisoryProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.NORMAL);
-        } else {
-            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Report status is missing"));
-        }
+        // report metadata
+        final GenericReportProperties meta = new GenericReportProperties();
+        issueList.addAll(AbstractIWXXM30Scanner.collectReportMetadata(input, meta, hints));
+        properties.set(SpaceWeatherAdvisoryProperties.Name.REPORT_METADATA, meta);
 
         if (input.getIssueTime() != null) {
-            Optional<PartialOrCompleteTimeInstant> issueTime = getCompleteTimeInstant(input.getIssueTime(), refCtx);
+            final Optional<PartialOrCompleteTimeInstant> issueTime = getCompleteTimeInstant(input.getIssueTime(), refCtx);
             if (!issueTime.isPresent()) {
                 issueList.add(new ConversionIssue(ConversionIssue.Type.SYNTAX, "Issue time is not valid"));
             } else {
@@ -80,15 +67,15 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Issue time is missing"));
         }
 
-        Optional<UnitType> unitType = resolveProperty(input.getIssuingSpaceWeatherCentre(), UnitType.class, refCtx);
+        final Optional<UnitType> unitType = resolveProperty(input.getIssuingSpaceWeatherCentre(), UnitType.class, refCtx);
         if (unitType.isPresent()) {
-            List<UnitTimeSlicePropertyType> unitTimeSlicePropertyTypeList = unitType.get().getTimeSlice();
+            final List<UnitTimeSlicePropertyType> unitTimeSlicePropertyTypeList = unitType.get().getTimeSlice();
             if (unitTimeSlicePropertyTypeList == null || unitTimeSlicePropertyTypeList.size() == 0) {
                 issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Unit time slice list was empty."));
             } else {
                 if (unitTimeSlicePropertyTypeList.size() > 1) {
                     issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
-                            "More than one unit time slice was found," + " but not handled"));
+                            "More than one unit time slice was found, but not handled"));
                 }
                 final UnitTimeSliceType issuingCenterType = unitTimeSlicePropertyTypeList.get(0).getUnitTimeSlice();
                 final IssuingCenterImpl.Builder issuingCenterBuilder = IssuingCenterImpl.builder();
@@ -133,7 +120,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXMScanner {
         }
 
         //Set analysis
-        if (input.getAnalysis().size() == requiredNumberOfAnalyses) {
+        if (input.getAnalysis().size() == REQUIRED_NUMBER_OF_ANALYSES) {
             final List<SpaceWeatherAnalysisProperties> analyses = getAnalyses(input.getAnalysis(), issueList, refCtx);
             properties.addAllToList(SpaceWeatherAdvisoryProperties.Name.ANALYSES, analyses);
         } else {
