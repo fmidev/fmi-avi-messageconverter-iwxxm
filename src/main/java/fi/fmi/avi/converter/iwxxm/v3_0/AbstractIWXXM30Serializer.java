@@ -12,7 +12,7 @@ public abstract class AbstractIWXXM30Serializer<T extends AviationWeatherMessage
         final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
         schemaInfo.addSchemaSource(SpaceWeatherAdvisoryType.class.getResourceAsStream("/int/icao/iwxxm/3.0.0/iwxxm.xsd"));
         schemaInfo.addSchematronRule(SpaceWeatherAdvisoryType.class.getResource("/schematron/xslt/int/icao/iwxxm/3.0.0/rule/iwxxm.xsl"));
-        schemaInfo.addSchemaLocation("http://icao.int/iwxxm/3.0", "https://schemas.wmo.int/iwxxm/3.0.0/iwxxm.xsd");
+        schemaInfo.addSchemaLocation("http://icao.int/iwxxm/3.0", "http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd");
         return schemaInfo;
     }
 

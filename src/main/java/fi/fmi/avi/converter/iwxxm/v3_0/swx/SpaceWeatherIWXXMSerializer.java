@@ -29,6 +29,7 @@ import net.opengis.gml32.TimePrimitivePropertyType;
 import org.w3c.dom.Document;
 
 import aero.aixm511.AirspaceVolumeType;
+import aero.aixm511.CodeOrganisationDesignatorType;
 import aero.aixm511.CodeUnitType;
 import aero.aixm511.CodeVerticalReferenceType;
 import aero.aixm511.CurveType;
@@ -162,8 +163,21 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             } else {
                 results.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Report status is required"));
             }
-            target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
-            target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
+
+            if(source.getPermissibleUsage().get().equals(AviationCodeListUser.PermissibleUsage.OPERATIONAL)) {
+                target.setPermissibleUsage(PermissibleUsageType.OPERATIONAL);
+            } else {
+                target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+            }
+
+            if(source.getPermissibleUsageReason().isPresent()) {
+                if (source.getPermissibleUsageReason().get().equals(AviationCodeListUser.PermissibleUsageReason.TEST)) {
+                    target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
+                } else {
+                    target.setPermissibleUsageReason(PermissibleUsageReasonType.EXERCISE);
+                }
+            }
+
             source.getPermissibleUsage().ifPresent((us) -> {
                 if (us == AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL) {
                     target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
@@ -278,6 +292,11 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         if (issuingCenter.getType().isPresent()) {
             codeUnitType.setValue(issuingCenter.getType().get());
             unitTimeSliceType.setType(codeUnitType);
+        }
+        if(issuingCenter.getDesignator().isPresent()) {
+            CodeOrganisationDesignatorType designator = new CodeOrganisationDesignatorType();
+            designator.setValue(issuingCenter.getDesignator().get());
+            unitTimeSliceType.setDesignator(designator);
         }
         unitTimeSliceType.setInterpretation("SNAPSHOT");
         unitTimeSliceType.setValidTime(new TimePrimitivePropertyType());

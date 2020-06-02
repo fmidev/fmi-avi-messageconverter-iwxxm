@@ -9,7 +9,7 @@
       <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
-  <!--
+
   <xsl:template match="*">
     <xsl:element name="{name()}" namespace="{namespace-uri()}">
       <xsl:variable name="vtheElem" select="."/>
@@ -31,7 +31,7 @@
       </xsl:for-each>
       <xsl:apply-templates select="node()|@*"/>
     </xsl:element>
-  </xsl:template>-->
+  </xsl:template>
 
   <xsl:template match="//gml:boundedBy[@xsi:nil='true']"/>
   <xsl:template match="//aixm:upperLimit[@xsi:nil='true']"/>
@@ -48,5 +48,10 @@
   <xsl:template match="//aixm:type[@xsi:nil='true']"/>
   <xsl:template match="//aixm:designator[@xsi:nil='true']"/>
 
+  <xsl:template match="iwxxm3:*" xmlns:iwxxm3="http://icao.int/iwxxm/3.0">
+    <xsl:element name="iwxxm:{local-name()}" namespace="{namespace-uri(.)}">
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:element>
+  </xsl:template>
 
 </xsl:stylesheet>

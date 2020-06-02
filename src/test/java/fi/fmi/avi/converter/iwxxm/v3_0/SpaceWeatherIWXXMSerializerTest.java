@@ -7,7 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.custommonkey.xmlunit.DetailedDiff;
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.Difference;
+import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -103,10 +109,33 @@ public class SpaceWeatherIWXXMSerializerTest {
         TestCase.assertTrue(message.getConvertedMessage().isPresent());
         assertNotNull(message.getConvertedMessage().get());
 
-        ConversionResult<SpaceWeatherAdvisory> result2 = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
-                ConversionHints.EMPTY);
+        XMLUnit.setIgnoreWhitespace(true);
+        Diff xmlDiff = new Diff(input, message.getConvertedMessage().get());
+        DetailedDiff detailedDiff = new DetailedDiff(xmlDiff);
 
-        Assert.assertEquals(result.getConvertedMessage().get(), result2.getConvertedMessage().get());
+        int i = detailedDiff.getAllDifferences().size();
+        List filteredDiff =
+                (List)detailedDiff.getAllDifferences().stream().filter(d -> filterUUIDDifferences(d)).filter(d -> filterCoordinateFormattingDifferences(d))
+                        .collect(Collectors.toList());
+
+        for(Object item : filteredDiff) {
+            Difference difference = (Difference) item;
+            System.out.println("------------------------------------------------");
+            System.out.println(difference.getDescription());
+            System.out.println(difference);
+            System.out.println("------------------------------------------------");
+        }
+        Assert.assertEquals(0, filteredDiff.size());
+    }
+
+    private boolean filterUUIDDifferences(Object object) {
+        Difference d = (Difference) object;
+        return !Pattern.compile("(((Expected\\sattribute\\svalue\\s)?(\\sbut\\swas\\s)?){1}(\\'#?uuid.(([a-z0-9]*)-?){5}\\')){2}").matcher(d.toString()).find();
+    }
+
+    private boolean filterCoordinateFormattingDifferences(Object object) {
+        Difference d = (Difference) object;
+        return !Pattern.compile("(((Expected\\stext\\svalue\\s)?(\\sbut\\swas\\s)?)(\\'([\\-0-9\\.]*[\\s]?){10}\\')){2}").matcher(d.toString()).find();
     }
 
     private ConversionResult<String> serialize(String input) throws Exception {
