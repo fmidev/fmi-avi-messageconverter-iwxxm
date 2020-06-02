@@ -164,10 +164,12 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
                 results.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Report status is required"));
             }
 
-            if(source.getPermissibleUsage().get().equals(AviationCodeListUser.PermissibleUsage.OPERATIONAL)) {
-                target.setPermissibleUsage(PermissibleUsageType.OPERATIONAL);
-            } else {
-                target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+            if(source.getPermissibleUsage().isPresent()) {
+                if (source.getPermissibleUsage().get().equals(AviationCodeListUser.PermissibleUsage.OPERATIONAL)) {
+                    target.setPermissibleUsage(PermissibleUsageType.OPERATIONAL);
+                } else {
+                    target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+                }
             }
 
             if(source.getPermissibleUsageReason().isPresent()) {
