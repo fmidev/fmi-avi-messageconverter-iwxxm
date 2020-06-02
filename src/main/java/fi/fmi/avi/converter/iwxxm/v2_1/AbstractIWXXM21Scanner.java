@@ -38,7 +38,7 @@ import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.immutable.CloudLayerImpl;
-import fi.fmi.avi.model.immutable.GeoPositionImpl;
+import fi.fmi.avi.model.immutable.ElevatedPointImpl;
 import fi.fmi.avi.model.immutable.WeatherImpl;
 import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
 import icao.iwxxm21.CloudLayerPropertyType;
@@ -47,6 +47,7 @@ import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
 import icao.iwxxm21.MeteorologicalAerodromeObservationRecordType;
 import icao.iwxxm21.MeteorologicalAerodromeTrendForecastRecordType;
+import icao.iwxxm21.RelationalOperatorType;
 import icao.iwxxm21.ReportType;
 import icao.iwxxm21.SigConvectiveCloudTypeType;
 import wmo.metce2013.ProcessType;
@@ -57,7 +58,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
     public static IssueList collectReportMetadata(final ReportType input, final GenericReportProperties properties, final ConversionHints hints) {
         IssueList retval = new IssueList();
 
-        //Issues for these reported already by XML Schema or Schematron validation, so not checking them here:
+        //Issues for the permissibleUsage reported already by XML Schema or Schematron validation, so not checking them here:
         if (input.getPermissibleUsage() != null) {
             properties.set(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.valueOf(input.getPermissibleUsage().name()));
         }
@@ -70,13 +71,13 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
         XMLGregorianCalendar cal = input.getTranslatedBulletinReceptionTime();
         if (cal != null) {
-            ZonedDateTime time = cal.toGregorianCalendar().toZonedDateTime();
+            final ZonedDateTime time = cal.toGregorianCalendar().toZonedDateTime();
             properties.set(GenericReportProperties.Name.TRANSLATED_BULLETIN_RECEPTION_TIME, time);
         }
 
         cal = input.getTranslationTime();
         if (cal != null) {
-            ZonedDateTime time = cal.toGregorianCalendar().toZonedDateTime();
+            final ZonedDateTime time = cal.toGregorianCalendar().toZonedDateTime();
             properties.set(GenericReportProperties.Name.TRANSLATION_TIME, time);
         }
 
@@ -86,7 +87,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
         if (!properties.contains(GenericReportProperties.Name.TRANSLATION_TIME)) {
             if (hints != null && hints.containsKey(ConversionHints.KEY_TRANSLATION_TIME)) {
-                Object value = hints.get(ConversionHints.KEY_TRANSLATION_TIME);
+                final Object value = hints.get(ConversionHints.KEY_TRANSLATION_TIME);
                 if (ConversionHints.VALUE_TRANSLATION_TIME_AUTO.equals(value)) {
                     properties.set(GenericReportProperties.Name.TRANSLATION_TIME, ZonedDateTime.now());
                 } else if (value instanceof ZonedDateTime) {
@@ -181,15 +182,15 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
                         retval.add(
                                 new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "The spatial sampling feature shape is not a Point in " + contextPath));
                     } else {
-                        GeoPositionImpl.Builder posBuilder = GeoPositionImpl.builder();
+                        ElevatedPointImpl.Builder posBuilder = ElevatedPointImpl.builder();
                         boolean canBuildPos = true;
                         if (point.get().getPos() != null) {
                             DirectPositionType dp = point.get().getPos();
                             if (dp.getSrsName() != null) {
-                                posBuilder.setCoordinateReferenceSystemId(dp.getSrsName());
+                                posBuilder.setSrsName(dp.getSrsName());
                             } else {
                                 if (point.get().getSrsName() != null) {
-                                    posBuilder.setCoordinateReferenceSystemId(point.get().getSrsName());
+                                    posBuilder.setSrsName(point.get().getSrsName());
                                 } else {
                                     canBuildPos = false;
                                     retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
@@ -401,6 +402,13 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
     protected static void withCloudType(final CloudLayerType layer, final ReferredObjectRetrievalContext refCtx,
             final Consumer<AviationCodeListUser.CloudType> resultHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         withCloudType(layer, refCtx, resultHandler, null, issueHandler, contextPath);
+    }
+
+    protected static Optional<AviationCodeListUser.RelationalOperator> asRelationalOperator(final RelationalOperatorType source) {
+        if (source == null) {
+            return Optional.empty();
+        }
+        return Optional.of(AviationCodeListUser.RelationalOperator.valueOf(source.name()));
     }
 
     public static void withCloudType(final CloudLayerType layer, final ReferredObjectRetrievalContext refCtx,

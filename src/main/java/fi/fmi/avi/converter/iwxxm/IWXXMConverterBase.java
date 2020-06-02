@@ -66,6 +66,8 @@ import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
  * Helpers for creating and handling JAXB generated content classes.
  */
 public abstract class IWXXMConverterBase {
+    public static final String UUID_PREFIX = "uuid.";
+
     private static final Logger LOG = LoggerFactory.getLogger(IWXXMConverterBase.class);
     /*
       XMLConstants.FEATURE_SECURE_PROCESSING flag value "true" forces the XML schema
@@ -86,6 +88,7 @@ public abstract class IWXXMConverterBase {
     private static final Map<String, Object> CLASS_TO_OBJECT_FACTORY = new HashMap<>();
     private static final Map<String, Object> OBJECT_FACTORY_MAP = new HashMap<>();
     private static JAXBContext jaxbCtx = null;
+
 
     private final static HashMap<URL, Templates> iwxxmTemplates = new HashMap<>();
 
@@ -164,17 +167,26 @@ public abstract class IWXXMConverterBase {
         return wrap(element, clz, consumer);
     }
 
+    public static <T> JAXBElement<T> createAndWrap(final Class<T> clz, final String methodName, final Consumer<T> consumer) {
+        final T element = create(clz);
+        return wrap(element, clz, methodName, consumer);
+    }
+
     public static <T> JAXBElement<T> wrap(final T element, final Class<T> clz) {
         return wrap(element, clz, null);
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> JAXBElement<T> wrap(final T element, final Class<T> clz, final Consumer<T> consumer) {
+        final String methodName =
+                "create" + clz.getSimpleName().substring(0, 1).toUpperCase() + clz.getSimpleName().substring(1, clz.getSimpleName().lastIndexOf("Type"));
+        return wrap(element, clz, methodName, consumer);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> JAXBElement<T> wrap(final T element, final Class<T> clz, final String methodName, final Consumer<T> consumer) {
         Object result = null;
         final Object objectFactory = getObjectFactory(clz);
         if (objectFactory != null) {
-            final String methodName =
-                    "create" + clz.getSimpleName().substring(0, 1).toUpperCase() + clz.getSimpleName().substring(1, clz.getSimpleName().lastIndexOf("Type"));
             try {
                 final Method toCall = objectFactory.getClass().getMethod(methodName, clz);
                 result = toCall.invoke(objectFactory, element);

@@ -10,14 +10,10 @@ import javax.xml.namespace.QName;
 
 import net.opengis.gml32.AbstractGeometryType;
 import net.opengis.gml32.AbstractTimeObjectType;
-import net.opengis.gml32.AngleType;
 import net.opengis.gml32.DirectPositionType;
 import net.opengis.gml32.FeaturePropertyType;
-import net.opengis.gml32.LengthType;
-import net.opengis.gml32.MeasureType;
 import net.opengis.gml32.PointType;
 import net.opengis.gml32.ReferenceType;
-import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.TimeInstantType;
 import net.opengis.gml32.TimePeriodType;
 import net.opengis.om20.OMObservationType;
@@ -36,12 +32,11 @@ import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
-import fi.fmi.avi.model.GeoPosition;
+import fi.fmi.avi.model.ElevatedPoint;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import icao.iwxxm21.AerodromeCloudForecastType;
-import icao.iwxxm21.AngleWithNilReasonType;
 import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
 import icao.iwxxm21.CloudLayerType;
 import icao.iwxxm21.DistanceWithNilReasonType;
@@ -126,11 +121,10 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
                     if (input.getReferencePoint().isPresent()) {
                         samsFeature.setShape(create(ShapeType.class, (shape) -> {
                             final JAXBElement<?> wrapped = wrap(create(PointType.class, (point) -> {
-                                final Optional<GeoPosition> inputPos = input.getReferencePoint();
+                                final Optional<ElevatedPoint> inputPos = input.getReferencePoint();
                                 if (inputPos.isPresent()) {
                                     point.setId("point-" + UUID.randomUUID().toString());
-
-                                    point.setSrsName(inputPos.get().getCoordinateReferenceSystemId());
+                                    inputPos.get().getSrsName().ifPresent(point::setSrsName);
                                     if (inputPos.get().getCoordinates() != null) {
                                         point.setSrsDimension(BigInteger.valueOf(inputPos.get().getCoordinates().size()));
                                         point.setPos(create(DirectPositionType.class,
@@ -199,36 +193,5 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
                 target.setCloudType(new JAXBElement<>(eName, SigConvectiveCloudTypeType.class, cloudType));
             }
         }
-    }
-
-    protected MeasureType asMeasure(final NumericMeasure source) {
-        return asMeasure(source, MeasureType.class);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <S extends MeasureType> S asMeasure(final NumericMeasure source, final Class<S> clz) {
-        final S retval;
-        if (source != null) {
-            if (SpeedType.class.isAssignableFrom(clz)) {
-                retval = (S) create(SpeedType.class);
-            } else if (AngleWithNilReasonType.class.isAssignableFrom(clz)) {
-                retval = (S) create(AngleWithNilReasonType.class);
-            } else if (AngleType.class.isAssignableFrom(clz)) {
-                retval = (S) create(AngleType.class);
-            } else if (DistanceWithNilReasonType.class.isAssignableFrom(clz)) {
-                retval = (S) create(DistanceWithNilReasonType.class);
-            } else if (LengthWithNilReasonType.class.isAssignableFrom(clz)) {
-                retval = (S) create(LengthWithNilReasonType.class);
-            } else if (LengthType.class.isAssignableFrom(clz)) {
-                retval = (S) create(LengthType.class);
-            } else {
-                retval = (S) create(MeasureType.class);
-            }
-            retval.setValue(source.getValue());
-            retval.setUom(source.getUom());
-        } else {
-            throw new IllegalArgumentException("NumericMeasure is null");
-        }
-        return retval;
     }
 }

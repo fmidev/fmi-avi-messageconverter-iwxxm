@@ -48,9 +48,9 @@
       "geometry": {
         "geoGeometry": {
           "type": "Point",
-          "point": [
-                5.0,
-                52.0
+          "coordinates": [
+            5.0,
+            52.0
           ]
         }
       }
@@ -64,7 +64,7 @@
     "geometry": {
       "geoGeometry": {
         "type": "Point",
-        "point": [
+        "coordinates": [
           6.0,
           54.0
         ]

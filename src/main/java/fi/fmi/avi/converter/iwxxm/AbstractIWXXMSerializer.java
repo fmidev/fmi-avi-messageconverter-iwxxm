@@ -5,9 +5,11 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.util.List;
 import java.util.UUID;
 
 import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
@@ -19,9 +21,25 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 
+import net.opengis.gml32.AbstractRingPropertyType;
+import net.opengis.gml32.AngleType;
+import net.opengis.gml32.CircleByCenterPointType;
+import net.opengis.gml32.CurvePropertyType;
+import net.opengis.gml32.CurveSegmentArrayPropertyType;
+import net.opengis.gml32.CurveType;
+import net.opengis.gml32.DirectPositionListType;
 import net.opengis.gml32.DirectPositionType;
+import net.opengis.gml32.LengthType;
+import net.opengis.gml32.LinearRingType;
+import net.opengis.gml32.MeasureType;
+import net.opengis.gml32.PolygonPatchType;
+import net.opengis.gml32.RingType;
+import net.opengis.gml32.SpeedType;
+import net.opengis.gml32.SurfacePatchArrayPropertyType;
 import net.opengis.gml32.TimePrimitivePropertyType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -34,6 +52,8 @@ import aero.aixm511.CodeIATAType;
 import aero.aixm511.CodeICAOType;
 import aero.aixm511.ElevatedPointPropertyType;
 import aero.aixm511.ElevatedPointType;
+import aero.aixm511.SurfacePropertyType;
+import aero.aixm511.SurfaceType;
 import aero.aixm511.TextNameType;
 import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
@@ -41,12 +61,22 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
+import fi.fmi.avi.model.CircleByCenterPoint;
+import fi.fmi.avi.model.Geometry;
+import fi.fmi.avi.model.NumericMeasure;
+import fi.fmi.avi.model.PointGeometry;
+import fi.fmi.avi.model.PolygonGeometry;
+import fi.fmi.avi.model.immutable.NumericMeasureImpl;
+import icao.iwxxm21.AngleWithNilReasonType;
+import icao.iwxxm21.DistanceWithNilReasonType;
+import icao.iwxxm21.LengthWithNilReasonType;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM.
  */
 public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOrCollection, S> extends IWXXMConverterBase
         implements AviMessageSpecificConverter<T, S> {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractIWXXMSerializer.class);
 
     @SuppressWarnings("unchecked")
     protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
@@ -98,7 +128,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
                                     .ifPresent(inputPosition -> timeSlice.setARP(create(ElevatedPointPropertyType.class,
                                             (pointProp) -> pointProp.setElevatedPoint(create(ElevatedPointType.class, (point) -> {
                                                 point.setId("point-" + UUID.randomUUID().toString());
-                                                point.setSrsName(inputPosition.getCoordinateReferenceSystemId());
+                                                inputPosition.getSrsName().ifPresent(point::setSrsName);
                                                 if (inputPosition.getCoordinates() != null) {
                                                     point.setSrsDimension(BigInteger.valueOf(inputPosition.getCoordinates().size()));
                                                     point.setPos(
@@ -114,7 +144,112 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
                         }))));
     }
 
-    private Document asCleanedUpXML(final String input , final ConversionHints hints) throws ConversionException {
+    protected static SurfacePropertyType createSurface(final Geometry geom, final String id) throws IllegalArgumentException {
+        SurfacePropertyType retval = null;
+        if (geom != null) {
+            retval = create(SurfacePropertyType.class, (spt) -> {
+                spt.setSurface(createAndWrap(SurfaceType.class, (sft) -> {
+                    geom.getSrsName().ifPresent(sft::setSrsName);
+                    geom.getSrsDimension().ifPresent(sft::setSrsDimension);
+                    geom.getAxisLabels().ifPresent(labels -> sft.getAxisLabels().addAll(labels));
+                    sft.setId(id);
+                    JAXBElement<SurfacePatchArrayPropertyType> spapt = null;
+                    if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass()) || PointGeometry.class.isAssignableFrom(geom.getClass())) {
+                        final List<Double> centerPointCoords;
+                        final LengthType radius;
+                        if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass())) {
+                            final CircleByCenterPoint cbcp = (CircleByCenterPoint) geom;
+                            centerPointCoords = cbcp.getCenterPointCoordinates();
+                            radius = asMeasure(cbcp.getRadius(), LengthType.class);
+                        } else {
+                            //Create a zero-radius circle if a point geometry is given
+                            final PointGeometry point = (PointGeometry) geom;
+                            centerPointCoords = point.getCoordinates();
+                            radius = asMeasure(NumericMeasureImpl.of(0.0, "[nmi_i]"), LengthType.class);
+                        }
+
+                        final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
+                            poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
+                                arpt.setAbstractRing(createAndWrap(RingType.class, (rt) -> {
+                                    rt.getCurveMember().add(create(CurvePropertyType.class, (curvept) -> {
+                                        curvept.setAbstractCurve(createAndWrap(CurveType.class, (curvet) -> {
+                                            curvet.setId(UUID_PREFIX + UUID.randomUUID().toString());
+                                            curvet.setSegments(create(CurveSegmentArrayPropertyType.class, (curvesat) -> {
+                                                curvesat.getAbstractCurveSegment().add(createAndWrap(CircleByCenterPointType.class, (cbcpt) -> {
+                                                    cbcpt.setPos(create(DirectPositionType.class, (dpt) -> {
+                                                        dpt.getValue().addAll(centerPointCoords);
+                                                    }));
+                                                    cbcpt.setNumArc(BigInteger.valueOf(1));
+                                                    cbcpt.setRadius(radius);
+                                                }));
+                                            }));
+                                        }));
+                                    }));
+                                }));
+                            }));
+                        });
+                        spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", (_spapt) -> {
+                            _spapt.getAbstractSurfacePatch().add(ppt);
+                        });
+                    } else if (PolygonGeometry.class.isAssignableFrom(geom.getClass())) { //Polygon
+                        final PolygonGeometry polygon = (PolygonGeometry) geom;
+                        final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
+                            poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
+                                arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
+                                    final DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
+                                        dpl.getValue().addAll(polygon.getExteriorRingPositions());
+                                    });
+                                    lrt.setPosList(dplt);
+                                }));
+                            }));
+                        });
+                        spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", (_spapt) -> {
+                            _spapt.getAbstractSurfacePatch().add(ppt);
+                        });
+                    } else {
+                        throw new IllegalArgumentException("Unable to create a Surface from geometry of type " + geom.getClass().getCanonicalName());
+                    }
+                    if (spapt != null) {
+                        sft.setPatches(spapt);
+                    }
+                }));
+            });
+        }
+        return retval;
+    }
+
+    protected static MeasureType asMeasure(final NumericMeasure source) {
+        return asMeasure(source, MeasureType.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static <S extends MeasureType> S asMeasure(final NumericMeasure source, final Class<S> clz) {
+        final S retval;
+        if (source != null) {
+            if (SpeedType.class.isAssignableFrom(clz)) {
+                retval = (S) create(SpeedType.class);
+            } else if (AngleWithNilReasonType.class.isAssignableFrom(clz)) {
+                retval = (S) create(AngleWithNilReasonType.class);
+            } else if (AngleType.class.isAssignableFrom(clz)) {
+                retval = (S) create(AngleType.class);
+            } else if (DistanceWithNilReasonType.class.isAssignableFrom(clz)) {
+                retval = (S) create(DistanceWithNilReasonType.class);
+            } else if (LengthWithNilReasonType.class.isAssignableFrom(clz)) {
+                retval = (S) create(LengthWithNilReasonType.class);
+            } else if (LengthType.class.isAssignableFrom(clz)) {
+                retval = (S) create(LengthType.class);
+            } else {
+                retval = (S) create(MeasureType.class);
+            }
+            retval.setValue(source.getValue());
+            retval.setUom(source.getUom());
+        } else {
+            throw new IllegalArgumentException("NumericMeasure is null");
+        }
+        return retval;
+    }
+
+    private Document asCleanedUpXML(final String input, final ConversionHints hints) throws ConversionException {
         try {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);

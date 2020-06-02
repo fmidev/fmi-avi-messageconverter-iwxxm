@@ -85,7 +85,8 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
                 dom = db.parse(this.getClass().getResourceAsStream("collect-template.xml"));
                 final Element collect = dom.getDocumentElement();
                 final Attr id = dom.createAttributeNS(IWXXMNamespaceContext.getURI("gml"), "id");
-                id.setValue("bulletin-" + UUID.randomUUID().toString());
+                id.setPrefix("gml");
+                id.setValue(UUID_PREFIX + UUID.randomUUID().toString());
                 collect.setAttributeNodeNS(id);
 
                 final List<Document> outputMessages = new ArrayList<>();

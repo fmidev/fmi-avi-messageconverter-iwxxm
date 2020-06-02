@@ -22,7 +22,7 @@ import fi.fmi.avi.converter.iwxxm.v2_1.OMObservationProperties;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.CloudForecast;
-import fi.fmi.avi.model.GeoPosition;
+import fi.fmi.avi.model.ElevatedPoint;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -93,7 +93,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
 
         properties.get(TAFProperties.Name.BASE_FORECAST, OMObservationProperties.class).ifPresent((fctProp) -> {
             Optional<Aerodrome> aerodrome = fctProp.get(OMObservationProperties.Name.AERODROME, Aerodrome.class);
-            final Optional<GeoPosition> samplingPos = fctProp.get(OMObservationProperties.Name.SAMPLING_POINT, GeoPosition.class);
+            final Optional<ElevatedPoint> samplingPos = fctProp.get(OMObservationProperties.Name.SAMPLING_POINT, ElevatedPoint.class);
             if (aerodrome.isPresent()) {
                 if (!aerodrome.get().getReferencePoint().isPresent()) {
                     if (samplingPos.isPresent()) {

@@ -1,37 +1,22 @@
 package fi.fmi.avi.converter.iwxxm.v2_1.airmet;
 
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
-import net.opengis.gml32.AbstractRingPropertyType;
 import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.AngleType;
-import net.opengis.gml32.CircleByCenterPointType;
-import net.opengis.gml32.CurvePropertyType;
-import net.opengis.gml32.CurveSegmentArrayPropertyType;
-import net.opengis.gml32.CurveType;
-import net.opengis.gml32.DirectPositionListType;
-import net.opengis.gml32.DirectPositionType;
 import net.opengis.gml32.FeaturePropertyType;
 import net.opengis.gml32.LengthType;
-import net.opengis.gml32.LinearRingType;
 import net.opengis.gml32.ObjectFactory;
-import net.opengis.gml32.PolygonPatchType;
 import net.opengis.gml32.ReferenceType;
-import net.opengis.gml32.RingType;
 import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.StringOrRefType;
-import net.opengis.gml32.SurfacePatchArrayPropertyType;
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
 import net.opengis.gml32.TimePeriodPropertyType;
@@ -57,8 +42,6 @@ import aero.aixm511.CodeAirspaceType;
 import aero.aixm511.CodeOrganisationDesignatorType;
 import aero.aixm511.CodeUnitType;
 import aero.aixm511.CodeVerticalReferenceType;
-import aero.aixm511.SurfacePropertyType;
-import aero.aixm511.SurfaceType;
 import aero.aixm511.TextNameType;
 import aero.aixm511.UnitTimeSlicePropertyType;
 import aero.aixm511.UnitTimeSliceType;
@@ -71,12 +54,10 @@ import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
-import fi.fmi.avi.model.immutable.PointGeometryImpl;
-import fi.fmi.avi.model.immutable.PolygonsGeometryImpl;
+import fi.fmi.avi.model.TacOrGeoGeometry;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.AirmetWind;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
@@ -442,16 +423,20 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                             }
                                         }));
                                     });
+                                    geometryWithHeight.getGeometry().flatMap(TacOrGeoGeometry::getGeoGeometry).ifPresent(geom -> {
+                                        avt.setHorizontalProjection(createSurface(geom, "an-sfc-" + cnt + "-" + airmetUUID));
+                                    });
+                                    /*
                                     avt.setHorizontalProjection(create(SurfacePropertyType.class, (spt) -> {
                                         spt.setSurface(createAndWrap(SurfaceType.class, (sft) -> {
                                             try {
                                                 if (geometryWithHeight.getGeometry().isPresent()) {
                                                     Geometry geom = geometryWithHeight.getGeometry().get().getGeoGeometry().get();
-                                                    if (PointGeometryImpl.class.isAssignableFrom(geom.getClass())) {
-                                                        List<Double> pts = new ArrayList<Double>();
-                                                        for (Double coordElement : ((PointGeometryImpl) geom).getPoint()) {
-                                                            pts.add(coordElement);
-                                                        }
+                                                    geom.getSrsName().ifPresent(sft::setSrsName);
+                                                    geom.getSrsDimension().ifPresent(sft::setSrsDimension);
+                                                    geom.getAxisLabels().ifPresent(labels -> sft.getAxisLabels().addAll(labels));
+                                                    if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass())) {
+                                                        CircleByCenterPoint cbcp = (CircleByCenterPoint) geom;
                                                         JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
                                                             poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
                                                                 arpt.setAbstractRing(createAndWrap(RingType.class, (rt) -> {
@@ -463,7 +448,8 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                                                         .add(createAndWrap(CircleByCenterPointType.class, (cbcpt) -> {
                                                                                             cbcpt.setPos(create(DirectPositionType.class, (dpt) -> {
                                                                                                 dpt.getValue()
-                                                                                                        .addAll(Arrays.asList(pts.toArray(new Double[0])));
+                                                                                                        //.addAll(Arrays.asList(pts.toArray(new Double[0])));
+                                                                                                .addAll(cbcp.getCoordinates());
                                                                                             }));
                                                                                             cbcpt.setNumArc(BigInteger.valueOf(1));
                                                                                             cbcpt.setRadius(create(LengthType.class, (lt) -> {
@@ -484,18 +470,16 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                             (_spapt)-> {
                                                                 _spapt.getAbstractSurfacePatch().add(ppt);
                                                             });*/
+                                    /*
                                                         sft.setPatches(spapt);
-                                                    } else { //Polygon
-                                                        List<Double> pts = new ArrayList<Double>();
-                                                        for (Double coord : ((PolygonsGeometryImpl) geom).getPolygons().get(0)) {
-                                                            pts.add(coord);
-                                                        }
-                                                        ;
+                                                    } else if (PolygonGeometry.class.isAssignableFrom(geom.getClass())){ //Polygon
+                                                        PolygonGeometry polygon = (PolygonGeometry)geom;
                                                         JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
                                                             poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
                                                                 arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
                                                                     DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
-                                                                        dpl.getValue().addAll(pts);
+                                                                        dpl.getValue().addAll(polygon.getExteriorPoints().stream().map(
+                                                                                PointGeometry::getCoordinates).flatMap(List::stream).collect(Collectors.toList()));
                                                                     });
                                                                     lrt.setPosList(dplt);
                                                                 }));
@@ -507,6 +491,8 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                         spapt.getValue().getAbstractSurfacePatch().add(ppt);
 
                                                         sft.setPatches(spapt);
+                                                    } else {
+                                                        //Woot?
                                                     }
                                                 }
                                             } catch (Exception e) {
@@ -518,8 +504,9 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                             sft.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
                                         }));
                                     }));
-                                }));
 
+                                     */
+                                }));
                             }));
                             if (geometryWithHeight.getLowerLimitOperator().isPresent()) {
                                 sect.setGeometryLowerLimitOperator(RelationalOperatorType.fromValue(geometryWithHeight.getLowerLimitOperator().get().name()));

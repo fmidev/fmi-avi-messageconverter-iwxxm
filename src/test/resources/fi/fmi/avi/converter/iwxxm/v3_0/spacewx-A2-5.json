@@ -31,15 +31,14 @@
                 "Lat",
                 "Long"
               ],
-              "coordinates": [
+              "centerPointCoordinates": [
                 -16.6392,
                 160.9368
               ],
               "radius": {
                 "value": 5409.75,
                 "uom": "[nmi_i]"
-              },
-              "numarc": 1
+              }
             }
           },
           "locationIndicator": "DAYLIGHT_SIDE"
@@ -62,15 +61,14 @@
                 "Lat",
                 "Long"
               ],
-              "coordinates": [
+              "centerPointCoordinates": [
                 -16.7114,
                 70.9413
               ],
               "radius": {
                 "value": 5409.75,
                 "uom": "[nmi_i]"
-              },
-              "numarc": 1
+              }
             }
           },
           "locationIndicator": "DAYLIGHT_SIDE"
@@ -93,15 +91,14 @@
                 "Lat",
                 "Long"
               ],
-              "coordinates": [
+              "centerPointCoordinates": [
                 -16.7832,
                 -19.0539
               ],
               "radius": {
                 "value": 5409.75,
                 "uom": "[nmi_i]"
-              },
-              "numarc": 1
+              }
             }
           },
           "locationIndicator": "DAYLIGHT_SIDE"
@@ -124,15 +121,14 @@
                 "Lat",
                 "Long"
               ],
-              "coordinates": [
+              "centerPointCoordinates": [
                 -16.8548,
                 -109.0489
               ],
               "radius": {
                 "value": 5409.75,
                 "uom": "[nmi_i]"
-              },
-              "numarc": 1
+              }
             }
           },
           "locationIndicator": "DAYLIGHT_SIDE"
@@ -155,15 +151,14 @@
                 "Lat",
                 "Long"
               ],
-              "coordinates": [
+              "centerPointCoordinates": [
                 -16.9261,
                 160.9563
               ],
               "radius": {
                 "value": 5409.75,
                 "uom": "[nmi_i]"
-              },
-              "numarc": 1
+              }
             }
           },
           "locationIndicator": "DAYLIGHT_SIDE"

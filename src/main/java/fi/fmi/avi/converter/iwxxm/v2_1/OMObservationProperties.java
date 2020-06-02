@@ -2,7 +2,7 @@ package fi.fmi.avi.converter.iwxxm.v2_1;
 
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.model.Aerodrome;
-import fi.fmi.avi.model.GeoPosition;
+import fi.fmi.avi.model.ElevatedPoint;
 import fi.fmi.avi.model.PartialOrCompleteTime;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -21,7 +21,7 @@ public class OMObservationProperties extends AbstractPropertyContainer {
         PROCEDURE(ProcessType.class),//
         OBSERVED_PROPERTY(String.class),//
         AERODROME(Aerodrome.class),//
-        SAMPLING_POINT(GeoPosition.class),//
+        SAMPLING_POINT(ElevatedPoint.class),//
         RESULT(Object.class);
 
         private final Class<?> acceptedType;

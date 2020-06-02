@@ -36,7 +36,7 @@ import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
-import fi.fmi.avi.model.immutable.GeoPositionImpl;
+import fi.fmi.avi.model.immutable.ElevatedPointImpl;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.immutable.TAFImpl;
 
@@ -59,13 +59,12 @@ public class TAFIWXXMSerializerTest {
                 .setFieldElevationValue(40.0)
                 .setFieldElevationUom("FT")
                 .setLocationIndicatorICAO("EETN")
-                .setReferencePoint(GeoPositionImpl.builder()
-                        .setCoordinateReferenceSystemId("http://www.opengis.net/def/crs/EPSG/0/4326")
+                .setReferencePoint(ElevatedPointImpl.builder()
+                        .setSrsName("http://www.opengis.net/def/crs/EPSG/0/4326")
                         .addCoordinates(24.8325, 59.413333)
                         .setElevationValue(40.0)
                         .setElevationUom("m")
-                        .build()
-                );
+                        .build());
         TAFImpl.Builder tafBuilder = TAFImpl.immutableCopyOf(t).toBuilder();
         tafBuilder
                 .setAerodrome(airportBuilder.build())

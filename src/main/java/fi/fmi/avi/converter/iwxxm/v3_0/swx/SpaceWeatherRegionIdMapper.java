@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.swx.SpaceWeatherRegion;
 
@@ -38,7 +39,7 @@ public class SpaceWeatherRegionIdMapper {
 
         for (RegionId r : regionList) {
             if (isEmpty(r.getId())) {
-                r.setId(SpaceWeatherIWXXMSerializer.UUID_PREFIX + UUID.randomUUID().toString());
+                r.setId(IWXXMConverterBase.UUID_PREFIX + UUID.randomUUID().toString());
                 for (RegionId r2 : regionList) {
                     if (isEmpty(r2.getId()) && r2.getRegion().equals(r.getRegion())) {
                         r2.setId(r.getId());
@@ -53,11 +54,11 @@ public class SpaceWeatherRegionIdMapper {
         return string == null || string.trim().equals("");
     }
 
-    public class RegionId {
-        private SpaceWeatherRegion region;
+    public static class RegionId {
+        private final SpaceWeatherRegion region;
         private String id;
-        private int analysisNumber;
-        private int regionNumber;
+        private final int analysisNumber;
+        private final int regionNumber;
         private boolean duplicate;
 
         public RegionId(final SpaceWeatherRegion region, final int analysisNumber, final int regionNumber) {
