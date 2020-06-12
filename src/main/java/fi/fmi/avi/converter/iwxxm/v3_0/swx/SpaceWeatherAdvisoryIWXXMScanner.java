@@ -101,14 +101,14 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (input.getAdvisoryNumber() != null) {
-            final AdvisoryNumber advisoryNumber = parseAdvisoryNumber(input.getAdvisoryNumber().getValue());
+            final AdvisoryNumber advisoryNumber = AdvisoryNumberImpl.Builder.from(input.getAdvisoryNumber().getValue()).build();
             properties.set(SpaceWeatherAdvisoryProperties.Name.ADVISORY_NUMBER, advisoryNumber);
         } else {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Advisory number is missing"));
         }
 
         if (input.getReplacedAdvisoryNumber() != null) {
-            final AdvisoryNumber replaceAdvisoryNumber = parseAdvisoryNumber(input.getReplacedAdvisoryNumber());
+            final AdvisoryNumber replaceAdvisoryNumber = AdvisoryNumberImpl.Builder.from(input.getReplacedAdvisoryNumber()).build();
             properties.set(SpaceWeatherAdvisoryProperties.Name.REPLACE_ADVISORY_NUMBER, replaceAdvisoryNumber);
         }
 
@@ -166,15 +166,6 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
             }
         }
         return na.build();
-    }
-
-    private static AdvisoryNumber parseAdvisoryNumber(final String advisoryNumber) {
-        final List<Integer> i = new ArrayList<>();
-        for (final String element : advisoryNumber.split("/")) {
-            i.add(Integer.parseInt(element));
-        }
-
-        return AdvisoryNumberImpl.builder().setYear(i.get(0)).setSerialNumber(i.get(1)).build();
     }
 
     private static List<SpaceWeatherPhenomenon> parsePhenomenonList(final List<SpaceWeatherPhenomenaType> elements) {
