@@ -239,7 +239,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
             if (!regionId.isDuplicate()) {
                 final SpaceWeatherRegion region = analysis.getRegion().get().get(i);
-                if (!region.getAirSpaceVolume().isPresent() && !region.getLocationIndicator().isPresent() && !region.getTac().isPresent()) {
+                if (!region.getAirSpaceVolume().isPresent() && !region.getLocationIndicator().isPresent()) {
                     regionProperty.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
                 } else {
                     final SpaceWeatherRegionType regionType = create(SpaceWeatherRegionType.class);
