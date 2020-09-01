@@ -9,6 +9,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import fi.fmi.avi.model.swx.immutable.SpaceWeatherPhenomenonImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,7 @@ public class SpaceWeatherBulletinParserTest {
             SpaceWeatherBulletin bulletin = result.getConvertedMessage().get();
             assertEquals(1, bulletin.getMessages().size());
             SpaceWeatherAdvisory mesg = bulletin.getMessages().get(0);
-            assertEquals(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"), mesg.getPhenomena().get(0));
+            assertEquals(SpaceWeatherPhenomenonImpl.builder().fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD").build(), mesg.getPhenomena().get(0));
         }
     }
 
