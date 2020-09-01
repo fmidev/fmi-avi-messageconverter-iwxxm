@@ -10,6 +10,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
+import fi.fmi.avi.model.swx.immutable.SpaceWeatherPhenomenonImpl;
 import net.opengis.gml32.AbstractRingPropertyType;
 import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.CircleByCenterPointType;
