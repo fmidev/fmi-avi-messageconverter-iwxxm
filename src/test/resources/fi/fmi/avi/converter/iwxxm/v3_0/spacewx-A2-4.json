@@ -12,7 +12,7 @@
     "serialNumber": 2
   },
   "phenomena": [
-    "RADIATION MOD"
+    {"type":"RADIATION_AT_FLIGHT_LEVELS", "severity": "MODERATE"}
   ],
   "analyses": [
     {

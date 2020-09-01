@@ -12,8 +12,8 @@
     "serialNumber": 2
   },
   "phenomena": [
-    "HF COM MOD",
-    "GNSS MOD"
+    {"type":"HF_COMMUNICATIONS", "severity":"MODERATE"},
+    {"type":"GNSS_BASED_NAVIGATION_AND_SURVEILLANCE", "severity":"MODERATE"}
   ],
   "analyses": [
     {
