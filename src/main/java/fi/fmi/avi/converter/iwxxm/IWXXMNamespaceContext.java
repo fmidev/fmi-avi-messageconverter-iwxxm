@@ -25,6 +25,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
         mapping.put("http://www.isotc211.org/2005/gts", "gts");
         mapping.put("http://www.aixm.aero/schema/5.1.1", "aixm");
         mapping.put("http://icao.int/iwxxm/2.1", "iwxxm");
+        mapping.put("http://icao.int/iwxxm/3.0", "iwxxm3");
         mapping.put("http://def.wmo.int/opm/2013", "opm");
         mapping.put("http://def.wmo.int/metce/2013", "metce");
         mapping.put("http://def.wmo.int/collect/2014", "collect");
@@ -54,7 +55,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
     }
 
     @Override
-    public Iterator<?> getPrefixes(final String uri) {
+    public Iterator getPrefixes(final String uri) {
         ArrayList<String> retval = new ArrayList<>(1);
         String value = this.getPrefix(uri);
         if (value != null) {

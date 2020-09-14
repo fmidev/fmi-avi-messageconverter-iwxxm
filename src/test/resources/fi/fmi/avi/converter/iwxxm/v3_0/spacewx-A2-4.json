@@ -1,0 +1,320 @@
+{
+  "issueTime": {
+    "completeTime": "2016-11-08T00:00:00Z"
+  },
+  "issuingCenter": {
+    "name": "DONLON Weather Forecast Center",
+    "designator": "DONLON",
+    "type": "OTHER:SWXC"
+  },
+  "advisoryNumber": {
+    "year": 2016,
+    "serialNumber": 2
+  },
+  "phenomena": [
+    {"type":"RADIATION_AT_FLIGHT_LEVELS", "severity": "MODERATE"}
+  ],
+  "analyses": [
+    {
+      "time": {
+        "completeTime": "2016-11-08T01:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "region": [
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "Polygon",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "exteriorRingPositions": [
+                -180,
+                90,
+                -180,
+                60,
+                180,
+                60,
+                180,
+                90,
+                -180,
+                90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
+        },
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "Polygon",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "exteriorRingPositions": [
+                -180,
+                -90,
+                -180,
+                -60,
+                180,
+                -60,
+                180,
+                -90,
+                -180,
+                -90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T07:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "region": [
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "Polygon",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "exteriorRingPositions": [
+                -180,
+                90,
+                -180,
+                60,
+                180,
+                60,
+                180,
+                90,
+                -180,
+                90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
+        },
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "Polygon",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "exteriorRingPositions": [
+                -180,
+                -90,
+                -180,
+                -60,
+                180,
+                -60,
+                180,
+                -90,
+                -180,
+                -90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T13:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "region": [
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "Polygon",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "exteriorRingPositions": [
+                -180,
+                90,
+                -180,
+                60,
+                180,
+                60,
+                180,
+                90,
+                -180,
+                90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
+        },
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "Polygon",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "exteriorRingPositions": [
+                -180,
+                -90,
+                -180,
+                -60,
+                180,
+                -60,
+                180,
+                -90,
+                -180,
+                -90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T19:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "region": [
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "Polygon",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "exteriorRingPositions": [
+                -180,
+                90,
+                -180,
+                60,
+                180,
+                60,
+                180,
+                90,
+                -180,
+                90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
+        },
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "Polygon",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "exteriorRingPositions": [
+                -180,
+                -90,
+                -180,
+                -60,
+                180,
+                -60,
+                180,
+                -90,
+                -180,
+                -90
+              ]
+            },
+            "upperLimit": {
+              "value": 350,
+              "uom": "FL"
+            },
+            "upperLimitReference": "STD"
+          },
+          "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-09T01:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "region": [
+        {}
+      ],
+      "noPhenomenaExpected": true
+    }
+  ],
+  "remarks": [
+    "RADIATION LVL EXCEEDED 100 PCT OF BACKGROUND LVL AT FL350 AND ABV. THE CURRENT EVENT HAS PEAKED AND LVL SLW RTN TO BACKGROUND LVL. SEE WWW.SPACEWEATHERPROVIDER.WEB"
+  ],
+  "nextAdvisory": {
+    "timeSpecifier": "NO_FURTHER_ADVISORIES"
+  },
+  "replaceAdvisoryNumber": {
+    "year": 2016,
+    "serialNumber": 1
+  },
+  "reportStatus":"NORMAL"
+}

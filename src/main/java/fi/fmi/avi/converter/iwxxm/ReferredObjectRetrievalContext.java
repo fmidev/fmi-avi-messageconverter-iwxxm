@@ -53,6 +53,7 @@ public class ReferredObjectRetrievalContext {
             prefMap.put("om", "http://www.opengis.net/om/2.0");
             prefMap.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
             prefMap.put("iwxxm", "http://icao.int/iwxxm/2.1");
+            prefMap.put("iwxxm3", "http://icao.int/iwxxm/3.0");
             SimpleNamespaceContext namespaces = new SimpleNamespaceContext(prefMap);
             xpath.setNamespaceContext(namespaces);
 
@@ -241,7 +242,7 @@ public class ReferredObjectRetrievalContext {
         }
 
         @Override
-        public Iterator<?> getPrefixes(final String uri) {
+        public Iterator getPrefixes(final String uri) {
             throw new UnsupportedOperationException();
         }
 
