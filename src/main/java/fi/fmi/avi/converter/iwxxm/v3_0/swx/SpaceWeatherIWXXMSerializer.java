@@ -224,22 +224,20 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         final SpaceWeatherAnalysisPropertyType propertyType = create(SpaceWeatherAnalysisPropertyType.class);
         final SpaceWeatherAnalysisType analysisType = create(SpaceWeatherAnalysisType.class);
 
-        if (analysis.getAnalysisType().isPresent()) {
-            if (analysis.getAnalysisType().get() == SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION) {
-                analysisType.setTimeIndicator(TimeIndicatorType.OBSERVATION);
-            } else {
-                analysisType.setTimeIndicator(TimeIndicatorType.FORECAST);
-            }
-
+        if (analysis.getAnalysisType() == SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION) {
+            analysisType.setTimeIndicator(TimeIndicatorType.OBSERVATION);
+        } else {
+            analysisType.setTimeIndicator(TimeIndicatorType.FORECAST);
         }
+
         analysisType.setId(UUID_PREFIX + UUID.randomUUID().toString());
         analysisType.setPhenomenonTime(create(AbstractTimeObjectPropertyType.class, (prop) -> getAnalysisTime(prop, analysis.getTime())));
 
-        for (int i = 0; i < analysis.getRegion().get().size(); i++) {
+        for (int i = 0; i < analysis.getRegions().size(); i++) {
             final SpaceWeatherRegionIdMapper.RegionId regionId = regionList.get(i);
             final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
             if (!regionId.isDuplicate()) {
-                final SpaceWeatherRegion region = analysis.getRegion().get().get(i);
+                final SpaceWeatherRegion region = analysis.getRegions().get(i);
                 if (!region.getAirSpaceVolume().isPresent() && !region.getLocationIndicator().isPresent()) {
                     regionProperty.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
                 } else {

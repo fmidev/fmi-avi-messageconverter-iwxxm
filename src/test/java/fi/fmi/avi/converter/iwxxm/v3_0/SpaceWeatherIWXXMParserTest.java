@@ -79,10 +79,10 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T01:00Z"), swx.getIssueTime().get().getCompleteTime().get());
-        assertEquals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION, swx.getAnalyses().get(0).getAnalysisType().get());
+        assertEquals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION, swx.getAnalyses().get(0).getAnalysisType());
         assertEquals(SpaceWeatherPhenomenonImpl.builder().fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD").build(), swx.getPhenomena().get(0));
 
-        SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegion().get().get(0);
+        SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
         assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/HNH"),
                 region.getLocationIndicator().get());
 
@@ -112,12 +112,13 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T00:00Z"), swx.getIssueTime().get().getCompleteTime().get());
-        assertEquals(SpaceWeatherAdvisoryAnalysis.Type.FORECAST, swx.getAnalyses().get(0).getAnalysisType().get());
+        assertEquals(SpaceWeatherAdvisoryAnalysis.Type.FORECAST, swx.getAnalyses().get(0).getAnalysisType());
         assertEquals(SpaceWeatherPhenomenonImpl.builder().fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/RADIATION_MOD").build(), swx.getPhenomena().get(0));
 
-        assertTrue(swx.getAnalyses().get(4).isNoPhenomenaExpected());
+        assertTrue(swx.getAnalyses().get(4).getNilPhenomenonReason().isPresent());
+        assertEquals(SpaceWeatherAdvisoryAnalysis.NilPhenomenonReason.NO_PHENOMENON_EXPECTED, swx.getAnalyses().get(4).getNilPhenomenonReason().get());
 
-        SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegion().get().get(0);
+        SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
         assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/HNH"),
                 region.getLocationIndicator().get());
 
@@ -153,10 +154,10 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T00:00Z"), swx.getIssueTime().get().getCompleteTime().get());
-        assertEquals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION, swx.getAnalyses().get(0).getAnalysisType().get());
+        assertEquals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION, swx.getAnalyses().get(0).getAnalysisType());
         assertEquals(SpaceWeatherPhenomenonImpl.builder().fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_SEV").build(), swx.getPhenomena().get(0));
 
-        SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegion().get().get(0);
+        SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
         assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE"),
                 region.getLocationIndicator().get());
 
