@@ -100,10 +100,10 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
 
         swxType.setIssuingSpaceWeatherCentre(create(UnitPropertyType.class, (prop) -> getIssuingCenter(prop, input.getIssuingCenter())));
 
-        swxType.setAdvisoryNumber(create(StringWithNilReasonType.class, (prop) -> getAdvisoryNumber(prop, input.getAdvisoryNumber())));
+        swxType.setAdvisoryNumber(create(StringWithNilReasonType.class, (prop) -> prop.setValue(input.getAdvisoryNumber().asAdvisoryNumber())));
 
         if (input.getReplaceAdvisoryNumber().isPresent()) {
-            swxType.setReplacedAdvisoryNumber(getAdvisoryNumber(input.getReplaceAdvisoryNumber().get()));
+            swxType.setReplacedAdvisoryNumber(input.getReplaceAdvisoryNumber().get().asAdvisoryNumber());
         }
 
         if (input.getRemarks().isPresent() && input.getRemarks().get().size() > 0) {
@@ -414,14 +414,6 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         } else {
             prop.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
         }
-    }
-
-    private void getAdvisoryNumber(final StringWithNilReasonType prop, final AdvisoryNumber advisoryNumber) {
-        prop.setValue(getAdvisoryNumber(advisoryNumber));
-    }
-
-    private String getAdvisoryNumber(final AdvisoryNumber advisoryNumber) {
-        return advisoryNumber.getYear() + "/" + advisoryNumber.getSerialNumber();
     }
 
     @Override
