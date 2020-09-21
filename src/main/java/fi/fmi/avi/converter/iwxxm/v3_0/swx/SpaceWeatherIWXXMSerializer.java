@@ -10,7 +10,6 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
-import fi.fmi.avi.model.swx.immutable.SpaceWeatherPhenomenonImpl;
 import net.opengis.gml32.AbstractRingPropertyType;
 import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.CircleByCenterPointType;
@@ -53,7 +52,6 @@ import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PolygonGeometry;
-import fi.fmi.avi.model.swx.AdvisoryNumber;
 import fi.fmi.avi.model.swx.AirspaceVolume;
 import fi.fmi.avi.model.swx.IssuingCenter;
 import fi.fmi.avi.model.swx.NextAdvisory;
@@ -100,10 +98,10 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
 
         swxType.setIssuingSpaceWeatherCentre(create(UnitPropertyType.class, (prop) -> getIssuingCenter(prop, input.getIssuingCenter())));
 
-        swxType.setAdvisoryNumber(create(StringWithNilReasonType.class, (prop) -> getAdvisoryNumber(prop, input.getAdvisoryNumber())));
+        swxType.setAdvisoryNumber(create(StringWithNilReasonType.class, (prop) -> prop.setValue(input.getAdvisoryNumber().asAdvisoryNumber())));
 
         if (input.getReplaceAdvisoryNumber().isPresent()) {
-            swxType.setReplacedAdvisoryNumber(getAdvisoryNumber(input.getReplaceAdvisoryNumber().get()));
+            swxType.setReplacedAdvisoryNumber(input.getReplaceAdvisoryNumber().get().asAdvisoryNumber());
         }
 
         if (input.getRemarks().isPresent() && input.getRemarks().get().size() > 0) {
@@ -128,7 +126,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             final SpaceWeatherRegionIdMapper regionIdList = new SpaceWeatherRegionIdMapper(input.getAnalyses());
             for (int i = 0; i < input.getAnalyses().size(); i++) {
                 final SpaceWeatherAdvisoryAnalysis analysis = input.getAnalyses().get(i);
-                swxType.getAnalysis().add(getSpaceWeatherAnalyses(analysis, regionIdList.getRegionList(i)));
+                swxType.getAnalysis().add(toSpaceWeatherAnalysisPropertyType(analysis, regionIdList.getRegionList(i)));
             }
         } else {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Expected 5 analysis objects, but found " + input.getAnalyses().size()));
@@ -219,27 +217,25 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         }
     }
 
-    private SpaceWeatherAnalysisPropertyType getSpaceWeatherAnalyses(final SpaceWeatherAdvisoryAnalysis analysis,
+    private SpaceWeatherAnalysisPropertyType toSpaceWeatherAnalysisPropertyType(final SpaceWeatherAdvisoryAnalysis analysis,
             final List<SpaceWeatherRegionIdMapper.RegionId> regionList) {
         final SpaceWeatherAnalysisPropertyType propertyType = create(SpaceWeatherAnalysisPropertyType.class);
         final SpaceWeatherAnalysisType analysisType = create(SpaceWeatherAnalysisType.class);
 
-        if (analysis.getAnalysisType().isPresent()) {
-            if (analysis.getAnalysisType().get() == SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION) {
-                analysisType.setTimeIndicator(TimeIndicatorType.OBSERVATION);
-            } else {
-                analysisType.setTimeIndicator(TimeIndicatorType.FORECAST);
-            }
-
+        if (analysis.getAnalysisType() == SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION) {
+            analysisType.setTimeIndicator(TimeIndicatorType.OBSERVATION);
+        } else {
+            analysisType.setTimeIndicator(TimeIndicatorType.FORECAST);
         }
+
         analysisType.setId(UUID_PREFIX + UUID.randomUUID().toString());
         analysisType.setPhenomenonTime(create(AbstractTimeObjectPropertyType.class, (prop) -> getAnalysisTime(prop, analysis.getTime())));
 
-        for (int i = 0; i < analysis.getRegion().get().size(); i++) {
+        for (int i = 0; i < analysis.getRegions().size(); i++) {
             final SpaceWeatherRegionIdMapper.RegionId regionId = regionList.get(i);
             final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
             if (!regionId.isDuplicate()) {
-                final SpaceWeatherRegion region = analysis.getRegion().get().get(i);
+                final SpaceWeatherRegion region = analysis.getRegions().get(i);
                 if (!region.getAirSpaceVolume().isPresent() && !region.getLocationIndicator().isPresent()) {
                     regionProperty.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
                 } else {
@@ -416,14 +412,6 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         } else {
             prop.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
         }
-    }
-
-    private void getAdvisoryNumber(final StringWithNilReasonType prop, final AdvisoryNumber advisoryNumber) {
-        prop.setValue(getAdvisoryNumber(advisoryNumber));
-    }
-
-    private String getAdvisoryNumber(final AdvisoryNumber advisoryNumber) {
-        return advisoryNumber.getYear() + "/" + advisoryNumber.getSerialNumber();
     }
 
     @Override

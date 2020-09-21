@@ -20,7 +20,7 @@
         "completeTime": "2016-11-08T01:00:00Z"
       },
       "analysisType": "OBSERVATION",
-      "region": [
+      "regions": [
         {
           "airSpaceVolume": {
             "horizontalProjection": {
@@ -50,7 +50,7 @@
         "completeTime": "2016-11-08T07:00:00Z"
       },
       "analysisType": "FORECAST",
-      "region": [
+      "regions": [
         {
           "airSpaceVolume": {
             "horizontalProjection": {
@@ -80,7 +80,7 @@
         "completeTime": "2016-11-08T13:00:00Z"
       },
       "analysisType": "FORECAST",
-      "region": [
+      "regions": [
         {
           "airSpaceVolume": {
             "horizontalProjection": {
@@ -110,7 +110,7 @@
         "completeTime": "2016-11-08T19:00:00Z"
       },
       "analysisType": "FORECAST",
-      "region": [
+      "regions": [
         {
           "airSpaceVolume": {
             "horizontalProjection": {
@@ -140,7 +140,7 @@
         "completeTime": "2016-11-09T01:00:00Z"
       },
       "analysisType": "FORECAST",
-      "region": [
+      "regions": [
         {
           "airSpaceVolume": {
             "horizontalProjection": {

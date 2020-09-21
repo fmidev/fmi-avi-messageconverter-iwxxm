@@ -29,11 +29,9 @@ public class SpaceWeatherRegionIdMapper {
     private void createIdMap(final List<SpaceWeatherAdvisoryAnalysis> analyses) {
         for (int i = 0; i < analyses.size(); i++) {
             SpaceWeatherAdvisoryAnalysis analysis = analyses.get(i);
-            if (analysis.getRegion().isPresent()) {
-                for (int a = 0; a < analysis.getRegion().get().size(); a++) {
-                    SpaceWeatherRegion region = analysis.getRegion().get().get(a);
-                    regionList.add(new RegionId(region, i, a));
-                }
+            for (int a = 0; a < analysis.getRegions().size(); a++) {
+                SpaceWeatherRegion region = analysis.getRegions().get(a);
+                regionList.add(new RegionId(region, i, a));
             }
         }
 

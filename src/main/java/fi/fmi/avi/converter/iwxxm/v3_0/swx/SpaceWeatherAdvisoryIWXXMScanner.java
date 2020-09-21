@@ -168,7 +168,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
     private static List<SpaceWeatherPhenomenon> parsePhenomenonList(final List<SpaceWeatherPhenomenaType> elements) {
         final List<SpaceWeatherPhenomenon> phenomena = new ArrayList<>();
         for (final SpaceWeatherPhenomenaType element : elements) {
-            phenomena.add(SpaceWeatherPhenomenonImpl.builder().fromWMOCodeListValue(element.getHref()).build());
+            phenomena.add(SpaceWeatherPhenomenonImpl.Builder.fromWMOCodeListValue(element.getHref()).build());
         }
         return phenomena;
     }
