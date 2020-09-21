@@ -84,15 +84,11 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
                 final SpaceWeatherRegionImpl.Builder spaceWeatherRegion = SpaceWeatherRegionImpl.builder();
 
                 final Optional<AirspaceVolume> airspaceVolume = regionProperties.get(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, AirspaceVolume.class);
-                if (airspaceVolume.isPresent()) {
-                    spaceWeatherRegion.setAirSpaceVolume(airspaceVolume);
-                }
+                airspaceVolume.ifPresent(spaceWeatherRegion::setAirSpaceVolume);
 
                 final Optional<SpaceWeatherRegion.SpaceWeatherLocation> locationIndicator = regionProperties.get(
                         SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR, SpaceWeatherRegion.SpaceWeatherLocation.class);
-                if (locationIndicator.isPresent()) {
-                    spaceWeatherRegion.setLocationIndicator(locationIndicator);
-                }
+                locationIndicator.ifPresent(spaceWeatherRegion::setLocationIndicator);
                 weatherRegions.add(spaceWeatherRegion.build());
             }
 
@@ -122,9 +118,7 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
 
         final Optional<PartialOrCompleteTimeInstant> issueTime = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUE_TIME,
                 PartialOrCompleteTimeInstant.class);
-        if (issueTime.isPresent()) {
-            spaceWeatherAdvisory.setIssueTime(issueTime);
-        }
+        issueTime.ifPresent(spaceWeatherAdvisory::setIssueTime);
         final Optional<IssuingCenter> issuer = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER, IssuingCenter.class);
         issuer.ifPresent(spaceWeatherAdvisory::setIssuingCenter);
 
@@ -133,9 +127,7 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
 
         final Optional<AdvisoryNumber> replaceAdvisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.REPLACE_ADVISORY_NUMBER,
                 AdvisoryNumber.class);
-        if (replaceAdvisoryNumber.isPresent()) {
-            spaceWeatherAdvisory.setReplaceAdvisoryNumber(replaceAdvisoryNumber);
-        }
+        replaceAdvisoryNumber.ifPresent(spaceWeatherAdvisory::setReplaceAdvisoryNumber);
         final List<SpaceWeatherPhenomenon> phenomena = properties.getList(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, SpaceWeatherPhenomenon.class);
         spaceWeatherAdvisory.addAllPhenomena(phenomena);
 

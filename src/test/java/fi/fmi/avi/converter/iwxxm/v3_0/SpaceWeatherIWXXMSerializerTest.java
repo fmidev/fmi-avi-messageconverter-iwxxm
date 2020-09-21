@@ -113,7 +113,6 @@ public class SpaceWeatherIWXXMSerializerTest {
         Diff xmlDiff = new Diff(input, message.getConvertedMessage().get());
         DetailedDiff detailedDiff = new DetailedDiff(xmlDiff);
 
-        int i = detailedDiff.getAllDifferences().size();
         List filteredDiff =
                 (List)detailedDiff.getAllDifferences().stream().filter(d -> filterUUIDDifferences(d)).filter(d -> filterCoordinateFormattingDifferences(d))
                         .collect(Collectors.toList());
