@@ -12,7 +12,7 @@
     "serialNumber": 2
   },
   "phenomena": [
-    {"type": "HF_COMMUNICATIONS", "severity": "SEVERE"}
+    "HF_COM_SEV"
   ],
   "analyses": [
     {

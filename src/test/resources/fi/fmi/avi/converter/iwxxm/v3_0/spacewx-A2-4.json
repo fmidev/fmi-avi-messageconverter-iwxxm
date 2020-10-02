@@ -12,7 +12,7 @@
     "serialNumber": 2
   },
   "phenomena": [
-    {"type":"RADIATION_AT_FLIGHT_LEVELS", "severity": "MODERATE"}
+    "RADIATION_MOD"
   ],
   "analyses": [
     {
@@ -303,7 +303,7 @@
       "regions": [
         {}
       ],
-      "nilPhenomenonReason":"NO_PHENOMENON_EXPECTED"
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
     }
   ],
   "remarks": [
@@ -316,5 +316,5 @@
     "year": 2016,
     "serialNumber": 1
   },
-  "reportStatus":"NORMAL"
+  "reportStatus": "NORMAL"
 }

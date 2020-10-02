@@ -9,7 +9,6 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import fi.fmi.avi.model.swx.immutable.SpaceWeatherPhenomenonImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +25,9 @@ import fi.fmi.avi.converter.iwxxm.bulletin.BulletinProperties;
 import fi.fmi.avi.converter.iwxxm.bulletin.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
+import fi.fmi.avi.model.swx.EnumSpaceWeatherPhenomenon;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
-import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
 
 /**
  * Created by rinne on 19/07/17.
@@ -41,37 +40,37 @@ public class SpaceWeatherBulletinParserTest {
     private AviMessageConverter converter;
 
     private Document getBulletinDocument(final String filename) throws Exception {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        DocumentBuilder db = dbf.newDocumentBuilder();
+        final DocumentBuilder db = dbf.newDocumentBuilder();
         return db.parse(SpaceWeatherBulletinParserTest.class.getResourceAsStream(filename));
     }
 
     @Test
     public void testScanner() throws Exception {
         assertTrue(this.converter.isSpecificationSupported(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO));
-        BulletinProperties properties = new BulletinProperties();
-        MeteorologicalBulletinIWXXMScanner<SpaceWeatherAdvisory, SpaceWeatherBulletin> scanner = new MeteorologicalBulletinIWXXMScanner<>();
+        final BulletinProperties properties = new BulletinProperties();
+        final MeteorologicalBulletinIWXXMScanner<SpaceWeatherAdvisory, SpaceWeatherBulletin> scanner = new MeteorologicalBulletinIWXXMScanner<>();
         scanner.setMessageConverter(converter.getConverter(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO));
         scanner.collectBulletinProperties(this.getBulletinDocument("swx-bulletin.xml"), properties, ConversionHints.EMPTY);
         assertTrue(properties.contains(BulletinProperties.Name.HEADING));
-        Optional<BulletinHeading> heading = properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class);
+        final Optional<BulletinHeading> heading = properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class);
         assertEquals(31, heading.get().getBulletinNumber());
         assertTrue(properties.contains(BulletinProperties.Name.MESSAGE));
     }
 
     @Test
     public void testParser() throws Exception {
-        Document input = this.getBulletinDocument("swx-bulletin.xml");
-        ConversionResult<SpaceWeatherBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_BULLETIN_POJO,
+        final Document input = this.getBulletinDocument("swx-bulletin.xml");
+        final ConversionResult<SpaceWeatherBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_BULLETIN_POJO,
                 ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
         if (result.getConvertedMessage().isPresent()) {
-            SpaceWeatherBulletin bulletin = result.getConvertedMessage().get();
+            final SpaceWeatherBulletin bulletin = result.getConvertedMessage().get();
             assertEquals(1, bulletin.getMessages().size());
-            SpaceWeatherAdvisory mesg = bulletin.getMessages().get(0);
-            assertEquals(SpaceWeatherPhenomenonImpl.builder().fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD").build(), mesg.getPhenomena().get(0));
+            final SpaceWeatherAdvisory mesg = bulletin.getMessages().get(0);
+            assertEquals(EnumSpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"), mesg.getPhenomena().get(0));
         }
     }
 

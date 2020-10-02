@@ -12,8 +12,8 @@
     "serialNumber": 2
   },
   "phenomena": [
-    {"type":"HF_COMMUNICATIONS", "severity":"MODERATE"},
-    {"type":"GNSS_BASED_NAVIGATION_AND_SURVEILLANCE", "severity":"MODERATE"}
+    "HF_COM_MOD",
+    "GNSS_MOD"
   ],
   "analyses": [
     {
@@ -264,7 +264,7 @@
       "regions": [
         {}
       ],
-      "nilPhenomenonReason":"NO_PHENOMENON_EXPECTED"
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
     }
   ],
   "remarks": [

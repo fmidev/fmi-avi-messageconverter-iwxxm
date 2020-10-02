@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import fi.fmi.avi.model.swx.immutable.*;
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
 import net.opengis.gml32.TimePositionType;
@@ -28,10 +27,15 @@ import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.swx.AdvisoryNumber;
+import fi.fmi.avi.model.swx.EnumSpaceWeatherPhenomenon;
 import fi.fmi.avi.model.swx.NextAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
 import fi.fmi.avi.model.swx.SpaceWeatherRegion;
+import fi.fmi.avi.model.swx.immutable.AdvisoryNumberImpl;
+import fi.fmi.avi.model.swx.immutable.AirspaceVolumeImpl;
+import fi.fmi.avi.model.swx.immutable.IssuingCenterImpl;
+import fi.fmi.avi.model.swx.immutable.NextAdvisoryImpl;
 import icao.iwxxm30.SpaceWeatherAdvisoryType;
 import icao.iwxxm30.SpaceWeatherAnalysisPropertyType;
 import icao.iwxxm30.SpaceWeatherAnalysisType;
@@ -168,7 +172,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
     private static List<SpaceWeatherPhenomenon> parsePhenomenonList(final List<SpaceWeatherPhenomenaType> elements) {
         final List<SpaceWeatherPhenomenon> phenomena = new ArrayList<>();
         for (final SpaceWeatherPhenomenaType element : elements) {
-            phenomena.add(SpaceWeatherPhenomenonImpl.Builder.fromWMOCodeListValue(element.getHref()).build());
+            phenomena.add(EnumSpaceWeatherPhenomenon.fromWMOCodeListValue(element.getHref()));
         }
         return phenomena;
     }

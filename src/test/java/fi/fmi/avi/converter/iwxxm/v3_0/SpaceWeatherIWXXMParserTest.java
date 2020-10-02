@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import fi.fmi.avi.model.swx.immutable.SpaceWeatherPhenomenonImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,9 +36,9 @@ import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PolygonGeometry;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.swx.AirspaceVolume;
+import fi.fmi.avi.model.swx.EnumSpaceWeatherPhenomenon;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
-import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
 import fi.fmi.avi.model.swx.SpaceWeatherRegion;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -48,7 +47,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
     @Autowired
     private AviMessageConverter converter;
 
-    private String getInput(String fileName) throws IOException {
+    private String getInput(final String fileName) throws IOException {
         InputStream is = null;
         try {
             is = SpaceWeatherIWXXMParserTest.class.getResourceAsStream(fileName);
@@ -56,7 +55,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
             return IOUtils.toString(is, "UTF-8");
         } finally {
-            if(is != null) {
+            if (is != null) {
                 is.close();
             }
         }
@@ -64,15 +63,15 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_A2_3() throws Exception {
-        String input = getInput("spacewx-A2-3.xml");
+        final String input = getInput("spacewx-A2-3.xml");
 
-        ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+        final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
 
         printIssues(result.getConversionIssues());
         assertTrue(result.getConvertedMessage().isPresent());
 
-        SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
+        final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
         assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
         assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
@@ -80,15 +79,15 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T01:00Z"), swx.getIssueTime().get().getCompleteTime().get());
         assertEquals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION, swx.getAnalyses().get(0).getAnalysisType());
-        assertEquals(SpaceWeatherPhenomenonImpl.builder().fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD").build(), swx.getPhenomena().get(0));
+        assertEquals(EnumSpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"), swx.getPhenomena().get(0));
 
-        SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
+        final SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
         assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/HNH"),
                 region.getLocationIndicator().get());
 
-        AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
+        final AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
         assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
-        PolygonGeometry geometry = (PolygonGeometry) airspaceVolume.getHorizontalProjection().get();
+        final PolygonGeometry geometry = (PolygonGeometry) airspaceVolume.getHorizontalProjection().get();
         assertEquals(BigInteger.valueOf(2), geometry.getSrsDimension().get());
         assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", geometry.getSrsName().get());
         assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getExteriorRingPositions());
@@ -98,14 +97,14 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_A2_4() throws Exception {
-        String input = getInput("spacewx-A2-4.xml");
+        final String input = getInput("spacewx-A2-4.xml");
 
-        ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+        final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
         printIssues(result.getConversionIssues());
         assertTrue(result.getConvertedMessage().isPresent());
 
-        SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
+        final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
         assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
         assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
@@ -113,41 +112,41 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T00:00Z"), swx.getIssueTime().get().getCompleteTime().get());
         assertEquals(SpaceWeatherAdvisoryAnalysis.Type.FORECAST, swx.getAnalyses().get(0).getAnalysisType());
-        assertEquals(SpaceWeatherPhenomenonImpl.builder().fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/RADIATION_MOD").build(), swx.getPhenomena().get(0));
+        assertEquals(EnumSpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/RADIATION_MOD"), swx.getPhenomena().get(0));
 
         assertTrue(swx.getAnalyses().get(4).getNilPhenomenonReason().isPresent());
         assertEquals(SpaceWeatherAdvisoryAnalysis.NilPhenomenonReason.NO_PHENOMENON_EXPECTED, swx.getAnalyses().get(4).getNilPhenomenonReason().get());
 
-        SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
+        final SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
         assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/HNH"),
                 region.getLocationIndicator().get());
 
-        AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
+        final AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
         assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
-        PolygonGeometry geometry = (PolygonGeometry) airspaceVolume.getHorizontalProjection().get();
+        final PolygonGeometry geometry = (PolygonGeometry) airspaceVolume.getHorizontalProjection().get();
         assertEquals(BigInteger.valueOf(2), geometry.getSrsDimension().get());
         assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", geometry.getSrsName().get());
         assertEquals("STD", airspaceVolume.getUpperLimitReference().get());
         assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getExteriorRingPositions());
-        NumericMeasure upperLimit = airspaceVolume.getUpperLimit().get();
+        final NumericMeasure upperLimit = airspaceVolume.getUpperLimit().get();
         assertEquals("FL", upperLimit.getUom());
         assertEquals(Double.valueOf(350), upperLimit.getValue());
 
-        ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+        final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.registerModule(new Jdk8Module()).registerModule(new JavaTimeModule());
         System.out.println(OBJECT_MAPPER.writeValueAsString(swx));
     }
 
     @Test
     public void testParser_A2_5() throws Exception {
-        String input = getInput("spacewx-A2-5.xml");
+        final String input = getInput("spacewx-A2-5.xml");
 
-        ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+        final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
         printIssues(result.getConversionIssues());
         assertTrue(result.getConvertedMessage().isPresent());
 
-        SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
+        final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
         assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
         assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
@@ -155,31 +154,31 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T00:00Z"), swx.getIssueTime().get().getCompleteTime().get());
         assertEquals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION, swx.getAnalyses().get(0).getAnalysisType());
-        assertEquals(SpaceWeatherPhenomenonImpl.builder().fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_SEV").build(), swx.getPhenomena().get(0));
+        assertEquals(EnumSpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_SEV"), swx.getPhenomena().get(0));
 
-        SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
+        final SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
         assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE"),
                 region.getLocationIndicator().get());
 
-        AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
+        final AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
         assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
-        CircleByCenterPoint geometry = (CircleByCenterPoint) airspaceVolume.getHorizontalProjection().get();
+        final CircleByCenterPoint geometry = (CircleByCenterPoint) airspaceVolume.getHorizontalProjection().get();
         assertEquals(BigInteger.valueOf(2), geometry.getSrsDimension().get());
         assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", geometry.getSrsName().get());
         assertEquals(Arrays.asList(-16.6392, 160.9368), geometry.getCenterPointCoordinates());
-        NumericMeasure gnm = NumericMeasureImpl.builder().setUom("[nmi_i]").setValue(5409.75).build();
+        final NumericMeasure gnm = NumericMeasureImpl.builder().setUom("[nmi_i]").setValue(5409.75).build();
         assertEquals(gnm, geometry.getRadius());
         assertFalse(airspaceVolume.getUpperLimitReference().isPresent());
         assertFalse(airspaceVolume.getUpperLimit().isPresent());
     }
 
-    private void printIssues(List<ConversionIssue> issues) {
-        if(issues.size() > 0) {
-            for(ConversionIssue issue : issues) {
+    private void printIssues(final List<ConversionIssue> issues) {
+        if (issues.size() > 0) {
+            for (final ConversionIssue issue : issues) {
                 System.out.println(issue.getMessage());
             }
         }
-        assertTrue( "No issues should have been found", issues.isEmpty());
+        assertTrue("No issues should have been found", issues.isEmpty());
     }
 
 }
