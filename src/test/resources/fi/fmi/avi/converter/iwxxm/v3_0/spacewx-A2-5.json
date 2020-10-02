@@ -1,0 +1,184 @@
+{
+  "issueTime": {
+    "completeTime": "2016-11-08T00:00:00Z"
+  },
+  "issuingCenter": {
+    "name": "DONLON Weather Forecast Center",
+    "designator": "DONLON",
+    "type": "OTHER:SWXC"
+  },
+  "advisoryNumber": {
+    "year": 2016,
+    "serialNumber": 2
+  },
+  "phenomena": [
+    "HF_COM_SEV"
+  ],
+  "analyses": [
+    {
+      "time": {
+        "completeTime": "2016-11-08T01:00:00Z"
+      },
+      "analysisType": "OBSERVATION",
+      "regions": [
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "CircleByCenterPoint",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "centerPointCoordinates": [
+                -16.6392,
+                160.9368
+              ],
+              "radius": {
+                "value": 5409.75,
+                "uom": "[nmi_i]"
+              }
+            }
+          },
+          "locationIndicator": "DAYLIGHT_SIDE"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T07:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "regions": [
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "CircleByCenterPoint",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "centerPointCoordinates": [
+                -16.7114,
+                70.9413
+              ],
+              "radius": {
+                "value": 5409.75,
+                "uom": "[nmi_i]"
+              }
+            }
+          },
+          "locationIndicator": "DAYLIGHT_SIDE"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T13:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "regions": [
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "CircleByCenterPoint",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "centerPointCoordinates": [
+                -16.7832,
+                -19.0539
+              ],
+              "radius": {
+                "value": 5409.75,
+                "uom": "[nmi_i]"
+              }
+            }
+          },
+          "locationIndicator": "DAYLIGHT_SIDE"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T19:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "regions": [
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "CircleByCenterPoint",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "centerPointCoordinates": [
+                -16.8548,
+                -109.0489
+              ],
+              "radius": {
+                "value": 5409.75,
+                "uom": "[nmi_i]"
+              }
+            }
+          },
+          "locationIndicator": "DAYLIGHT_SIDE"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-09T01:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "regions": [
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "CircleByCenterPoint",
+              "srsDimension": 2,
+              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
+              "axisLabels": [
+                "Lat",
+                "Long"
+              ],
+              "centerPointCoordinates": [
+                -16.9261,
+                160.9563
+              ],
+              "radius": {
+                "value": 5409.75,
+                "uom": "[nmi_i]"
+              }
+            }
+          },
+          "locationIndicator": "DAYLIGHT_SIDE"
+        }
+      ]
+    }
+  ],
+  "remarks": [
+    "PERIODIC HF COM ABSORPTION OBS AND LIKELY TO CONT IN THE NEAR TERM. CMPL AND PERIODIC LOSS OF HF ON THE SUNLIT SIDE OF THE EARTH EXP. CONT HF COM DEGRADATION LIKELY OVER THE NXT 7 DAYS. SEE WWW.SPACEWEATHERPROVIDER.WEB"
+  ],
+  "nextAdvisory": {
+    "timeSpecifier": "NEXT_ADVISORY_AT",
+    "time": {
+      "completeTime": "2016-11-08T07:00:00Z"
+    }
+  },
+  "permissibleUsage": "OPERATIONAL",
+  "reportStatus": "NORMAL",
+  "replaceAdvisoryNumber": {
+    "year": 2016,
+    "serialNumber": 1
+  }
+}

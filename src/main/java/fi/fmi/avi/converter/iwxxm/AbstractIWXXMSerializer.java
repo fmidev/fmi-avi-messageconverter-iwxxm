@@ -1,108 +1,276 @@
 package fi.fmi.avi.converter.iwxxm;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.UUID;
 
 import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 
+import net.opengis.gml32.AbstractRingPropertyType;
+import net.opengis.gml32.AngleType;
+import net.opengis.gml32.CircleByCenterPointType;
+import net.opengis.gml32.CurvePropertyType;
+import net.opengis.gml32.CurveSegmentArrayPropertyType;
+import net.opengis.gml32.CurveType;
+import net.opengis.gml32.DirectPositionListType;
+import net.opengis.gml32.DirectPositionType;
+import net.opengis.gml32.LengthType;
+import net.opengis.gml32.LinearRingType;
+import net.opengis.gml32.MeasureType;
+import net.opengis.gml32.PolygonPatchType;
+import net.opengis.gml32.RingType;
+import net.opengis.gml32.SpeedType;
+import net.opengis.gml32.SurfacePatchArrayPropertyType;
+import net.opengis.gml32.TimePrimitivePropertyType;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
+import aero.aixm511.AirportHeliportTimeSlicePropertyType;
+import aero.aixm511.AirportHeliportTimeSliceType;
+import aero.aixm511.AirportHeliportType;
+import aero.aixm511.CodeAirportHeliportDesignatorType;
+import aero.aixm511.CodeIATAType;
+import aero.aixm511.CodeICAOType;
+import aero.aixm511.ElevatedPointPropertyType;
+import aero.aixm511.ElevatedPointType;
+import aero.aixm511.SurfacePropertyType;
+import aero.aixm511.SurfaceType;
+import aero.aixm511.TextNameType;
+import aero.aixm511.ValDistanceVerticalType;
+import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.AerodromeMessageIWXXMSerializerBase.ConverterValidationEventHandler;
-import fi.fmi.avi.converter.iwxxm.AerodromeMessageIWXXMSerializerBase.IWXXMSchemaResourceResolver;
-import icao.iwxxm21.TAFType;
+import fi.fmi.avi.model.Aerodrome;
+import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
+import fi.fmi.avi.model.CircleByCenterPoint;
+import fi.fmi.avi.model.Geometry;
+import fi.fmi.avi.model.NumericMeasure;
+import fi.fmi.avi.model.PointGeometry;
+import fi.fmi.avi.model.PolygonGeometry;
+import fi.fmi.avi.model.immutable.NumericMeasureImpl;
+import icao.iwxxm21.AngleWithNilReasonType;
+import icao.iwxxm21.DistanceWithNilReasonType;
+import icao.iwxxm21.LengthWithNilReasonType;
 
-public abstract class AbstractIWXXMSerializer<T> extends IWXXMConverterBase {
-
-    public AbstractIWXXMSerializer() {
-    }
+/**
+ * Common functionality for serializing aviation messages into IWXXM.
+ */
+public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOrCollection, S> extends IWXXMConverterBase
+        implements AviMessageSpecificConverter<T, S> {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractIWXXMSerializer.class);
 
     @SuppressWarnings("unchecked")
-    protected <S> Document renderXMLDocument(final S input, final ConversionHints hints) throws ConversionException {
-        StringWriter sw = new StringWriter();
+    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
+        final StringWriter sw = new StringWriter();
         try {
-            Marshaller marshaller = getJAXBContext().createMarshaller();
+            final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
-                    "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1/iwxxm.xsd http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
-            marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new IWXXMNamespaceMapper());
-            marshaller.marshal(wrap(input, (Class<S>)input.getClass()), sw);
-            return asCleanedUpXML(sw, hints);
-        } catch (JAXBException e) {
-             throw new ConversionException("Exception in rendering to DOM", e);
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getSchemaLocations());
+            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
+            marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
+            return asCleanedUpXML(sw.toString(), hints);
+        } catch (final JAXBException e) {
+            throw new ConversionException("Exception in rendering to DOM", e);
         }
     }
 
+    protected void setAerodromeData(final AirportHeliportType aerodrome, final Aerodrome input, final String aerodromeId) {
+        if (input == null) {
+            return;
+        }
+        aerodrome.setId(aerodromeId);
+        aerodrome.getTimeSlice()
+                .add(create(AirportHeliportTimeSlicePropertyType.class,
+                        (prop) -> prop.setAirportHeliportTimeSlice(create(AirportHeliportTimeSliceType.class, (timeSlice) -> {
+                            timeSlice.setId("aerodrome-" + UUID.randomUUID().toString());
+                            timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
+                            timeSlice.setInterpretation("SNAPSHOT");
+                            timeSlice.setDesignator(
+                                    create(CodeAirportHeliportDesignatorType.class, (designator) -> designator.setValue(input.getDesignator())));
+                            input.getName()
+                                    .ifPresent(
+                                            inputName -> timeSlice.setPortName(create(TextNameType.class, (name) -> name.setValue(inputName.toUpperCase()))));
+                            input.getLocationIndicatorICAO()
+                                    .ifPresent(inputLocator -> timeSlice.setLocationIndicatorICAO(
+                                            create(CodeICAOType.class, (locator) -> locator.setValue(inputLocator))));
+
+                            input.getDesignatorIATA()
+                                    .ifPresent(inputDesignator -> timeSlice.setDesignatorIATA(
+                                            create(CodeIATAType.class, (designator) -> designator.setValue(inputDesignator))));
+                            input.getFieldElevationValue()
+                                    .ifPresent(inputElevation -> timeSlice.setFieldElevation(create(ValDistanceVerticalType.class, (elevation) -> {
+                                        elevation.setValue(String.format("%.00f", inputElevation));
+                                        if (input.getFieldElevationUom().isPresent()) {
+                                            elevation.setUom(input.getFieldElevationUom().get());
+                                        }
+                                    })));
+
+                            input.getReferencePoint()
+                                    .ifPresent(inputPosition -> timeSlice.setARP(create(ElevatedPointPropertyType.class,
+                                            (pointProp) -> pointProp.setElevatedPoint(create(ElevatedPointType.class, (point) -> {
+                                                point.setId("point-" + UUID.randomUUID().toString());
+                                                inputPosition.getSrsName().ifPresent(point::setSrsName);
+                                                if (inputPosition.getCoordinates() != null) {
+                                                    point.setSrsDimension(BigInteger.valueOf(inputPosition.getCoordinates().size()));
+                                                    point.setPos(
+                                                            create(DirectPositionType.class, (pos) -> pos.getValue().addAll(inputPosition.getCoordinates())));
+                                                }
+                                                if (inputPosition.getElevationValue().isPresent() && inputPosition.getElevationUom().isPresent()) {
+                                                    point.setElevation(create(ValDistanceVerticalType.class, (dist) -> {
+                                                        inputPosition.getElevationValue().ifPresent(value -> dist.setValue(String.format("%.00f", value)));
+                                                        inputPosition.getElevationUom().ifPresent(uom -> dist.setUom(uom.toUpperCase()));
+                                                    }));
+                                                }
+                                            })))));
+                        }))));
+    }
+
+    protected static SurfacePropertyType createSurface(final Geometry geom, final String id) throws IllegalArgumentException {
+        SurfacePropertyType retval = null;
+        if (geom != null) {
+            retval = create(SurfacePropertyType.class, (spt) -> {
+                spt.setSurface(createAndWrap(SurfaceType.class, (sft) -> {
+                    geom.getSrsName().ifPresent(sft::setSrsName);
+                    geom.getSrsDimension().ifPresent(sft::setSrsDimension);
+                    geom.getAxisLabels().ifPresent(labels -> sft.getAxisLabels().addAll(labels));
+                    sft.setId(id);
+                    JAXBElement<SurfacePatchArrayPropertyType> spapt = null;
+                    if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass()) || PointGeometry.class.isAssignableFrom(geom.getClass())) {
+                        final List<Double> centerPointCoords;
+                        final LengthType radius;
+                        if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass())) {
+                            final CircleByCenterPoint cbcp = (CircleByCenterPoint) geom;
+                            centerPointCoords = cbcp.getCenterPointCoordinates();
+                            radius = asMeasure(cbcp.getRadius(), LengthType.class);
+                        } else {
+                            //Create a zero-radius circle if a point geometry is given
+                            final PointGeometry point = (PointGeometry) geom;
+                            centerPointCoords = point.getCoordinates();
+                            radius = asMeasure(NumericMeasureImpl.of(0.0, "[nmi_i]"), LengthType.class);
+                        }
+
+                        final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
+                            poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
+                                arpt.setAbstractRing(createAndWrap(RingType.class, (rt) -> {
+                                    rt.getCurveMember().add(create(CurvePropertyType.class, (curvept) -> {
+                                        curvept.setAbstractCurve(createAndWrap(CurveType.class, (curvet) -> {
+                                            curvet.setId(UUID_PREFIX + UUID.randomUUID().toString());
+                                            curvet.setSegments(create(CurveSegmentArrayPropertyType.class, (curvesat) -> {
+                                                curvesat.getAbstractCurveSegment().add(createAndWrap(CircleByCenterPointType.class, (cbcpt) -> {
+                                                    cbcpt.setPos(create(DirectPositionType.class, (dpt) -> {
+                                                        dpt.getValue().addAll(centerPointCoords);
+                                                    }));
+                                                    cbcpt.setNumArc(BigInteger.valueOf(1));
+                                                    cbcpt.setRadius(radius);
+                                                }));
+                                            }));
+                                        }));
+                                    }));
+                                }));
+                            }));
+                        });
+                        spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", (_spapt) -> {
+                            _spapt.getAbstractSurfacePatch().add(ppt);
+                        });
+                    } else if (PolygonGeometry.class.isAssignableFrom(geom.getClass())) { //Polygon
+                        final PolygonGeometry polygon = (PolygonGeometry) geom;
+                        final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
+                            poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
+                                arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
+                                    final DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
+                                        dpl.getValue().addAll(polygon.getExteriorRingPositions());
+                                    });
+                                    lrt.setPosList(dplt);
+                                }));
+                            }));
+                        });
+                        spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", (_spapt) -> {
+                            _spapt.getAbstractSurfacePatch().add(ppt);
+                        });
+                    } else {
+                        throw new IllegalArgumentException("Unable to create a Surface from geometry of type " + geom.getClass().getCanonicalName());
+                    }
+                    if (spapt != null) {
+                        sft.setPatches(spapt);
+                    }
+                }));
+            });
+        }
+        return retval;
+    }
+
+    protected static MeasureType asMeasure(final NumericMeasure source) {
+        return asMeasure(source, MeasureType.class);
+    }
+
     @SuppressWarnings("unchecked")
-    protected <S> boolean validateDocument(final S input, final ConversionHints hints, final ConversionResult<T> result) throws ConversionException {
-        try {
-            //XML Schema validation:
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
-            schemaFactory.setResourceResolver(resolver);
-            //Secure processing does not allow "file" protocol loading for schemas:
-            schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
-            Schema iwxxmSchema = schemaFactory.newSchema(TAFType.class.getResource("/int/icao/iwxxm/2.1/iwxxm.xsd"));
-            Marshaller marshaller = getJAXBContext().createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
-                    "http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1/iwxxm.xsd http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
-            marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new IWXXMNamespaceMapper());
-            marshaller.setSchema(iwxxmSchema);
-            ConverterValidationEventHandler<T> eventHandler = new ConverterValidationEventHandler<T>(result);
-            marshaller.setEventHandler(eventHandler);           
-            //Marshall to run the validation:
-            marshaller.marshal(wrap(input, (Class<S>)input.getClass()), new DefaultHandler());
-          
-            if (eventHandler.errorsFound()) {
-                return false;
+    protected static <S extends MeasureType> S asMeasure(final NumericMeasure source, final Class<S> clz) {
+        final S retval;
+        if (source != null) {
+            if (SpeedType.class.isAssignableFrom(clz)) {
+                retval = (S) create(SpeedType.class);
+            } else if (AngleWithNilReasonType.class.isAssignableFrom(clz)) {
+                retval = (S) create(AngleWithNilReasonType.class);
+            } else if (AngleType.class.isAssignableFrom(clz)) {
+                retval = (S) create(AngleType.class);
+            } else if (DistanceWithNilReasonType.class.isAssignableFrom(clz)) {
+                retval = (S) create(DistanceWithNilReasonType.class);
+            } else if (LengthWithNilReasonType.class.isAssignableFrom(clz)) {
+                retval = (S) create(LengthWithNilReasonType.class);
+            } else if (LengthType.class.isAssignableFrom(clz)) {
+                retval = (S) create(LengthType.class);
             } else {
-                return true;
+                retval = (S) create(MeasureType.class);
             }
-            
-        } catch (Exception e) {
-            throw new ConversionException("Exception in validation", e);
+            retval.setValue(source.getValue());
+            retval.setUom(source.getUom());
+        } else {
+            throw new IllegalArgumentException("NumericMeasure is null");
         }
+        return retval;
     }
 
-    protected Document asCleanedUpXML(final StringWriter input, final ConversionHints hints) throws ConversionException {
+    private Document asCleanedUpXML(final String input, final ConversionHints hints) throws ConversionException {
         try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            InputSource is = new InputSource(new StringReader(input.toString()));
-            Document dom3Doc = db.parse(is);
-            DOMResult cleanedResult = new DOMResult();
-            TransformerFactory tFactory = TransformerFactory.newInstance();
-            Transformer transformer = tFactory.newTransformer(this.getCleanupTransformationStylesheet(hints));
-            DOMSource dsource = new DOMSource(dom3Doc);
-            transformer.transform(dsource, cleanedResult);
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
+            final DocumentBuilder db = dbf.newDocumentBuilder();
+            final InputSource is = new InputSource(new StringReader(input));
+            final Document dom3Doc = db.parse(is);
+
+            final DOMResult cleanedResult = new DOMResult();
+            final TransformerFactory tFactory = TransformerFactory.newInstance();
+            final Transformer transformer = tFactory.newTransformer(new DOMSource(db.parse(getCleanupTransformationStylesheet(hints))));
+            final DOMSource dSource = new DOMSource(dom3Doc);
+            transformer.transform(dSource, cleanedResult);
             return (Document) cleanedResult.getNode();
-        } catch (ParserConfigurationException|SAXException|IOException|TransformerException e) {
+        } catch (final ParserConfigurationException | SAXException | IOException | TransformerException e) {
             throw new ConversionException("Exception in cleaning up", e);
         }
     }
-    
-    protected abstract Source getCleanupTransformationStylesheet(final ConversionHints hints);
- 
+
+    protected abstract InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException;
+
+    protected abstract XMLSchemaInfo getSchemaInfo();
+
 }
