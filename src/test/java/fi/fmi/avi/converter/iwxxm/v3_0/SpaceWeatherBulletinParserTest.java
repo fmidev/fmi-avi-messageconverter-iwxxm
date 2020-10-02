@@ -25,9 +25,9 @@ import fi.fmi.avi.converter.iwxxm.bulletin.BulletinProperties;
 import fi.fmi.avi.converter.iwxxm.bulletin.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
-import fi.fmi.avi.model.swx.EnumSpaceWeatherPhenomenon;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
+import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
 
 /**
  * Created by rinne on 19/07/17.
@@ -70,7 +70,7 @@ public class SpaceWeatherBulletinParserTest {
             final SpaceWeatherBulletin bulletin = result.getConvertedMessage().get();
             assertEquals(1, bulletin.getMessages().size());
             final SpaceWeatherAdvisory mesg = bulletin.getMessages().get(0);
-            assertEquals(EnumSpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"), mesg.getPhenomena().get(0));
+            assertEquals(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"), mesg.getPhenomena().get(0));
         }
     }
 

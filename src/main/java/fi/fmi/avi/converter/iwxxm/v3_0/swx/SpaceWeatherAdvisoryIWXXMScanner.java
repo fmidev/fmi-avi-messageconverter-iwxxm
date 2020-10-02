@@ -27,7 +27,6 @@ import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.swx.AdvisoryNumber;
-import fi.fmi.avi.model.swx.EnumSpaceWeatherPhenomenon;
 import fi.fmi.avi.model.swx.NextAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
@@ -172,7 +171,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
     private static List<SpaceWeatherPhenomenon> parsePhenomenonList(final List<SpaceWeatherPhenomenaType> elements) {
         final List<SpaceWeatherPhenomenon> phenomena = new ArrayList<>();
         for (final SpaceWeatherPhenomenaType element : elements) {
-            phenomena.add(EnumSpaceWeatherPhenomenon.fromWMOCodeListValue(element.getHref()));
+            phenomena.add(SpaceWeatherPhenomenon.fromWMOCodeListValue(element.getHref()));
         }
         return phenomena;
     }
