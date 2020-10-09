@@ -163,7 +163,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
                 results.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Report status is required"));
             }
 
-            if(source.getPermissibleUsage().isPresent()) {
+            if (source.getPermissibleUsage().isPresent()) {
                 if (source.getPermissibleUsage().get().equals(AviationCodeListUser.PermissibleUsage.OPERATIONAL)) {
                     target.setPermissibleUsage(PermissibleUsageType.OPERATIONAL);
                 } else {
@@ -171,7 +171,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
                 }
             }
 
-            if(source.getPermissibleUsageReason().isPresent()) {
+            if (source.getPermissibleUsageReason().isPresent()) {
                 if (source.getPermissibleUsageReason().get().equals(AviationCodeListUser.PermissibleUsageReason.TEST)) {
                     target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
                 } else {
@@ -292,8 +292,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             codeUnitType.setValue(issuingCenter.getType().get());
             unitTimeSliceType.setType(codeUnitType);
         }
-        if(issuingCenter.getDesignator().isPresent()) {
-            CodeOrganisationDesignatorType designator = new CodeOrganisationDesignatorType();
+        if (issuingCenter.getDesignator().isPresent()) {
+            final CodeOrganisationDesignatorType designator = new CodeOrganisationDesignatorType();
             designator.setValue(issuingCenter.getDesignator().get());
             unitTimeSliceType.setDesignator(designator);
         }
@@ -338,14 +338,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         if (volume.getHorizontalProjection().isPresent()) {
             final SurfaceType surfaceType = create(SurfaceType.class);
             final Geometry geom = volume.getHorizontalProjection().get();
-            geom.getSrsDimension().ifPresent(surfaceType::setSrsDimension);
-            geom.getSrsName().ifPresent(surfaceType::setSrsName);
+            geom.getCrs().ifPresent(crs -> setCrsToType(surfaceType, crs));
             surfaceType.setId(UUID_PREFIX + UUID.randomUUID().toString());
-            if (geom.getAxisLabels().isPresent()) {
-                for (final String label : geom.getAxisLabels().get()) {
-                    surfaceType.getAxisLabels().add(label);
-                }
-            }
 
             final SurfacePatchArrayPropertyType surfacePatchArrayPropertyType = new SurfacePatchArrayPropertyType();
             final PolygonPatchType polygonPatchType = create(PolygonPatchType.class);

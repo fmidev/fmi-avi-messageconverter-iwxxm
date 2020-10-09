@@ -55,7 +55,7 @@
               <iwxxm:location>
                 <aixm:AirspaceVolume gml:id="uuid.7138f8d1-9854-46cb-a1b1-9d96c5cee46f">
                   <aixm:horizontalProjection>
-                    <aixm:Surface gml:id="uuid.3b00652b-4bed-4655-959c-1c9efd431cac" srsDimension="2" axisLabels="Lat Long"
+                    <aixm:Surface gml:id="uuid.3b00652b-4bed-4655-959c-1c9efd431cac" srsDimension="2" axisLabels="Lat Lon"
                       srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
                       <gml:patches>
                         <gml:PolygonPatch>
@@ -78,7 +78,7 @@
               <iwxxm:location>
                 <aixm:AirspaceVolume gml:id="uuid.e5094671-591f-47ec-9a34-277287d876b4">
                   <aixm:horizontalProjection>
-                    <aixm:Surface gml:id="uuid.3ecfcac7-006e-4279-9798-c21abf12d648" srsDimension="2" axisLabels="Lat Long"
+                    <aixm:Surface gml:id="uuid.3ecfcac7-006e-4279-9798-c21abf12d648" srsDimension="2" axisLabels="Lat Lon"
                       srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
                       <gml:patches>
                         <gml:PolygonPatch>

@@ -22,26 +22,32 @@
       "completeTime": "2017-08-27T18:00:00Z"
     }
   },
-  "airspace" : {
-    "designator" : "EHAA",
-    "name" : "AMSTERDAM",
-    "type" : "FIR"
+  "airspace": {
+    "designator": "EHAA",
+    "name": "AMSTERDAM",
+    "type": "FIR"
   },
   "movingSpeed": {
     "value": 0.0,
     "uom": "[kn_i]"
   },
-  "permissibleUsage":"NON_OPERATIONAL",
-  "permissibleUsageReason":"EXERCISE",
+  "permissibleUsage": "NON_OPERATIONAL",
+  "permissibleUsageReason": "EXERCISE",
   "airmetPhenomenon": "MOD_ICE",
   "analysisType": "OBSERVATION",
-
   "analysisGeometries": [
     {
       "geometry": {
         "geoGeometry": {
           "type": "Polygon",
-          "srsName": "EPSG:4326",
+          "crs": {
+            "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "dimension": 2,
+            "axisLabels": [
+              "Lat",
+              "Lon"
+            ]
+          },
           "exteriorRingPositions": [
             5.0,
             52.0,
@@ -66,6 +72,7 @@
         "value": 35.0,
         "uom": "FL"
       }
-    } ],
+    }
+  ],
   "intensityChange": "NO_CHANGE"
 }

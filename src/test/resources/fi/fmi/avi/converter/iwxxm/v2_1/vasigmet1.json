@@ -15,9 +15,9 @@
     "completeTime": "2018-08-27T11:30:00Z"
   },
   "airspace": {
-    "designator":"EHAA",
-    "name":"AMSTERDAM",
-    "type":"FIR"
+    "designator": "EHAA",
+    "name": "AMSTERDAM",
+    "type": "FIR"
   },
   "validityPeriod": {
     "startTime": {
@@ -47,7 +47,14 @@
       "geometry": {
         "geoGeometry": {
           "type": "Polygon",
-          "srsName": "EPSG:4326",
+          "crs": {
+            "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "dimension": 2,
+            "axisLabels": [
+              "Lat",
+              "Lon"
+            ]
+          },
           "exteriorRingPositions": [
             5.0,
             52.0,
@@ -61,35 +68,49 @@
         }
       }
     }
-    ],
-
-      "forecastGeometries":[{
-        "time":  {
-          "completeTime": "2017-08-27T18:00:00Z"
-        },
-        "geometry": {
-          "geoGeometry": {
-            "type": "Polygon",
-            "srsName": "EPSG:4326",
-            "exteriorRingPositions": [
-              5.0,
-              53.0,
-              6.0,
-              54.0,
-              4.0,
-              55.0,
-              5.0,
-              53.0
+  ],
+  "forecastGeometries": [
+    {
+      "time": {
+        "completeTime": "2017-08-27T18:00:00Z"
+      },
+      "geometry": {
+        "geoGeometry": {
+          "type": "Polygon",
+          "crs": {
+            "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "dimension": 2,
+            "axisLabels": [
+              "Lat",
+              "Lon"
             ]
-          }
+          },
+          "exteriorRingPositions": [
+            5.0,
+            53.0,
+            6.0,
+            54.0,
+            4.0,
+            55.0,
+            5.0,
+            53.0
+          ]
         }
       }
-        ],
+    }
+  ],
   "VAInfo": {
     "volcano": {
       "volcanoPosition": {
         "type": "ElevatedPoint",
-        "srsName": "EPSG:4326",
+        "crs": {
+          "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+          "dimension": 2,
+          "axisLabels": [
+            "Lat",
+            "Lon"
+          ]
+        },
         "coordinates": [
           52.0,
           5.2

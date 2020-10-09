@@ -25,12 +25,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "CircleByCenterPoint",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "centerPointCoordinates": [
                 -16.6392,
                 160.9368
@@ -55,12 +57,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "CircleByCenterPoint",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "centerPointCoordinates": [
                 -16.7114,
                 70.9413
@@ -85,12 +89,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "CircleByCenterPoint",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "centerPointCoordinates": [
                 -16.7832,
                 -19.0539
@@ -115,12 +121,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "CircleByCenterPoint",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "centerPointCoordinates": [
                 -16.8548,
                 -109.0489
@@ -145,12 +153,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "CircleByCenterPoint",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "centerPointCoordinates": [
                 -16.9261,
                 160.9563

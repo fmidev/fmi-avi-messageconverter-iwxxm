@@ -26,12 +26,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180.0,
                 90.0,
@@ -52,12 +54,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180.0,
                 -90.0,
@@ -86,12 +90,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180.0,
                 90.0,
@@ -112,12 +118,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180.0,
                 -90.0,
@@ -146,12 +154,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180.0,
                 90.0,
@@ -172,12 +182,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180.0,
                 -90.0,
@@ -206,12 +218,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180.0,
                 90.0,
@@ -232,12 +246,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180.0,
                 -90.0,

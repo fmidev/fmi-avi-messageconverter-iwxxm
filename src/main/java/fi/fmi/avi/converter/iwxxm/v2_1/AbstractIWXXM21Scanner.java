@@ -38,6 +38,7 @@ import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.immutable.CloudLayerImpl;
+import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
 import fi.fmi.avi.model.immutable.ElevatedPointImpl;
 import fi.fmi.avi.model.immutable.WeatherImpl;
 import icao.iwxxm21.CloudAmountReportedAtAerodromeType;
@@ -56,7 +57,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractIWXXM21Scanner.class);
 
     public static IssueList collectReportMetadata(final ReportType input, final GenericReportProperties properties, final ConversionHints hints) {
-        IssueList retval = new IssueList();
+        final IssueList retval = new IssueList();
 
         //Issues for the permissibleUsage reported already by XML Schema or Schematron validation, so not checking them here:
         if (input.getPermissibleUsage() != null) {
@@ -100,7 +101,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
     public static IssueList collectCommonObsMetadata(final OMObservationType observation, final ReferredObjectRetrievalContext refCtx,
             final OMObservationProperties properties, final String contextPath, final ConversionHints hints) {
-        IssueList retval = new IssueList();
+        final IssueList retval = new IssueList();
         //forecast type
         if (observation.getType() != null) {
             properties.set(OMObservationProperties.Name.TYPE, observation.getType().getHref());
@@ -109,7 +110,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
         }
         //result time
         if (observation.getResultTime() != null) {
-            Optional<PartialOrCompleteTimeInstant> resultTime = getCompleteTimeInstant(observation.getResultTime(), refCtx);
+            final Optional<PartialOrCompleteTimeInstant> resultTime = getCompleteTimeInstant(observation.getResultTime(), refCtx);
             if (resultTime.isPresent() && resultTime.get().getCompleteTime().isPresent()) {
                 properties.set(OMObservationProperties.Name.RESULT_TIME, resultTime.get());
             } else {
@@ -121,7 +122,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
         //validTime
         if (observation.getValidTime() != null) {
-            Optional<PartialOrCompleteTimePeriod> validTime = getCompleteTimePeriod(observation.getValidTime(), refCtx);
+            final Optional<PartialOrCompleteTimePeriod> validTime = getCompleteTimePeriod(observation.getValidTime(), refCtx);
             validTime.ifPresent((time) -> {
                 properties.set(OMObservationProperties.Name.VALID_TIME, time);
             });
@@ -129,7 +130,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
         //procedure
         if (observation.getProcedure() != null) {
-            Optional<ProcessType> process = resolveProperty(observation.getProcedure(), ProcessType.class, refCtx);
+            final Optional<ProcessType> process = resolveProperty(observation.getProcedure(), ProcessType.class, refCtx);
 
             if (process.isPresent()) {
                 properties.set(OMObservationProperties.Name.PROCEDURE, process.get());
@@ -143,7 +144,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
         //observed property
         if (observation.getObservedProperty() != null) {
-            ReferenceType obsProp = observation.getObservedProperty();
+            final ReferenceType obsProp = observation.getObservedProperty();
             if (obsProp != null) {
                 properties.set(OMObservationProperties.Name.OBSERVED_PROPERTY, obsProp.getHref());
             } else {
@@ -153,20 +154,20 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
         //foi
         if (observation.getFeatureOfInterest() != null) {
-            Optional<SFSpatialSamplingFeatureType> sft = resolveProperty(observation.getFeatureOfInterest(), "abstractFeature",
+            final Optional<SFSpatialSamplingFeatureType> sft = resolveProperty(observation.getFeatureOfInterest(), "abstractFeature",
                     SFSpatialSamplingFeatureType.class, refCtx);
             if (sft.isPresent()) {
 
-                List<FeaturePropertyType> sampledFeatures = sft.get().getSampledFeature();
+                final List<FeaturePropertyType> sampledFeatures = sft.get().getSampledFeature();
                 if (sampledFeatures.isEmpty()) {
                     retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
                             "No sampled feature (for aerodrome) in TAF"));
                 } else if (sampledFeatures.size() != 1) {
                     retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "More than one sampled feature in TAF"));
                 } else {
-                    Optional<AirportHeliportType> airport = resolveProperty(sampledFeatures.get(0), "abstractFeature", AirportHeliportType.class, refCtx);
+                    final Optional<AirportHeliportType> airport = resolveProperty(sampledFeatures.get(0), "abstractFeature", AirportHeliportType.class, refCtx);
                     if (airport.isPresent()) {
-                        Optional<Aerodrome> drome = buildAerodrome(airport.get(), retval, refCtx);
+                        final Optional<Aerodrome> drome = buildAerodrome(airport.get(), retval, refCtx);
                         drome.ifPresent((d) -> {
                             properties.set(OMObservationProperties.Name.AERODROME, d);
                         });
@@ -175,27 +176,25 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
                     }
                 }
 
-                ShapeType shape = sft.get().getShape();
+                final ShapeType shape = sft.get().getShape();
                 if (shape != null) {
-                    Optional<PointType> point = resolveProperty(shape, "abstractGeometry", PointType.class, refCtx);
+                    final Optional<PointType> point = resolveProperty(shape, "abstractGeometry", PointType.class, refCtx);
                     if (!point.isPresent()) {
                         retval.add(
                                 new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "The spatial sampling feature shape is not a Point in " + contextPath));
                     } else {
-                        ElevatedPointImpl.Builder posBuilder = ElevatedPointImpl.builder();
+                        final ElevatedPointImpl.Builder posBuilder = ElevatedPointImpl.builder();
                         boolean canBuildPos = true;
                         if (point.get().getPos() != null) {
-                            DirectPositionType dp = point.get().getPos();
-                            if (dp.getSrsName() != null) {
-                                posBuilder.setSrsName(dp.getSrsName());
-                            } else {
-                                if (point.get().getSrsName() != null) {
-                                    posBuilder.setSrsName(point.get().getSrsName());
-                                } else {
-                                    canBuildPos = false;
-                                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                            "No SRS name for sampling point position"));
-                                }
+                            final DirectPositionType dp = point.get().getPos();
+                            final CoordinateReferenceSystemImpl.Builder crsBuilder = mergeToBuilder(point.get(), CoordinateReferenceSystemImpl.builder());
+                            mergeToBuilder(dp, crsBuilder);
+                            try {
+                                posBuilder.setCrs(crsBuilder.build());
+                            } catch (final IllegalStateException e) {
+                                canBuildPos = false;
+                                retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                                        "No SRS for sampling point position: " + e.getMessage()));
                             }
                             if (dp.getValue() != null) {
                                 posBuilder.addAllCoordinates(dp.getValue());
@@ -227,17 +226,17 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
     public static Optional<MeteorologicalAerodromeForecastRecordType> getAerodromeForecastRecordResult(final OMObservationType fct,
             final ReferredObjectRetrievalContext refCtx) {
-        Object o = fct.getResult();
+        final Object o = fct.getResult();
         if (o instanceof Node) {
-            Node resultNode = ((Node) o);
-            Node recordNode = resultNode.getFirstChild();
+            final Node resultNode = ((Node) o);
+            final Node recordNode = resultNode.getFirstChild();
             if (recordNode != null && "MeteorologicalAerodromeForecastRecord".equals(recordNode.getLocalName()) && "http://icao.int/iwxxm/2.1".equals(
                     recordNode.getNamespaceURI())) {
                 try {
-                    JAXBElement<MeteorologicalAerodromeForecastRecordType> record = refCtx.getJAXBBinder()
+                    final JAXBElement<MeteorologicalAerodromeForecastRecordType> record = refCtx.getJAXBBinder()
                             .unmarshal(recordNode, MeteorologicalAerodromeForecastRecordType.class);
                     return Optional.of(record.getValue());
-                } catch (JAXBException e) {
+                } catch (final JAXBException e) {
                     LOG.error("Strange, could not unmarshall MeteorologicalAerodromeForecastRecord DOM Node into"
                             + "MeteorologicalAerodromeForecastRecordType JAXElement, returning an empty Optional", e);
                 }
@@ -248,17 +247,17 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
     public static Optional<MeteorologicalAerodromeTrendForecastRecordType> getAerodromeTrendRecordResult(final OMObservationType fct,
             final ReferredObjectRetrievalContext refCtx) {
-        Object o = fct.getResult();
+        final Object o = fct.getResult();
         if (o instanceof Node) {
-            Node resultNode = ((Node) o);
-            Node recordNode = resultNode.getFirstChild();
+            final Node resultNode = ((Node) o);
+            final Node recordNode = resultNode.getFirstChild();
             if (recordNode != null && "MeteorologicalAerodromeTrendForecastRecord".equals(recordNode.getLocalName()) && "http://icao.int/iwxxm/2.1".equals(
                     recordNode.getNamespaceURI())) {
                 try {
-                    JAXBElement<MeteorologicalAerodromeTrendForecastRecordType> record = refCtx.getJAXBBinder()
+                    final JAXBElement<MeteorologicalAerodromeTrendForecastRecordType> record = refCtx.getJAXBBinder()
                             .unmarshal(recordNode, MeteorologicalAerodromeTrendForecastRecordType.class);
                     return Optional.of(record.getValue());
-                } catch (JAXBException e) {
+                } catch (final JAXBException e) {
                     LOG.error("Strange, could not unmarshall MeteorologicalAerodromeTrendForecastRecordType DOM Node into"
                             + "MeteorologicalAerodromeTrendForecastRecordType JAXElement, returning an empty Optional", e);
                 }
@@ -269,17 +268,17 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
     public static Optional<MeteorologicalAerodromeObservationRecordType> getAerodromeObservationRecordResult(final OMObservationType fct,
             final ReferredObjectRetrievalContext refCtx) {
-        Object o = fct.getResult();
+        final Object o = fct.getResult();
         if (o instanceof Node) {
-            Node resultNode = ((Node) o);
-            Node recordNode = resultNode.getFirstChild();
+            final Node resultNode = ((Node) o);
+            final Node recordNode = resultNode.getFirstChild();
             if (recordNode != null && "MeteorologicalAerodromeObservationRecord".equals(recordNode.getLocalName()) && "http://icao.int/iwxxm/2.1".equals(
                     recordNode.getNamespaceURI())) {
                 try {
-                    JAXBElement<MeteorologicalAerodromeObservationRecordType> record = refCtx.getJAXBBinder()
+                    final JAXBElement<MeteorologicalAerodromeObservationRecordType> record = refCtx.getJAXBBinder()
                             .unmarshal(recordNode, MeteorologicalAerodromeObservationRecordType.class);
                     return Optional.of(record.getValue());
-                } catch (JAXBException e) {
+                } catch (final JAXBException e) {
                     LOG.error("Strange, could not unmarshall MeteorologicalAerodromeObservationRecord DOM Node into "
                             + "MeteorologicalAerodromeObservationRecordType JAXElement, returning an empty Optional", e);
                 }
@@ -291,11 +290,11 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
     public static void withWeatherBuilderFor(final ReferenceType weather, final ConversionHints hints, final Consumer<WeatherImpl.Builder> resultHandler,
             final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
-        String codeListValue = weather.getHref();
+        final String codeListValue = weather.getHref();
         if (codeListValue != null && codeListValue.startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER)) {
-            String code = codeListValue.substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER.length());
-            String description = weather.getTitle();
-            WeatherImpl.Builder wBuilder = WeatherImpl.builder();
+            final String code = codeListValue.substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER.length());
+            final String description = weather.getTitle();
+            final WeatherImpl.Builder wBuilder = WeatherImpl.builder();
             boolean codeOk = false;
             if (hints == null || hints.isEmpty() || !hints.containsKey(ConversionHints.KEY_WEATHER_CODES) || ConversionHints.VALUE_WEATHER_CODES_STRICT_WMO_4678
                     .equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
@@ -335,10 +334,10 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
     public static void withCloudLayerBuilderFor(final CloudLayerPropertyType layerProp, final ReferredObjectRetrievalContext refCtx,
             final Consumer<CloudLayerImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
-        IssueList issues = new IssueList();
-        Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
+        final IssueList issues = new IssueList();
+        final Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
         if (layer.isPresent()) {
-            CloudLayerImpl.Builder layerBuilder = CloudLayerImpl.builder();
+            final CloudLayerImpl.Builder layerBuilder = CloudLayerImpl.builder();
             withCloudBase(layer.get(), refCtx, layerBuilder::setBase, issues::add, contextPath);
             withCloudAmount(layer.get(), refCtx, layerBuilder::setAmount, issues::add, contextPath);
             withCloudType(layer.get(), refCtx, layerBuilder::setCloudType, issues::add, contextPath);
@@ -346,7 +345,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
         } else {
             issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Could not resolve cloud layer in " + contextPath));
         }
-        for (ConversionIssue issue : issues) {
+        for (final ConversionIssue issue : issues) {
             issueHandler.accept(issue);
         }
     }
@@ -379,12 +378,12 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
                     refCtx, (value) -> {
                         if (value.getHref() != null && value.getHref()
                                 .startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
-                            String amountCode = value.getHref()
+                            final String amountCode = value.getHref()
                                     .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME.length());
                             try {
-                                AviationCodeListUser.CloudAmount amountValue = AviationCodeListUser.CloudAmount.fromInt(Integer.parseInt(amountCode));
+                                final AviationCodeListUser.CloudAmount amountValue = AviationCodeListUser.CloudAmount.fromInt(Integer.parseInt(amountCode));
                                 resultHandler.accept(amountValue);
-                            } catch (NumberFormatException e) {
+                            } catch (final NumberFormatException e) {
                                 issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
                                         "Could not parse code list value '" + amountCode + "' as an integer for code list "
                                                 + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
@@ -415,17 +414,18 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
             final Consumer<AviationCodeListUser.CloudType> resultHandler, final Consumer<List<String>> nilReasonHandler,
             final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         if (layer != null) {
-            JAXBElement<SigConvectiveCloudTypeType> type = layer.getCloudType();
+            final JAXBElement<SigConvectiveCloudTypeType> type = layer.getCloudType();
             if (type != null && !type.isNil()) {
                 withNillableChild(layer, type.getValue(), SigConvectiveCloudTypeType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "cloudType"),
                         refCtx, (value) -> {
                             if (value.getHref() != null) {
                                 if (value.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
-                                    String typeCode = value.getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
+                                    final String typeCode = value.getHref()
+                                            .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
                                     try {
-                                        AviationCodeListUser.CloudType typeValue = AviationCodeListUser.CloudType.fromInt(Integer.parseInt(typeCode));
+                                        final AviationCodeListUser.CloudType typeValue = AviationCodeListUser.CloudType.fromInt(Integer.parseInt(typeCode));
                                         resultHandler.accept(typeValue);
-                                    } catch (NumberFormatException e) {
+                                    } catch (final NumberFormatException e) {
                                         issueHandler.accept(new ConversionIssue(ConversionIssue.Type.SYNTAX,
                                                 "Could not parse code list value '" + typeCode + "' as an integer for code list "
                                                         + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + " in " + contextPath));
