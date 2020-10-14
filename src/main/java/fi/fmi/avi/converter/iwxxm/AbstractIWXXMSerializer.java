@@ -198,7 +198,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
             final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
             marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getSchemaLocations());
-            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
+            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", getNamespaceContext());
             marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
             return asCleanedUpXML(sw.toString(), hints);
         } catch (final JAXBException e) {
@@ -265,7 +265,6 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
             final DocumentBuilder db = dbf.newDocumentBuilder();
             final InputSource is = new InputSource(new StringReader(input));
             final Document dom3Doc = db.parse(is);
-
             final DOMResult cleanedResult = new DOMResult();
             final TransformerFactory tFactory = TransformerFactory.newInstance();
             final Transformer transformer = tFactory.newTransformer(new DOMSource(db.parse(getCleanupTransformationStylesheet(hints))));
@@ -280,4 +279,6 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
     protected abstract InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException;
 
     protected abstract XMLSchemaInfo getSchemaInfo();
+
+    protected abstract IWXXMNamespaceContext getNamespaceContext();
 }

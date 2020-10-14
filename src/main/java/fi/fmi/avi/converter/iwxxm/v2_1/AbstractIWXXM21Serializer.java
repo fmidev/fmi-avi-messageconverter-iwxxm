@@ -46,6 +46,8 @@ import icao.iwxxm21.TAFType;
 
 public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMSerializer<T, S> {
 
+    private static IWXXMNamespaceContext nsCtx;
+
     public static Optional<PartialOrCompleteTimePeriod> getCompleteTimePeriod(final TimeObjectPropertyType timeObjectPropertyType,
             final ReferredObjectRetrievalContext refCtx) {
         final Optional<AbstractTimeObjectType> to = resolveProperty(timeObjectPropertyType, "abstractTimeObject", AbstractTimeObjectType.class, refCtx);
@@ -94,6 +96,18 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
         schemaInfo.addSchemaLocation("http://def.wmo.int/metce/2013", "http://schemas.wmo.int/metce/1.2/metce.xsd");
         schemaInfo.addSchemaLocation("http://www.opengis.net/samplingSpatial/2.0", "http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
         return schemaInfo;
+    }
+
+    @Override
+    protected IWXXMNamespaceContext getNamespaceContext() {
+        return getNSContext();
+    }
+
+    private static synchronized IWXXMNamespaceContext getNSContext() {
+        if (nsCtx == null) {
+            nsCtx = new IWXXMNamespaceContext();
+        }
+        return nsCtx;
     }
 
     @SuppressWarnings("unchecked")

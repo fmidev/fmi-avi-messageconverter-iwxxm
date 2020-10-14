@@ -63,4 +63,8 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
         }
         return retval.iterator();
     }
+
+    public String setPrefix(final String uri, final String prefix) {
+        return mapping.put(uri, prefix);
+    }
 }
