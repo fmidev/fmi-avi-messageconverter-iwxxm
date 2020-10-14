@@ -30,18 +30,18 @@
     <dependency>
       <groupId>fi.fmi.xmlmodel</groupId>
       <artifactId>fmi-avi-xmlmodel-iwxxm211</artifactId>
-      <version>1.5-SNAPSHOT</version>
+      <version>1.5.0</version>
     </dependency>
     <dependency>
       <groupId>fi.fmi.xmlmodel</groupId>
       <artifactId>fmi-avi-xmlmodel-iwxxm30</artifactId>
-      <version>1.5-SNAPSHOT</version>
+      <version>1.5.0</version>
     </dependency>
 
     <dependency>
       <groupId>fi.fmi.xmlmodel</groupId>
       <artifactId>fmi-avi-xmlmodel-wmo-collect2014</artifactId>
-      <version>1.5-SNAPSHOT</version>
+      <version>1.5.0</version>
     </dependency>
 
     <dependency>
