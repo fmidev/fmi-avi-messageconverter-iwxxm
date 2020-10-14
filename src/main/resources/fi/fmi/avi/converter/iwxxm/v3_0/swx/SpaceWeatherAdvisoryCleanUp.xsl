@@ -48,10 +48,4 @@
   <xsl:template match="//aixm:type[@xsi:nil='true']"/>
   <xsl:template match="//aixm:designator[@xsi:nil='true']"/>
 
-  <xsl:template match="iwxxm3:*" xmlns:iwxxm3="http://icao.int/iwxxm/3.0">
-    <xsl:element name="iwxxm:{local-name()}" namespace="{namespace-uri(.)}">
-      <xsl:apply-templates select="@*|node()"/>
-    </xsl:element>
-  </xsl:template>
-
 </xsl:stylesheet>
