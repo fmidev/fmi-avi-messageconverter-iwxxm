@@ -28,7 +28,7 @@ public class XMLSchemaInfo {
     private final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
     private final List<Source> schemaSources = new ArrayList<>();
     private final Map<String, String> schemaLocations = new HashMap<>();
-    private List<URL> schematronRules = new ArrayList<>();
+    private final List<URL> schematronRules = new ArrayList<>();
 
     public XMLSchemaInfo()  {
         this(false);
