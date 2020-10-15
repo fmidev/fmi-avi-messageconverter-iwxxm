@@ -131,8 +131,8 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
         final List<SpaceWeatherPhenomenon> phenomena = properties.getList(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, SpaceWeatherPhenomenon.class);
         spaceWeatherAdvisory.addAllPhenomena(phenomena);
 
-        final Optional<String> remarks = properties.get(SpaceWeatherAdvisoryProperties.Name.REMARKS, String.class);
-        remarks.ifPresent(s -> spaceWeatherAdvisory.setRemarks(Collections.singletonList(s)));
+        final Optional<List> remarks = properties.get(SpaceWeatherAdvisoryProperties.Name.REMARKS, List.class);
+        remarks.ifPresent(s -> spaceWeatherAdvisory.setRemarks(s));
 
         final Optional<NextAdvisory> nextAdvisory = properties.get(SpaceWeatherAdvisoryProperties.Name.NEXT_ADVISORY, NextAdvisory.class);
         nextAdvisory.ifPresent(spaceWeatherAdvisory::setNextAdvisory);

@@ -105,12 +105,14 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         }
 
         if (input.getRemarks().isPresent() && input.getRemarks().get().size() > 0) {
-            if (input.getRemarks().get().size() > 1) {
-                result.addIssue(new ConversionIssue(ConversionIssue.Severity.WARNING, "More than remark was found, but only one was handled"));
+            final StringWithNilReasonType remarkType = create(StringWithNilReasonType.class);
+            StringBuilder remarkBuilder = new StringBuilder();
+            for(String item : input.getRemarks().get()) {
+                remarkBuilder.append(item).append(" ");
             }
-            final StringWithNilReasonType remark = create(StringWithNilReasonType.class);
-            remark.setValue(input.getRemarks().get().get(0));
-            swxType.setRemarks(remark);
+            remarkBuilder.setLength(remarkBuilder.length() - 1);
+            remarkType.setValue(remarkBuilder.toString());
+            swxType.setRemarks(remarkType);
         } else {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Remark is missing"));
         }

@@ -2,8 +2,10 @@ package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
 
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
@@ -128,7 +130,8 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (input.getRemarks() != null) {
-            properties.set(SpaceWeatherAdvisoryProperties.Name.REMARKS, input.getRemarks().getValue());
+            List<String> remarks = Arrays.asList(input.getRemarks().getValue().split("\\s+"));
+            properties.set(SpaceWeatherAdvisoryProperties.Name.REMARKS, remarks);
         }
 
         if (input.getNextAdvisoryTime() != null) {
