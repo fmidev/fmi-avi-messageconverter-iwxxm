@@ -169,6 +169,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
                 } else {
                     target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
                 }
+            } else {
+                results.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "PermissibleUsage is required"));
             }
 
             if (source.getPermissibleUsageReason().isPresent()) {
