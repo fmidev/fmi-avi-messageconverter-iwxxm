@@ -10,7 +10,7 @@ public abstract class AbstractIWXXM30Serializer<T extends AviationWeatherMessage
     private static IWXXMNamespaceContext nsCtx;
 
     @Override
-    protected XMLSchemaInfo getSchemaInfo() {
+    public XMLSchemaInfo getSchemaInfo() {
         final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
         schemaInfo.addSchemaSource(SpaceWeatherAdvisoryType.class.getResourceAsStream("/int/icao/iwxxm/3.0.0/iwxxm.xsd"));
         schemaInfo.addSchematronRule(SpaceWeatherAdvisoryType.class.getResource("/schematron/xslt/int/icao/iwxxm/3.0.0/rule/iwxxm.xsl"));
@@ -26,8 +26,8 @@ public abstract class AbstractIWXXM30Serializer<T extends AviationWeatherMessage
     private static synchronized IWXXMNamespaceContext getNSContext() {
         if (nsCtx == null) {
             nsCtx = new IWXXMNamespaceContext();
-            nsCtx.setPrefix("http://icao.int/iwxxm/3.0", "iwxxm");
-            nsCtx.setPrefix("http://icao.int/iwxxm/2.1", "iwxxm2");
+            nsCtx.overrideNamespacePrefix("http://icao.int/iwxxm/2.1", "iwxxm21");
+            nsCtx.overrideNamespacePrefix("http://icao.int/iwxxm/3.0", "iwxxm");
         }
         return nsCtx;
     }

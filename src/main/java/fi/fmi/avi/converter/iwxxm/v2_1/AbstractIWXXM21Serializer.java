@@ -88,7 +88,7 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
     }
 
     @Override
-    protected XMLSchemaInfo getSchemaInfo() {
+    public XMLSchemaInfo getSchemaInfo() {
         final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
         schemaInfo.addSchemaSource(TAFType.class.getResourceAsStream("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
         schemaInfo.addSchematronRule(TAFType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
@@ -166,7 +166,7 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
             target.setId("cfct-" + UUID.randomUUID().toString());
             final Optional<NumericMeasure> measure = source.getVerticalVisibility();
             if (measure.isPresent()) {
-                final QName eName = new QName(IWXXMNamespaceContext.getURI("iwxxm"), "verticalVisibility");
+                final QName eName = new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "verticalVisibility");
                 final LengthWithNilReasonType vvValue = create(LengthWithNilReasonType.class, (vv) -> {
                     vv.setValue(measure.get().getValue());
                     vv.setUom(measure.get().getUom());
@@ -197,7 +197,7 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
             }
             final Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
             if (type.isPresent()) {
-                final QName eName = new QName(IWXXMNamespaceContext.getURI("iwxxm"), "cloudType");
+                final QName eName = new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "cloudType");
                 final SigConvectiveCloudTypeType cloudType = create(SigConvectiveCloudTypeType.class, (convCloud) -> {
                     convCloud.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + type.get().getCode());
                     convCloud.setTitle(type.get().name() + ", from codelist " + AviationCodeListUser.CODELIST_SIGNIFICANT_CONVECTIVE_CLOUD_TYPE);

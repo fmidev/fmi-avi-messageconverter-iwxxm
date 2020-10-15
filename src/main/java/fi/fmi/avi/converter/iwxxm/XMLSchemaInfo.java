@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,15 @@ public class XMLSchemaInfo {
         return schemaFactory.newSchema(schemaSources.toArray(new Source[0]));
     }
 
-    public String getSchemaLocations() {
+    public Map<String, String> getSchemaLocations() {
+        return Collections.unmodifiableMap(this.schemaLocations);
+    }
+
+    public List<Source> getSchemaSources() {
+        return Collections.unmodifiableList(this.schemaSources);
+    }
+
+    public String getCombinedSchemaLocations() {
         return schemaLocations.entrySet().stream().map((entry) -> entry.getKey() + " " + entry.getValue() + " ").reduce("", String::concat).trim();
     }
 

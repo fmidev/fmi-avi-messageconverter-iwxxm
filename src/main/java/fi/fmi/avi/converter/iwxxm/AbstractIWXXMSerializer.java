@@ -197,7 +197,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         try {
             final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getSchemaLocations());
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getCombinedSchemaLocations());
             marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", getNamespaceContext());
             marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
             return asCleanedUpXML(sw.toString(), hints);
@@ -278,7 +278,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
 
     protected abstract InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException;
 
-    protected abstract XMLSchemaInfo getSchemaInfo();
+    public abstract XMLSchemaInfo getSchemaInfo();
 
     protected abstract IWXXMNamespaceContext getNamespaceContext();
 }
