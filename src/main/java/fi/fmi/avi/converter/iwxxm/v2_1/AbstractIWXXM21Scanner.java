@@ -358,7 +358,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
     public static void withCloudBase(final CloudLayerType layer, final ReferredObjectRetrievalContext refCtx, final Consumer<NumericMeasure> resultHandler,
             final Consumer<List<String>> nilReasonHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         if (layer != null) {
-            withNillableChild(layer, layer.getBase(), DistanceWithNilReasonType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "base"), refCtx,
+            withNillableChild(layer, layer.getBase(), DistanceWithNilReasonType.class, new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "base"), refCtx,
                     (value) -> {
                         resultHandler.accept(asNumericMeasure(value).get());
                     }, nilReasonHandler);
@@ -374,8 +374,8 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
             final Consumer<AviationCodeListUser.CloudAmount> resultHandler, final Consumer<List<String>> nilReasonHandler,
             final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         if (layer != null) {
-            withNillableChild(layer, layer.getAmount(), CloudAmountReportedAtAerodromeType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "amount"),
-                    refCtx, (value) -> {
+            withNillableChild(layer, layer.getAmount(), CloudAmountReportedAtAerodromeType.class,
+                    new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "amount"), refCtx, (value) -> {
                         if (value.getHref() != null && value.getHref()
                                 .startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
                             final String amountCode = value.getHref()
@@ -416,8 +416,8 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
         if (layer != null) {
             final JAXBElement<SigConvectiveCloudTypeType> type = layer.getCloudType();
             if (type != null && !type.isNil()) {
-                withNillableChild(layer, type.getValue(), SigConvectiveCloudTypeType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "cloudType"),
-                        refCtx, (value) -> {
+                withNillableChild(layer, type.getValue(), SigConvectiveCloudTypeType.class,
+                        new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm2"), "cloudType"), refCtx, (value) -> {
                             if (value.getHref() != null) {
                                 if (value.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
                                     final String typeCode = value.getHref()
