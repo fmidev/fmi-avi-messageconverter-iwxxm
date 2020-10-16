@@ -5,15 +5,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.stream.StreamSource;
-
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
@@ -76,19 +68,7 @@ public class BulletinIWXXMStringSerializer<U extends AviationWeatherMessage, S e
 
     @Override
     protected IssueList validate(final String output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
-        final IssueList retval = new IssueList();
-        try {
-            final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            dbf.setNamespaceAware(true);
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            final DocumentBuilder db = dbf.newDocumentBuilder();
-            final Document dom = db.parse(new InputSource(new StringReader(output)));
-            retval.addAll(validateAgainstSchema(new StreamSource(new StringReader(output)), schemaInfo, hints));
-            retval.addAll(validateAgainstIWXXMSchematron(dom, schemaInfo, hints));
-        } catch (final ParserConfigurationException | SAXException | IOException e) {
-            throw new ConversionException("Error validating produced bulletin", e);
-        }
-        return retval;
+        return BulletinIWXXMStringSerializer.validateStringAgainstSchemaAndSchematron(output, schemaInfo, hints);
     }
 
     private int appendNewLineWithIndent(final int offset, final StringBuilder builder, final int intendation) {

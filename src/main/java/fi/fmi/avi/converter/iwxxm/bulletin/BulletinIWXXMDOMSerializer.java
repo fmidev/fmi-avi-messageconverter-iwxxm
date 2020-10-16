@@ -6,13 +6,12 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.dom.DOMSource;
 
-import org.springframework.core.convert.ConversionException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
@@ -55,9 +54,6 @@ public class BulletinIWXXMDOMSerializer<U extends AviationWeatherMessage, S exte
 
     @Override
     protected IssueList validate(final Document output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
-        IssueList retval = new IssueList();
-        retval.addAll(validateAgainstSchema(new DOMSource(output.getDocumentElement()), schemaInfo, hints));
-        retval.addAll(validateAgainstIWXXMSchematron(output, schemaInfo, hints));
-        return retval;
+        return BulletinIWXXMDOMSerializer.validateDOMAgainstSchemaAndSchematron(output, schemaInfo, hints);
     }
 }

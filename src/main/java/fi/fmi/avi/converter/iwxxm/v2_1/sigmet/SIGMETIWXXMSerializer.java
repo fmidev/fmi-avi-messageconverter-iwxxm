@@ -58,7 +58,9 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
+import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.NumericMeasure;
@@ -339,6 +341,8 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
     protected abstract T render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException;
 
+    protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
+
     /**
      * Converts a TAF object into another format.
      *
@@ -529,12 +533,16 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
     try {
         this.updateMessageMetadata(input, result, sigmet);
+        final T rendered = this.render(sigmet, hints);
+        result.addIssue(validate(rendered, getSchemaInfo(), hints));
+        /*
         if (input.getSigmetPhenomenon().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
             result.addIssue(validateDocument(((VolcanicAshSIGMETType) sigmet), VolcanicAshSIGMETType.class, getSchemaInfo(), hints));
         } else {
             result.addIssue(validateDocument(sigmet, SIGMETType.class, getSchemaInfo(), hints));
         }
-        result.setConvertedMessage(this.render(sigmet, hints));
+        */
+        result.setConvertedMessage(rendered);
     } catch (ConversionException e) {
             result.setStatus(Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render SIGMET IWXXM message to String", e));
@@ -1013,6 +1021,11 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         protected Document render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException {
             return renderXMLDocument(sigmet, hints);
         }
+
+        @Override
+        protected IssueList validate(final Document output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+            return SIGMETIWXXMSerializer.validateDOMAgainstSchemaAndSchematron(output, schemaInfo, hints);
+        }
     }
 
     public static class ToString extends SIGMETIWXXMSerializer<String> {
@@ -1020,6 +1033,11 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         protected String render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException {
             Document result = renderXMLDocument(sigmet, hints);
             return renderDOMToString(result, hints);
+        }
+
+        @Override
+        protected IssueList validate(final String output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+            return SIGMETIWXXMSerializer.validateStringAgainstSchemaAndSchematron(output, schemaInfo, hints);
         }
     }
 }
