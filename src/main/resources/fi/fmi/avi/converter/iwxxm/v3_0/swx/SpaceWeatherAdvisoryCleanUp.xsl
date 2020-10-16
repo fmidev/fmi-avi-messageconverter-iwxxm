@@ -4,9 +4,9 @@
   xmlns:gml="http://www.opengis.net/gml/3.2"
   xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
   version="2.0">
-  <xsl:template match="node()|@*">
+  <xsl:template match="@*">
     <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
+      <xsl:apply-templates select="../@*" />
     </xsl:copy>
   </xsl:template>
 
