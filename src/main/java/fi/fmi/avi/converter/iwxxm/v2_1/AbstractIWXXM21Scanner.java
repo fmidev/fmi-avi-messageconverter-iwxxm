@@ -417,7 +417,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
             final JAXBElement<SigConvectiveCloudTypeType> type = layer.getCloudType();
             if (type != null && !type.isNil()) {
                 withNillableChild(layer, type.getValue(), SigConvectiveCloudTypeType.class,
-                        new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm2"), "cloudType"), refCtx, (value) -> {
+                        new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "cloudType"), refCtx, (value) -> {
                             if (value.getHref() != null) {
                                 if (value.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
                                     final String typeCode = value.getHref()
