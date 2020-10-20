@@ -108,13 +108,13 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             swxType.setReplacedAdvisoryNumber(input.getReplaceAdvisoryNumber().get().asAdvisoryNumber());
         }
 
+        final StringWithNilReasonType remarkType = create(StringWithNilReasonType.class);
         if (input.getRemarks().isPresent() && input.getRemarks().get().size() > 0) {
-            final StringWithNilReasonType remarkType = create(StringWithNilReasonType.class);
             remarkType.setValue(String.join(" ", input.getRemarks().get()));
-            swxType.setRemarks(remarkType);
         } else {
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Remark is missing"));
+            remarkType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
         }
+        swxType.setRemarks(remarkType);
 
         for (final SpaceWeatherPhenomenon phenomenon : input.getPhenomena()) {
             final SpaceWeatherPhenomenaType spaceWeatherPhenomenaType = create(SpaceWeatherPhenomenaType.class);

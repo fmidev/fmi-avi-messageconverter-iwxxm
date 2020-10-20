@@ -131,8 +131,10 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (input.getRemarks() != null) {
-            List<String> remarks = Arrays.stream(input.getRemarks().getValue().split("\\s+")).filter(word -> !word.isEmpty()).collect(Collectors.toList());
-            properties.set(SpaceWeatherAdvisoryProperties.Name.REMARKS, remarks);
+            if (input.getRemarks().getValue() != null && !input.getRemarks().getValue().isEmpty()) {
+                List<String> remarks = Arrays.stream(input.getRemarks().getValue().split("\\s+")).filter(word -> !word.isEmpty()).collect(Collectors.toList());
+                properties.set(SpaceWeatherAdvisoryProperties.Name.REMARKS, remarks);
+            }
         }
 
         if (input.getNextAdvisoryTime() != null) {
