@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
@@ -130,7 +131,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (input.getRemarks() != null) {
-            List<String> remarks = Arrays.asList(input.getRemarks().getValue().split("\\s+"));
+            List<String> remarks = Arrays.stream(input.getRemarks().getValue().split("\\s+")).filter(word -> !word.isEmpty()).collect(Collectors.toList());
             properties.set(SpaceWeatherAdvisoryProperties.Name.REMARKS, remarks);
         }
 
