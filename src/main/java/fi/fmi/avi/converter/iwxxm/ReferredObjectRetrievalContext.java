@@ -3,7 +3,6 @@ package fi.fmi.avi.converter.iwxxm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,7 +11,6 @@ import java.util.Optional;
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -47,15 +45,8 @@ public class ReferredObjectRetrievalContext {
         try {
             XPathFactory factory = XPathFactory.newInstance();
             XPath xpath = factory.newXPath();
-            HashMap<String, String> prefMap = new HashMap<>();
-            prefMap.put("gml", "http://www.opengis.net/gml/3.2");
-            prefMap.put("xlink", "http://www.w3.org/1999/xlink");
-            prefMap.put("om", "http://www.opengis.net/om/2.0");
-            prefMap.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            prefMap.put("iwxxm", "http://icao.int/iwxxm/2.1");
-            prefMap.put("iwxxm3", "http://icao.int/iwxxm/3.0");
-            SimpleNamespaceContext namespaces = new SimpleNamespaceContext(prefMap);
-            xpath.setNamespaceContext(namespaces);
+            IWXXMNamespaceContext namespaceContext = new IWXXMNamespaceContext();
+            xpath.setNamespaceContext(namespaceContext);
 
             // Force identifying om:result elements in the Node <-> JAXElemement mapping by unmarshalling them explicitly
             // (this are not bound to JAXBElements by default, due to being inside an anyType containing element).
@@ -221,30 +212,5 @@ public class ReferredObjectRetrievalContext {
      */
     public Binder<Node> getJAXBBinder() {
         return this.binder;
-    }
-
-    private static class SimpleNamespaceContext implements NamespaceContext {
-
-        private Map<String, String> prefMap = new HashMap<>();
-
-        public SimpleNamespaceContext(final Map<String, String> prefMap) {
-            this.prefMap.putAll(prefMap);
-        }
-
-        @Override
-        public String getNamespaceURI(final String prefix) {
-            return prefMap.get(prefix);
-        }
-
-        @Override
-        public String getPrefix(final String uri) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Iterator getPrefixes(final String uri) {
-            throw new UnsupportedOperationException();
-        }
-
     }
 }

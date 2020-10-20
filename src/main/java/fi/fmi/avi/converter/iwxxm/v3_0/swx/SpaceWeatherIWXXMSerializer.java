@@ -45,6 +45,8 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationWeatherMessage;
@@ -81,6 +83,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
     private static final net.opengis.gml32.ObjectFactory GML_OF = new net.opengis.gml32.ObjectFactory();
 
     protected abstract T render(SpaceWeatherAdvisoryType swx, ConversionHints hints) throws ConversionException;
+
+    protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
 
     @Override
     public ConversionResult<T> convertMessage(final SpaceWeatherAdvisory input, final ConversionHints hints) {
@@ -137,8 +141,10 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
 
         try {
             this.updateMessageMetadata(input, result, swxType);
-            validateDocument(swxType, SpaceWeatherAdvisoryType.class, getSchemaInfo(), hints);
-            result.setConvertedMessage(this.render(swxType, hints));
+            //validateDocument(swxType, SpaceWeatherAdvisoryType.class, getSchemaInfo(), hints);
+            T rendered = this.render(swxType, hints);
+            result.addIssue(validate(rendered, getSchemaInfo(), hints));
+            result.setConvertedMessage(rendered);
         } catch (final ConversionException e) {
             result.setStatus(ConversionResult.Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message", e));
@@ -169,6 +175,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
                 } else {
                     target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
                 }
+            } else {
+                results.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "PermissibleUsage is required"));
             }
 
             if (source.getPermissibleUsageReason().isPresent()) {
@@ -424,6 +432,11 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             return this.renderXMLDocument(swx, hints);
 
         }
+
+        @Override
+        protected IssueList validate(final Document output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+            return SpaceWeatherIWXXMSerializer.validateDOMAgainstSchemaAndSchematron(output, schemaInfo, hints);
+        }
     }
 
     public static class ToString extends SpaceWeatherIWXXMSerializer<String> {
@@ -431,6 +444,11 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         protected String render(final SpaceWeatherAdvisoryType swx, final ConversionHints hints) throws ConversionException {
             final Document result = renderXMLDocument(swx, hints);
             return renderDOMToString(result, hints);
+        }
+
+        @Override
+        protected IssueList validate(final String output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+            return SpaceWeatherIWXXMSerializer.validateStringAgainstSchemaAndSchematron(output, schemaInfo, hints);
         }
     }
 

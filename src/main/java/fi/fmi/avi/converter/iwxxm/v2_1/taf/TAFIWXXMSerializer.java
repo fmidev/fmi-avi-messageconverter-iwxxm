@@ -39,6 +39,8 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionIssue.Type;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
+import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
@@ -81,6 +83,8 @@ import wmo.metce2013.ProcessType;
 public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TAF, T> {
 
     protected abstract T render(TAFType taf, ConversionHints hints) throws ConversionException;
+
+    protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
 
     /**
      * Converts a TAF object into another format.
@@ -167,8 +171,9 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         }
         try {
             this.updateMessageMetadata(input, result, taf);
-            result.addIssue(validateDocument(taf, TAFType.class, getSchemaInfo(), hints));
-            result.setConvertedMessage(this.render(taf, hints));
+            final T rendered = this.render(taf, hints);
+            result.addIssue(validate(rendered, getSchemaInfo(), hints));
+            result.setConvertedMessage(rendered);
 
         } catch (final ConversionException e) {
             result.setStatus(Status.FAIL);
@@ -535,6 +540,11 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
             return this.renderXMLDocument(taf, hints);
         }
 
+        @Override
+        protected IssueList validate(final Document output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+            return validateDOMAgainstSchemaAndSchematron(output, schemaInfo, hints);
+        }
+
     }
 
     public static class ToString extends TAFIWXXMSerializer<String> {
@@ -544,6 +554,11 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
             final Document result = renderXMLDocument(taf, hints);
             return renderDOMToString(result, hints);
         }
+
+        @Override
+        protected IssueList validate(final String output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+            return TAFIWXXMSerializer.validateStringAgainstSchemaAndSchematron(output, schemaInfo, hints);
+        }
     }
 
     public static class ToJAXBObject extends TAFIWXXMSerializer<TAFType> {
@@ -551,6 +566,11 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         @Override
         protected TAFType render(final TAFType taf, final ConversionHints hints) {
             return taf;
+        }
+
+        @Override
+        protected IssueList validate(final TAFType output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+            return TAFIWXXMSerializer.validateJAXBObjectAgainstSchemaAndSchematron(output, TAFType.class, schemaInfo, hints);
         }
 
     }

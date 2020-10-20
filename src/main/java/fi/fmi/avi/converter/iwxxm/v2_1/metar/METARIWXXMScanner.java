@@ -142,7 +142,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
 
         // trends
         withEachNillableChild(input, input.getTrendForecast(), OMObservationPropertyType.class,
-                new QName(IWXXMNamespaceContext.getURI("iwxxm"), "trendForecast"), refCtx, (value) -> {
+                new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "trendForecast"), refCtx, (value) -> {
                     Optional<OMObservationType> trend = resolveProperty(value, OMObservationType.class, refCtx);
                     if (trend.isPresent()) {
                         OMObservationProperties trendProps = new OMObservationProperties();
@@ -434,7 +434,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
 
                 //forecast weather (C) (incl. NSW)
                 withEachNillableChild(trendRecord.get(), trendRecord.get().getForecastWeather(), AerodromeForecastWeatherType.class,
-                        new QName(IWXXMNamespaceContext.getURI("iwxxm"), "forecastWeather"), refCtx, (value) -> {
+                        new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm2"), "forecastWeather"), refCtx, (value) -> {
                             AbstractIWXXM21Scanner.withWeatherBuilderFor(value, hints, (builder) -> {
                                 trendProps.addToList(TrendForecastRecordProperties.Name.FORECAST_WEATHER, builder.build());
                             }, retval::add);
@@ -825,7 +825,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                         } else if (!obsClouds.getLayer().isEmpty()) {
                             List<ObservedCloudLayer> layers = new ArrayList<>();
                             withEachNillableChild(obsClouds, obsClouds.getLayer(), AerodromeObservedCloudsType.Layer.class,
-                                    new QName(IWXXMNamespaceContext.getURI("iwxxm"), "layer"), refCtx, (value) -> {
+                                    new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "layer"), refCtx, (value) -> {
                                         withObservedCloudLayerBuilderFor(value, refCtx, (layerBuilder) -> {
                                             layers.add(layerBuilder.build());
                                         }, issues::add, "observed cloud");

@@ -4,9 +4,9 @@
   xmlns:gml="http://www.opengis.net/gml/3.2"
   xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
   version="2.0">
-  <xsl:template match="node()|@*">
+  <xsl:template match="@*">
     <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
+      <xsl:apply-templates select="../@*" />
     </xsl:copy>
   </xsl:template>
 
@@ -47,11 +47,5 @@
   <xsl:template match="//aixm:centreline[@xsi:nil='true']"/>
   <xsl:template match="//aixm:type[@xsi:nil='true']"/>
   <xsl:template match="//aixm:designator[@xsi:nil='true']"/>
-
-  <xsl:template match="iwxxm3:*" xmlns:iwxxm3="http://icao.int/iwxxm/3.0">
-    <xsl:element name="iwxxm:{local-name()}" namespace="{namespace-uri(.)}">
-      <xsl:apply-templates select="@*|node()"/>
-    </xsl:element>
-  </xsl:template>
 
 </xsl:stylesheet>

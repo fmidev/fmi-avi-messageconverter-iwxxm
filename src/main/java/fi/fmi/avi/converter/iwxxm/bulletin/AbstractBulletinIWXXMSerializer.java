@@ -1,12 +1,14 @@
 package fi.fmi.avi.converter.iwxxm.bulletin;
 
 import java.io.IOException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -14,11 +16,11 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
@@ -26,6 +28,8 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
@@ -35,17 +39,14 @@ import fi.fmi.avi.util.GTSExchangeFileInfo;
 import wmo.collect2014.MeteorologicalBulletinType;
 
 /**
- * @param <T> bulletin input format
  * @param <S> bulletin content model type
  */
-public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends IWXXMConverterBase
+public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends IWXXMConverterBase
         implements AviMessageSpecificConverter<S, T> {
 
-    private AviMessageSpecificConverter<U, Document> contentMessageConverter;
+    private AbstractIWXXMSerializer<U, Document> contentMessageConverter;
 
-    protected abstract T render(final Document bulletin, ConversionHints hints) throws ConversionException;
-
-    public void setMessageConverter(final AviMessageSpecificConverter<U, Document> converter) {
+    public void setMessageConverter(final AbstractIWXXMSerializer<U, Document> converter) {
         this.contentMessageConverter = converter;
     }
 
@@ -75,6 +76,18 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
         schemaInfo.addSchematronRule(MeteorologicalBulletinType.class.getResource("/schematron/xslt/int/wmo/collect/1.2/rule/collect.xsl"));
         schemaInfo.addSchemaLocation("http://def.wmo.int/collect/2014", "http://schemas.wmo.int/collect/1.2/collect.xsd");
 
+        final XMLSchemaInfo contentSchemaInfo = this.contentMessageConverter.getSchemaInfo();
+        for (final Source s : contentSchemaInfo.getSchemaSources()) {
+            schemaInfo.addSchemaSource(s);
+        }
+        for (final Map.Entry<String, String> e : contentSchemaInfo.getSchemaLocations().entrySet()) {
+            schemaInfo.addSchemaLocation(e.getKey(), e.getValue());
+        }
+        for (final URL u : contentSchemaInfo.getSchematronRules()) {
+            schemaInfo.addSchematronRule(u);
+        }
+
+        final T retval;
         try {
             final Document dom;
             try {
@@ -84,7 +97,7 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
                 final DocumentBuilder db = dbf.newDocumentBuilder();
                 dom = db.parse(this.getClass().getResourceAsStream("collect-template.xml"));
                 final Element collect = dom.getDocumentElement();
-                final Attr id = dom.createAttributeNS(IWXXMNamespaceContext.getURI("gml"), "id");
+                final Attr id = dom.createAttributeNS(IWXXMNamespaceContext.getDefaultURI("gml"), "id");
                 id.setPrefix("gml");
                 id.setValue(UUID_PREFIX + UUID.randomUUID().toString());
                 collect.setAttributeNodeNS(id);
@@ -101,18 +114,12 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
                         }
                         result.addIssue(messageResult.getConversionIssues());
                     }
-                    result.setStatus(worstStatus);
+                    if (ConversionResult.Status.isMoreCritical(worstStatus, ConversionResult.Status.SUCCESS)) {
+                        result.setStatus(worstStatus);
+                    }
                     if (messageResult.getConvertedMessage().isPresent()) {
                         outputMessages.add(messageResult.getConvertedMessage().get());
                     }
-                }
-
-                for (final Document outputMessage : outputMessages) {
-                    final Node toAdd = dom.importNode(outputMessage.getDocumentElement(), true);
-                    final Element metInfo = dom.createElementNS(IWXXMNamespaceContext.getURI("collect"), "meteorologicalInformation");
-                    metInfo.appendChild(toAdd);
-                    metInfo.setPrefix("collect");
-                    collect.appendChild(metInfo);
                 }
 
                 final GTSExchangeFileInfo.Builder info = new GTSExchangeFileInfo.Builder()//
@@ -144,20 +151,17 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
                 } else {
                     info.setTimeStamp(LocalDateTime.now(ZoneId.of("UTC")));
                 }
-                final Element identifier = dom.createElementNS(IWXXMNamespaceContext.getURI("collect"), "bulletinIdentifier");
+                final Element identifier = dom.createElementNS(IWXXMNamespaceContext.getDefaultURI("collect"), "bulletinIdentifier");
                 identifier.setPrefix("collect");
                 identifier.setTextContent(info.build().toGTSExchangeFileName());
                 collect.appendChild(identifier);
+                retval = aggregateAsBulletin(dom, outputMessages, hints);
 
             } catch (final IOException | SAXException | ParserConfigurationException e) {
                 throw new ConversionException("Error in creating bulletin document", e);
             }
-
-            //Should we validate the produced DOM against XML Schema? The individual messages have already been validated
-
-            //Check against the collect schematron rules:
-            result.addIssue(validateAgainstIWXXMSchematron(dom, schemaInfo, hints));
-            result.setConvertedMessage(this.render(dom, hints));
+            result.addIssue(validate(retval, schemaInfo, hints));
+            result.setConvertedMessage(retval);
 
         } catch (final ConversionException e) {
             result.setStatus(ConversionResult.Status.FAIL);
@@ -167,22 +171,7 @@ public abstract class BulletinIWXXMSerializer<T, U extends AviationWeatherMessag
         return result;
     }
 
-    static public class ToDOM<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends BulletinIWXXMSerializer<Document, U, S> {
+    protected abstract T aggregateAsBulletin(final Document collection, final List<Document> messages, final ConversionHints hints) throws ConversionException;
 
-        @Override
-        protected Document render(final Document bulletin, final ConversionHints hints) throws ConversionException {
-            return bulletin;
-        }
-
-    }
-
-    public static class ToString<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>>
-            extends BulletinIWXXMSerializer<java.lang.String, U, S> {
-
-        @Override
-        protected java.lang.String render(final Document bulletin, final ConversionHints hints) throws ConversionException {
-            return renderDOMToString(bulletin, hints);
-        }
-
-    }
+    protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
 }
