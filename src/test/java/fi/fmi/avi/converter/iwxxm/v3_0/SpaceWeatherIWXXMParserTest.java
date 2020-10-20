@@ -96,6 +96,24 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
     }
 
     @Test
+    public void testParser_remark_parsing() throws Exception {
+        final String input = getInput("spacewx-A2-4.xml");
+        List<String> expected = Arrays.asList("RADIATION", "LVL", "EXCEEDED", "100", "PCT", "OF", "BACKGROUND", "LVL", "AT", "FL350", "AND", "ABV.", "THE",
+                "CURRENT", "EVENT", "HAS", "PEAKED", "AND", "LVL", "SLW", "RTN", "TO", "BACKGROUND", "LVL.", "SEE", "WWW.SPACEWEATHERPROVIDER.WEB");
+
+        final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+                ConversionHints.EMPTY);
+
+        printIssues(result.getConversionIssues());
+        assertTrue(result.getConvertedMessage().isPresent());
+
+        final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
+        assertTrue(swx.getRemarks().isPresent());
+        assertEquals(26, swx.getRemarks().get().size());
+        assertEquals(expected, swx.getRemarks().get());
+    }
+
+    @Test
     public void testParser_A2_4() throws Exception {
         final String input = getInput("spacewx-A2-4.xml");
 
