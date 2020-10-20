@@ -1,6 +1,8 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
+import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -124,6 +126,35 @@ public class SpaceWeatherIWXXMSerializerTest {
             System.out.println(difference);
             System.out.println("------------------------------------------------");
         }
+        Assert.assertEquals(0, filteredDiff.size());
+    }
+
+    @Test
+    public void parse_and_serialize_nil_remark_test() throws Exception {
+        String input = getInput("spacewx-nil-remark.xml");
+
+        ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+                ConversionHints.EMPTY);
+
+        assertEquals(0, result.getConversionIssues().size());
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+
+        assertFalse(result.getConvertedMessage().get().getRemarks().isPresent());
+
+        ConversionResult<String> message = serialize(result.getConvertedMessage().get());
+
+        TestCase.assertTrue(ConversionResult.Status.SUCCESS == message.getStatus());
+        TestCase.assertTrue(message.getConvertedMessage().isPresent());
+        assertNotNull(message.getConvertedMessage().get());
+
+        XMLUnit.setIgnoreWhitespace(true);
+        Diff xmlDiff = new Diff(input, message.getConvertedMessage().get());
+        DetailedDiff detailedDiff = new DetailedDiff(xmlDiff);
+
+        List filteredDiff =
+                (List)detailedDiff.getAllDifferences().stream().filter(d -> filterUUIDDifferences(d)).filter(d -> filterCoordinateFormattingDifferences(d))
+                        .collect(Collectors.toList());
+
         Assert.assertEquals(0, filteredDiff.size());
     }
 
