@@ -498,7 +498,7 @@ public class TAFIWXXMSerializerTest {
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:cloudType/@xlink:href");
-        assertEquals("Change Forecast 2 cloud layer 2 type does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-012/9", expr.evaluate(docElement));
+        assertEquals("Change Forecast 2 cloud layer 2 type does not match", "http://codes.wmo.int/49-2/SigConvectiveCloudType/CB", expr.evaluate(docElement));
 
         //Change forecast 3: TEMPO 3102/3112 3000 SHRASN BKN006 BKN015CB
 
@@ -592,7 +592,7 @@ public class TAFIWXXMSerializerTest {
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:cloudType/@xlink:href");
-        assertEquals("Change Forecast 3 cloud layer 2 type does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-012/9", expr.evaluate(docElement));
+        assertEquals("Change Forecast 3 cloud layer 2 type does not match", "http://codes.wmo.int/49-2/SigConvectiveCloudType/CB", expr.evaluate(docElement));
 
         //Change forecast 4: BECMG 3104/3106 21016G30KT VV001=
 

@@ -423,11 +423,11 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
                                     final String typeCode = value.getHref()
                                             .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE.length());
                                     try {
-                                        final AviationCodeListUser.CloudType typeValue = AviationCodeListUser.CloudType.fromInt(Integer.parseInt(typeCode));
+                                        final AviationCodeListUser.CloudType typeValue = AviationCodeListUser.CloudType.valueOf(typeCode);
                                         resultHandler.accept(typeValue);
-                                    } catch (final NumberFormatException e) {
+                                    } catch (final IllegalArgumentException e) {
                                         issueHandler.accept(new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                                                "Could not parse code list value '" + typeCode + "' as an integer for code list "
+                                                "Could not parse code list value '" + typeCode + "' for code list "
                                                         + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + " in " + contextPath));
                                     }
                                 } else {

@@ -121,7 +121,7 @@
                                 <iwxxm:CloudLayer>
                                     <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT"/>
                                     <iwxxm:base uom="[ft_i]">1500</iwxxm:base>
-                                    <iwxxm:cloudType xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-012/9"/>
+                                    <iwxxm:cloudType xlink:href="http://codes.wmo.int/49-2/SigConvectiveCloudType/CB"/>
                                 </iwxxm:CloudLayer>
                             </iwxxm:layer>
                             <iwxxm:layer>
@@ -173,7 +173,7 @@
                                 <iwxxm:CloudLayer>
                                     <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT"/>
                                     <iwxxm:base uom="[ft_i]">1000</iwxxm:base>
-                                    <iwxxm:cloudType xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-012/9"/>
+                                    <iwxxm:cloudType xlink:href="http://codes.wmo.int/49-2/SigConvectiveCloudType/CB"/>
                                 </iwxxm:CloudLayer>
                             </iwxxm:layer>
                             <iwxxm:layer>
