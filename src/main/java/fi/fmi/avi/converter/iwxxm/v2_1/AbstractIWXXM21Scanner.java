@@ -381,11 +381,11 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
                             final String amountCode = value.getHref()
                                     .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME.length());
                             try {
-                                final AviationCodeListUser.CloudAmount amountValue = AviationCodeListUser.CloudAmount.fromInt(Integer.parseInt(amountCode));
+                                final AviationCodeListUser.CloudAmount amountValue = AviationCodeListUser.CloudAmount.valueOf(amountCode);
                                 resultHandler.accept(amountValue);
-                            } catch (final NumberFormatException e) {
+                            } catch (final IllegalArgumentException e) {
                                 issueHandler.accept(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                                        "Could not parse code list value '" + amountCode + "' as an integer for code list "
+                                        "Could not parse code list value '" + amountCode + "' for code list "
                                                 + AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + " in " + contextPath));
                             }
 

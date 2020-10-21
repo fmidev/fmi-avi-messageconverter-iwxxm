@@ -97,14 +97,14 @@
                 <iwxxm:AerodromeCloudForecast gml:id="cfct-50b5172b-49e9-4a9d-a72f-f125b0a9363f">
                   <iwxxm:layer>
                     <iwxxm:CloudLayer>
-                      <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/3"
+                      <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN"
                         xlink:title="BKN, from codelist http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome" />
                       <iwxxm:base uom="[ft_i]">1000.0</iwxxm:base>
                     </iwxxm:CloudLayer>
                   </iwxxm:layer>
                   <iwxxm:layer>
                     <iwxxm:CloudLayer>
-                      <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/4"
+                      <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/OVC"
                         xlink:title="OVC, from codelist http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome" />
                       <iwxxm:base uom="[ft_i]">1500.0</iwxxm:base>
                     </iwxxm:CloudLayer>
@@ -163,7 +163,7 @@
                 <iwxxm:AerodromeCloudForecast gml:id="cfct-d519ae5c-ba78-40c4-8df2-a0bcf077b29b">
                   <iwxxm:layer>
                     <iwxxm:CloudLayer>
-                      <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/4"
+                      <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/OVC"
                         xlink:title="OVC, from codelist http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome" />
                       <iwxxm:base uom="[ft_i]">400.0</iwxxm:base>
                     </iwxxm:CloudLayer>
@@ -202,14 +202,14 @@
                 <iwxxm:AerodromeCloudForecast gml:id="cfct-5af41854-a3a8-4095-a48d-62a1a96ce05e">
                   <iwxxm:layer>
                     <iwxxm:CloudLayer>
-                      <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/3"
+                      <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN"
                         xlink:title="BKN, from codelist http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome" />
                       <iwxxm:base uom="[ft_i]">800.0</iwxxm:base>
                     </iwxxm:CloudLayer>
                   </iwxxm:layer>
                   <iwxxm:layer>
                     <iwxxm:CloudLayer>
-                      <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/2"
+                      <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT"
                         xlink:title="SCT, from codelist http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome" />
                       <iwxxm:base uom="[ft_i]">1500.0</iwxxm:base>
                       <iwxxm:cloudType xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-012/9"
@@ -253,14 +253,14 @@
                 <iwxxm:AerodromeCloudForecast gml:id="cfct-820a4d3e-4a8e-4033-b42d-ae8222ecf5c3">
                   <iwxxm:layer>
                     <iwxxm:CloudLayer>
-                      <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/3"
+                      <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN"
                         xlink:title="BKN, from codelist http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome" />
                       <iwxxm:base uom="[ft_i]">600.0</iwxxm:base>
                     </iwxxm:CloudLayer>
                   </iwxxm:layer>
                   <iwxxm:layer>
                     <iwxxm:CloudLayer>
-                      <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/3"
+                      <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN"
                         xlink:title="BKN, from codelist http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome" />
                       <iwxxm:base uom="[ft_i]">1500.0</iwxxm:base>
                       <iwxxm:cloudType xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-012/9"
@@ -403,14 +403,14 @@
                 <iwxxm:AerodromeCloudForecast gml:id="cfct-075bee12-525f-41b9-8e51-cc1d9463141d">
                   <iwxxm:layer>
                     <iwxxm:CloudLayer>
-                      <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/2"
+                      <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT"
                         xlink:title="SCT, from codelist http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome" />
                       <iwxxm:base uom="[ft_i]">2000.0</iwxxm:base>
                     </iwxxm:CloudLayer>
                   </iwxxm:layer>
                   <iwxxm:layer>
                     <iwxxm:CloudLayer>
-                      <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/4"
+                      <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/OVC"
                         xlink:title="OVC, from codelist http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome" />
                       <iwxxm:base uom="[ft_i]">5000.0</iwxxm:base>
                     </iwxxm:CloudLayer>
@@ -452,7 +452,7 @@
                 <iwxxm:AerodromeCloudForecast gml:id="cfct-45f1f86d-e096-4799-98d2-ff057d090e75">
                   <iwxxm:layer>
                     <iwxxm:CloudLayer>
-                      <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/3"
+                      <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN"
                         xlink:title="BKN, from codelist http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome" />
                       <iwxxm:base uom="[ft_i]">700.0</iwxxm:base>
                     </iwxxm:CloudLayer>
@@ -588,7 +588,7 @@
                 <iwxxm:AerodromeCloudForecast gml:id="cfct-e86bccae-a042-4b7f-8dfd-2f86747f2b46">
                   <iwxxm:layer>
                     <iwxxm:CloudLayer>
-                      <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/3"
+                      <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN"
                         xlink:title="BKN, from codelist http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome" />
                       <iwxxm:base uom="[ft_i]">400.0</iwxxm:base>
                     </iwxxm:CloudLayer>

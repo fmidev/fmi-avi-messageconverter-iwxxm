@@ -189,12 +189,10 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
                 target.setBase(asMeasure(source.getBase().get(), DistanceWithNilReasonType.class));
             }
             final Optional<AviationCodeListUser.CloudAmount> amount = source.getAmount();
-            if (amount.isPresent()) {
-                target.setAmount(create(CloudAmountReportedAtAerodromeType.class, (amt) -> {
-                    amt.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + amount.get().getCode());
-                    amt.setTitle(amount.get().name() + ", from codelist " + AviationCodeListUser.CODELIST_CLOUD_AMOUNT_REPORTED_AT_AERODROME);
-                }));
-            }
+            amount.ifPresent(cloudAmount -> target.setAmount(create(CloudAmountReportedAtAerodromeType.class, (amt) -> {
+                amt.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + cloudAmount.getCode());
+                amt.setTitle(cloudAmount.name() + ", from codelist " + AviationCodeListUser.CODELIST_CLOUD_AMOUNT_REPORTED_AT_AERODROME);
+            })));
             final Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
             if (type.isPresent()) {
                 final QName eName = new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "cloudType");

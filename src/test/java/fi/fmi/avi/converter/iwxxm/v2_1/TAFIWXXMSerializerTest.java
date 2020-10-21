@@ -278,7 +278,7 @@ public class TAFIWXXMSerializerTest {
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm:AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
                         + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Cloud layer 1 amount does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-008/3", expr.evaluate(docElement));
+        assertEquals("Cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm:AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
@@ -293,7 +293,7 @@ public class TAFIWXXMSerializerTest {
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm:AerodromeCloudForecast/iwxxm:layer[2]/iwxxm"
                         + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Cloud layer 1 amount does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-008/4", expr.evaluate(docElement));
+        assertEquals("Cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/OVC", expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm:AerodromeCloudForecast/iwxxm:layer[2]/iwxxm"
@@ -404,7 +404,7 @@ public class TAFIWXXMSerializerTest {
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Change Forecast 1 cloud layer 1 amount does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-008/4", expr.evaluate(docElement));
+        assertEquals("Change Forecast 1 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/OVC", expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm:AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
@@ -473,7 +473,7 @@ public class TAFIWXXMSerializerTest {
         //BKN008
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Change Forecast 2 cloud layer 1 amount does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-008/3", expr.evaluate(docElement));
+        assertEquals("Change Forecast 2 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:base/@uom");
@@ -486,7 +486,7 @@ public class TAFIWXXMSerializerTest {
         //SCT015CB
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Change Forecast 2 cloud layer 2 amount does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-008/2", expr.evaluate(docElement));
+        assertEquals("Change Forecast 2 cloud layer 2 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT", expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:base/@uom");
@@ -567,7 +567,7 @@ public class TAFIWXXMSerializerTest {
         //BKN006
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Change Forecast 3 cloud layer 1 amount does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-008/3", expr.evaluate(docElement));
+        assertEquals("Change Forecast 3 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:base/@uom");
@@ -580,7 +580,7 @@ public class TAFIWXXMSerializerTest {
         //BKN015CB
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Change Forecast 3 cloud layer 2 amount does not match", "http://codes.wmo.int/bufr4/codeflag/0-20-008/3", expr.evaluate(docElement));
+        assertEquals("Change Forecast 3 cloud layer 2 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:base/@uom");
