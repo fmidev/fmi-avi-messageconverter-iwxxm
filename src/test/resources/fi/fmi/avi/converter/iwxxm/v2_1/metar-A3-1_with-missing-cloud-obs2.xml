@@ -103,25 +103,25 @@
             <iwxxm:AerodromeObservedClouds>
               <iwxxm:layer>
                 <iwxxm:CloudLayer>
-                  <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/2" />
+                  <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT" />
                   <iwxxm:base xsi:nil="true" uom="none" nilReason="http://codes.wmo.int/common/nil/notObservable" />
                 </iwxxm:CloudLayer>
               </iwxxm:layer>
               <iwxxm:layer>
                 <iwxxm:CloudLayer>
-                  <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/2" />
+                  <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT" />
                   <iwxxm:base uom="[ft_i]">1500</iwxxm:base>
                 </iwxxm:CloudLayer>
               </iwxxm:layer>
               <iwxxm:layer>
                 <iwxxm:CloudLayer>
-                  <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/2" />
+                  <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT" />
                   <iwxxm:base xsi:nil="true" uom="none" nilReason="http://codes.wmo.int/common/nil/notDetectedByAutoSystem" />
                 </iwxxm:CloudLayer>
               </iwxxm:layer>
               <iwxxm:layer>
                 <iwxxm:CloudLayer>
-                  <iwxxm:amount xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-008/7" />
+                  <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/OVC" />
                   <iwxxm:base uom="[ft_i]">1500</iwxxm:base>
                   <iwxxm:cloudType nilReason="http://codes.wmo.int/common/nil/notObservable" />
                 </iwxxm:CloudLayer>
