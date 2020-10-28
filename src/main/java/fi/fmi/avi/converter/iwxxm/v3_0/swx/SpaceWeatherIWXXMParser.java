@@ -2,7 +2,6 @@ package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -89,7 +88,10 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
                 final Optional<SpaceWeatherRegion.SpaceWeatherLocation> locationIndicator = regionProperties.get(
                         SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR, SpaceWeatherRegion.SpaceWeatherLocation.class);
                 locationIndicator.ifPresent(spaceWeatherRegion::setLocationIndicator);
-                weatherRegions.add(spaceWeatherRegion.build());
+
+                if (spaceWeatherRegion.getAirSpaceVolume().isPresent() || spaceWeatherRegion.getLocationIndicator().isPresent()) {
+                    weatherRegions.add(spaceWeatherRegion.build());
+                }
             }
 
             //Set region
@@ -132,7 +134,7 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
         spaceWeatherAdvisory.addAllPhenomena(phenomena);
 
         final Optional<List> remarks = properties.get(SpaceWeatherAdvisoryProperties.Name.REMARKS, List.class);
-        remarks.ifPresent(s -> spaceWeatherAdvisory.setRemarks(s));
+        remarks.ifPresent(spaceWeatherAdvisory::setRemarks);
 
         final Optional<NextAdvisory> nextAdvisory = properties.get(SpaceWeatherAdvisoryProperties.Name.NEXT_ADVISORY, NextAdvisory.class);
         nextAdvisory.ifPresent(spaceWeatherAdvisory::setNextAdvisory);

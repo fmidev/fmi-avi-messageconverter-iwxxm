@@ -139,7 +139,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         try {
             this.updateMessageMetadata(input, result, swxType);
             //validateDocument(swxType, SpaceWeatherAdvisoryType.class, getSchemaInfo(), hints);
-            T rendered = this.render(swxType, hints);
+            final T rendered = this.render(swxType, hints);
             result.addIssue(validate(rendered, getSchemaInfo(), hints));
             result.setConvertedMessage(rendered);
         } catch (final ConversionException e) {
@@ -236,7 +236,13 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         analysisType.setId(UUID_PREFIX + UUID.randomUUID().toString());
         analysisType.setPhenomenonTime(create(AbstractTimeObjectPropertyType.class, (prop) -> getAnalysisTime(prop, analysis.getTime())));
 
-        for (int i = 0; i < analysis.getRegions().size(); i++) {
+        final int regionsAmount = analysis.getRegions().size();
+        if (regionsAmount == 0) {
+            final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
+            regionProperty.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
+            analysisType.getRegion().add(regionProperty);
+        }
+        for (int i = 0; i < regionsAmount; i++) {
             final SpaceWeatherRegionIdMapper.RegionId regionId = regionList.get(i);
             final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
             if (!regionId.isDuplicate()) {

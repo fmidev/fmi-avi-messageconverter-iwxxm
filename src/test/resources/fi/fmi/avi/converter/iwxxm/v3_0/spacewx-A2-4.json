@@ -316,9 +316,7 @@
         "completeTime": "2016-11-09T01:00:00Z"
       },
       "analysisType": "FORECAST",
-      "regions": [
-        {}
-      ],
+      "regions": [],
       "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
     }
   ],
