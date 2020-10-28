@@ -6,7 +6,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -48,17 +50,40 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
     @Autowired
     private AviMessageConverter converter;
 
-    private String getInput(final String fileName) throws IOException {
-        InputStream is = null;
-        try {
-            is = SpaceWeatherIWXXMParserTest.class.getResourceAsStream(fileName);
-            Objects.requireNonNull(is);
-
-            return IOUtils.toString(is, "UTF-8");
-        } finally {
-            if (is != null) {
-                is.close();
+    private static void assertContainsNoEmptyRegions(final List<SpaceWeatherAdvisoryAnalysis> analyses) {
+        final List<String> emptyRegions = new ArrayList<>();
+        for (int analysisIndex = 0; analysisIndex < analyses.size(); analysisIndex++) {
+            final List<SpaceWeatherRegion> regions = analyses.get(analysisIndex).getRegions();
+            for (int regionIndex = 0; regionIndex < regions.size(); regionIndex++) {
+                final SpaceWeatherRegion region = regions.get(regionIndex);
+                if (isEmpty(region)) {
+                    emptyRegions.add("analysis[" + analysisIndex + "]/region[" + regionIndex + "]");
+                }
             }
+        }
+        assertTrue("Empty analysis regions: " + emptyRegions, emptyRegions.isEmpty());
+    }
+
+    private static boolean isEmpty(final SpaceWeatherRegion region) {
+        return Arrays.stream(SpaceWeatherRegion.class.getMethods())//
+                .filter(method -> method.getParameterCount() == 0//
+                        && Optional.class.isAssignableFrom(method.getReturnType())//
+                        && method.getName().startsWith("get"))//
+                .map(method -> {
+                    try {
+                        final Optional<?> optional = (Optional<?>) method.invoke(region);
+                        return optional == null ? Optional.empty() : optional;
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new AssertionError("Unable to invoke " + method + ": " + e.getMessage());
+                    }
+                })//
+                .noneMatch(Optional::isPresent);
+    }
+
+    private String getInput(final String fileName) throws IOException {
+        try (InputStream is = SpaceWeatherIWXXMParserTest.class.getResourceAsStream(fileName)) {
+            Objects.requireNonNull(is);
+            return IOUtils.toString(is, "UTF-8");
         }
     }
 
@@ -82,6 +107,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION, swx.getAnalyses().get(0).getAnalysisType());
         assertEquals(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"), swx.getPhenomena().get(0));
 
+        assertContainsNoEmptyRegions(swx.getAnalyses());
         final SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
         assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/HNH"),
                 region.getLocationIndicator().get());
@@ -98,8 +124,8 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
     @Test
     public void testParser_remark_parsing() throws Exception {
         final String input = getInput("spacewx-A2-4.xml");
-        List<String> expected = Arrays.asList("RADIATION", "LVL", "EXCEEDED", "100", "PCT", "OF", "BACKGROUND", "LVL", "AT", "FL350", "AND", "ABV.", "THE",
-                "CURRENT", "EVENT", "HAS", "PEAKED", "AND", "LVL", "SLW", "RTN", "TO", "BACKGROUND", "LVL.", "SEE", "WWW.SPACEWEATHERPROVIDER.WEB");
+        final List<String> expected = Arrays.asList("RADIATION", "LVL", "EXCEEDED", "100", "PCT", "OF", "BACKGROUND", "LVL", "AT", "FL350", "AND", "ABV.",
+                "THE", "CURRENT", "EVENT", "HAS", "PEAKED", "AND", "LVL", "SLW", "RTN", "TO", "BACKGROUND", "LVL.", "SEE", "WWW.SPACEWEATHERPROVIDER.WEB");
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
@@ -135,6 +161,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(swx.getAnalyses().get(4).getNilPhenomenonReason().isPresent());
         assertEquals(SpaceWeatherAdvisoryAnalysis.NilPhenomenonReason.NO_PHENOMENON_EXPECTED, swx.getAnalyses().get(4).getNilPhenomenonReason().get());
 
+        assertContainsNoEmptyRegions(swx.getAnalyses());
         final SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
         assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/HNH"),
                 region.getLocationIndicator().get());
@@ -173,6 +200,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION, swx.getAnalyses().get(0).getAnalysisType());
         assertEquals(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_SEV"), swx.getPhenomena().get(0));
 
+        assertContainsNoEmptyRegions(swx.getAnalyses());
         final SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
         assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE"),
                 region.getLocationIndicator().get());
