@@ -11,6 +11,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -39,6 +40,7 @@ import fi.fmi.avi.model.PolygonGeometry;
 import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.swx.AirspaceVolume;
+import fi.fmi.avi.model.swx.NextAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
@@ -119,6 +121,9 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getExteriorRingPositions());
         assertFalse(airspaceVolume.getUpperLimitReference().isPresent());
         assertFalse(airspaceVolume.getUpperLimit().isPresent());
+
+        assertEquals(NextAdvisory.Type.NO_FURTHER_ADVISORIES, swx.getNextAdvisory().getTimeSpecifier());
+        assertFalse("getNextAdvisory().getTime()", swx.getNextAdvisory().getTime().isPresent());
     }
 
     @Test
@@ -176,6 +181,9 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals("FL", upperLimit.getUom());
         assertEquals(Double.valueOf(350), upperLimit.getValue());
 
+        assertEquals(NextAdvisory.Type.NEXT_ADVISORY_BY, swx.getNextAdvisory().getTimeSpecifier());
+        assertTrue("getNextAdvisory().getTime()", swx.getNextAdvisory().getTime().isPresent());
+
         final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.registerModule(new Jdk8Module()).registerModule(new JavaTimeModule());
         System.out.println(OBJECT_MAPPER.writeValueAsString(swx));
@@ -214,6 +222,23 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertEquals(gnm, geometry.getRadius());
         assertFalse(airspaceVolume.getUpperLimitReference().isPresent());
         assertFalse(airspaceVolume.getUpperLimit().isPresent());
+
+        assertEquals(NextAdvisory.Type.NEXT_ADVISORY_AT, swx.getNextAdvisory().getTimeSpecifier());
+        assertTrue("getNextAdvisory().getTime()", swx.getNextAdvisory().getTime().isPresent());
+    }
+
+    @Test
+    public void testParser_illegal_nextAdvisory_indeterminatePosition() throws IOException {
+        final String input = getInput("spacewx-A2-4.xml");
+        for (final String illegalIndeterminatePosition : Arrays.asList("now", "unknown")) {
+            final String illegalInput = input.replace("indeterminatePosition=\"before\"", "indeterminatePosition=\"" + illegalIndeterminatePosition + "\"");
+            final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(illegalInput, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+                    ConversionHints.EMPTY);
+            assertEquals(1, result.getConversionIssues().size());
+            final String errorMessage = result.getConversionIssues().get(0).getMessage();
+            assertTrue(String.format("Expected message containing <%s>, but was: <%s>", illegalIndeterminatePosition, errorMessage),
+                    errorMessage.contains(illegalIndeterminatePosition.toUpperCase(Locale.US)));
+        }
     }
 
     private void printIssues(final List<ConversionIssue> issues) {

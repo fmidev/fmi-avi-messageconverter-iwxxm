@@ -4,10 +4,11 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
+import net.opengis.gml32.TimeIndeterminateValueType;
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
 import net.opengis.gml32.TimePositionType;
@@ -132,7 +133,9 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
 
         if (input.getRemarks() != null) {
             if (input.getRemarks().getValue() != null && !input.getRemarks().getValue().isEmpty()) {
-                List<String> remarks = Arrays.stream(input.getRemarks().getValue().split("\\s+")).filter(word -> !word.isEmpty()).collect(Collectors.toList());
+                final List<String> remarks = Arrays.stream(input.getRemarks().getValue().split("\\s+"))
+                        .filter(word -> !word.isEmpty())
+                        .collect(Collectors.toList());
                 properties.set(SpaceWeatherAdvisoryProperties.Name.REMARKS, remarks);
             }
         }
@@ -148,30 +151,46 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
 
     private static NextAdvisory getNextAdvisory(final TimeInstantPropertyType nextAdvisory, final ReferredObjectRetrievalContext refCtx,
             final IssueList issueList) {
-        final NextAdvisoryImpl.Builder na = NextAdvisoryImpl.builder();
+        final NextAdvisoryImpl.Builder builder = NextAdvisoryImpl.builder();
         if (nextAdvisory.getNilReason() != null && nextAdvisory.getNilReason().size() > 0) {
             if (nextAdvisory.getNilReason().size() > 1) {
                 issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
                         "More than one nil reason was found," + " but not reported"));
             }
             if (nextAdvisory.getNilReason().get(0).equals(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE)) {
-                na.setTime(Optional.empty());
-                na.setTimeSpecifier(NextAdvisory.Type.NO_FURTHER_ADVISORIES);
+                builder.setTime(Optional.empty());
+                builder.setTimeSpecifier(NextAdvisory.Type.NO_FURTHER_ADVISORIES);
             } else {
                 issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Next advisory nil reason missing"));
             }
         } else {
-            na.setTimeSpecifier(NextAdvisory.Type.NEXT_ADVISORY_AT);
+            builder.setTimeSpecifier(NextAdvisory.Type.NEXT_ADVISORY_AT);
             final TimePositionType timePosition = nextAdvisory.getTimeInstant().getTimePosition();
             if (timePosition != null && timePosition.getValue().size() == 1) {
+                builder.setTimeSpecifier(parseNextAdvisoryTimeSpecifier(timePosition, issueList));
                 final String time = timePosition.getValue().get(0);
-                final PartialOrCompleteTimeInstant completeTime = PartialOrCompleteTimeInstant.builder().setCompleteTime(ZonedDateTime.parse(time)).build();
-                na.setTime(completeTime);
+                final PartialOrCompleteTimeInstant completeTime = PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(time));
+                builder.setTime(completeTime);
             } else {
                 issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Next advisory time is expected, but is missing"));
             }
         }
-        return na.build();
+        return builder.build();
+    }
+
+    private static NextAdvisory.Type parseNextAdvisoryTimeSpecifier(final TimePositionType timePosition, final IssueList issueList) {
+        if (timePosition.getIndeterminatePosition() == null) {
+            return NextAdvisory.Type.NEXT_ADVISORY_AT;
+        } else if (TimeIndeterminateValueType.BEFORE == timePosition.getIndeterminatePosition()) {
+            return NextAdvisory.Type.NEXT_ADVISORY_BY;
+        } else if (TimeIndeterminateValueType.AFTER == timePosition.getIndeterminatePosition()) {
+            // TODO: 'after' not supported in model; temporarily use "NEXT_ADVISORY_AT"
+            return NextAdvisory.Type.NEXT_ADVISORY_AT;
+        } else {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
+                    "Illegal indeterminatePosition for next advisory time: " + timePosition.getIndeterminatePosition()));
+            return NextAdvisory.Type.NEXT_ADVISORY_AT;
+        }
     }
 
     private static List<SpaceWeatherPhenomenon> parsePhenomenonList(final List<SpaceWeatherPhenomenaType> elements) {
@@ -198,7 +217,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
 
             final TimeIndicatorType timeIndicator = spaceWeatherAnalysis.getTimeIndicator();
             if (timeIndicator != null) {
-                if (timeIndicator.name().toUpperCase().equals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION.toString())) {
+                if (timeIndicator.name().toUpperCase(Locale.US).equals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION.toString())) {
                     properties.set(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TYPE, SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION);
                 } else {
                     properties.set(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TYPE, SpaceWeatherAdvisoryAnalysis.Type.FORECAST);

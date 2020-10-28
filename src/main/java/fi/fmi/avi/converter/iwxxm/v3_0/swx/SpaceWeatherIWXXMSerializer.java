@@ -22,6 +22,7 @@ import net.opengis.gml32.LinearRingType;
 import net.opengis.gml32.PolygonPatchType;
 import net.opengis.gml32.RingType;
 import net.opengis.gml32.SurfacePatchArrayPropertyType;
+import net.opengis.gml32.TimeIndeterminateValueType;
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
 import net.opengis.gml32.TimePositionType;
@@ -408,6 +409,10 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         if (nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_AT || nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_BY) {
             final TimeInstantType timeInstant = create(TimeInstantType.class);
             final TimePositionType timePosition = create(TimePositionType.class);
+            if (nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_BY) {
+                timePosition.setIndeterminatePosition(TimeIndeterminateValueType.BEFORE);
+            }
+            // TODO: 'after' not supported in model; temporarily omit
             nextAdvisory.getTime()
                     .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
                     .ifPresent(t -> timePosition.getValue().add(t.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));

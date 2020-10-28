@@ -324,7 +324,10 @@
     "RADIATION LVL EXCEEDED 100 PCT OF BACKGROUND LVL AT FL350 AND ABV. THE CURRENT EVENT HAS PEAKED AND LVL SLW RTN TO BACKGROUND LVL. SEE WWW.SPACEWEATHERPROVIDER.WEB"
   ],
   "nextAdvisory": {
-    "timeSpecifier": "NO_FURTHER_ADVISORIES"
+    "timeSpecifier": "NEXT_ADVISORY_BY",
+    "time": {
+      "completeTime": "2016-11-08T06:00:00Z"
+    }
   },
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "TEST",

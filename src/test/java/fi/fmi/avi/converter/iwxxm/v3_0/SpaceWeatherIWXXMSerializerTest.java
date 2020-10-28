@@ -113,8 +113,22 @@ public class SpaceWeatherIWXXMSerializerTest {
     }
 
     @Test
-    public void parse_and_serialize_test() throws Exception {
-        final String input = getInput("spacewx-A2-3.xml");
+    public void parse_and_serialize_test_A2_3() throws Exception {
+        testParseAndSerialize("spacewx-A2-3.xml");
+    }
+
+    @Test
+    public void parse_and_serialize_test_A2_4() throws Exception {
+        testParseAndSerialize("spacewx-A2-4.xml");
+    }
+
+    @Test
+    public void parse_and_serialize_test_A2_5() throws Exception {
+        testParseAndSerialize("spacewx-A2-5.xml");
+    }
+
+    private void testParseAndSerialize(final String fileName) throws IOException, SAXException {
+        final String input = getInput(fileName);
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
