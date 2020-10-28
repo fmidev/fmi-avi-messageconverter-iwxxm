@@ -319,6 +319,13 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
                     airspaceVolume.setUpperLimit(nm.build());
                     airspaceVolume.setUpperLimitReference(volume.get().getUpperLimitReference().getValue());
                 }
+                if (volume.get().getLowerLimit() != null) {
+                    final NumericMeasureImpl.Builder nm = NumericMeasureImpl.builder()
+                            .setValue(Double.parseDouble(volume.get().getLowerLimit().getValue()))
+                            .setUom(volume.get().getLowerLimit().getUom());
+                    airspaceVolume.setLowerLimit(nm.build());
+                    airspaceVolume.setLowerLimitReference(volume.get().getLowerLimitReference().getValue());
+                }
             }
         }
 

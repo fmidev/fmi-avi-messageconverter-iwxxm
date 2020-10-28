@@ -343,6 +343,18 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             valDistanceVerticalType.setValue(volume.getUpperLimit().get().getValue().toString());
             airspaceVolumeType.setUpperLimit(valDistanceVerticalType);
         }
+
+        if (volume.getLowerLimit().isPresent()) {
+            final CodeVerticalReferenceType codeVerticalReferenceType = create(CodeVerticalReferenceType.class);
+            volume.getLowerLimitReference().ifPresent(codeVerticalReferenceType::setValue);
+            airspaceVolumeType.setLowerLimitReference(codeVerticalReferenceType);
+
+            final ValDistanceVerticalType valDistanceVerticalType = create(ValDistanceVerticalType.class);
+            valDistanceVerticalType.setUom(volume.getLowerLimit().get().getUom());
+            valDistanceVerticalType.setValue(volume.getLowerLimit().get().getValue().toString());
+            airspaceVolumeType.setLowerLimit(valDistanceVerticalType);
+        }
+
         prop.setAirspaceVolume(airspaceVolumeType);
     }
 

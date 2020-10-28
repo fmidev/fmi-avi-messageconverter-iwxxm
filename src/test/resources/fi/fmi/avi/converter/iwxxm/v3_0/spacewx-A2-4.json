@@ -50,7 +50,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
@@ -83,7 +88,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
@@ -124,7 +134,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
@@ -157,7 +172,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
@@ -198,7 +218,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
@@ -231,7 +256,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
@@ -272,7 +302,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
@@ -305,7 +340,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
