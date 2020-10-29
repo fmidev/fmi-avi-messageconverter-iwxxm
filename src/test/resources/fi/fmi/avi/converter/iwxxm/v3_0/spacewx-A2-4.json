@@ -19,7 +19,7 @@
       "time": {
         "completeTime": "2016-11-08T01:00:00Z"
       },
-      "analysisType": "FORECAST",
+      "analysisType": "OBSERVATION",
       "regions": [
         {
           "airSpaceVolume": {
@@ -46,16 +46,11 @@
                 90
               ]
             },
-            "upperLimit": {
-              "value": 350,
-              "uom": "FL"
-            },
-            "upperLimitReference": "STD",
             "lowerLimit": {
-              "value": 250,
+              "value": 340,
               "uom": "FL"
             },
-            "lowerLimitReference": "SFC"
+            "lowerLimitReference": "STD"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
@@ -130,16 +125,11 @@
                 90
               ]
             },
-            "upperLimit": {
-              "value": 350,
-              "uom": "FL"
-            },
-            "upperLimitReference": "STD",
             "lowerLimit": {
-              "value": 250,
+              "value": 340,
               "uom": "FL"
             },
-            "lowerLimitReference": "SFC"
+            "lowerLimitReference": "STD"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
@@ -214,16 +204,11 @@
                 90
               ]
             },
-            "upperLimit": {
-              "value": 350,
-              "uom": "FL"
-            },
-            "upperLimitReference": "STD",
             "lowerLimit": {
-              "value": 250,
+              "value": 340,
               "uom": "FL"
             },
-            "lowerLimitReference": "SFC"
+            "lowerLimitReference": "STD"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
@@ -298,16 +283,11 @@
                 90
               ]
             },
-            "upperLimit": {
-              "value": 350,
-              "uom": "FL"
-            },
-            "upperLimitReference": "STD",
             "lowerLimit": {
-              "value": 250,
+              "value": 340,
               "uom": "FL"
             },
-            "lowerLimitReference": "SFC"
+            "lowerLimitReference": "STD"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },

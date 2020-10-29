@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -135,6 +136,7 @@ public class SpaceWeatherIWXXMSerializerTest {
 
         final ConversionResult<String> message = serialize(result.getConvertedMessage().get());
 
+        assertEquals(Collections.emptyList(), message.getConversionIssues());
         assertEquals(ConversionResult.Status.SUCCESS, message.getStatus());
         assertTrue(message.getConvertedMessage().isPresent());
         assertNotNull(message.getConvertedMessage().get());
