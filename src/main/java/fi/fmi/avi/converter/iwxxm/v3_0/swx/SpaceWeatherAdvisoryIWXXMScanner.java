@@ -314,9 +314,13 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
                 final Optional<SurfaceType> surface = resolveProperty(volume.get().getHorizontalProjection(), SurfaceType.class, refCtx);
                 surface.ifPresent(s -> airspaceVolume.setHorizontalProjection(getSurfaceGeometry(s, issueList, refCtx)));
                 airspaceVolume.setNullableUpperLimit(toNumericMeasure(volume.get().getUpperLimit(), "upperLimit", issueList));
-                airspaceVolume.setNullableUpperLimitReference(volume.get().getUpperLimitReference().getValue());
+                if (volume.get().getUpperLimitReference() != null) {
+                    airspaceVolume.setNullableUpperLimitReference(volume.get().getUpperLimitReference().getValue());
+                }
                 airspaceVolume.setNullableLowerLimit(toNumericMeasure(volume.get().getLowerLimit(), "lowerLimit", issueList));
-                airspaceVolume.setNullableLowerLimitReference(volume.get().getLowerLimitReference().getValue());
+                if (volume.get().getLowerLimitReference() != null) {
+                    airspaceVolume.setNullableLowerLimitReference(volume.get().getLowerLimitReference().getValue());
+                }
             }
         }
 
