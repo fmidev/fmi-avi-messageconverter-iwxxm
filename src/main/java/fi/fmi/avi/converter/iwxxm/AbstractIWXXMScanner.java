@@ -291,4 +291,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         return CRSMappers.directPositionType().mergeToBuilder(source, builder);
     }
 
+    protected static <T> T nullToDefault(final T nullableValue, final T defaultValue) {
+        return nullableValue == null ? defaultValue : nullableValue;
+    }
 }

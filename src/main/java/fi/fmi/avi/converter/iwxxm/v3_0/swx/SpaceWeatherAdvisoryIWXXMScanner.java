@@ -21,6 +21,7 @@ import aero.aixm511.SurfaceType;
 import aero.aixm511.UnitTimeSlicePropertyType;
 import aero.aixm511.UnitTimeSliceType;
 import aero.aixm511.UnitType;
+import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
@@ -312,13 +313,10 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
             if (volume.isPresent()) {
                 final Optional<SurfaceType> surface = resolveProperty(volume.get().getHorizontalProjection(), SurfaceType.class, refCtx);
                 surface.ifPresent(s -> airspaceVolume.setHorizontalProjection(getSurfaceGeometry(s, issueList, refCtx)));
-                if (volume.get().getUpperLimit() != null) {
-                    final NumericMeasureImpl.Builder nm = NumericMeasureImpl.builder()
-                            .setValue(Double.parseDouble(volume.get().getUpperLimit().getValue()))
-                            .setUom(volume.get().getUpperLimit().getUom());
-                    airspaceVolume.setUpperLimit(nm.build());
-                    airspaceVolume.setUpperLimitReference(volume.get().getUpperLimitReference().getValue());
-                }
+                airspaceVolume.setNullableUpperLimit(toNumericMeasure(volume.get().getUpperLimit(), "upperLimit", issueList));
+                airspaceVolume.setNullableUpperLimitReference(volume.get().getUpperLimitReference().getValue());
+                airspaceVolume.setNullableLowerLimit(toNumericMeasure(volume.get().getLowerLimit(), "lowerLimit", issueList));
+                airspaceVolume.setNullableLowerLimitReference(volume.get().getLowerLimitReference().getValue());
             }
         }
 
@@ -331,6 +329,27 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
         properties.set(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, airspaceVolume.build());
 
         return properties;
+    }
+
+    private static NumericMeasureImpl toNumericMeasure(final ValDistanceVerticalType valDistanceVerticalType, final String elementName,
+            final IssueList issueList) {
+        if (valDistanceVerticalType == null) {
+            return null;
+        }
+        final String value = valDistanceVerticalType.getValue();
+        if (value == null) {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, elementName + " is missing value"));
+            return null;
+        }
+        final String uom = valDistanceVerticalType.getUom();
+        if (uom == null) {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, elementName + " is missing uom"));
+        }
+
+        return NumericMeasureImpl.builder()//
+                .setValue(Double.parseDouble(value))//
+                .setUom(nullToDefault(uom, ""))//
+                .build();
     }
 
 }
