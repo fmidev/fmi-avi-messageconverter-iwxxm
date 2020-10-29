@@ -53,6 +53,7 @@ import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.Geometry;
+import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PolygonGeometry;
 import fi.fmi.avi.model.swx.AirspaceVolume;
@@ -333,29 +334,35 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             airspaceVolumeType.setHorizontalProjection(surfaceProperty);
         }
 
-        if (volume.getUpperLimit().isPresent()) {
-            final CodeVerticalReferenceType codeVerticalReferenceType = create(CodeVerticalReferenceType.class);
-            volume.getUpperLimitReference().ifPresent(codeVerticalReferenceType::setValue);
-            airspaceVolumeType.setUpperLimitReference(codeVerticalReferenceType);
-
-            final ValDistanceVerticalType valDistanceVerticalType = create(ValDistanceVerticalType.class);
-            valDistanceVerticalType.setUom(volume.getUpperLimit().get().getUom());
-            valDistanceVerticalType.setValue(volume.getUpperLimit().get().getValue().toString());
-            airspaceVolumeType.setUpperLimit(valDistanceVerticalType);
-        }
-
         if (volume.getLowerLimit().isPresent()) {
+            // TODO: Once xsi:nil can be set, setLowerLimit can be moved outside presence test
+            airspaceVolumeType.setLowerLimit(toValDistanceVerticalType(volume.getLowerLimit().orElse(null)));
             final CodeVerticalReferenceType codeVerticalReferenceType = create(CodeVerticalReferenceType.class);
             volume.getLowerLimitReference().ifPresent(codeVerticalReferenceType::setValue);
             airspaceVolumeType.setLowerLimitReference(codeVerticalReferenceType);
-
-            final ValDistanceVerticalType valDistanceVerticalType = create(ValDistanceVerticalType.class);
-            valDistanceVerticalType.setUom(volume.getLowerLimit().get().getUom());
-            valDistanceVerticalType.setValue(volume.getLowerLimit().get().getValue().toString());
-            airspaceVolumeType.setLowerLimit(valDistanceVerticalType);
+        }
+        if (volume.getUpperLimit().isPresent()) {
+            // TODO: Once xsi:nil can be set, setLowerLimit can be moved outside presence test
+            airspaceVolumeType.setUpperLimit(toValDistanceVerticalType(volume.getUpperLimit().orElse(null)));
+            final CodeVerticalReferenceType codeVerticalReferenceType = create(CodeVerticalReferenceType.class);
+            volume.getUpperLimitReference().ifPresent(codeVerticalReferenceType::setValue);
+            airspaceVolumeType.setUpperLimitReference(codeVerticalReferenceType);
         }
 
         prop.setAirspaceVolume(airspaceVolumeType);
+    }
+
+    private ValDistanceVerticalType toValDistanceVerticalType(final NumericMeasure nullableVerticalDistance) {
+        final ValDistanceVerticalType valDistanceVerticalType = create(ValDistanceVerticalType.class);
+        if (nullableVerticalDistance == null) {
+            // TODO: how to set xsi:nil="true"?
+            valDistanceVerticalType.setNilReason("unknown");
+            valDistanceVerticalType.setUom("OTHER");
+        } else {
+            valDistanceVerticalType.setUom(nullableVerticalDistance.getUom());
+            valDistanceVerticalType.setValue(nullableVerticalDistance.getValue().toString());
+        }
+        return valDistanceVerticalType;
     }
 
     private void getSurfaceProperty(final SurfacePropertyType surfacePropertyType, final AirspaceVolume volume) {
