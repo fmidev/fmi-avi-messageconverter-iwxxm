@@ -237,7 +237,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                                     if (segments.size() > 0) {
                                         if (segments.size() > 1) {
                                             issueList.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
-                                                    "More than one curve segment was found, " + "only the first one parsed");
+                                                    "More than one curve segment was found, only the first one parsed");
                                         }
                                         final JAXBElement<? extends AbstractCurveSegmentType> firstSegment = segments.get(0);
                                         if (CircleByCenterPointType.class.isAssignableFrom(firstSegment.getDeclaredType())) {
