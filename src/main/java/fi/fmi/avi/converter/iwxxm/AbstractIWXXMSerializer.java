@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBElement;
@@ -39,8 +40,6 @@ import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.SurfacePatchArrayPropertyType;
 import net.opengis.gml32.TimePrimitivePropertyType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -65,6 +64,7 @@ import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.CoordinateReferenceSystem;
 import fi.fmi.avi.model.Geometry;
+import fi.fmi.avi.model.MultiPolygonGeometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PointGeometry;
 import fi.fmi.avi.model.PolygonGeometry;
@@ -78,7 +78,6 @@ import icao.iwxxm21.LengthWithNilReasonType;
  */
 public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOrCollection, S> extends IWXXMConverterBase
         implements AviMessageSpecificConverter<T, S> {
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractIWXXMSerializer.class);
 
     protected static SurfacePropertyType createSurface(final Geometry geom, final String id) throws IllegalArgumentException {
         SurfacePropertyType retval = null;
@@ -87,7 +86,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
                 spt.setSurface(createAndWrap(SurfaceType.class, (sft) -> {
                     geom.getCrs().ifPresent(crs -> setCrsToType(sft, crs));
                     sft.setId(id);
-                    JAXBElement<SurfacePatchArrayPropertyType> spapt = null;
+                    JAXBElement<SurfacePatchArrayPropertyType> spapt;
                     if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass()) || PointGeometry.class.isAssignableFrom(geom.getClass())) {
                         final List<Double> centerPointCoords;
                         final LengthType radius;
@@ -137,8 +136,22 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
                                 }));
                             }));
                         });
+                        spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", (_spapt) -> _spapt.getAbstractSurfacePatch().add(ppt));
+                    } else if (MultiPolygonGeometry.class.isAssignableFrom(geom.getClass())) {
+                        final MultiPolygonGeometry multiPolygon = (MultiPolygonGeometry) geom;
+                        final List<JAXBElement<PolygonPatchType>> ppt = multiPolygon.getExteriorRingPositions().stream()//
+                                .map(polygon -> createAndWrap(PolygonPatchType.class, (poly) -> {
+                                    poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
+                                        arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
+                                            final DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
+                                                dpl.getValue().addAll(polygon);
+                                            });
+                                            lrt.setPosList(dplt);
+                                        }));
+                                    }));
+                                })).collect(Collectors.toList());
                         spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", (_spapt) -> {
-                            _spapt.getAbstractSurfacePatch().add(ppt);
+                            _spapt.getAbstractSurfacePatch().addAll(ppt);
                         });
                     } else {
                         throw new IllegalArgumentException("Unable to create a Surface from geometry of type " + geom.getClass().getCanonicalName());
