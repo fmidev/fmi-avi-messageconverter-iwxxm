@@ -67,7 +67,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             if (slice.isPresent()) {
                 final CodeAirportHeliportDesignatorType designator = slice.get().getDesignator();
                 if (designator == null || designator.getValue() == null) {
-                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No designator for " + "aerodrome"));
+                    retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No designator for aerodrome"));
                 } else {
                     aerodromeBuilder.setDesignator(designator.getValue());
                 }
