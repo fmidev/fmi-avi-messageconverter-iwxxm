@@ -35,6 +35,7 @@ import fi.fmi.avi.converter.iwxxm.DOMParsingTestBase;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.CircleByCenterPoint;
+import fi.fmi.avi.model.MultiPolygonGeometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PolygonGeometry;
 import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
@@ -250,6 +251,37 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
             assertTrue(String.format("Expected message containing <%s>, but was: <%s>", illegalIndeterminatePosition, errorMessage),
                     errorMessage.contains(illegalIndeterminatePosition.toUpperCase(Locale.US)));
         }
+    }
+
+    @Test
+    public void testParser_multipolygon() throws Exception {
+        final String input = getInput("spacewx-multipolygon.xml");
+
+        final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+                ConversionHints.EMPTY);
+        assertTrue(result.getConvertedMessage().isPresent());
+
+        final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
+        assertEquals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION, swx.getAnalyses().get(0).getAnalysisType());
+        assertEquals(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/RADIATION_SEV"), swx.getPhenomena().get(0));
+
+        assertContainsNoEmptyRegions(swx.getAnalyses());
+        final SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
+        assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/MSH"),
+                region.getLocationIndicator().get());
+
+        final AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
+        assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
+        final MultiPolygonGeometry geometry = (MultiPolygonGeometry) airspaceVolume.getHorizontalProjection().get();
+        assertEquals(Optional.of(CoordinateReferenceSystemImpl.wgs84()), CoordinateReferenceSystemImpl.immutableCopyOf(geometry.getCrs()));
+        assertEquals(geometry.getExteriorRingPositions().size(), 2);
+        assertEquals(Arrays.asList(-30.0, 150.0, -60.0, 150.0, -60.0, 180.0, -30.0, 180.0, -30.0, 150.0), geometry.getExteriorRingPositions().get(0));
+        assertEquals(Arrays.asList(-30.0, -180.0, -60.0, -180.0, -60.0, -30.0, -30.0, -30.0, -30.0, -180.0), geometry.getExteriorRingPositions().get(1));
+        assertFalse(airspaceVolume.getUpperLimitReference().isPresent());
+        assertFalse(airspaceVolume.getUpperLimit().isPresent());
+
+        assertEquals(NextAdvisory.Type.NEXT_ADVISORY_BY, swx.getNextAdvisory().getTimeSpecifier());
+        assertTrue("getNextAdvisory().getTime()", swx.getNextAdvisory().getTime().isPresent());
     }
 
     private void printIssues(final List<ConversionIssue> issues) {

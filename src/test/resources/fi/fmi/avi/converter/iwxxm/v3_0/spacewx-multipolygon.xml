@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:SpaceWeatherAdvisory xmlns:iwxxm="http://icao.int/iwxxm/3.0"
+  xmlns:gml="http://www.opengis.net/gml/3.2"
+  xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  gml:id="uuid.179c4bdf-4937-4b58-be4a-7393804a2fe4"
+  permissibleUsage="NON-OPERATIONAL"
+  permissibleUsageReason="TEST"
+  reportStatus="NORMAL"
+  xsi:schemaLocation="http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd">
+  <iwxxm:issueTime>
+    <gml:TimeInstant gml:id="uuid.5c0bc3ed-305f-4425-a567-3fb111220e95">
+      <gml:timePosition>2019-01-28T12:00:00Z</gml:timePosition>
+    </gml:TimeInstant>
+  </iwxxm:issueTime>
+  <iwxxm:issuingSpaceWeatherCentre>
+    <aixm:Unit gml:id="uuid.fb73e0fb-48b7-4b95-9f60-3e9e58e43d92">
+      <aixm:timeSlice>
+        <aixm:UnitTimeSlice gml:id="uuid.e37fc956-cf89-4fb5-bec1-c18e487b517a">
+          <gml:validTime />
+          <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+          <aixm:name>PECASUS</aixm:name>
+          <aixm:designator>SWXC</aixm:designator>
+        </aixm:UnitTimeSlice>
+      </aixm:timeSlice>
+    </aixm:Unit>
+  </iwxxm:issuingSpaceWeatherCentre>
+  <iwxxm:advisoryNumber>2019/1</iwxxm:advisoryNumber>
+  <iwxxm:phenomenon xlink:href="http://codes.wmo.int/49-2/SpaceWxPhenomena/RADIATION_SEV" />
+  <iwxxm:analysis>
+    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.47a25ac3-0933-4734-807f-d924e387f5b5"
+      timeIndicator="OBSERVATION">
+      <iwxxm:phenomenonTime>
+        <gml:TimeInstant gml:id="uuid.9df543c0-6b0c-43d4-a6cb-668be9380b4b">
+          <gml:timePosition>2019-02-08T12:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:phenomenonTime>
+      <iwxxm:region>
+        <iwxxm:SpaceWeatherRegion gml:id="uuid.3f3f78a6-6116-4dfe-a1d5-7ee0a3d66287">
+          <iwxxm:location>
+            <aixm:AirspaceVolume gml:id="uuid.88f22da9-7f5e-48d9-b800-d2d348840de4">
+              <aixm:lowerLimit uom="FL">370.0</aixm:lowerLimit>
+              <aixm:lowerLimitReference>STD</aixm:lowerLimitReference>
+              <aixm:horizontalProjection>
+                <aixm:Surface axisLabels="Lat Lon"
+                  gml:id="uuid.7f72dd44-cd92-4c9c-b0e5-b0388568e90c"
+                  srsDimension="2"
+                  srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                  <gml:patches>
+                    <gml:PolygonPatch>
+                      <gml:exterior>
+                        <gml:LinearRing>
+                          <gml:posList>-30.0 150.0 -60.0 150.0 -60.0 180.0 -30.0 180.0 -30.0 150.0</gml:posList>
+                        </gml:LinearRing>
+                      </gml:exterior>
+                    </gml:PolygonPatch>
+                    <gml:PolygonPatch>
+                      <gml:exterior>
+                        <gml:LinearRing>
+                          <gml:posList>-30.0 -180.0 -60.0 -180.0 -60.0 -30.0 -30.0 -30.0 -30.0 -180.0</gml:posList>
+                        </gml:LinearRing>
+                      </gml:exterior>
+                    </gml:PolygonPatch>
+                  </gml:patches>
+                </aixm:Surface>
+              </aixm:horizontalProjection>
+            </aixm:AirspaceVolume>
+          </iwxxm:location>
+          <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/MSH" />
+        </iwxxm:SpaceWeatherRegion>
+      </iwxxm:region>
+    </iwxxm:SpaceWeatherAnalysis>
+  </iwxxm:analysis>
+  <iwxxm:analysis>
+    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.c7079791-9116-43ba-89de-dc4f4ef724ef"
+      timeIndicator="FORECAST">
+      <iwxxm:phenomenonTime>
+        <gml:TimeInstant gml:id="uuid.f30e025f-57ac-4609-8b5a-dc4b242ecea8">
+          <gml:timePosition>2019-02-08T18:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:phenomenonTime>
+      <iwxxm:region nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance" />
+    </iwxxm:SpaceWeatherAnalysis>
+  </iwxxm:analysis>
+  <iwxxm:analysis>
+    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.9a0b114f-bc5a-448b-afec-6c13e775a509"
+      timeIndicator="FORECAST">
+      <iwxxm:phenomenonTime>
+        <gml:TimeInstant gml:id="uuid.a2bd4648-f4da-48f9-b522-1cabc3f25151">
+          <gml:timePosition>2019-02-09T00:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:phenomenonTime>
+      <iwxxm:region nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance" />
+    </iwxxm:SpaceWeatherAnalysis>
+  </iwxxm:analysis>
+  <iwxxm:analysis>
+    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.8557d6bc-b311-4d44-81ff-6b6e1b1cdafb"
+      timeIndicator="FORECAST">
+      <iwxxm:phenomenonTime>
+        <gml:TimeInstant gml:id="uuid.9be2f41c-fb54-4aeb-9499-d5db84b80798">
+          <gml:timePosition>2019-02-09T06:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:phenomenonTime>
+      <iwxxm:region nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance" />
+    </iwxxm:SpaceWeatherAnalysis>
+  </iwxxm:analysis>
+  <iwxxm:analysis>
+    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.b199258f-a5b0-4cd3-99ce-30883003bf6a"
+      timeIndicator="FORECAST">
+      <iwxxm:phenomenonTime>
+        <gml:TimeInstant gml:id="uuid.93055905-180e-4ee2-95d5-d5038cc663fd">
+          <gml:timePosition>2019-02-09T12:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:phenomenonTime>
+      <iwxxm:region nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance" />
+    </iwxxm:SpaceWeatherAnalysis>
+  </iwxxm:analysis>
+  <iwxxm:remarks>TEST TEST TEST TEST THIS IS A TEST MESSAGE FOR TECHNICAL TEST. SEE WWW.PECASUS.ORG</iwxxm:remarks>
+  <iwxxm:nextAdvisoryTime>
+    <gml:TimeInstant gml:id="uuid.ff61e1eb-e089-4afa-9e26-aed8b3beb89f">
+      <gml:timePosition indeterminatePosition="before">2016-11-08T07:00:00Z</gml:timePosition>
+    </gml:TimeInstant>
+  </iwxxm:nextAdvisoryTime>
+</iwxxm:SpaceWeatherAdvisory>

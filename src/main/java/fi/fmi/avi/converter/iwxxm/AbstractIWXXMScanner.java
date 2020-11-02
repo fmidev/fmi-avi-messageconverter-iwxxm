@@ -36,12 +36,14 @@ import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.model.Aerodrome;
+import fi.fmi.avi.model.CoordinateReferenceSystem;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.CircleByCenterPointImpl;
 import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
 import fi.fmi.avi.model.immutable.ElevatedPointImpl;
+import fi.fmi.avi.model.immutable.MultiPolygonGeometryImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.PolygonGeometryImpl;
 
@@ -194,7 +196,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         if (surface.getPatches().isNil()) {
             return retval;
         }
-        final List<JAXBElement<? extends AbstractSurfacePatchType>> abstractSurfacePatch = surface.getPatches().getValue().getAbstractSurfacePatch();
+        final List<JAXBElement<? extends AbstractSurfacePatchType>> abstractSurfacePatches = surface.getPatches().getValue().getAbstractSurfacePatch();
         CoordinateReferenceSystemImpl crs;
         try {
             crs = mergeToBuilder(surface, CoordinateReferenceSystemImpl.builder()).build();
@@ -203,80 +205,15 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             crs = null;
         }
 
-        if (abstractSurfacePatch == null || abstractSurfacePatch.size() == 0) {
+        if (abstractSurfacePatches == null || abstractSurfacePatches.size() == 0) {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No surface patch geometry was found."));
             return retval;
+        } else if (abstractSurfacePatches.size() == 1) {
+            retval = getSurfacePatches(abstractSurfacePatches.get(0), crs, issueList);
         } else {
-            for (JAXBElement<? extends AbstractSurfacePatchType> patch : abstractSurfacePatch) {
-                if (PolygonPatchType.class.isAssignableFrom(patch.getDeclaredType())) {
-                    final PolygonPatchType polyPatch = (PolygonPatchType) patch.getValue();
-                    if (polyPatch.getExterior() == null || polyPatch.getExterior().getAbstractRing() == null) {
-                        issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No exterior provided for PolygonPatch"));
-                    } else {
-                        final JAXBElement<? extends AbstractRingType> abstractRing = polyPatch.getExterior().getAbstractRing();
-                        if (LinearRingType.class.isAssignableFrom(abstractRing.getDeclaredType())) {
-                            final LinearRingType linearRing = (LinearRingType) abstractRing.getValue();
-                            final PolygonGeometryImpl.Builder polygon = PolygonGeometryImpl.builder();
-                            polygon.setNullableCrs(crs);
-                            polygon.addAllExteriorRingPositions(linearRing.getPosList().getValue());
-                            retval = Optional.of(polygon.build());
-                        } else if (RingType.class.isAssignableFrom(abstractRing.getDeclaredType())) {
-                            final RingType ring = (RingType) abstractRing.getValue();
-                            final List<CurvePropertyType> members = ring.getCurveMember();
-                            if (members.size() > 0) {
-                                if (members.size() > 1) {
-                                    issueList.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
-                                            "More than one curve member was found, only the first one parsed");
-                                }
-                                final CurvePropertyType cProp = members.get(0);
-                                final JAXBElement<? extends AbstractCurveType> firstMember = cProp.getAbstractCurve();
-                                if (CurveType.class.isAssignableFrom(firstMember.getDeclaredType())) {
-                                    final CurveType curve = (CurveType) firstMember.getValue();
-                                    final CurveSegmentArrayPropertyType segmentProp = curve.getSegments();
-                                    final List<JAXBElement<? extends AbstractCurveSegmentType>> segments = segmentProp.getAbstractCurveSegment();
-                                    if (segments.size() > 0) {
-                                        if (segments.size() > 1) {
-                                            issueList.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
-                                                    "More than one curve segment was found, only the first one parsed");
-                                        }
-                                        final JAXBElement<? extends AbstractCurveSegmentType> firstSegment = segments.get(0);
-                                        if (CircleByCenterPointType.class.isAssignableFrom(firstSegment.getDeclaredType())) {
-                                            final CircleByCenterPointType cbct = (CircleByCenterPointType) firstSegment.getValue();
-
-                                            final NumericMeasureImpl.Builder radius = NumericMeasureImpl.builder()//
-                                                    .setUom(cbct.getRadius().getUom())//
-                                                    .setValue(cbct.getRadius().getValue());
-
-                                            final CircleByCenterPointImpl.Builder circleRadius = CircleByCenterPointImpl.builder()//
-                                                    .addAllCenterPointCoordinates(cbct.getPos().getValue())//
-                                                    .setRadius(radius.build())//
-                                                    .setNullableCrs(crs);
-                                            retval = Optional.of(circleRadius.build());
-                                        } else {
-                                            issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER,
-                                                    "Unsupported Curve segment type " + firstSegment.getDeclaredType().getCanonicalName()));
-                                        }
-                                    } else {
-                                        issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No segments for Curve"));
-                                    }
-                                } else {
-                                    issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER,
-                                            "Unsupported Curve type " + firstMember.getDeclaredType().getCanonicalName()));
-                                }
-                            } else {
-                                issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No curve members for Ring"));
-                            }
-                        } else {
-                            issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER,
-                                    "Unsupported AbstractRing type " + abstractRing.getDeclaredType().getCanonicalName()));
-                        }
-                    }
-                } else {
-                    issueList.add(
-                            new ConversionIssue(ConversionIssue.Type.OTHER, "Unsupported surface patch type " + patch.getDeclaredType().getCanonicalName()));
-                }
-            }
+            retval = getMultiPolygonSurfacePatches(abstractSurfacePatches, crs, issueList);
         }
+
         return retval;
     }
 
@@ -293,4 +230,107 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
     protected static <T> T nullToDefault(final T nullableValue, final T defaultValue) {
         return nullableValue == null ? defaultValue : nullableValue;
     }
+
+    private static Optional<Geometry> getSurfacePatches(final JAXBElement<? extends AbstractSurfacePatchType> patch, final CoordinateReferenceSystem crs,
+            final IssueList issueList) {
+        Optional<Geometry> retval = Optional.empty();
+        if (PolygonPatchType.class.isAssignableFrom(patch.getDeclaredType())) {
+            final PolygonPatchType polyPatch = (PolygonPatchType) patch.getValue();
+            if (polyPatch.getExterior() == null || polyPatch.getExterior().getAbstractRing() == null) {
+                issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No exterior provided for PolygonPatch"));
+            } else {
+                final JAXBElement<? extends AbstractRingType> abstractRing = polyPatch.getExterior().getAbstractRing();
+                if (LinearRingType.class.isAssignableFrom(abstractRing.getDeclaredType())) {
+                    final LinearRingType linearRing = (LinearRingType) abstractRing.getValue();
+                    final PolygonGeometryImpl.Builder polygon = PolygonGeometryImpl.builder();
+                    polygon.setNullableCrs(crs);
+                    polygon.addAllExteriorRingPositions(linearRing.getPosList().getValue());
+                    retval = Optional.of(polygon.build());
+                } else if (RingType.class.isAssignableFrom(abstractRing.getDeclaredType())) {
+                    final RingType ring = (RingType) abstractRing.getValue();
+                    final List<CurvePropertyType> members = ring.getCurveMember();
+                    if (members.size() > 0) {
+                        if (members.size() > 1) {
+                            issueList.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
+                                    "More than one curve member was found, only the first one parsed");
+                        }
+                        final CurvePropertyType cProp = members.get(0);
+                        final JAXBElement<? extends AbstractCurveType> firstMember = cProp.getAbstractCurve();
+                        if (CurveType.class.isAssignableFrom(firstMember.getDeclaredType())) {
+                            final CurveType curve = (CurveType) firstMember.getValue();
+                            final CurveSegmentArrayPropertyType segmentProp = curve.getSegments();
+                            final List<JAXBElement<? extends AbstractCurveSegmentType>> segments = segmentProp.getAbstractCurveSegment();
+                            if (segments.size() > 0) {
+                                if (segments.size() > 1) {
+                                    issueList.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
+                                            "More than one curve segment was found, only the first one parsed");
+                                }
+                                final JAXBElement<? extends AbstractCurveSegmentType> firstSegment = segments.get(0);
+                                if (CircleByCenterPointType.class.isAssignableFrom(firstSegment.getDeclaredType())) {
+                                    final CircleByCenterPointType cbct = (CircleByCenterPointType) firstSegment.getValue();
+
+                                    final NumericMeasureImpl.Builder radius = NumericMeasureImpl.builder()//
+                                            .setUom(cbct.getRadius().getUom())//
+                                            .setValue(cbct.getRadius().getValue());
+
+                                    final CircleByCenterPointImpl.Builder circleRadius = CircleByCenterPointImpl.builder()//
+                                            .addAllCenterPointCoordinates(cbct.getPos().getValue())//
+                                            .setRadius(radius.build())//
+                                            .setNullableCrs(crs);
+                                    retval = Optional.of(circleRadius.build());
+                                } else {
+                                    issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER,
+                                            "Unsupported Curve segment type " + firstSegment.getDeclaredType().getCanonicalName()));
+                                }
+                            } else {
+                                issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No segments for Curve"));
+                            }
+                        } else {
+                            issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER,
+                                    "Unsupported Curve type " + firstMember.getDeclaredType().getCanonicalName()));
+                        }
+                    } else {
+                        issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No curve members for Ring"));
+                    }
+                } else {
+                    issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER,
+                            "Unsupported AbstractRing type " + abstractRing.getDeclaredType().getCanonicalName()));
+                }
+            }
+        } else {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER, "Unsupported surface patch type " + patch.getDeclaredType().getCanonicalName()));
+        }
+        return retval;
+    }
+
+    private static Optional<Geometry> getMultiPolygonSurfacePatches(final List<JAXBElement<? extends AbstractSurfacePatchType>> abstractSurfacePatches,
+            final CoordinateReferenceSystem crs, final IssueList issueList) {
+        final MultiPolygonGeometryImpl.Builder multiPolygonBuilder = MultiPolygonGeometryImpl.builder();
+        multiPolygonBuilder.setCrs(crs);
+        for (final JAXBElement<? extends AbstractSurfacePatchType> patch : abstractSurfacePatches) {
+            if (PolygonPatchType.class.isAssignableFrom(patch.getDeclaredType())) {
+                final PolygonPatchType polyPatch = (PolygonPatchType) patch.getValue();
+                if (polyPatch.getExterior() == null || polyPatch.getExterior().getAbstractRing() == null) {
+                    issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No exterior provided for PolygonPatch"));
+                } else {
+                    final JAXBElement<? extends AbstractRingType> abstractRing = polyPatch.getExterior().getAbstractRing();
+                    if (LinearRingType.class.isAssignableFrom(abstractRing.getDeclaredType())) {
+                        final LinearRingType linearRing = (LinearRingType) abstractRing.getValue();
+                        multiPolygonBuilder.addExteriorRingPositions(linearRing.getPosList().getValue());
+                    } else {
+                        issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER,
+                                "Unsupported AbstractRing type in multipolygon geometry" + abstractRing.getDeclaredType().getCanonicalName()));
+                    }
+                }
+            } else {
+                issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER,
+                        "Unsupported surface patch type in multipolygon geometry" + patch.getDeclaredType().getCanonicalName()));
+            }
+        }
+        if (multiPolygonBuilder.getExteriorRingPositions().isEmpty()) {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to parse any surface patches into a multipolygon geometry"));
+        }
+        return Optional.of(multiPolygonBuilder.build());
+    }
+
 }
