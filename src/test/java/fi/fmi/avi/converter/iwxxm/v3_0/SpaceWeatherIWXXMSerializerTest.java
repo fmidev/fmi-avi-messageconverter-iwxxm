@@ -114,6 +114,17 @@ public class SpaceWeatherIWXXMSerializerTest {
     }
 
     @Test
+    public void serialize_spacewx_multipolygon() throws Exception {
+        final String input = getInput("spacewx-multipolygon.json");
+        final ConversionResult<String> result = serialize(input);
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+        assertEqualsXML(getInput("spacewx-multipolygon.xml"), result.getConvertedMessage().get());
+    }
+
+    @Test
     public void parse_and_serialize_test_A2_3() throws Exception {
         testParseAndSerialize("spacewx-A2-3.xml");
     }
@@ -126,6 +137,11 @@ public class SpaceWeatherIWXXMSerializerTest {
     @Test
     public void parse_and_serialize_test_A2_5() throws Exception {
         testParseAndSerialize("spacewx-A2-5.xml");
+    }
+
+    @Test
+    public void parse_and_serialize_test_multipolygon() throws Exception {
+        testParseAndSerialize("spacewx-multipolygon.xml");
     }
 
     private void testParseAndSerialize(final String fileName) throws IOException, SAXException {

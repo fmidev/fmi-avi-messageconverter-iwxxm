@@ -1,0 +1,126 @@
+{
+  "issueTime": {
+    "completeTime": "2019-01-28T12:00:00Z"
+  },
+  "issuingCenter": {
+    "designator": "SWXC",
+    "name": "PECASUS"
+  },
+  "advisoryNumber": {
+    "year": 2019,
+    "serialNumber": 1
+  },
+  "phenomena": [
+    "RADIATION_SEV"
+  ],
+  "analyses": [
+    {
+      "time": {
+        "completeTime": "2019-02-08T12:00:00Z"
+      },
+      "analysisType": "OBSERVATION",
+      "regions": [
+        {
+          "airSpaceVolume": {
+            "horizontalProjection": {
+              "type": "MultiPolygon",
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
+              "exteriorRingPositions": [
+                [
+                  -30.0,
+                  150.0,
+                  -60.0,
+                  150.0,
+                  -60.0,
+                  180.0,
+                  -30.0,
+                  180.0,
+                  -30.0,
+                  150.0
+                ],
+                [
+                  -30.0,
+                  -180.0,
+                  -60.0,
+                  -180.0,
+                  -60.0,
+                  -30.0,
+                  -30.0,
+                  -30.0,
+                  -30.0,
+                  -180.0
+                ]
+              ]
+            },
+            "lowerLimit": {
+              "value": 370.0,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "STD"
+          },
+          "locationIndicator": "MIDDLE_LATITUDES_SOUTHERN_HEMISPHERE"
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2019-02-08T18:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
+    },
+    {
+      "time": {
+        "completeTime": "2019-02-09T00:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
+    },
+    {
+      "time": {
+        "completeTime": "2019-02-09T06:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
+    },
+    {
+      "time": {
+        "completeTime": "2019-02-09T12:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
+    }
+  ],
+  "nextAdvisory": {
+    "time": {
+      "completeTime": "2016-11-08T07:00:00Z"
+    },
+    "timeSpecifier": "NEXT_ADVISORY_BY"
+  },
+  "remarks": [
+    "TEST",
+    "TEST",
+    "TEST",
+    "TEST",
+    "THIS",
+    "IS",
+    "A",
+    "TEST",
+    "MESSAGE",
+    "FOR",
+    "TECHNICAL",
+    "TEST.",
+    "SEE",
+    "WWW.PECASUS.ORG"
+  ],
+  "permissibleUsage": "NON_OPERATIONAL",
+  "permissibleUsageReason": "TEST",
+  "reportStatus": "NORMAL"
+}
