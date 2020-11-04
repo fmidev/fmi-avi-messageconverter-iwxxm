@@ -258,6 +258,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
                     final SpaceWeatherLocationType locationType = create(SpaceWeatherLocationType.class);
                     if (region.getLocationIndicator().isPresent()) {
                         locationType.setHref(region.getLocationIndicator().get().asWMOCodeListValue());
+                    } else {
+                        locationType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
                     }
                     regionType.setLocationIndicator(locationType);
 
