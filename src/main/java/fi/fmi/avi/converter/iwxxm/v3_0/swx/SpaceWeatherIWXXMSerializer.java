@@ -264,6 +264,10 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
                     if (region.getAirSpaceVolume().isPresent()) {
                         regionType.setGeographicLocation(
                                 create(AirspaceVolumePropertyType.class, (prop) -> getAirspaceVolumeProperty(prop, region.getAirSpaceVolume().get())));
+                    } else {
+                        final AirspaceVolumePropertyType airspaceVolumePropertyType = create(AirspaceVolumePropertyType.class);
+                        airspaceVolumePropertyType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_UNKNOWN);
+                        regionType.setGeographicLocation(airspaceVolumePropertyType);
                     }
 
                     regionProperty.setSpaceWeatherRegion(regionType);

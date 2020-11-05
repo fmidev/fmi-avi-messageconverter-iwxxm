@@ -289,8 +289,8 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
     private static SpaceWeatherRegionProperties parseSpaceWeatherRegion(final SpaceWeatherRegionPropertyType regionProperty, final IssueList issueList,
             final ReferredObjectRetrievalContext refCtx) {
         final SpaceWeatherRegionProperties properties = new SpaceWeatherRegionProperties();
-        SpaceWeatherRegionType regionType = null;
-        if (regionProperty.getNilReason().size() > 0) {
+        SpaceWeatherRegionType regionType;
+        if (!regionProperty.getNilReason().isEmpty()) {
             if (regionProperty.getNilReason().size() > 1) {
                 issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
                         "More than one nil reason was detected, but " + "only the first used"));
@@ -307,10 +307,10 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
             }
         }
 
-        final AirspaceVolumeImpl.Builder airspaceVolume = AirspaceVolumeImpl.builder();
-        if (regionType.getGeographicLocation() != null) {
+        if (regionType.getGeographicLocation() != null && regionType.getGeographicLocation().getNilReason().isEmpty()) {
             final Optional<AirspaceVolumeType> volume = resolveProperty(regionType.getGeographicLocation(), AirspaceVolumeType.class, refCtx);
             if (volume.isPresent()) {
+                final AirspaceVolumeImpl.Builder airspaceVolume = AirspaceVolumeImpl.builder();
                 final Optional<SurfaceType> surface = resolveProperty(volume.get().getHorizontalProjection(), SurfaceType.class, refCtx);
                 surface.ifPresent(s -> airspaceVolume.setHorizontalProjection(getSurfaceGeometry(s, issueList, refCtx)));
                 airspaceVolume.setNullableUpperLimit(toNumericMeasure(volume.get().getUpperLimit(), "upperLimit", issueList));
@@ -321,6 +321,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
                 if (volume.get().getLowerLimitReference() != null) {
                     airspaceVolume.setNullableLowerLimitReference(volume.get().getLowerLimitReference().getValue());
                 }
+                properties.set(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, airspaceVolume.build());
             }
         }
 
@@ -329,8 +330,6 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
             properties.set(SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR,
                     SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue(locationIndicator));
         }
-
-        properties.set(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, airspaceVolume.build());
 
         return properties;
     }

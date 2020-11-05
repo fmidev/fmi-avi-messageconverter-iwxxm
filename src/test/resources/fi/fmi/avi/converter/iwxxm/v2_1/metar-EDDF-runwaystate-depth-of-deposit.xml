@@ -245,7 +245,7 @@
                             </iwxxm:runway>
                             <iwxxm:depositType xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-086/1"/>
                             <iwxxm:contamination xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-087/5"/>
-                            <iwxxm:depthOfDeposit uom="none" xsi:nil="true" nilReason="http://www.opengis.net/def/nil/OGC/0/unknown"/>
+                            <iwxxm:depthOfDeposit uom="none" xsi:nil="true" nilReason="http://codes.wmo.int/common/nil/unknown"/>
                             <iwxxm:estimatedSurfaceFrictionOrBrakingAction xlink:href="http://codes.wmo.int/bufr4/codeflag/0-20-089/98"/>
                         </iwxxm:AerodromeRunwayState>
                     </iwxxm:runwayState>

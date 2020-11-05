@@ -239,6 +239,33 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
     }
 
     @Test
+    public void testParser_daylight_side_with_nil_location() throws Exception {
+        final String input = getInput("spacewx-daylight-side-nil-location.xml");
+
+        final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+                ConversionHints.EMPTY);
+        printIssues(result.getConversionIssues());
+        assertTrue(result.getConvertedMessage().isPresent());
+
+        final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
+        assertEquals("ACFJ", swx.getIssuingCenter().getName().get());
+        assertEquals("SWXC", swx.getIssuingCenter().getDesignator().get());
+        assertEquals(2016, swx.getAdvisoryNumber().getYear());
+        assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
+        assertEquals(ZonedDateTime.parse("2016-11-08T01:00Z"), swx.getIssueTime().get().getCompleteTime().get());
+        assertEquals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION, swx.getAnalyses().get(0).getAnalysisType());
+        assertEquals(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"), swx.getPhenomena().get(0));
+
+        assertContainsNoEmptyRegions(swx.getAnalyses());
+        final SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
+        assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE"),
+                region.getLocationIndicator().get());
+        assertFalse(region.getAirSpaceVolume().isPresent());
+
+        assertEquals(NextAdvisory.Type.NO_FURTHER_ADVISORIES, swx.getNextAdvisory().getTimeSpecifier());
+    }
+
+    @Test
     public void testParser_illegal_nextAdvisory_indeterminatePosition() throws IOException {
         final String input = getInput("spacewx-A2-4.xml");
         for (final String illegalIndeterminatePosition : Arrays.asList("now", "unknown")) {
