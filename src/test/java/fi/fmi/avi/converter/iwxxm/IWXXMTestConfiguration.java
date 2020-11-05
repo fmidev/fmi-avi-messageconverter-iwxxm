@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -51,6 +52,9 @@ public class IWXXMTestConfiguration {
 
     @Autowired
     private AviMessageSpecificConverter<TAF, String> tafIWXXMStringSerializer;
+
+    @Autowired
+    private AviMessageSpecificConverter<TAF, String> taf30IWXXMStringSerializer;
 
     @Autowired
     private AviMessageSpecificConverter<TAF, Document> tafIWXXMDOMSerializer;
@@ -142,6 +146,7 @@ public class IWXXMTestConfiguration {
         p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM, tafBulletinIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_STRING_TO_TAF_BULLETIN_POJO, tafBulletinIWXXMStringParser);
         p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_DOM_TO_TAF_BULLETIN_POJO, tafBulletinIWXXMDOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING, taf30IWXXMStringSerializer);
 
         // METAR & SPECI:
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_METAR_POJO, metarIWXXMStringParser);

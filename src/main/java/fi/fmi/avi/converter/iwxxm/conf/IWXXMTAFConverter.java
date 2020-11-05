@@ -51,6 +51,11 @@ public class IWXXMTAFConverter {
     }
 
     @Bean
+    public AviMessageSpecificConverter<TAF, String> taf30IWXXMStringSerializer() {
+        return new fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFIWXXMSerializer.ToString();
+    }
+
+    @Bean
     public AbstractIWXXMSerializer<TAF, Document> tafIWXXMDOMSerializer() {
         return new TAFIWXXMSerializer.ToDOM();
     }

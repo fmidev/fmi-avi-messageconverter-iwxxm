@@ -35,6 +35,12 @@ public class IWXXMConverter {
             "TAF, XML/IWXXM 2.1");
 
     /**
+     * Pre-configured spec for {@link TAF} to IWXXM 2.1 XML format TAF document String.
+     */
+    public static final ConversionSpecification<TAF, String> TAF_POJO_TO_IWXXM30_STRING = new ConversionSpecification<>(TAF.class, String.class, null,
+            "TAF, XML/IWXXM 3.0");
+
+    /**
      * Pre-configured spec for {@link TAF} to IWXXM 2.1 XML format TAF document DOM Node.
      */
     public static final ConversionSpecification<TAF, Document> TAF_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(TAF.class, Document.class,
