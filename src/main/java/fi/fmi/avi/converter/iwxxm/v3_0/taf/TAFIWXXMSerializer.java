@@ -189,10 +189,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 type.setId(aerodromeId);
                 AirportHeliportTimeSliceType timeSlice = create(AirportHeliportTimeSliceType.class);
                 timeSlice.setId("uuid." + UUID.randomUUID());
-                //TODO: Where is interpretation stored? is it always SNAPSHOT?
-                timeSlice.setInterpretation("SNAPSHOT");
 
-                //TODO: is valid time always empty
+                timeSlice.setInterpretation("SNAPSHOT");
                 timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
 
                 timeSlice.setDesignator(create(CodeAirportHeliportDesignatorType.class, (code) -> code.setValue(aerodrome.getDesignator())));
@@ -224,9 +222,10 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                             pos.getValue().addAll(sourcePoint.getCoordinates());
                         }));
 
-                        //TODO: Find where this is meant to come from
-                        //FIXME:
-                        targetPoint.setVerticalDatum(create(CodeVerticalDatumType.class, verticalCode -> verticalCode.setValue("EGM_96")));
+                        if(sourcePoint.getVerticalDatum().isPresent()){
+                            targetPoint.setVerticalDatum(create(CodeVerticalDatumType.class,
+                                    verticalCode -> verticalCode.setValue(sourcePoint.getVerticalDatum().get())));
+                        }
 
                         targetPoint.setSrsDimension(BigInteger.valueOf(2));
                         targetPoint.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);

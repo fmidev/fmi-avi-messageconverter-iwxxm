@@ -603,7 +603,7 @@ public class TAFIWXXMSerializerTest {
         point.setCoordinates(Arrays.asList(12.34, -12.34));
         point.setElevationUom("M");
         point.setElevationValue(12);
-        //TODO: VerticalDatum missing?
+        point.setVerticalDatum(Optional.of("EGM_96"));
         builder.setReferencePoint(point.build());
         return builder.build();
     }
