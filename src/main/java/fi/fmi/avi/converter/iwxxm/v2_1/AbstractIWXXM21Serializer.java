@@ -43,9 +43,10 @@ import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
 import icao.iwxxm21.SigConvectiveCloudTypeType;
 import icao.iwxxm21.TAFType;
-import icao.iwxxm30.SpaceWeatherAdvisoryType;
 
 public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMSerializer<T, S> {
+
+    private static IWXXMNamespaceContext nsCtx;
 
     public static Optional<PartialOrCompleteTimePeriod> getCompleteTimePeriod(final TimeObjectPropertyType timeObjectPropertyType,
             final ReferredObjectRetrievalContext refCtx) {
@@ -86,9 +87,8 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
         return Optional.empty();
     }
 
-
     @Override
-    protected XMLSchemaInfo getSchemaInfo() {
+    public XMLSchemaInfo getSchemaInfo() {
         final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
         schemaInfo.addSchemaSource(TAFType.class.getResourceAsStream("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
         schemaInfo.addSchematronRule(TAFType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
@@ -96,6 +96,18 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
         schemaInfo.addSchemaLocation("http://def.wmo.int/metce/2013", "http://schemas.wmo.int/metce/1.2/metce.xsd");
         schemaInfo.addSchemaLocation("http://www.opengis.net/samplingSpatial/2.0", "http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd");
         return schemaInfo;
+    }
+
+    @Override
+    protected IWXXMNamespaceContext getNamespaceContext() {
+        return getNSContext();
+    }
+
+    private static synchronized IWXXMNamespaceContext getNSContext() {
+        if (nsCtx == null) {
+            nsCtx = new IWXXMNamespaceContext();
+        }
+        return nsCtx;
     }
 
     @SuppressWarnings("unchecked")
@@ -125,11 +137,10 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
                                 final Optional<ElevatedPoint> inputPos = input.getReferencePoint();
                                 if (inputPos.isPresent()) {
                                     point.setId("point-" + UUID.randomUUID().toString());
-                                    inputPos.get().getSrsName().ifPresent(point::setSrsName);
+                                    inputPos.get().getCrs().ifPresent(crs -> setCrsToType(point, crs));
                                     if (inputPos.get().getCoordinates() != null) {
                                         point.setSrsDimension(BigInteger.valueOf(inputPos.get().getCoordinates().size()));
-                                        point.setPos(create(DirectPositionType.class,
-                                                (pos) -> pos.getValue().addAll(inputPos.get().getCoordinates())));
+                                        point.setPos(create(DirectPositionType.class, (pos) -> pos.getValue().addAll(inputPos.get().getCoordinates())));
                                     }
                                 }
                             }), PointType.class);
@@ -155,7 +166,7 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
             target.setId("cfct-" + UUID.randomUUID().toString());
             final Optional<NumericMeasure> measure = source.getVerticalVisibility();
             if (measure.isPresent()) {
-                final QName eName = new QName(IWXXMNamespaceContext.getURI("iwxxm"), "verticalVisibility");
+                final QName eName = new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "verticalVisibility");
                 final LengthWithNilReasonType vvValue = create(LengthWithNilReasonType.class, (vv) -> {
                     vv.setValue(measure.get().getValue());
                     vv.setUom(measure.get().getUom());
@@ -177,16 +188,14 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
             if (source.getBase().isPresent()) {
                 target.setBase(asMeasure(source.getBase().get(), DistanceWithNilReasonType.class));
             }
-            Optional<AviationCodeListUser.CloudAmount> amount = source.getAmount();
-            if (amount.isPresent()) {
-                target.setAmount(create(CloudAmountReportedAtAerodromeType.class, (amt) -> {
-                    amt.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + amount.get().getCode());
-                    amt.setTitle(amount.get().name() + ", from codelist " + AviationCodeListUser.CODELIST_CLOUD_AMOUNT_REPORTED_AT_AERODROME);
-                }));
-            }
-            Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
+            final Optional<AviationCodeListUser.CloudAmount> amount = source.getAmount();
+            amount.ifPresent(cloudAmount -> target.setAmount(create(CloudAmountReportedAtAerodromeType.class, (amt) -> {
+                amt.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + cloudAmount.getCode());
+                amt.setTitle(cloudAmount.name() + ", from codelist " + AviationCodeListUser.CODELIST_CLOUD_AMOUNT_REPORTED_AT_AERODROME);
+            })));
+            final Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
             if (type.isPresent()) {
-                final QName eName = new QName(IWXXMNamespaceContext.getURI("iwxxm"), "cloudType");
+                final QName eName = new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "cloudType");
                 final SigConvectiveCloudTypeType cloudType = create(SigConvectiveCloudTypeType.class, (convCloud) -> {
                     convCloud.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + type.get().getCode());
                     convCloud.setTitle(type.get().name() + ", from codelist " + AviationCodeListUser.CODELIST_SIGNIFICANT_CONVECTIVE_CLOUD_TYPE);

@@ -21,6 +21,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 
+import net.opengis.gml32.AbstractGeometryType;
 import net.opengis.gml32.AbstractRingPropertyType;
 import net.opengis.gml32.AngleType;
 import net.opengis.gml32.CircleByCenterPointType;
@@ -62,6 +63,7 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import fi.fmi.avi.model.CircleByCenterPoint;
+import fi.fmi.avi.model.CoordinateReferenceSystem;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PointGeometry;
@@ -78,80 +80,12 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         implements AviMessageSpecificConverter<T, S> {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractIWXXMSerializer.class);
 
-    @SuppressWarnings("unchecked")
-    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
-        final StringWriter sw = new StringWriter();
-        try {
-            final Marshaller marshaller = getJAXBContext().createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getSchemaLocations());
-            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
-            marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
-            return asCleanedUpXML(sw.toString(), hints);
-        } catch (final JAXBException e) {
-            throw new ConversionException("Exception in rendering to DOM", e);
-        }
-    }
-
-    protected void setAerodromeData(final AirportHeliportType aerodrome, final Aerodrome input, final String aerodromeId) {
-        if (input == null) {
-            return;
-        }
-        aerodrome.setId(aerodromeId);
-        aerodrome.getTimeSlice()
-                .add(create(AirportHeliportTimeSlicePropertyType.class,
-                        (prop) -> prop.setAirportHeliportTimeSlice(create(AirportHeliportTimeSliceType.class, (timeSlice) -> {
-                            timeSlice.setId("aerodrome-" + UUID.randomUUID().toString());
-                            timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
-                            timeSlice.setInterpretation("SNAPSHOT");
-                            timeSlice.setDesignator(
-                                    create(CodeAirportHeliportDesignatorType.class, (designator) -> designator.setValue(input.getDesignator())));
-                            input.getName()
-                                    .ifPresent(
-                                            inputName -> timeSlice.setPortName(create(TextNameType.class, (name) -> name.setValue(inputName.toUpperCase()))));
-                            input.getLocationIndicatorICAO()
-                                    .ifPresent(inputLocator -> timeSlice.setLocationIndicatorICAO(
-                                            create(CodeICAOType.class, (locator) -> locator.setValue(inputLocator))));
-
-                            input.getDesignatorIATA()
-                                    .ifPresent(inputDesignator -> timeSlice.setDesignatorIATA(
-                                            create(CodeIATAType.class, (designator) -> designator.setValue(inputDesignator))));
-                            input.getFieldElevationValue()
-                                    .ifPresent(inputElevation -> timeSlice.setFieldElevation(create(ValDistanceVerticalType.class, (elevation) -> {
-                                        elevation.setValue(String.format("%.00f", inputElevation));
-                                        if (input.getFieldElevationUom().isPresent()) {
-                                            elevation.setUom(input.getFieldElevationUom().get());
-                                        }
-                                    })));
-
-                            input.getReferencePoint()
-                                    .ifPresent(inputPosition -> timeSlice.setARP(create(ElevatedPointPropertyType.class,
-                                            (pointProp) -> pointProp.setElevatedPoint(create(ElevatedPointType.class, (point) -> {
-                                                point.setId("point-" + UUID.randomUUID().toString());
-                                                inputPosition.getSrsName().ifPresent(point::setSrsName);
-                                                if (inputPosition.getCoordinates() != null) {
-                                                    point.setSrsDimension(BigInteger.valueOf(inputPosition.getCoordinates().size()));
-                                                    point.setPos(
-                                                            create(DirectPositionType.class, (pos) -> pos.getValue().addAll(inputPosition.getCoordinates())));
-                                                }
-                                                if (inputPosition.getElevationValue().isPresent() && inputPosition.getElevationUom().isPresent()) {
-                                                    point.setElevation(create(ValDistanceVerticalType.class, (dist) -> {
-                                                        inputPosition.getElevationValue().ifPresent(value -> dist.setValue(String.format("%.00f", value)));
-                                                        inputPosition.getElevationUom().ifPresent(uom -> dist.setUom(uom.toUpperCase()));
-                                                    }));
-                                                }
-                                            })))));
-                        }))));
-    }
-
     protected static SurfacePropertyType createSurface(final Geometry geom, final String id) throws IllegalArgumentException {
         SurfacePropertyType retval = null;
         if (geom != null) {
             retval = create(SurfacePropertyType.class, (spt) -> {
                 spt.setSurface(createAndWrap(SurfaceType.class, (sft) -> {
-                    geom.getSrsName().ifPresent(sft::setSrsName);
-                    geom.getSrsDimension().ifPresent(sft::setSrsDimension);
-                    geom.getAxisLabels().ifPresent(labels -> sft.getAxisLabels().addAll(labels));
+                    geom.getCrs().ifPresent(crs -> setCrsToType(sft, crs));
                     sft.setId(id);
                     JAXBElement<SurfacePatchArrayPropertyType> spapt = null;
                     if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass()) || PointGeometry.class.isAssignableFrom(geom.getClass())) {
@@ -249,6 +183,80 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         return retval;
     }
 
+    protected static void setCrsToType(final AbstractGeometryType type, final CoordinateReferenceSystem crs) {
+        CRSMappers.abstractGeometryType().setCrsToType(type, crs);
+    }
+
+    protected static void setCrsToType(final DirectPositionType type, final CoordinateReferenceSystem crs) {
+        CRSMappers.directPositionType().setCrsToType(type, crs);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
+        final StringWriter sw = new StringWriter();
+        try {
+            final Marshaller marshaller = getJAXBContext().createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getCombinedSchemaLocations());
+            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", getNamespaceContext());
+            marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
+            return asCleanedUpXML(sw.toString(), hints);
+        } catch (final JAXBException e) {
+            throw new ConversionException("Exception in rendering to DOM", e);
+        }
+    }
+
+    protected void setAerodromeData(final AirportHeliportType aerodrome, final Aerodrome input, final String aerodromeId) {
+        if (input == null) {
+            return;
+        }
+        aerodrome.setId(aerodromeId);
+        aerodrome.getTimeSlice()
+                .add(create(AirportHeliportTimeSlicePropertyType.class,
+                        (prop) -> prop.setAirportHeliportTimeSlice(create(AirportHeliportTimeSliceType.class, (timeSlice) -> {
+                            timeSlice.setId("aerodrome-" + UUID.randomUUID().toString());
+                            timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
+                            timeSlice.setInterpretation("SNAPSHOT");
+                            timeSlice.setDesignator(
+                                    create(CodeAirportHeliportDesignatorType.class, (designator) -> designator.setValue(input.getDesignator())));
+                            input.getName()
+                                    .ifPresent(
+                                            inputName -> timeSlice.setPortName(create(TextNameType.class, (name) -> name.setValue(inputName.toUpperCase()))));
+                            input.getLocationIndicatorICAO()
+                                    .ifPresent(inputLocator -> timeSlice.setLocationIndicatorICAO(
+                                            create(CodeICAOType.class, (locator) -> locator.setValue(inputLocator))));
+
+                            input.getDesignatorIATA()
+                                    .ifPresent(inputDesignator -> timeSlice.setDesignatorIATA(
+                                            create(CodeIATAType.class, (designator) -> designator.setValue(inputDesignator))));
+                            input.getFieldElevationValue()
+                                    .ifPresent(inputElevation -> timeSlice.setFieldElevation(create(ValDistanceVerticalType.class, (elevation) -> {
+                                        elevation.setValue(String.format("%.00f", inputElevation));
+                                        if (input.getFieldElevationUom().isPresent()) {
+                                            elevation.setUom(input.getFieldElevationUom().get());
+                                        }
+                                    })));
+
+                            input.getReferencePoint()
+                                    .ifPresent(inputPosition -> timeSlice.setARP(create(ElevatedPointPropertyType.class,
+                                            (pointProp) -> pointProp.setElevatedPoint(create(ElevatedPointType.class, (point) -> {
+                                                point.setId("point-" + UUID.randomUUID().toString());
+                                                inputPosition.getCrs().ifPresent(crs -> setCrsToType(point, crs));
+                                                if (inputPosition.getCoordinates() != null) {
+                                                    point.setSrsDimension(BigInteger.valueOf(inputPosition.getCoordinates().size()));
+                                                    point.setPos(
+                                                            create(DirectPositionType.class, (pos) -> pos.getValue().addAll(inputPosition.getCoordinates())));
+                                                }
+                                                if (inputPosition.getElevationValue().isPresent() && inputPosition.getElevationUom().isPresent()) {
+                                                    point.setElevation(create(ValDistanceVerticalType.class, (dist) -> {
+                                                        inputPosition.getElevationValue().ifPresent(value -> dist.setValue(String.format("%.00f", value)));
+                                                        inputPosition.getElevationUom().ifPresent(uom -> dist.setUom(uom.toUpperCase()));
+                                                    }));
+                                                }
+                                            })))));
+                        }))));
+    }
+
     private Document asCleanedUpXML(final String input, final ConversionHints hints) throws ConversionException {
         try {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -257,7 +265,6 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
             final DocumentBuilder db = dbf.newDocumentBuilder();
             final InputSource is = new InputSource(new StringReader(input));
             final Document dom3Doc = db.parse(is);
-
             final DOMResult cleanedResult = new DOMResult();
             final TransformerFactory tFactory = TransformerFactory.newInstance();
             final Transformer transformer = tFactory.newTransformer(new DOMSource(db.parse(getCleanupTransformationStylesheet(hints))));
@@ -271,6 +278,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
 
     protected abstract InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException;
 
-    protected abstract XMLSchemaInfo getSchemaInfo();
+    public abstract XMLSchemaInfo getSchemaInfo();
 
+    protected abstract IWXXMNamespaceContext getNamespaceContext();
 }

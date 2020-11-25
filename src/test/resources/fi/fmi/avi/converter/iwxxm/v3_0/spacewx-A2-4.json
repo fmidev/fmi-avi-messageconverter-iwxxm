@@ -3,7 +3,7 @@
     "completeTime": "2016-11-08T00:00:00Z"
   },
   "issuingCenter": {
-    "name": "DONLON Weather Forecast Center",
+    "name": "DONLON WEATHER FORECAST CENTER",
     "designator": "DONLON",
     "type": "OTHER:SWXC"
   },
@@ -19,18 +19,20 @@
       "time": {
         "completeTime": "2016-11-08T01:00:00Z"
       },
-      "analysisType": "FORECAST",
+      "analysisType": "OBSERVATION",
       "regions": [
         {
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180,
                 90,
@@ -44,11 +46,11 @@
                 90
               ]
             },
-            "upperLimit": {
-              "value": 350,
+            "lowerLimit": {
+              "value": 340,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "lowerLimitReference": "STD"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
@@ -56,12 +58,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180,
                 -90,
@@ -79,7 +83,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
@@ -95,12 +104,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180,
                 90,
@@ -114,11 +125,11 @@
                 90
               ]
             },
-            "upperLimit": {
-              "value": 350,
+            "lowerLimit": {
+              "value": 340,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "lowerLimitReference": "STD"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
@@ -126,12 +137,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180,
                 -90,
@@ -149,7 +162,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
@@ -165,12 +183,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180,
                 90,
@@ -184,11 +204,11 @@
                 90
               ]
             },
-            "upperLimit": {
-              "value": 350,
+            "lowerLimit": {
+              "value": 340,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "lowerLimitReference": "STD"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
@@ -196,12 +216,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180,
                 -90,
@@ -219,7 +241,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
@@ -235,12 +262,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180,
                 90,
@@ -254,11 +283,11 @@
                 90
               ]
             },
-            "upperLimit": {
-              "value": 350,
+            "lowerLimit": {
+              "value": 340,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "lowerLimitReference": "STD"
           },
           "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
         },
@@ -266,12 +295,14 @@
           "airSpaceVolume": {
             "horizontalProjection": {
               "type": "Polygon",
-              "srsDimension": 2,
-              "srsName": "http://www.opengis.net/def/crs/EPSG/0/4326",
-              "axisLabels": [
-                "Lat",
-                "Long"
-              ],
+              "crs": {
+                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                "dimension": 2,
+                "axisLabels": [
+                  "Lat",
+                  "Lon"
+                ]
+              },
               "exteriorRingPositions": [
                 -180,
                 -90,
@@ -289,7 +320,12 @@
               "value": 350,
               "uom": "FL"
             },
-            "upperLimitReference": "STD"
+            "upperLimitReference": "STD",
+            "lowerLimit": {
+              "value": 250,
+              "uom": "FL"
+            },
+            "lowerLimitReference": "SFC"
           },
           "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
         }
@@ -300,9 +336,7 @@
         "completeTime": "2016-11-09T01:00:00Z"
       },
       "analysisType": "FORECAST",
-      "regions": [
-        {}
-      ],
+      "regions": [],
       "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
     }
   ],
@@ -310,8 +344,13 @@
     "RADIATION LVL EXCEEDED 100 PCT OF BACKGROUND LVL AT FL350 AND ABV. THE CURRENT EVENT HAS PEAKED AND LVL SLW RTN TO BACKGROUND LVL. SEE WWW.SPACEWEATHERPROVIDER.WEB"
   ],
   "nextAdvisory": {
-    "timeSpecifier": "NO_FURTHER_ADVISORIES"
+    "timeSpecifier": "NEXT_ADVISORY_BY",
+    "time": {
+      "completeTime": "2016-11-08T06:00:00Z"
+    }
   },
+  "permissibleUsage": "NON_OPERATIONAL",
+  "permissibleUsageReason": "TEST",
   "replaceAdvisoryNumber": {
     "year": 2016,
     "serialNumber": 1

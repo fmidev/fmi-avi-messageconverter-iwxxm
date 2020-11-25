@@ -370,8 +370,8 @@ public class TAFIWXXMScanner extends AbstractIWXXM21Scanner {
         }
 
         //weather
-        withEachNillableChild(record, record.getWeather(), AerodromeForecastWeatherType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "weather"),
-                refCtx, (value) -> {
+        withEachNillableChild(record, record.getWeather(), AerodromeForecastWeatherType.class,
+                new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "weather"), refCtx, (value) -> {
                     AbstractIWXXM21Scanner.withWeatherBuilderFor(value, hints, (builder) -> {
                         properties.addToList(TAFForecastRecordProperties.Name.WEATHER, builder.build());
                     }, retval::add);
@@ -386,17 +386,18 @@ public class TAFIWXXMScanner extends AbstractIWXXM21Scanner {
                 });
 
         //cloud
-        withNillableChild(record, record.getCloud(), AerodromeCloudForecastPropertyType.class, new QName(IWXXMNamespaceContext.getURI("iwxxm"), "cloud"),
+        withNillableChild(record, record.getCloud(), AerodromeCloudForecastPropertyType.class, new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "cloud"),
                 refCtx, (value) -> {
-            CloudForecastImpl.Builder cloudBuilder = CloudForecastImpl.builder();
+                    CloudForecastImpl.Builder cloudBuilder = CloudForecastImpl.builder();
                     Optional<AerodromeCloudForecastType> cloudForecast = resolveProperty(value, AerodromeCloudForecastType.class, refCtx);
-            if (cloudForecast.isPresent()) {
-                if (record.isCloudAndVisibilityOK()) {
-                    retval.add(new ConversionIssue(ConversionIssue.Type.LOGICAL, "Forecast features CAVOK but cloud forecast exists in " + contextPath));
-                }
-                JAXBElement<LengthWithNilReasonType> vv = cloudForecast.get().getVerticalVisibility();
-                if (vv != null) {
-                    if (vv.getValue() != null) {
+                    if (cloudForecast.isPresent()) {
+                        if (record.isCloudAndVisibilityOK()) {
+                            retval.add(
+                                    new ConversionIssue(ConversionIssue.Type.LOGICAL, "Forecast features CAVOK but cloud forecast exists in " + contextPath));
+                        }
+                        JAXBElement<LengthWithNilReasonType> vv = cloudForecast.get().getVerticalVisibility();
+                        if (vv != null) {
+                            if (vv.getValue() != null) {
                         cloudBuilder.setVerticalVisibility(asNumericMeasure(vv.getValue()));
                     } else if (vv.isNil()) {
                         cloudBuilder.setVerticalVisibilityMissing(true);

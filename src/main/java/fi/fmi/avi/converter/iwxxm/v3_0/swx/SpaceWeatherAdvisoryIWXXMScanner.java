@@ -2,9 +2,13 @@ package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import net.opengis.gml32.TimeIndeterminateValueType;
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
 import net.opengis.gml32.TimePositionType;
@@ -17,6 +21,7 @@ import aero.aixm511.SurfaceType;
 import aero.aixm511.UnitTimeSlicePropertyType;
 import aero.aixm511.UnitTimeSliceType;
 import aero.aixm511.UnitType;
+import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
@@ -128,7 +133,12 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (input.getRemarks() != null) {
-            properties.set(SpaceWeatherAdvisoryProperties.Name.REMARKS, input.getRemarks().getValue());
+            if (input.getRemarks().getValue() != null && !input.getRemarks().getValue().isEmpty()) {
+                final List<String> remarks = Arrays.stream(input.getRemarks().getValue().split("\\s+"))
+                        .filter(word -> !word.isEmpty())
+                        .collect(Collectors.toList());
+                properties.set(SpaceWeatherAdvisoryProperties.Name.REMARKS, remarks);
+            }
         }
 
         if (input.getNextAdvisoryTime() != null) {
@@ -142,30 +152,46 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
 
     private static NextAdvisory getNextAdvisory(final TimeInstantPropertyType nextAdvisory, final ReferredObjectRetrievalContext refCtx,
             final IssueList issueList) {
-        final NextAdvisoryImpl.Builder na = NextAdvisoryImpl.builder();
+        final NextAdvisoryImpl.Builder builder = NextAdvisoryImpl.builder();
         if (nextAdvisory.getNilReason() != null && nextAdvisory.getNilReason().size() > 0) {
             if (nextAdvisory.getNilReason().size() > 1) {
                 issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
                         "More than one nil reason was found," + " but not reported"));
             }
             if (nextAdvisory.getNilReason().get(0).equals(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE)) {
-                na.setTime(Optional.empty());
-                na.setTimeSpecifier(NextAdvisory.Type.NO_FURTHER_ADVISORIES);
+                builder.setTime(Optional.empty());
+                builder.setTimeSpecifier(NextAdvisory.Type.NO_FURTHER_ADVISORIES);
             } else {
                 issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Next advisory nil reason missing"));
             }
         } else {
-            na.setTimeSpecifier(NextAdvisory.Type.NEXT_ADVISORY_AT);
+            builder.setTimeSpecifier(NextAdvisory.Type.NEXT_ADVISORY_AT);
             final TimePositionType timePosition = nextAdvisory.getTimeInstant().getTimePosition();
             if (timePosition != null && timePosition.getValue().size() == 1) {
+                builder.setTimeSpecifier(parseNextAdvisoryTimeSpecifier(timePosition, issueList));
                 final String time = timePosition.getValue().get(0);
-                final PartialOrCompleteTimeInstant completeTime = PartialOrCompleteTimeInstant.builder().setCompleteTime(ZonedDateTime.parse(time)).build();
-                na.setTime(completeTime);
+                final PartialOrCompleteTimeInstant completeTime = PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(time));
+                builder.setTime(completeTime);
             } else {
                 issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Next advisory time is expected, but is missing"));
             }
         }
-        return na.build();
+        return builder.build();
+    }
+
+    private static NextAdvisory.Type parseNextAdvisoryTimeSpecifier(final TimePositionType timePosition, final IssueList issueList) {
+        if (timePosition.getIndeterminatePosition() == null) {
+            return NextAdvisory.Type.NEXT_ADVISORY_AT;
+        } else if (TimeIndeterminateValueType.BEFORE == timePosition.getIndeterminatePosition()) {
+            return NextAdvisory.Type.NEXT_ADVISORY_BY;
+        } else if (TimeIndeterminateValueType.AFTER == timePosition.getIndeterminatePosition()) {
+            // TODO: 'after' not supported in model; temporarily use "NEXT_ADVISORY_AT"
+            return NextAdvisory.Type.NEXT_ADVISORY_AT;
+        } else {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.SYNTAX,
+                    "Illegal indeterminatePosition for next advisory time: " + timePosition.getIndeterminatePosition()));
+            return NextAdvisory.Type.NEXT_ADVISORY_AT;
+        }
     }
 
     private static List<SpaceWeatherPhenomenon> parsePhenomenonList(final List<SpaceWeatherPhenomenaType> elements) {
@@ -192,7 +218,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
 
             final TimeIndicatorType timeIndicator = spaceWeatherAnalysis.getTimeIndicator();
             if (timeIndicator != null) {
-                if (timeIndicator.name().toUpperCase().equals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION.toString())) {
+                if (timeIndicator.name().toUpperCase(Locale.US).equals(SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION.toString())) {
                     properties.set(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TYPE, SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION);
                 } else {
                     properties.set(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TYPE, SpaceWeatherAdvisoryAnalysis.Type.FORECAST);
@@ -263,8 +289,8 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
     private static SpaceWeatherRegionProperties parseSpaceWeatherRegion(final SpaceWeatherRegionPropertyType regionProperty, final IssueList issueList,
             final ReferredObjectRetrievalContext refCtx) {
         final SpaceWeatherRegionProperties properties = new SpaceWeatherRegionProperties();
-        SpaceWeatherRegionType regionType = null;
-        if (regionProperty.getNilReason().size() > 0) {
+        SpaceWeatherRegionType regionType;
+        if (!regionProperty.getNilReason().isEmpty()) {
             if (regionProperty.getNilReason().size() > 1) {
                 issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
                         "More than one nil reason was detected, but " + "only the first used"));
@@ -281,19 +307,21 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
             }
         }
 
-        final AirspaceVolumeImpl.Builder airspaceVolume = AirspaceVolumeImpl.builder();
-        if (regionType.getGeographicLocation() != null) {
+        if (regionType.getGeographicLocation() != null && regionType.getGeographicLocation().getNilReason().isEmpty()) {
             final Optional<AirspaceVolumeType> volume = resolveProperty(regionType.getGeographicLocation(), AirspaceVolumeType.class, refCtx);
             if (volume.isPresent()) {
+                final AirspaceVolumeImpl.Builder airspaceVolume = AirspaceVolumeImpl.builder();
                 final Optional<SurfaceType> surface = resolveProperty(volume.get().getHorizontalProjection(), SurfaceType.class, refCtx);
                 surface.ifPresent(s -> airspaceVolume.setHorizontalProjection(getSurfaceGeometry(s, issueList, refCtx)));
-                if (volume.get().getUpperLimit() != null) {
-                    final NumericMeasureImpl.Builder nm = NumericMeasureImpl.builder()
-                            .setValue(Double.parseDouble(volume.get().getUpperLimit().getValue()))
-                            .setUom(volume.get().getUpperLimit().getUom());
-                    airspaceVolume.setUpperLimit(nm.build());
-                    airspaceVolume.setUpperLimitReference(volume.get().getUpperLimitReference().getValue());
+                airspaceVolume.setNullableUpperLimit(toNumericMeasure(volume.get().getUpperLimit(), "upperLimit", issueList));
+                if (volume.get().getUpperLimitReference() != null) {
+                    airspaceVolume.setNullableUpperLimitReference(volume.get().getUpperLimitReference().getValue());
                 }
+                airspaceVolume.setNullableLowerLimit(toNumericMeasure(volume.get().getLowerLimit(), "lowerLimit", issueList));
+                if (volume.get().getLowerLimitReference() != null) {
+                    airspaceVolume.setNullableLowerLimitReference(volume.get().getLowerLimitReference().getValue());
+                }
+                properties.set(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, airspaceVolume.build());
             }
         }
 
@@ -303,9 +331,28 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
                     SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue(locationIndicator));
         }
 
-        properties.set(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, airspaceVolume.build());
-
         return properties;
+    }
+
+    private static NumericMeasureImpl toNumericMeasure(final ValDistanceVerticalType valDistanceVerticalType, final String elementName,
+            final IssueList issueList) {
+        if (valDistanceVerticalType == null) {
+            return null;
+        }
+        final String value = valDistanceVerticalType.getValue();
+        if (value == null) {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, elementName + " is missing value"));
+            return null;
+        }
+        final String uom = valDistanceVerticalType.getUom();
+        if (uom == null) {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, elementName + " is missing uom"));
+        }
+
+        return NumericMeasureImpl.builder()//
+                .setValue(Double.parseDouble(value))//
+                .setUom(nullToDefault(uom, ""))//
+                .build();
     }
 
 }

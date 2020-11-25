@@ -52,6 +52,8 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
+import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.NumericMeasure;
@@ -79,7 +81,10 @@ import icao.iwxxm21.WeatherCausingVisibilityReductionType;
 import wmo.metce2013.ProcessType;
 
 public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer<AIRMET, T> {
+
     protected abstract T render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException;
+
+    protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
 
     /**
      * Converts a TAF object into another format.
@@ -192,8 +197,9 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
         try {
             this.updateMessageMetadata(input, result, airmet);
-            result.addIssue(validateDocument(airmet, AIRMETType.class, getSchemaInfo(), hints));
-            result.setConvertedMessage(this.render(airmet, hints));
+            final T rendered = this.render(airmet, hints);
+            result.addIssue(validate(rendered, getSchemaInfo(), hints));
+            result.setConvertedMessage(rendered);
         } catch (ConversionException e) {
             result.setStatus(Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message", e));
@@ -720,6 +726,11 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         protected Document render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException {
             return this.renderXMLDocument(airmet, hints);
         }
+
+        @Override
+        protected IssueList validate(final Document output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+            return AIRMETIWXXMSerializer.validateDOMAgainstSchemaAndSchematron(output, schemaInfo, hints);
+        }
     }
 
     public static class ToString extends AIRMETIWXXMSerializer<String> {
@@ -728,6 +739,11 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         protected String render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException {
             final Document result = renderXMLDocument(airmet, hints);
             return renderDOMToString(result, hints);
+        }
+
+        @Override
+        protected IssueList validate(final String output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
+            return AIRMETIWXXMSerializer.validateStringAgainstSchemaAndSchematron(output, schemaInfo, hints);
         }
     }
 }

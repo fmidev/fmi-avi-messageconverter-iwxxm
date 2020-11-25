@@ -269,7 +269,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
 
         layer = layers.get().get(3);
         assertTrue(layer.getAmount().isPresent());
-        assertEquals(AviationCodeListUser.CloudAmount.BKN_OVC, layer.getAmount().get());
+        assertEquals(AviationCodeListUser.CloudAmount.OVC, layer.getAmount().get());
         assertTrue(layer.getBase().isPresent());
         assertEquals(layer.getBase().get().getUom(), "[ft_i]");
         assertEquals(layer.getBase().get().getValue(), 1500, 0.00001);

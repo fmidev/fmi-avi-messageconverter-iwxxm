@@ -4,11 +4,34 @@
   xmlns:gml="http://www.opengis.net/gml/3.2"
   xmlns:om="http://www.opengis.net/om/2.0"
   version="2.0">
-    <xsl:template match="node()|@*">
+    <xsl:template match="@*">
         <xsl:copy>
-            <xsl:apply-templates select="node()|@*"/>
+            <xsl:apply-templates select="../@*" />
         </xsl:copy>
     </xsl:template>
-    <xsl:template match="//gml:boundedBy[@xsi:nil='true']"/>
-    <xsl:template match="//om:result[@xsi:type='iwxxm:MeteorologicalAerodromeForecastRecordPropertyType']/@xsi:type"/>
+
+    <xsl:template match="*">
+        <xsl:element name="{name()}" namespace="{namespace-uri()}">
+            <xsl:variable name="vtheElem" select="." />
+
+            <xsl:for-each select="namespace::*">
+                <xsl:variable name="vPrefix" select="name()" />
+
+                <xsl:if test=
+                  "$vtheElem/descendant::*
+              [(namespace-uri()=current()
+             and
+              substring-before(name(),':') = $vPrefix)
+             or
+              @*[substring-before(name(),':') = $vPrefix]
+              ]
+        ">
+                    <xsl:copy-of select="." />
+                </xsl:if>
+            </xsl:for-each>
+            <xsl:apply-templates select="node()|@*" />
+        </xsl:element>
+    </xsl:template>
+    <xsl:template match="//gml:boundedBy[@xsi:nil='true']" />
+    <xsl:template match="//om:result[@xsi:type='iwxxm:MeteorologicalAerodromeForecastRecordPropertyType']/@xsi:type" />
 </xsl:stylesheet>

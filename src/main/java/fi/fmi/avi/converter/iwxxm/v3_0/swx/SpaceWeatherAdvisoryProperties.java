@@ -1,5 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
+import java.util.List;
+
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
@@ -21,7 +23,7 @@ public class SpaceWeatherAdvisoryProperties extends AbstractPropertyContainer {
         REPLACE_ADVISORY_NUMBER(AdvisoryNumber.class),
         PHENOMENA(SpaceWeatherPhenomenon.class),
         ANALYSES(SpaceWeatherAnalysisProperties.class),
-        REMARKS(String.class),
+        REMARKS(List.class),
         NEXT_ADVISORY(NextAdvisory.class);
 
         private final Class<?> acceptedType;

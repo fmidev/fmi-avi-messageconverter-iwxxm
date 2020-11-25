@@ -42,6 +42,7 @@ import fi.fmi.avi.model.bulletin.BulletinHeading;
 import fi.fmi.avi.model.bulletin.DataTypeDesignatorT2;
 import fi.fmi.avi.model.bulletin.immutable.BulletinHeadingImpl;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
+import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
 import fi.fmi.avi.model.immutable.ElevatedPointImpl;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
@@ -59,28 +60,28 @@ public class TAFBulletinIWXXMSerializerTest {
     private AviMessageConverter converter;
 
     private TAFBulletin getTAFBulletin(final String... fileNames) throws IOException {
-        List<TAF> tafs = new ArrayList<>();
-        for (String fName : fileNames) {
-            TAF t = readFromJSON(fName);
-            AerodromeImpl.Builder airportBuilder = AerodromeImpl.builder()
+        final List<TAF> tafs = new ArrayList<>();
+        for (final String fName : fileNames) {
+            final TAF t = readFromJSON(fName);
+            final AerodromeImpl.Builder airportBuilder = AerodromeImpl.builder()
                     .setDesignator("EETN")
                     .setName("Tallinn Airport")
                     .setFieldElevationValue(40.0)
                     .setLocationIndicatorICAO("EETN")
                     .setReferencePoint(ElevatedPointImpl.builder()//
-                            .setSrsName("http://www.opengis.net/def/crs/EPSG/0/4326")//
+                            .setCrs(CoordinateReferenceSystemImpl.wgs84())//
                             .addCoordinates(24.8325, 59.413333)//
                             .setElevationValue(40.0)//
                             .setElevationUom("m")//
                             .build());
-            TAFImpl.Builder tafBuilder = TAFImpl.immutableCopyOf(t).toBuilder();
+            final TAFImpl.Builder tafBuilder = TAFImpl.immutableCopyOf(t).toBuilder();
             tafBuilder.setAerodrome(airportBuilder.build())
                     .withCompleteIssueTime(YearMonth.of(2017, 7))
                     .withCompleteForecastTimes(YearMonth.of(2017, 7), 30, 11, ZoneId.of("Z"));
             tafs.add(tafBuilder.build());
         }
 
-        TAFBulletinImpl.Builder bulletinBuilder = TAFBulletinImpl.builder()//
+        final TAFBulletinImpl.Builder bulletinBuilder = TAFBulletinImpl.builder()//
                 .setHeading(BulletinHeadingImpl.builder()//
                         .setDataTypeDesignatorT2(DataTypeDesignatorT2.ForecastsDataTypeDesignatorT2.FCT_AERODROME_VT_LONG)//
                         .setType(BulletinHeading.Type.NORMAL)//
@@ -98,8 +99,8 @@ public class TAFBulletinIWXXMSerializerTest {
     @Test
     public void testTAFBulletinStringSerialization() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
-        TAFBulletin tb = getTAFBulletin("taf12.json", "taf1.json");
-        ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
+        final TAFBulletin tb = getTAFBulletin("taf12.json", "taf1.json");
+        final ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
 
         assertTrue(result.getConvertedMessage().isPresent());
@@ -109,20 +110,20 @@ public class TAFBulletinIWXXMSerializerTest {
     @Test
     public void testTAFBulletinDOMSerialization() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
-        TAFBulletin tb = getTAFBulletin("taf12.json", "taf1.json");
-        ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
+        final TAFBulletin tb = getTAFBulletin("taf12.json", "taf1.json");
+        final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
 
-        XPathFactory factory = XPathFactory.newInstance();
-        XPath xpath = factory.newXPath();
-        NamespaceContext ctx = new IWXXMNamespaceContext();
+        final XPathFactory factory = XPathFactory.newInstance();
+        final XPath xpath = factory.newXPath();
+        final NamespaceContext ctx = new IWXXMNamespaceContext();
         xpath.setNamespaceContext(ctx);
 
-        Element docElement = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
+        final Element docElement = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
         assertNotNull(docElement);
 
         XPathExpression expr = xpath.compile("/collect:MeteorologicalBulletin/collect:bulletinIdentifier");
-        String bulletinId = expr.evaluate(docElement);
+        final String bulletinId = expr.evaluate(docElement);
         assertEquals("A_LTFI31EFKL301115_C_EFKL_2017073011----.xml", bulletinId);
 
         expr = xpath.compile("count(/collect:MeteorologicalBulletin/collect:meteorologicalInformation)");
@@ -135,11 +136,11 @@ public class TAFBulletinIWXXMSerializerTest {
         assertEquals("24.8325 59.413333", expr.evaluate(docElement));
     }
 
-    protected TAF readFromJSON(String fileName) throws IOException {
-        ObjectMapper om = new ObjectMapper();
+    protected TAF readFromJSON(final String fileName) throws IOException {
+        final ObjectMapper om = new ObjectMapper();
         om.registerModule(new Jdk8Module());
         om.registerModule(new JavaTimeModule());
-        InputStream is = TAFBulletinIWXXMSerializerTest.class.getResourceAsStream(fileName);
+        final InputStream is = TAFBulletinIWXXMSerializerTest.class.getResourceAsStream(fileName);
         if (is != null) {
             return om.readValue(is, TAFImpl.class);
         } else {

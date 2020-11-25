@@ -3,9 +3,8 @@
     "completeTime": "2016-11-08T01:00:00Z"
   },
   "issuingCenter": {
-    "name": "DONLON WEATHER FORECAST CENTER",
-    "designator": "DONLON",
-    "type": "OTHER:SWXC"
+    "designator": "SWXC",
+    "name": "ACFJ"
   },
   "advisoryNumber": {
     "year": 2016,
@@ -23,60 +22,7 @@
       "analysisType": "OBSERVATION",
       "regions": [
         {
-          "airSpaceVolume": {
-            "horizontalProjection": {
-              "type": "Polygon",
-              "crs": {
-                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
-                "dimension": 2,
-                "axisLabels": [
-                  "Lat",
-                  "Lon"
-                ]
-              },
-              "exteriorRingPositions": [
-                -180.0,
-                90.0,
-                -180.0,
-                60.0,
-                180.0,
-                60.0,
-                180.0,
-                90.0,
-                -180.0,
-                90.0
-              ]
-            }
-          },
-          "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
-        },
-        {
-          "airSpaceVolume": {
-            "horizontalProjection": {
-              "type": "Polygon",
-              "crs": {
-                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
-                "dimension": 2,
-                "axisLabels": [
-                  "Lat",
-                  "Lon"
-                ]
-              },
-              "exteriorRingPositions": [
-                -180.0,
-                -90.0,
-                -180.0,
-                -60.0,
-                180.0,
-                -60.0,
-                180.0,
-                -90.0,
-                -180.0,
-                -90.0
-              ]
-            }
-          },
-          "locationIndicator": "HIGH_LATITUDES_SOUTHERN_HEMISPHERE"
+          "locationIndicator": "DAYLIGHT_SIDE"
         }
       ]
     },
@@ -99,16 +45,16 @@
                 ]
               },
               "exteriorRingPositions": [
-                -180.0,
                 90.0,
                 -180.0,
                 60.0,
-                180.0,
+                -180.0,
                 60.0,
                 180.0,
                 90.0,
-                -180.0,
-                90.0
+                180.0,
+                90.0,
+                -180.0
               ]
             }
           },
@@ -127,16 +73,16 @@
                 ]
               },
               "exteriorRingPositions": [
+                -60.0,
                 -180.0,
                 -90.0,
                 -180.0,
-                -60.0,
-                180.0,
-                -60.0,
-                180.0,
                 -90.0,
-                -180.0,
-                -90.0
+                180.0,
+                -60.0,
+                180.0,
+                -60.0,
+                -180.0
               ]
             }
           },
@@ -163,16 +109,16 @@
                 ]
               },
               "exteriorRingPositions": [
-                -180.0,
                 90.0,
                 -180.0,
                 60.0,
-                180.0,
+                -180.0,
                 60.0,
                 180.0,
                 90.0,
-                -180.0,
-                90.0
+                180.0,
+                90.0,
+                -180.0
               ]
             }
           },
@@ -191,16 +137,16 @@
                 ]
               },
               "exteriorRingPositions": [
+                -60.0,
                 -180.0,
                 -90.0,
                 -180.0,
-                -60.0,
-                180.0,
-                -60.0,
-                180.0,
                 -90.0,
-                -180.0,
-                -90.0
+                180.0,
+                -60.0,
+                180.0,
+                -60.0,
+                -180.0
               ]
             }
           },
@@ -227,16 +173,16 @@
                 ]
               },
               "exteriorRingPositions": [
-                -180.0,
                 90.0,
                 -180.0,
                 60.0,
-                180.0,
+                -180.0,
                 60.0,
                 180.0,
                 90.0,
-                -180.0,
-                90.0
+                180.0,
+                90.0,
+                -180.0
               ]
             }
           },
@@ -255,16 +201,16 @@
                 ]
               },
               "exteriorRingPositions": [
+                -60.0,
                 -180.0,
                 -90.0,
                 -180.0,
-                -60.0,
-                180.0,
-                -60.0,
-                180.0,
                 -90.0,
-                -180.0,
-                -90.0
+                180.0,
+                -60.0,
+                180.0,
+                -60.0,
+                -180.0
               ]
             }
           },
@@ -281,17 +227,49 @@
       "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
     }
   ],
-  "remarks": [
-    "LOW LVL GEOMAGNETIC STORMING CAUSING INCREASED AURORAL ACT AND SUBSEQUENT MOD DEGRADATION OF GNSS AND HF COM AVBL IN THE AURORAL ZONE. THIS STORMING EXP TO SUBSIDE IN THE FCST PERIOD. SEE WWW.SPACEWEATHERPROVIDER.WEB"
-  ],
   "nextAdvisory": {
     "timeSpecifier": "NO_FURTHER_ADVISORIES"
   },
+  "remarks": [
+    "LOW",
+    "LVL",
+    "GEOMAGNETIC",
+    "STORMING",
+    "CAUSING",
+    "INCREASED",
+    "AURORAL",
+    "ACT",
+    "AND",
+    "SUBSEQUENT",
+    "MOD",
+    "DEGRADATION",
+    "OF",
+    "GNSS",
+    "AND",
+    "HF",
+    "COM",
+    "AVBL",
+    "IN",
+    "THE",
+    "AURORAL",
+    "ZONE.",
+    "THIS",
+    "STORMING",
+    "EXP",
+    "TO",
+    "SUBSIDE",
+    "IN",
+    "THE",
+    "FCST",
+    "PERIOD.",
+    "SEE",
+    "WWW.SPACEWEATHERPROVIDER.WEB"
+  ],
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "TEST",
+  "reportStatus": "NORMAL",
   "replaceAdvisoryNumber": {
     "year": 2016,
     "serialNumber": 1
-  },
-  "reportStatus": "NORMAL"
+  }
 }

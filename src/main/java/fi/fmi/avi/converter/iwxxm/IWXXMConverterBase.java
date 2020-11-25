@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -26,8 +27,10 @@ import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -37,6 +40,7 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Validator;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -54,6 +58,10 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
@@ -202,13 +210,54 @@ public abstract class IWXXMConverterBase {
         return (JAXBElement<T>) result;
     }
 
+    protected static IssueList validateAgainstSchema(final Source input, final XMLSchemaInfo schemaInfo, final ConversionHints hints)
+            throws ConversionException {
+        final IssueList retval = new IssueList();
+        try {
+            final Validator validator = schemaInfo.getSchema().newValidator();
+            validator.setErrorHandler(new ErrorHandler() {
+                @Override
+                public void warning(final SAXParseException exception) throws SAXException {
+                    retval.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
+                            "XML Schema validation warning at line " + exception.getLineNumber() + ", column " + exception.getColumnNumber() + ":"
+                                    + exception.getMessage(), exception);
+                }
+
+                @Override
+                public void error(final SAXParseException exception) throws SAXException {
+                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                            "XML Schema validation error at line " + exception.getLineNumber() + ", column " + exception.getColumnNumber() + ":"
+                                    + exception.getMessage(), exception);
+                    throw exception;
+                }
+
+                @Override
+                public void fatalError(final SAXParseException exception) throws SAXException {
+                    retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                            "Fatal XML Schema validation error at line " + exception.getLineNumber() + ", column " + exception.getColumnNumber() + ":"
+                                    + exception.getMessage(), exception);
+                    throw exception;
+                }
+            });
+            try {
+                validator.validate(input);
+            } catch (final SAXException | IOException e) {
+                //noop, issues have already been collected by the error handler
+            }
+        } catch (final Exception e) {
+            throw new ConversionException("Error in validating document", e);
+        }
+        return retval;
+    }
+
     @SuppressWarnings("unchecked")
-    protected static <S> IssueList validateDocument(final S input, final Class<S> clz, final XMLSchemaInfo schemaInfo, final ConversionHints hints) {
+    protected static <S> IssueList validateJAXBObjectAgainstSchemaAndSchematron(final S input, final Class<S> clz, final XMLSchemaInfo schemaInfo,
+            final ConversionHints hints) {
         final IssueList retval = new IssueList();
         try {
             final Marshaller marshaller = getJAXBContext().createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaInfo.getSchemaLocations());
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaInfo.getCombinedSchemaLocations());
             marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
 
             marshaller.setSchema(schemaInfo.getSchema());
@@ -230,6 +279,31 @@ public abstract class IWXXMConverterBase {
             retval.addAll(validateAgainstIWXXMSchematron(dom, schemaInfo, hints));
         } catch (final Exception e) {
             throw new RuntimeException("Error in validating document", e);
+        }
+        return retval;
+    }
+
+    protected static IssueList validateDOMAgainstSchemaAndSchematron(final Document input, final XMLSchemaInfo schemaInfo, final ConversionHints hints)
+            throws ConversionException {
+        final IssueList retval = new IssueList();
+        retval.addAll(validateAgainstSchema(new DOMSource(input.getDocumentElement()), schemaInfo, hints));
+        retval.addAll(validateAgainstIWXXMSchematron(input, schemaInfo, hints));
+        return retval;
+    }
+
+    protected static IssueList validateStringAgainstSchemaAndSchematron(final String input, final XMLSchemaInfo schemaInfo, final ConversionHints hints)
+            throws ConversionException {
+        final IssueList retval = new IssueList();
+        try {
+            final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            final DocumentBuilder db = dbf.newDocumentBuilder();
+            final Document dom = db.parse(new InputSource(new StringReader(input)));
+            retval.addAll(validateAgainstSchema(new StreamSource(new StringReader(input)), schemaInfo, hints));
+            retval.addAll(validateAgainstIWXXMSchematron(dom, schemaInfo, hints));
+        } catch (final ParserConfigurationException | SAXException | IOException e) {
+            throw new ConversionException("Error validating produced bulletin", e);
         }
         return retval;
     }

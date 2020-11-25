@@ -40,6 +40,7 @@ import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.CircleByCenterPointImpl;
+import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
 import fi.fmi.avi.model.immutable.ElevatedPointImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.PolygonGeometryImpl;
@@ -51,8 +52,8 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
 
     protected static Optional<Aerodrome> buildAerodrome(final AirportHeliportType airport, final IssueList retval,
             final ReferredObjectRetrievalContext refCtx) {
-        AerodromeImpl.Builder aerodromeBuilder = AerodromeImpl.builder();
-        List<AirportHeliportTimeSlicePropertyType> slices = airport.getTimeSlice();
+        final AerodromeImpl.Builder aerodromeBuilder = AerodromeImpl.builder();
+        final List<AirportHeliportTimeSlicePropertyType> slices = airport.getTimeSlice();
         if (slices.isEmpty()) {
             retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No time slice (for aerodrome)"));
             return Optional.empty();
@@ -60,9 +61,9 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "More than one time slice (for aerodrome)"));
             return Optional.empty();
         } else {
-            Optional<AirportHeliportTimeSliceType> slice = resolveProperty(slices.get(0), AirportHeliportTimeSliceType.class, refCtx);
+            final Optional<AirportHeliportTimeSliceType> slice = resolveProperty(slices.get(0), AirportHeliportTimeSliceType.class, refCtx);
             if (slice.isPresent()) {
-                CodeAirportHeliportDesignatorType designator = slice.get().getDesignator();
+                final CodeAirportHeliportDesignatorType designator = slice.get().getDesignator();
                 if (designator == null || designator.getValue() == null) {
                     retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No designator for " + "aerodrome"));
                 } else {
@@ -79,12 +80,12 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                 }
 
                 ValDistanceVerticalType elevation = slice.get().getFieldElevation();
-                ElevatedPointPropertyType pointProp = slice.get().getARP();
+                final ElevatedPointPropertyType pointProp = slice.get().getARP();
                 if (pointProp != null && pointProp.getNilReason() == null) {
-                    Optional<ElevatedPointType> elPoint = resolveProperty(pointProp, ElevatedPointType.class, refCtx);
+                    final Optional<ElevatedPointType> elPoint = resolveProperty(pointProp, ElevatedPointType.class, refCtx);
                     if (elPoint.isPresent()) {
-                        String srsName = elPoint.get().getSrsName();
-                        ElevatedPointImpl.Builder posBuilder = ElevatedPointImpl.builder();
+                        final CoordinateReferenceSystemImpl.Builder crsBuilder = mergeToBuilder(elPoint.get(), CoordinateReferenceSystemImpl.builder());
+                        final ElevatedPointImpl.Builder posBuilder = ElevatedPointImpl.builder();
                         boolean canBuildPos = true;
                         //use ref point elevation as fallback for the aerodrome elevation
                         if (elevation == null && elPoint.get().getElevation() != null) {
@@ -97,16 +98,13 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                             }
                         }
                         if (elPoint.get().getPos() != null) {
-                            DirectPositionType dp = elPoint.get().getPos();
-                            if (dp.getSrsName() != null) {
-                                srsName = dp.getSrsName();
-                            }
-                            if (srsName != null) {
-                                posBuilder.setSrsName(srsName);
-                            } else {
+                            final DirectPositionType dp = elPoint.get().getPos();
+                            try {
+                                posBuilder.setCrs(mergeToBuilder(dp, crsBuilder).build());
+                            } catch (final IllegalStateException e) {
                                 canBuildPos = false;
                                 retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                                        "No SRS name for ARP elevated point position"));
+                                        "No SRS for ARP elevated point position: " + e.getMessage()));
                             }
                             if (dp.getValue() != null) {
                                 posBuilder.addAllCoordinates(dp.getValue());
@@ -150,20 +148,20 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
 
     protected static <T> void withNthNillableChild(final Object parent, final T child, final Class<T> clz, final QName childElementName,
             final ReferredObjectRetrievalContext refCtx, final int n, final Consumer<T> valueHandler, final Consumer<List<String>> nilReasonHandler) {
-        List<String> nilReasons = new ArrayList<>();
+        final List<String> nilReasons = new ArrayList<>();
         if (child == null) {
-            Optional<String> nilReason = refCtx.getNilReasonForNthChild(parent, childElementName, n);
+            final Optional<String> nilReason = refCtx.getNilReasonForNthChild(parent, childElementName, n);
             nilReason.ifPresent(reason -> nilReasons.addAll(Arrays.asList(reason.split("\\s"))));
         } else {
             try {
-                Class[] params = new Class[0];
-                Method getNilReason = clz.getMethod("getNilReason", params);
-                Object[] paramValues = new Object[0];
-                Object value = getNilReason.invoke(child, paramValues);
+                final Class[] params = new Class[0];
+                final Method getNilReason = clz.getMethod("getNilReason", params);
+                final Object[] paramValues = new Object[0];
+                final Object value = getNilReason.invoke(child, paramValues);
                 if (value != null) {
                     if (List.class.isAssignableFrom(value.getClass())) {
-                        List<?> values = (List<?>) value;
-                        for (Object o : values) {
+                        final List<?> values = (List<?>) value;
+                        for (final Object o : values) {
                             if (o instanceof String) {
                                 nilReasons.add((String) o);
                             }
@@ -186,7 +184,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
     protected static <T> void withEachNillableChild(final Object parent, final Iterable<T> children, final Class<T> clz, final QName childElementName,
             final ReferredObjectRetrievalContext refCtx, final Consumer<T> valueHandler, final Consumer<List<String>> nilReasonHandler) {
         int i = 0;
-        for (T child : children) {
+        for (final T child : children) {
             withNthNillableChild(parent, child, clz, childElementName, refCtx, i++, valueHandler, nilReasonHandler);
         }
     }
@@ -197,6 +195,13 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             return retval;
         }
         final List<JAXBElement<? extends AbstractSurfacePatchType>> abstractSurfacePatch = surface.getPatches().getValue().getAbstractSurfacePatch();
+        CoordinateReferenceSystemImpl crs;
+        try {
+            crs = mergeToBuilder(surface, CoordinateReferenceSystemImpl.builder()).build();
+        } catch (final IllegalStateException e) {
+            issueList.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No SRS for geometry; " + e.getMessage()));
+            crs = null;
+        }
 
         if (abstractSurfacePatch == null || abstractSurfacePatch.size() == 0) {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No surface patch geometry was found."));
@@ -216,9 +221,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                 if (LinearRingType.class.isAssignableFrom(abstractRing.getDeclaredType())) {
                     final LinearRingType linearRing = (LinearRingType) abstractRing.getValue();
                     final PolygonGeometryImpl.Builder polygon = PolygonGeometryImpl.builder();
-                    polygon.setSrsName(surface.getSrsName());
-                    polygon.setAxisLabels(surface.getAxisLabels());
-                    polygon.setSrsDimension(surface.getSrsDimension());
+                    polygon.setNullableCrs(crs);
                     polygon.addAllExteriorRingPositions(linearRing.getPosList().getValue());
                     retval = Optional.of(polygon.build());
                 } else if (RingType.class.isAssignableFrom(abstractRing.getDeclaredType())) {
@@ -251,9 +254,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                                     final CircleByCenterPointImpl.Builder circleRadius = CircleByCenterPointImpl.builder()//
                                             .addAllCenterPointCoordinates(cbct.getPos().getValue())//
                                             .setRadius(radius.build())//
-                                            .setSrsName(surface.getSrsName())//
-                                            .setAxisLabels(surface.getAxisLabels())//
-                                            .setSrsDimension(surface.getSrsDimension());
+                                            .setNullableCrs(crs);
                                     retval = Optional.of(circleRadius.build());
                                 } else {
                                     issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER,
@@ -278,5 +279,19 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER, "Unsupported surface patch type " + patch.getDeclaredType().getCanonicalName()));
         }
         return retval;
+    }
+
+    protected static CoordinateReferenceSystemImpl.Builder mergeToBuilder(final net.opengis.gml32.AbstractGeometryType source,
+            final CoordinateReferenceSystemImpl.Builder builder) {
+        return CRSMappers.abstractGeometryType().mergeToBuilder(source, builder);
+    }
+
+    protected static CoordinateReferenceSystemImpl.Builder mergeToBuilder(final DirectPositionType source,
+            final CoordinateReferenceSystemImpl.Builder builder) {
+        return CRSMappers.directPositionType().mergeToBuilder(source, builder);
+    }
+
+    protected static <T> T nullToDefault(final T nullableValue, final T defaultValue) {
+        return nullableValue == null ? defaultValue : nullableValue;
     }
 }
