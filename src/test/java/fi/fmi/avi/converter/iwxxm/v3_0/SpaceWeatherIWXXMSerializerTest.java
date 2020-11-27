@@ -125,6 +125,17 @@ public class SpaceWeatherIWXXMSerializerTest {
     }
 
     @Test
+    public void serialize_spacewx_issuing_centre() throws Exception {
+        final String input = getInput("spacewx-issuing-centre.json");
+        final ConversionResult<String> result = serialize(input);
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+        assertEqualsXML(getInput("spacewx-issuing-centre.xml"), result.getConvertedMessage().get());
+    }
+
+    @Test
     public void parse_and_serialize_test_A2_3() throws Exception {
         testParseAndSerialize("spacewx-A2-3.xml");
     }

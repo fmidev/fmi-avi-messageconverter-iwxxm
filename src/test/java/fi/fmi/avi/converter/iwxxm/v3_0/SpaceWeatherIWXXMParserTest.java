@@ -100,8 +100,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
-        assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
+        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
@@ -154,8 +153,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
-        assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
+        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
@@ -210,8 +208,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
-        assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
+        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
@@ -249,7 +246,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
         assertEquals("ACFJ", swx.getIssuingCenter().getName().get());
-        assertEquals("SWXC", swx.getIssuingCenter().getDesignator().get());
+        assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T01:00Z"), swx.getIssueTime().get().getCompleteTime().get());
