@@ -1,0 +1,65 @@
+{
+  "issueTime": {
+    "completeTime": "2016-11-08T00:00:00Z"
+  },
+  "issuingCenter": {
+    "name": "SWXC NAME",
+    "designator": "DESIGNATOR",
+    "type": "OTHER:SWXCTEST"
+  },
+  "advisoryNumber": {
+    "year": 2016,
+    "serialNumber": 2
+  },
+  "phenomena": [
+    "RADIATION_MOD"
+  ],
+  "analyses": [
+    {
+      "time": {
+        "completeTime": "2016-11-08T01:00:00Z"
+      },
+      "analysisType": "OBSERVATION",
+      "regions": [],
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T07:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "regions": [],
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T13:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "regions": [],
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T19:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "regions": [],
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-09T01:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "regions": [],
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
+    }
+  ],
+  "nextAdvisory": {
+    "timeSpecifier": "NO_FURTHER_ADVISORIES"
+  },
+  "permissibleUsage": "NON_OPERATIONAL",
+  "permissibleUsageReason": "TEST",
+  "reportStatus": "NORMAL"
+}

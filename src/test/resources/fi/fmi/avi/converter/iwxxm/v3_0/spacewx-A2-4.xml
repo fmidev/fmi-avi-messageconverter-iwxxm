@@ -23,9 +23,8 @@
         <aixm:UnitTimeSlice gml:id="uuid.64f29fac-154b-4484-a49d-7c8816e4840c">
           <gml:validTime />
           <aixm:interpretation>SNAPSHOT</aixm:interpretation>
-          <aixm:name>DONLON WEATHER FORECAST CENTER</aixm:name>
+          <aixm:name>DONLON</aixm:name>
           <aixm:type>OTHER:SWXC</aixm:type>
-          <aixm:designator>DONLON</aixm:designator>
         </aixm:UnitTimeSlice>
       </aixm:timeSlice>
     </aixm:Unit>
@@ -38,7 +37,7 @@
   <iwxxm:phenomenon xlink:href="http://codes.wmo.int/49-2/SpaceWxPhenomena/RADIATION_MOD" />
 
   <iwxxm:analysis>
-    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.e10181fb-ff0a-40cf-865c-bb209fc49b90" timeIndicator="FORECAST">
+    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.e10181fb-ff0a-40cf-865c-bb209fc49b90" timeIndicator="OBSERVATION">
       <iwxxm:phenomenonTime>
         <gml:TimeInstant gml:id="uuid.c0710916-7571-400d-91cc-9c55aea01e94">
           <gml:timePosition>2016-11-08T01:00:00Z</gml:timePosition>
@@ -48,8 +47,8 @@
         <iwxxm:SpaceWeatherRegion gml:id="uuid.c264db5c-3f0b-4444-ab5e-71f48a514644">
           <iwxxm:location>
             <aixm:AirspaceVolume gml:id="uuid.7138f8d1-9854-46cb-a1b1-9d96c5cee46f">
-              <aixm:upperLimit uom="FL">350</aixm:upperLimit>
-              <aixm:upperLimitReference>STD</aixm:upperLimitReference>
+              <aixm:lowerLimit uom="FL">340</aixm:lowerLimit>
+              <aixm:lowerLimitReference>STD</aixm:lowerLimitReference>
               <aixm:horizontalProjection>
                 <aixm:Surface gml:id="uuid.3b00652b-4bed-4655-959c-1c9efd431cac" srsDimension="2" axisLabels="Lat Lon"
                   srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
@@ -75,6 +74,8 @@
             <aixm:AirspaceVolume gml:id="uuid.a9793439-2c58-462f-b60f-7f39c1e7b3a5">
               <aixm:upperLimit uom="FL">350</aixm:upperLimit>
               <aixm:upperLimitReference>STD</aixm:upperLimitReference>
+              <aixm:lowerLimit uom="FL">250</aixm:lowerLimit>
+              <aixm:lowerLimitReference>SFC</aixm:lowerLimitReference>
               <aixm:horizontalProjection>
                 <aixm:Surface gml:id="uuid.6c5257ec-6c9d-4427-9b6e-cd2870adc557" srsDimension="2" axisLabels="Lat Lon"
                   srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
@@ -146,6 +147,10 @@
 
   <iwxxm:remarks>RADIATION LVL EXCEEDED 100 PCT OF BACKGROUND LVL AT FL350 AND ABV. THE CURRENT EVENT HAS PEAKED AND LVL SLW RTN TO BACKGROUND LVL. SEE WWW.SPACEWEATHERPROVIDER.WEB</iwxxm:remarks>
 
-  <iwxxm:nextAdvisoryTime nilReason="http://codes.wmo.int/common/nil/inapplicable" />
+  <iwxxm:nextAdvisoryTime>
+    <gml:TimeInstant gml:id="uuid.f51aa2c3-e63f-42e1-84a0-07289efcd504">
+      <gml:timePosition indeterminatePosition="before">2016-11-08T06:00:00Z</gml:timePosition>
+    </gml:TimeInstant>
+  </iwxxm:nextAdvisoryTime>
 
 </iwxxm:SpaceWeatherAdvisory>

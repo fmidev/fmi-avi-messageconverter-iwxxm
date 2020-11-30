@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -113,14 +114,56 @@ public class SpaceWeatherIWXXMSerializerTest {
     }
 
     @Test
-    public void parse_and_serialize_test() throws Exception {
-        final String input = getInput("spacewx-A2-3.xml");
+    public void serialize_spacewx_daylight_side_nil_location() throws Exception {
+        final String input = getInput("spacewx-daylight-side-nil-location.json");
+        final ConversionResult<String> result = serialize(input);
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+        assertEqualsXML(getInput("spacewx-daylight-side-nil-location.xml"), result.getConvertedMessage().get());
+    }
+
+    @Test
+    public void serialize_spacewx_issuing_centre() throws Exception {
+        final String input = getInput("spacewx-issuing-centre.json");
+        final ConversionResult<String> result = serialize(input);
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+        assertEqualsXML(getInput("spacewx-issuing-centre.xml"), result.getConvertedMessage().get());
+    }
+
+    @Test
+    public void parse_and_serialize_test_A2_3() throws Exception {
+        testParseAndSerialize("spacewx-A2-3.xml");
+    }
+
+    @Test
+    public void parse_and_serialize_test_A2_4() throws Exception {
+        testParseAndSerialize("spacewx-A2-4.xml");
+    }
+
+    @Test
+    public void parse_and_serialize_test_A2_5() throws Exception {
+        testParseAndSerialize("spacewx-A2-5.xml");
+    }
+
+    @Test
+    public void parse_and_serialize_test_daylight_side_nil_location() throws Exception {
+        testParseAndSerialize("spacewx-daylight-side-nil-location.xml");
+    }
+
+    private void testParseAndSerialize(final String fileName) throws IOException, SAXException {
+        final String input = getInput(fileName);
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
 
         final ConversionResult<String> message = serialize(result.getConvertedMessage().get());
 
+        assertEquals(Collections.emptyList(), message.getConversionIssues());
         assertEquals(ConversionResult.Status.SUCCESS, message.getStatus());
         assertTrue(message.getConvertedMessage().isPresent());
         assertNotNull(message.getConvertedMessage().get());
