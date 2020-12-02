@@ -11,10 +11,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.namespace.QName;
 
 import net.opengis.gml32.AngleType;
 import net.opengis.gml32.DirectPositionType;
