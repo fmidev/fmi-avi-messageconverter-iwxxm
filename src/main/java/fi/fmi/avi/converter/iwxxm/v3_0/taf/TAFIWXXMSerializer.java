@@ -152,7 +152,6 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         try {
             this.updateMessageMetadata(input, result, taf);
             final T rendered = this.render(taf, hints);
-            System.out.println(rendered.toString());
             result.addIssue(validate(rendered, getSchemaInfo(), hints));
 
             result.setConvertedMessage(rendered);
@@ -421,7 +420,6 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             target.setId("uuid." + UUID.randomUUID().toString());
             final Optional<NumericMeasure> measure = source.getVerticalVisibility();
             if (measure.isPresent()) {
-                final QName eName = new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "verticalVisibility");
                 final LengthWithNilReasonType vvValue = create(LengthWithNilReasonType.class, (vv) -> {
                     vv.setValue(measure.get().getValue());
                     vv.setUom(measure.get().getUom());
