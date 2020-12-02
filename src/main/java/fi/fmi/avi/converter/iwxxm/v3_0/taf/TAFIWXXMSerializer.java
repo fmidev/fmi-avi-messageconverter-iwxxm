@@ -42,7 +42,6 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.Aerodrome;
@@ -220,9 +219,9 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                             pos.getValue().addAll(sourcePoint.getCoordinates());
                         }));
 
-                        if(sourcePoint.getVerticalDatum().isPresent()){
-                            targetPoint.setVerticalDatum(create(CodeVerticalDatumType.class,
-                                    verticalCode -> verticalCode.setValue(sourcePoint.getVerticalDatum().get())));
+                        if (sourcePoint.getVerticalDatum().isPresent()) {
+                            targetPoint.setVerticalDatum(
+                                    create(CodeVerticalDatumType.class, verticalCode -> verticalCode.setValue(sourcePoint.getVerticalDatum().get())));
                         }
 
                         targetPoint.setSrsDimension(BigInteger.valueOf(2));
