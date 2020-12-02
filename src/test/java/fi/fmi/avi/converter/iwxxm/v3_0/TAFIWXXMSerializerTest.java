@@ -451,7 +451,7 @@ public class TAFIWXXMSerializerTest {
         final TAF t = readFromJSON("taf12.json");
         final AerodromeImpl.Builder airportBuilder = AerodromeImpl.builder()
                 .setDesignator("EETN")
-                .setName("Tallinn Airport")
+                .setName("TALLINN AIRPORT")
                 .setFieldElevationValue(40.0)
                 .setFieldElevationUom("FT")
                 .setLocationIndicatorICAO("EETN")

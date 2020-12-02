@@ -152,6 +152,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         try {
             this.updateMessageMetadata(input, result, taf);
             final T rendered = this.render(taf, hints);
+            System.out.println(rendered.toString());
             result.addIssue(validate(rendered, getSchemaInfo(), hints));
 
             result.setConvertedMessage(rendered);
@@ -425,7 +426,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                     vv.setValue(measure.get().getValue());
                     vv.setUom(measure.get().getUom());
                 });
-                target.setVerticalVisibility(new JAXBElement<>(eName, LengthWithNilReasonType.class, vvValue));
+                target.setVerticalVisibility(new ObjectFactory().createAerodromeCloudTypeVerticalVisibility(vvValue));
             }
             if (source.getLayers().isPresent()) {
                 for (final CloudLayer layer : source.getLayers().get()) {
