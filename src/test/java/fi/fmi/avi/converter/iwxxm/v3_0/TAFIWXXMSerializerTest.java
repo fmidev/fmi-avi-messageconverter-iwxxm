@@ -3,6 +3,7 @@ package fi.fmi.avi.converter.iwxxm.v3_0;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +90,9 @@ public class TAFIWXXMSerializerTest {
 
         checkConversionIssues(result.getConversionIssues());
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+
+        Assert.assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
     }
 
     @Test
