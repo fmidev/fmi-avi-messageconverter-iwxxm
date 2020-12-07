@@ -502,6 +502,9 @@ public class TAFIWXXMSerializerTest {
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:designator");
         Assert.assertEquals("Airport designator does not match", "EETN", expr.evaluate(docElement));
 
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:locationIndicatorICAO");
+        Assert.assertEquals("Airport designator does not match", "EETN", expr.evaluate(docElement));
+
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:name");
         Assert.assertEquals("Airport name does not match", "TALLINN AIRPORT", expr.evaluate(docElement));
 
@@ -664,8 +667,6 @@ public class TAFIWXXMSerializerTest {
                 "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/@cloudAndVisibilityOK");
         Assert.assertEquals("Change forecast 1 CAVOK does not match", "false", expr.evaluate(docElement));
 
-        //Forecast properties:
-
         //Visibility:
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility");
@@ -684,7 +685,7 @@ public class TAFIWXXMSerializerTest {
                 "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:weather[2]" + "/@xlink:href");
         Assert.assertEquals("Change forecast 1 weather 2 does not match", "http://codes.wmo.int/306/4678/BR", expr.evaluate(docElement));
 
-        //iwxxm30:clouds:
+        //clouds:
         expr = xpath.compile(
                 "count(/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                         + ":AerodromeCloudForecast/iwxxm30:layer)");
