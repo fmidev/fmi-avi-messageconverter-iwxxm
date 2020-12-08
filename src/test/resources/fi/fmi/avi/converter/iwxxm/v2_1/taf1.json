@@ -1,5 +1,4 @@
 {
-  "status": "NORMAL",
   "issueTime": {
     "partialTime": "--27T11:37Z"
   },
@@ -182,5 +181,6 @@
       }
     }
   ],
+  "reportStatus": "NORMAL",
   "translatedTAC": "EFVA 271137Z 2712/2812 14015G25KT 8000 -RA SCT020 OVC050\nBECMG 2715/2717 5000 -RA BKN007\nPROB40 2715/2720 4000 RASN\nBECMG 2720/2722 16012KT\nTEMPO 2720/2724 8000\nPROB40 2802/2806 3000 RASN BKN004="
 }

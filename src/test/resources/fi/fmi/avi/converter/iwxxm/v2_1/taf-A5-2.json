@@ -1,5 +1,5 @@
 {
-  "status": "CANCELLATION",
+  "cancelMessage": true,
   "permissibleUsage": "OPERATIONAL",
   "issueTime": {
     "completeTime": "2012-08-16T15:00:00Z"
@@ -31,5 +31,6 @@
         "completeTime": "2012-08-16T18:00:00Z"
       }
     }
-  }
+  },
+  "reportStatus": "AMENDMENT"
 }
