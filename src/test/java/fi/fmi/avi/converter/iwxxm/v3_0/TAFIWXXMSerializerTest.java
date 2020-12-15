@@ -1,14 +1,12 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -18,9 +16,6 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -36,9 +31,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -965,7 +957,7 @@ public class TAFIWXXMSerializerTest {
                 .setEndTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 18, 0, 0, 0, ZoneId.of("Z"))))
                 .build();
 
-        tafBuilder.setCancelledReportValidPeriod(cancelPeriod);
+        tafBuilder.setReferredReportValidPeriod(cancelPeriod);
 
         tafBuilder.setCancelMessage(true);
 
