@@ -142,8 +142,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             this.updateChangeForecast(input, taf, result);
         }
 
-        if (input.isCancelMessage() && input.getCancelledReportValidPeriod().isPresent()) {
-            updateCancellationReportValidPeriod(input.getCancelledReportValidPeriod().get(), taf);
+        if (input.isCancelMessage() && input.getReferredReportValidPeriod().isPresent()) {
+            updateCancellationReportValidPeriod(input.getReferredReportValidPeriod().get(), taf);
         }
 
         try {
