@@ -30,6 +30,16 @@ public class IWXXMTAFConverter {
     }
 
     @Bean
+    public AviMessageSpecificConverter<String, TAF> tafIWXXM30StringParser() {
+        return new fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFIWXXMParser.FromString();
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<Document, TAF> tafIWXXM30DOMParser() {
+        return new fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFIWXXMParser.FromDOM();
+    }
+
+    @Bean
     public AviMessageSpecificConverter<String, TAFBulletin> tafBulletinIWXXMStringParser() {
         final TAFBulletinIWXXMParser<String> retval = new TAFBulletinIWXXMParser.FromString();
         retval.setMessageConverter(tafIWXXMDOMParser());

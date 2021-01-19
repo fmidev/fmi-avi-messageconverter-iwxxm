@@ -81,6 +81,18 @@ public class IWXXMConverter {
     public static final ConversionSpecification<Document, TAFBulletin> WMO_COLLECT_DOM_TO_TAF_BULLETIN_POJO = new ConversionSpecification<>(Document.class,
             TAFBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 2.1 TAF", null);
 
+    /**
+     * Pre-configured spec for IWXXM 3.0.0 XML format TAF document String to {@link TAF}.
+     */
+    public static final ConversionSpecification<String, TAF> IWXXM30_STRING_TO_TAF_POJO = new ConversionSpecification<>(String.class, TAF.class,
+            "TAF, XML/IWXXM 3.0.0", null);
+
+    /**
+     * Pre-configured spec for IWXXM 3.0.0 XML format TAF document DOM Node to {@link TAF}.
+     */
+    public static final ConversionSpecification<Document, TAF> IWXXM30_DOM_TO_TAF_POJO = new ConversionSpecification<>(Document.class, TAF.class,
+            "TAF, XML/IWXXM 3.0.0", null);
+
     // *******************
     //  METAR & SPECI
     // *******************
