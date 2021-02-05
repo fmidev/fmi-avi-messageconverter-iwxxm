@@ -9,8 +9,8 @@ import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.SurfaceWind;
 
-public class TAFForecatsProperties extends AbstractPropertyContainer {
-    public TAFForecatsProperties() {
+public class TAFForecastProperties extends AbstractPropertyContainer {
+    public TAFForecastProperties() {
 
     }
 
@@ -20,7 +20,7 @@ public class TAFForecatsProperties extends AbstractPropertyContainer {
         PREVAILING_VISIBILITY(NumericMeasure.class),
         PREVAILING_VISIBILIT_OPERATOR(AviationCodeListUser.RelationalOperator.class),
         SURFACEWIND(SurfaceWind.class),
-        FORECASTWEATHER(List.class),
+        FORECAST_WEATHER(List.class),
         NO_SIGNIFICANT_WEATHER(Boolean.class),
         CLOUD_FORECAST(CloudForecast.class);
 
