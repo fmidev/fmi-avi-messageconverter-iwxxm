@@ -23,7 +23,6 @@ public class TAFForecastProperties extends AbstractPropertyContainer {
         NO_SIGNIFICANT_WEATHER(Boolean.class),
         CLOUD_FORECAST(CloudForecast.class);
 
-
         private final Class<?> acceptedType;
 
         Name(final Class<?> type) {

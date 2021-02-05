@@ -43,7 +43,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
         Objects.requireNonNull(source, "source cannot be null");
         final TAFType input;
 
-        if(TAFType.class.isAssignableFrom(source.getClass())) {
+        if (TAFType.class.isAssignableFrom(source.getClass())) {
             input = (TAFType) source;
         } else if (JAXBElement.class.isAssignableFrom(source.getClass())) {
             final JAXBElement<?> je = (JAXBElement<?>) source;
@@ -75,7 +75,8 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
                     .ifPresent(tafBuilder::setPermissibleUsageReason);
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_SUPPLEMENTARY, String.class).ifPresent(tafBuilder::setPermissibleUsageSupplementary);
             metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_ID, String.class).ifPresent(tafBuilder::setTranslatedBulletinID);
-            metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_RECEPTION_TIME, ZonedDateTime.class).ifPresent(tafBuilder::setTranslatedBulletinReceptionTime);
+            metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_RECEPTION_TIME, ZonedDateTime.class)
+                    .ifPresent(tafBuilder::setTranslatedBulletinReceptionTime);
             metaProps.get(GenericReportProperties.Name.TRANSLATION_CENTRE_DESIGNATOR, String.class).ifPresent(tafBuilder::setTranslationCentreDesignator);
             metaProps.get(GenericReportProperties.Name.TRANSLATION_CENTRE_NAME, String.class).ifPresent(tafBuilder::setTranslationCentreName);
             metaProps.get(GenericReportProperties.Name.TRANSLATION_TIME, ZonedDateTime.class).ifPresent(tafBuilder::setTranslationTime);
@@ -109,76 +110,79 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
         return tafBuilder.build();
     }
 
-    private TAFBaseForecast getBaseForecast(TAFBaseForecastProperties prop) {
+    private TAFBaseForecast getBaseForecast(final TAFBaseForecastProperties prop) {
         TAFBaseForecastImpl.Builder baseForecast = TAFBaseForecastImpl.builder();
-        if(prop.contains(TAFBaseForecastProperties.Name.TEMPERATURES)) {
-            List<TAFAirTemperatureForecast> tempList= new ArrayList<>();
+        if (prop.contains(TAFBaseForecastProperties.Name.TEMPERATURES)) {
+            List<TAFAirTemperatureForecast> tempList = new ArrayList<>();
             prop.get(TAFBaseForecastProperties.Name.TEMPERATURES, List.class).get().stream().forEach(obj -> tempList.add((TAFAirTemperatureForecast) obj));
             baseForecast.setTemperatures(tempList);
         }
-        if(prop.contains(TAFBaseForecastProperties.Name.FORECAST)) {
+        if (prop.contains(TAFBaseForecastProperties.Name.FORECAST)) {
             TAFForecastProperties forecastProp = prop.get(TAFBaseForecastProperties.Name.FORECAST, TAFForecastProperties.class).get();
-            if(forecastProp.contains(TAFForecastProperties.Name.CLOUD_FORECAST)) {
+            if (forecastProp.contains(TAFForecastProperties.Name.CLOUD_FORECAST)) {
                 baseForecast.setCloud(forecastProp.get(TAFForecastProperties.Name.CLOUD_FORECAST, CloudForecast.class));
             }
             if (forecastProp.contains(TAFForecastProperties.Name.SURFACEWIND)) {
                 baseForecast.setSurfaceWind(forecastProp.get(TAFForecastProperties.Name.SURFACEWIND, SurfaceWind.class));
             }
-            if(forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILITY)) {
+            if (forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILITY)) {
                 baseForecast.setPrevailingVisibility(forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class));
             }
-            if(forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR)) {
-                baseForecast.setPrevailingVisibilityOperator(forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR,
-                        AviationCodeListUser.RelationalOperator.class));
+            if (forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR)) {
+                baseForecast.setPrevailingVisibilityOperator(
+                        forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR, AviationCodeListUser.RelationalOperator.class));
             }
-            if(forecastProp.contains(TAFForecastProperties.Name.VISIBILITY_OK)) {
+            if (forecastProp.contains(TAFForecastProperties.Name.VISIBILITY_OK)) {
                 baseForecast.setCeilingAndVisibilityOk(forecastProp.get(TAFForecastProperties.Name.VISIBILITY_OK, Boolean.class).get().booleanValue());
             }
-            if(forecastProp.contains(TAFForecastProperties.Name.FORECAST_WEATHER)) {
+            if (forecastProp.contains(TAFForecastProperties.Name.FORECAST_WEATHER)) {
                 List<Weather> weatherList = new ArrayList<>();
                 forecastProp.get(TAFForecastProperties.Name.FORECAST_WEATHER, List.class).get().stream().forEach(obj -> weatherList.add((Weather) obj));
                 baseForecast.setForecastWeather(weatherList);
             }
         }
 
-
         return baseForecast.build();
     }
 
-    private List<TAFChangeForecast> getChangeForecasts(List list) {
+    private List<TAFChangeForecast> getChangeForecasts(final List list) {
         List<TAFChangeForecast> forecasts = new ArrayList<>();
         list.stream().filter(obj -> obj instanceof TAFChangeForecastProperties).forEach(obj -> {
-            TAFChangeForecastProperties prop = (TAFChangeForecastProperties)obj;
+            TAFChangeForecastProperties prop = (TAFChangeForecastProperties) obj;
             TAFChangeForecastImpl.Builder changeForecast = TAFChangeForecastImpl.builder();
 
-            if(prop.contains(TAFChangeForecastProperties.Name.CHANGE_PERIOD)) {
+            if (prop.contains(TAFChangeForecastProperties.Name.CHANGE_PERIOD)) {
                 changeForecast.setPeriodOfChange(prop.get(TAFChangeForecastProperties.Name.CHANGE_PERIOD, PartialOrCompleteTimePeriod.class).get());
             }
-            if(prop.contains(TAFChangeForecastProperties.Name.CHANGE_INDICATOR)) {
-                changeForecast.setChangeIndicator(prop.get(TAFChangeForecastProperties.Name.CHANGE_INDICATOR, AviationCodeListUser.TAFChangeIndicator.class).get());
+            if (prop.contains(TAFChangeForecastProperties.Name.CHANGE_INDICATOR)) {
+                changeForecast.setChangeIndicator(
+                        prop.get(TAFChangeForecastProperties.Name.CHANGE_INDICATOR, AviationCodeListUser.TAFChangeIndicator.class).get());
             }
 
-            if(prop.contains(TAFChangeForecastProperties.Name.FORECAST)) {
+            if (prop.contains(TAFChangeForecastProperties.Name.FORECAST)) {
                 TAFForecastProperties forecastProp = prop.get(TAFChangeForecastProperties.Name.FORECAST, TAFForecastProperties.class).get();
-                if(forecastProp.contains(TAFForecastProperties.Name.CLOUD_FORECAST)) {
+                if (forecastProp.contains(TAFForecastProperties.Name.CLOUD_FORECAST)) {
                     changeForecast.setCloud(forecastProp.get(TAFForecastProperties.Name.CLOUD_FORECAST, CloudForecast.class));
                 }
                 if (forecastProp.contains(TAFForecastProperties.Name.SURFACEWIND)) {
                     changeForecast.setSurfaceWind(forecastProp.get(TAFForecastProperties.Name.SURFACEWIND, SurfaceWind.class));
                 }
-                if(forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILITY)) {
+                if (forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILITY)) {
                     changeForecast.setPrevailingVisibility(forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class));
                 }
-                if(forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR)) {
-                    changeForecast.setPrevailingVisibilityOperator(forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR,
-                            AviationCodeListUser.RelationalOperator.class));
+                if (forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR)) {
+                    changeForecast.setPrevailingVisibilityOperator(
+                            forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR, AviationCodeListUser.RelationalOperator.class));
                 }
-                if(forecastProp.contains(TAFForecastProperties.Name.VISIBILITY_OK)) {
+                if (forecastProp.contains(TAFForecastProperties.Name.VISIBILITY_OK)) {
                     changeForecast.setCeilingAndVisibilityOk(forecastProp.get(TAFForecastProperties.Name.VISIBILITY_OK, Boolean.class).get().booleanValue());
                 }
-                if(forecastProp.contains(TAFForecastProperties.Name.FORECAST_WEATHER)) {
+                if (forecastProp.contains(TAFForecastProperties.Name.FORECAST_WEATHER)) {
                     List<Weather> weatherList = new ArrayList<>();
-                    forecastProp.get(TAFForecastProperties.Name.FORECAST_WEATHER, List.class).get().stream().forEach(weatherObj -> weatherList.add((Weather) weatherObj));
+                    forecastProp.get(TAFForecastProperties.Name.FORECAST_WEATHER, List.class)
+                            .get()
+                            .stream()
+                            .forEach(weatherObj -> weatherList.add((Weather) weatherObj));
                     changeForecast.setForecastWeather(weatherList);
                 }
             }
@@ -186,7 +190,6 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
         });
         return forecasts;
     }
-
 
     public static class FromDOM extends TAFIWXXMParser<Document> {
         @Override

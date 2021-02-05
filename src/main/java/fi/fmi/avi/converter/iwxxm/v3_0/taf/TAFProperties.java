@@ -10,7 +10,8 @@ import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 
 public class TAFProperties extends AbstractPropertyContainer {
 
-    public TAFProperties() { }
+    public TAFProperties() {
+    }
 
     public enum Name implements PropertyName {
 
@@ -34,6 +35,5 @@ public class TAFProperties extends AbstractPropertyContainer {
             return this.acceptedType;
         }
     }
-
 
 }
