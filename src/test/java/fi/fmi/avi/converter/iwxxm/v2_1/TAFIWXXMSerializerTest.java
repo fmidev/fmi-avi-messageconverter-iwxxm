@@ -80,7 +80,7 @@ public class TAFIWXXMSerializerTest {
     public void testCancelledTAFSerialisation() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         final TAF t = readFromJSON("taf-A5-2.json");
-        assertTrue(AviationCodeListUser.TAFStatus.CANCELLATION == t.getStatus());
+        assertTrue(t.isCancelMessage());
         final ConversionResult<String> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING);
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
 
