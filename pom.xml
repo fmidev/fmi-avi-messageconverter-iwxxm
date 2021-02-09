@@ -24,11 +24,7 @@
     <dependency>
       <groupId>fi.fmi.avi.converter</groupId>
       <artifactId>fmi-avi-messageconverter</artifactId>
-<<<<<<< HEAD
       <version>4.0.5-SNAPSHOT</version>
-=======
-      <version>4.0.4</version>
->>>>>>> master
     </dependency>
 
     <dependency>
