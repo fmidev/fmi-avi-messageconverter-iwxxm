@@ -113,7 +113,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
                     elevatedPoint.setCoordinates(arp.getPos().getValue());
                     elevatedPoint.setElevationUom(arp.getElevation().getUom());
                     elevatedPoint.setElevationValue(Double.valueOf(arp.getElevation().getValue()));
-                    //TODO: Set VericalDatum
+                    elevatedPoint.setVerticalDatum(arp.getVerticalDatum().getValue());
 
                     aerodrome.setReferencePoint(elevatedPoint.build());
                 }

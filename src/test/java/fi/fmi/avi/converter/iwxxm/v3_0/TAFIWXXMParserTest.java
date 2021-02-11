@@ -158,6 +158,7 @@ public class TAFIWXXMParserTest {
         assertEquals(Integer.valueOf(2), point.getCrs().get().getDimension().get());
         assertEquals("M", point.getElevationUom().get());
         assertEquals(12d, point.getElevationValue().get());
+        assertEquals("EGM_96", point.getVerticalDatum().get());
         assertEquals(12.34, point.getCoordinates().get(0));
         assertEquals(-12.34, point.getCoordinates().get(1));
 
