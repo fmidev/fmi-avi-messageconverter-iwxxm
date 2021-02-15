@@ -30,7 +30,7 @@ import fi.fmi.avi.model.taf.TAF;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class TAFIWXXMTest {
+public class TAFIWXXMEndToEndTest {
     @Autowired
     private AviMessageConverter converter;
 
@@ -83,6 +83,9 @@ public class TAFIWXXMTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING));
         final ConversionResult<String> message = converter.convertMessage(src, IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING);
         TestHelper.printIssues(message.getConversionIssues());
+        //System.out.println("************************************************************");
+        //System.out.println(message.getConvertedMessage().get());
+        //System.out.println("************************************************************");
         return message;
     }
 
