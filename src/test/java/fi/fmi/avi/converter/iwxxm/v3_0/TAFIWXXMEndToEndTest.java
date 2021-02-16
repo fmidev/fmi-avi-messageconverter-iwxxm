@@ -35,34 +35,14 @@ public class TAFIWXXMEndToEndTest {
     private AviMessageConverter converter;
 
     @Test
-    public void Test1() throws Exception {
-
-        String input = TestHelper.getXMLString("taf-A5-1.xml");
-        System.out.println(input);
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO));
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING));
-        final ConversionResult<TAF> stringToPojoresult = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO,
-                ConversionHints.EMPTY);
-
-        assertEquals(ConversionResult.Status.SUCCESS, stringToPojoresult.getStatus());
-        assertTrue(stringToPojoresult.getConvertedMessage().isPresent());
-
-        TAF tafPojo = stringToPojoresult.getConvertedMessage().get();
-
-        final ConversionResult<String> output = converter.convertMessage(tafPojo, IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING);
-        assertEquals(ConversionResult.Status.SUCCESS, output.getStatus());
-        assertTrue(output.getConvertedMessage().isPresent());
-
-
-
-        System.out.println(output.getConvertedMessage().get());
-    }
-
-    @Test
-    public void Test2() throws IOException, SAXException {
+    public void TAFEndToEndTest() throws IOException, SAXException {
         testParseAndSerialize("taf-A5-1.xml");
     }
 
+    @Test
+    public void TAFEndToEndCancellationTest() throws IOException, SAXException {
+        testParseAndSerialize("taf-A5-2.xml");
+    }
 
     private void testParseAndSerialize(final String fileName) throws IOException, SAXException {
         final String input = TestHelper.getXMLString(fileName);
@@ -83,17 +63,6 @@ public class TAFIWXXMEndToEndTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING));
         final ConversionResult<String> message = converter.convertMessage(src, IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING);
         TestHelper.printIssues(message.getConversionIssues());
-        //System.out.println("************************************************************");
-        //System.out.println(message.getConvertedMessage().get());
-        //System.out.println("************************************************************");
         return message;
     }
-
-    /*
-    * 1. Load XML as String
-    * 2. Parse XML String
-    * 3. Serialize POJO
-    * 4. Remove Id errors
-    * 5. Compare XML Strings
-    * */
 }

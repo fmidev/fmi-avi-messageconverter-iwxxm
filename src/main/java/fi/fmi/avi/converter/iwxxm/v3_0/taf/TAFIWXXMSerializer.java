@@ -99,8 +99,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         if (!checkCompleteTimeReferences(input, result)) {
             return result;
         }
-
-        checkAerodromeReferencePositions(input, result);
+//TODO: Check
+        //checkAerodromeReferencePositions(input, result);
 
         final String issueTimeId = "uuid." + UUID.randomUUID().toString();
         final String validTimeId = "uuid." + UUID.randomUUID().toString();
@@ -138,11 +138,12 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
 
         this.updateBaseForecast(input, taf, validTimeId, result);
 
-        if (input.getChangeForecasts().isPresent()) {
+        if (input.getChangeForecasts().isPresent() && input.getChangeForecasts().get().size() > 0) {
             this.updateChangeForecast(input, taf, result);
         }
 
         if (input.isCancelMessage() && input.getReferredReportValidPeriod().isPresent()) {
+            taf.setIsCancelReport(true);
             updateCancellationReportValidPeriod(input.getReferredReportValidPeriod().get(), taf);
         }
 

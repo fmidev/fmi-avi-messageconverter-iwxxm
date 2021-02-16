@@ -91,8 +91,17 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
             tafBuilder.setAerodrome(prop);
         });
 
+        properties.get(TAFProperties.Name.IS_CANCEL_MESSAGE, Boolean.class).ifPresent(prop -> {
+            tafBuilder.setCancelMessage(prop);
+        });
+
         properties.get(TAFProperties.Name.VALID_TIME, PartialOrCompleteTimePeriod.class).ifPresent((prop) -> {
-            tafBuilder.setValidityTime(prop);
+            if(tafBuilder.isCancelMessage()) {
+                tafBuilder.setReferredReportValidPeriod(prop);
+            } else {
+
+                tafBuilder.setValidityTime(prop);
+            }
         });
 
         properties.get(TAFProperties.Name.BASE_FORECAST, TAFBaseForecastProperties.class).ifPresent((prop) -> {
@@ -101,10 +110,6 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
 
         properties.get(TAFProperties.Name.CHANGE_FORECAST, List.class).ifPresent((prop) -> {
             tafBuilder.setChangeForecasts(getChangeForecasts(prop));
-        });
-
-        properties.get(TAFProperties.Name.IS_CANCEL_MESSAGE, Boolean.class).ifPresent(prop -> {
-            tafBuilder.setCancelMessage(prop);
         });
 
         return tafBuilder.build();
