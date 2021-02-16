@@ -1,13 +1,10 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
-import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,16 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 import org.xml.sax.SAXException;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.ConversionSpecification;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.taf.TAF;
 
 @RunWith(SpringJUnit4ClassRunner.class)
