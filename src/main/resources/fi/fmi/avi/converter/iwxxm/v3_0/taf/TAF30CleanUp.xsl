@@ -33,5 +33,10 @@
     </xsl:element>
   </xsl:template>
   <xsl:template match="//gml:boundedBy[@xsi:nil='true']" />
+  <xsl:template match="//aixm:designatorIATA[@xsi:nil='true']"/>
+  <xsl:template match="//aixm:fieldElevation[@xsi:nil='true']"/>
+  <xsl:template match="//aixm:horizontalAccuracy[@xsi:nil='true']"/>
+  <xsl:template match="//aixm:verticalAccuracy[@xsi:nil='true']"/>
+  <xsl:template match="//aixm:ARP[@xsi:nil='true']"/>
 
 </xsl:stylesheet>
