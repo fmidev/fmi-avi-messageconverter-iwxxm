@@ -99,8 +99,6 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         if (!checkCompleteTimeReferences(input, result)) {
             return result;
         }
-//TODO: Check
-        //checkAerodromeReferencePositions(input, result);
 
         final String issueTimeId = "uuid." + UUID.randomUUID().toString();
         final String validTimeId = "uuid." + UUID.randomUUID().toString();
@@ -309,9 +307,6 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 for (final Weather weather : source.getForecastWeather().get()) {
                     target.getWeather().add(create(AerodromeForecastWeatherType.class, (w) -> {
                         w.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER + weather.getCode());
-                        if (weather.getDescription().isPresent()) {
-                            w.setTitle(weather.getDescription().get());
-                        }
                     }));
                 }
             } else if (source.isNoSignificantWeather()) {
@@ -468,7 +463,6 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
 
             baseFct.setPhenomenonTime(create(TimePeriodPropertyType.class, (prop) -> {
                 prop.setHref("#" + validTimeId);
-                prop.setTitle("Valid time period of the TAF");
             }));
 
             baseFct.setPrevailingVisibility(create(DistanceWithNilReasonType.class, (prop) -> {
