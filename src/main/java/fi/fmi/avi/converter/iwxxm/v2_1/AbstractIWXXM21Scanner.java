@@ -289,47 +289,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
     public static void withWeatherBuilderFor(final ReferenceType weather, final ConversionHints hints, final Consumer<WeatherImpl.Builder> resultHandler,
             final Consumer<ConversionIssue> issueHandler) {
-        ConversionIssue issue = null;
-        final String codeListValue = weather.getHref();
-        if (codeListValue != null && codeListValue.startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER)) {
-            final String code = codeListValue.substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER.length());
-            final String description = weather.getTitle();
-            final WeatherImpl.Builder wBuilder = WeatherImpl.builder();
-            boolean codeOk = false;
-            if (hints == null || hints.isEmpty() || !hints.containsKey(ConversionHints.KEY_WEATHER_CODES) || ConversionHints.VALUE_WEATHER_CODES_STRICT_WMO_4678
-                    .equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                // Only the official codes allowed by default
-                if (WEATHER_CODES.containsKey(code)) {
-                    wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
-                    codeOk = true;
-                } else {
-                    issue = new ConversionIssue(ConversionIssue.Type.SYNTAX, "Illegal weather code " + code + " found with strict WMO 4678 " + "checking");
-                }
-            } else {
-                if (ConversionHints.VALUE_WEATHER_CODES_ALLOW_ANY.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                    wBuilder.setCode(code);
-                    if (description != null) {
-                        wBuilder.setDescription(description);
-                    } else if (WEATHER_CODES.containsKey(code)) {
-                        wBuilder.setDescription(WEATHER_CODES.get(code));
-                    }
-                } else if (ConversionHints.VALUE_WEATHER_CODES_IGNORE_NON_WMO_4678.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                    if (WEATHER_CODES.containsKey(code)) {
-                        wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
-                        codeOk = true;
-                    }
-                }
-            }
-            if (codeOk) {
-                resultHandler.accept(wBuilder);
-            }
-        } else {
-            issue = new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                    "Weather codelist value does not begin with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER);
-        }
-        if (issue != null) {
-            issueHandler.accept(issue);
-        }
+        withWeatherBuilderFor(weather.getHref(), weather.getTitle(), hints, resultHandler, issueHandler);
     }
 
     public static void withCloudLayerBuilderFor(final CloudLayerPropertyType layerProp, final ReferredObjectRetrievalContext refCtx,

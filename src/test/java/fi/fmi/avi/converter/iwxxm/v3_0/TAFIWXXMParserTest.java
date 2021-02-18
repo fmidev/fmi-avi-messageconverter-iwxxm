@@ -216,7 +216,7 @@ public class TAFIWXXMParserTest {
         assertEquals("2012-08-16T12:00Z", change.getPeriodOfChange().getEndTime().get().getCompleteTime().get().toString());
         assertEquals("m", change.getPrevailingVisibility().get().getUom());
         assertEquals(1000d, change.getPrevailingVisibility().get().getValue());
-        assertEquals("http://codes.wmo.int/306/4678/TSRA", change.getForecastWeather().get().get(0).getCode());
+        assertEquals("TSRA", change.getForecastWeather().get().get(0).getCode());
         assertTrue(change.getSurfaceWind().isPresent());
         //Change 2 Surface Wind
         surfaceWind = change.getSurfaceWind().get();
@@ -304,7 +304,7 @@ public class TAFIWXXMParserTest {
         assertEquals("DONLON/INTERNATIONAL", aerodrome.getName().get());
         assertEquals("YUDO", aerodrome.getLocationIndicatorICAO().get());
 
-        assertEquals("2012-08-16T00:00Z", taf.getValidityTime().get().getStartTime().get().getCompleteTime().get().toString());
-        assertEquals("2012-08-16T18:00Z",taf.getValidityTime().get().getEndTime().get().getCompleteTime().get().toString());
+        assertEquals("2012-08-16T00:00Z", taf.getReferredReportValidPeriod().get().getStartTime().get().getCompleteTime().get().toString());
+        assertEquals("2012-08-16T18:00Z", taf.getReferredReportValidPeriod().get().getEndTime().get().getCompleteTime().get().toString());
     }
 }

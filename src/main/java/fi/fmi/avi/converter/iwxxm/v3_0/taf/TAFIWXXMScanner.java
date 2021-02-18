@@ -128,7 +128,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             }
             TAFBaseForecastProperties baseForecastProperties = new TAFBaseForecastProperties();
 
-            setTAFBaseForecastProperties(baseForecastProperties, input.getBaseForecast(), refCtx);
+            setTAFBaseForecastProperties(baseForecastProperties, input.getBaseForecast(), issueList, refCtx, hints);
             properties.set(BASE_FORECAST, baseForecastProperties);
         }
 
@@ -138,7 +138,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             for (MeteorologicalAerodromeForecastPropertyType forecast : input.getChangeForecast()) {
                 TAFChangeForecastProperties changeForecastProperties = new TAFChangeForecastProperties();
 
-                setTAFChangeForecstProperties(changeForecastProperties, forecast, refCtx, issueList);
+                setTAFChangeForecstProperties(changeForecastProperties, forecast, refCtx, issueList, hints);
 
                 changeForecasts.add(changeForecastProperties);
             }
@@ -163,7 +163,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
     }
 
     private static void setTAFBaseForecastProperties(final TAFBaseForecastProperties props, final MeteorologicalAerodromeForecastPropertyType input,
-            final ReferredObjectRetrievalContext refCtx) {
+            final List<ConversionIssue> issueList, final ReferredObjectRetrievalContext refCtx, ConversionHints hints) {
         if (input.getMeteorologicalAerodromeForecast() != null) {
             if (input.getMeteorologicalAerodromeForecast().getTemperature().size() > 0) {
                 List<TAFAirTemperatureForecast> temperatureForecasts = new ArrayList<>();
@@ -175,7 +175,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             }
 
             TAFForecastProperties forecatsProperties = new TAFForecastProperties();
-            setTAFForecastProperties(forecatsProperties, input, refCtx);
+            setTAFForecastProperties(forecatsProperties, input, issueList, refCtx, hints);
 
             props.set(TAFBaseForecastProperties.Name.FORECAST, forecatsProperties);
         } else {
@@ -184,7 +184,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
     }
 
     private static void setTAFChangeForecstProperties(final TAFChangeForecastProperties props, final MeteorologicalAerodromeForecastPropertyType input,
-            final ReferredObjectRetrievalContext refCtx, final List<ConversionIssue> issueList) {
+            final ReferredObjectRetrievalContext refCtx, final List<ConversionIssue> issueList, ConversionHints hints) {
         final Optional<ZonedDateTime> changeForecastStart = getStartTime(input.getMeteorologicalAerodromeForecast().getPhenomenonTime().getTimePeriod(),
                 refCtx);
         final Optional<ZonedDateTime> changeForecastEnd = getEndTime(input.getMeteorologicalAerodromeForecast().getPhenomenonTime().getTimePeriod(), refCtx);
@@ -208,13 +208,13 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
 
         TAFForecastProperties forecatsProperties = new TAFForecastProperties();
 
-        setTAFForecastProperties(forecatsProperties, input, refCtx);
+        setTAFForecastProperties(forecatsProperties, input, issueList, refCtx, hints);
 
         props.set(TAFChangeForecastProperties.Name.FORECAST, forecatsProperties);
     }
 
     private static void setTAFForecastProperties(final TAFForecastProperties props, final MeteorologicalAerodromeForecastPropertyType input,
-            final ReferredObjectRetrievalContext refCtx) {
+            final List<ConversionIssue> issueList, final ReferredObjectRetrievalContext refCtx, ConversionHints hints) {
 
         props.set(VISIBILITY_OK, input.getMeteorologicalAerodromeForecast().isCloudAndVisibilityOK());
 
@@ -233,7 +233,9 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         if (input.getMeteorologicalAerodromeForecast().getWeather().size() > 0) {
             List<Weather> weatherList = new ArrayList<>();
             for (AerodromeForecastWeatherType weatherType : input.getMeteorologicalAerodromeForecast().getWeather()) {
-                weatherList.add(WeatherImpl.builder().setCode(weatherType.getHref()).build());
+                withWeatherBuilderFor(weatherType, hints, value -> weatherList.add(value.build())
+                        , issue -> issueList.add(issue));
+                //weatherList.add(WeatherImpl.builder().setCode(weatherType.getHref()).build());
             }
             props.set(FORECAST_WEATHER, weatherList);
         }

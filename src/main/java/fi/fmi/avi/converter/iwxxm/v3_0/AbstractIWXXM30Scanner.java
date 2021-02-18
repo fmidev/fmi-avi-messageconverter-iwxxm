@@ -1,15 +1,21 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
+import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
+
 import java.time.ZonedDateTime;
+import java.util.function.Consumer;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationWeatherMessage;
+import fi.fmi.avi.model.immutable.WeatherImpl;
+import icao.iwxxm30.AerodromeForecastWeatherType;
 import icao.iwxxm30.ReportType;
 
 public class AbstractIWXXM30Scanner extends AbstractIWXXMScanner {
@@ -58,5 +64,10 @@ public class AbstractIWXXM30Scanner extends AbstractIWXXMScanner {
             }
         }
         return retval;
+    }
+
+    public static void withWeatherBuilderFor(final AerodromeForecastWeatherType weather, final ConversionHints hints, final Consumer<WeatherImpl.Builder> resultHandler,
+            final Consumer<ConversionIssue> issueHandler) {
+        withWeatherBuilderFor(weather.getHref(), weather.getTitle(), hints, resultHandler, issueHandler);
     }
 }
