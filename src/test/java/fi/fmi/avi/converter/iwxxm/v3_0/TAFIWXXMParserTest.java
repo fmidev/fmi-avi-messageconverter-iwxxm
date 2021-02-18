@@ -304,7 +304,7 @@ public class TAFIWXXMParserTest {
         assertEquals("DONLON/INTERNATIONAL", aerodrome.getName().get());
         assertEquals("YUDO", aerodrome.getLocationIndicatorICAO().get());
 
-        assertEquals("2012-08-16T00:00Z", taf.getValidityTime().get().getStartTime().get().getCompleteTime().get().toString());
-        assertEquals("2012-08-16T18:00Z",taf.getValidityTime().get().getEndTime().get().getCompleteTime().get().toString());
+        assertEquals("2012-08-16T00:00Z", taf.getReferredReportValidPeriod().get().getStartTime().get().getCompleteTime().get().toString());
+        assertEquals("2012-08-16T18:00Z", taf.getReferredReportValidPeriod().get().getEndTime().get().getCompleteTime().get().toString());
     }
 }

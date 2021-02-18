@@ -398,27 +398,27 @@ public class TAFIWXXMScanner extends AbstractIWXXM21Scanner {
                         JAXBElement<LengthWithNilReasonType> vv = cloudForecast.get().getVerticalVisibility();
                         if (vv != null) {
                             if (vv.getValue() != null) {
-                        cloudBuilder.setVerticalVisibility(asNumericMeasure(vv.getValue()));
-                    } else if (vv.isNil()) {
-                        cloudBuilder.setVerticalVisibilityMissing(true);
+                                cloudBuilder.setVerticalVisibility(asNumericMeasure(vv.getValue()));
+                            } else if (vv.isNil()) {
+                                cloudBuilder.setVerticalVisibilityMissing(true);
+                            }
+                        } else {
+                            List<CloudLayer> layers = new ArrayList<>();
+                            for (CloudLayerPropertyType layerProp : cloudForecast.get().getLayer()) {
+                                AbstractIWXXM21Scanner.withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
+                                    layers.add(layerBuilder.build());
+                                }, retval::add, contextPath + " / cloud forecast");
+                            }
+                            if (!layers.isEmpty()) {
+                                cloudBuilder.setLayers(layers);
+                            } else {
+                                retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                                        "No vertical visibility or cloud layers in " + contextPath + " / cloud forecast"));
+                            }
+                        }
                     }
-                } else {
-                    List<CloudLayer> layers = new ArrayList<>();
-                    for (CloudLayerPropertyType layerProp : cloudForecast.get().getLayer()) {
-                        AbstractIWXXM21Scanner.withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
-                            layers.add(layerBuilder.build());
-                        }, retval::add, contextPath + " / cloud forecast");
-                    }
-                    if (!layers.isEmpty()) {
-                        cloudBuilder.setLayers(layers);
-                    } else {
-                        retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                                "No vertical visibility or cloud layers in " + contextPath + " / cloud forecast"));
-                    }
-                }
-            }
 
-            properties.set(TAFForecastRecordProperties.Name.CLOUD, cloudBuilder.build());
+                    properties.set(TAFForecastRecordProperties.Name.CLOUD, cloudBuilder.build());
                 }, (nilReasons) -> {
                     if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
                         properties.set(TAFForecastRecordProperties.Name.CLOUD, CloudForecastImpl.builder()//

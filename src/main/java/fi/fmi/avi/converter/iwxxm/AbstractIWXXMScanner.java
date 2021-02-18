@@ -286,12 +286,11 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         return retval;
     }
 
-    public static void withWeatherBuilderFor(String codeListValue, String valueTitle, final ConversionHints hints,
+    public static void withWeatherBuilderFor(String codeListValue, String description, final ConversionHints hints,
             final Consumer<WeatherImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
         if (codeListValue != null && codeListValue.startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER)) {
             final String code = codeListValue.substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER.length());
-            final String description = valueTitle;
             final WeatherImpl.Builder wBuilder = WeatherImpl.builder();
             boolean codeOk = false;
             if (hints == null || hints.isEmpty() || !hints.containsKey(ConversionHints.KEY_WEATHER_CODES) || ConversionHints.VALUE_WEATHER_CODES_STRICT_WMO_4678

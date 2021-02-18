@@ -234,7 +234,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             List<Weather> weatherList = new ArrayList<>();
             for (AerodromeForecastWeatherType weatherType : input.getMeteorologicalAerodromeForecast().getWeather()) {
                 withWeatherBuilderFor(weatherType, hints, value -> weatherList.add(value.build())
-                , issue -> issueList.add(issue));
+                        , issue -> issueList.add(issue));
                 //weatherList.add(WeatherImpl.builder().setCode(weatherType.getHref()).build());
             }
             props.set(FORECAST_WEATHER, weatherList);
