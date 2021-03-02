@@ -106,17 +106,22 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         final String validTimeId = "uuid." + UUID.randomUUID().toString();
         final String aerodromeId = "uuid." + UUID.randomUUID().toString();
 
-        TAFType taf = create(TAFType.class);
+        final TAFType taf = create(TAFType.class);
         taf.setId("uuid." + UUID.randomUUID().toString());
 
-        final AviationWeatherMessage.ReportStatus status = input.getReportStatus().get();
-        taf.setReportStatus(ReportStatusType.valueOf(status.name()));
-
-        if (input.getIssueTime().get().getCompleteTime().isPresent()) {
-            taf.setIssueTime(create(TimeInstantPropertyType.class, (prop) -> {
-                createTimeInstantProperty(input, prop, issueTimeId);
-            }));
+        final Optional<AviationWeatherMessage.ReportStatus> reportStatus = input.getReportStatus();
+        if (!reportStatus.isPresent()) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Report status for TAF is missing"));
+            return result;
         }
+        taf.setReportStatus(ReportStatusType.valueOf(reportStatus.get().name()));
+
+        final Optional<PartialOrCompleteTimeInstant> issueTime = input.getIssueTime();
+        if (!issueTime.isPresent()) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Issue time for TAF is missing"));
+            return result;
+        }
+        taf.setIssueTime(create(TimeInstantPropertyType.class, (prop) -> createTimeInstantProperty(input, prop, issueTimeId)));
 
         if (input.getValidityTime().isPresent()) {
             final Optional<PartialOrCompleteTimeInstant> start = input.getValidityTime().get().getStartTime();
@@ -129,9 +134,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Validity time for TAF is not a fully qualified time period"));
                 return result;
             }
-            taf.setValidPeriod(create(TimePeriodPropertyType.class, (prop) -> {
-                createTimePeriodPropertyType(prop, start.get(), end.get(), validTimeId);
-            }));
+            taf.setValidPeriod(create(TimePeriodPropertyType.class, (prop) -> createTimePeriodPropertyType(prop, start.get(), end.get(), validTimeId)));
         }
 
         this.updateAerodrome(input.getAerodrome(), taf, aerodromeId);
@@ -184,7 +187,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         target.setAerodrome(create(AirportHeliportPropertyType.class, prop -> {
             prop.setAirportHeliport(create(AirportHeliportType.class, type -> {
                 type.setId(aerodromeId);
-                AirportHeliportTimeSliceType timeSlice = create(AirportHeliportTimeSliceType.class);
+                final AirportHeliportTimeSliceType timeSlice = create(AirportHeliportTimeSliceType.class);
                 timeSlice.setId("uuid." + UUID.randomUUID());
 
                 timeSlice.setInterpretation("SNAPSHOT");
@@ -193,21 +196,21 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 timeSlice.setDesignator(create(CodeAirportHeliportDesignatorType.class, (code) -> code.setValue(aerodrome.getDesignator())));
 
                 if (aerodrome.getName().isPresent()) {
-                    TextNameType name = new TextNameType();
+                    final TextNameType name = new TextNameType();
                     name.setValue(aerodrome.getName().get());
                     timeSlice.setPortName(name);
                 }
 
                 if (aerodrome.getLocationIndicatorICAO().isPresent()) {
-                    CodeICAOType code = new CodeICAOType();
+                    final CodeICAOType code = new CodeICAOType();
                     code.setValue(aerodrome.getLocationIndicatorICAO().get());
                     timeSlice.setLocationIndicatorICAO(code);
                 }
 
                 if (aerodrome.getReferencePoint().isPresent()) {
                     timeSlice.setARP(create(ElevatedPointPropertyType.class, elevatedPointProp -> {
-                        ElevatedPoint sourcePoint = aerodrome.getReferencePoint().get();
-                        ElevatedPointType targetPoint = create(ElevatedPointType.class);
+                        final ElevatedPoint sourcePoint = aerodrome.getReferencePoint().get();
+                        final ElevatedPointType targetPoint = create(ElevatedPointType.class);
                         targetPoint.setId("uuid." + UUID.randomUUID());
 
                         targetPoint.setElevation(create(ValDistanceVerticalType.class, verticalType -> {
@@ -449,8 +452,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
 
             final Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
             if (type.isPresent()) {
-                ObjectFactory of = new ObjectFactory();
-                SigConvectiveCloudTypeType sigConvectiveCloudTypeType = of.createSigConvectiveCloudTypeType();
+                final ObjectFactory of = new ObjectFactory();
+                final SigConvectiveCloudTypeType sigConvectiveCloudTypeType = of.createSigConvectiveCloudTypeType();
                 sigConvectiveCloudTypeType.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + type.get().getCode());
                 target.setCloudType(of.createCloudLayerTypeCloudType(sigConvectiveCloudTypeType));
                 target.setCloudType(of.createCloudLayerTypeCloudType(sigConvectiveCloudTypeType));
@@ -471,15 +474,15 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             }));
 
             baseFct.setPrevailingVisibility(create(DistanceWithNilReasonType.class, (prop) -> {
-                NumericMeasure prevailingVisibility = baseForecastInput.get().getPrevailingVisibility().get();
+                final NumericMeasure prevailingVisibility = baseForecastInput.get().getPrevailingVisibility().get();
                 prop.setUom(prevailingVisibility.getUom());
                 prop.setValue(prevailingVisibility.getValue());
             }));
 
             if (baseForecastInput.get().getSurfaceWind().isPresent()) {
                 baseFct.setSurfaceWind(create(AerodromeSurfaceWindForecastPropertyType.class, prop -> {
-                    AerodromeSurfaceWindForecastType surfaceWindType = create(AerodromeSurfaceWindForecastType.class);
-                    SurfaceWind surfaceWind = baseForecastInput.get().getSurfaceWind().get();
+                    final AerodromeSurfaceWindForecastType surfaceWindType = create(AerodromeSurfaceWindForecastType.class);
+                    final SurfaceWind surfaceWind = baseForecastInput.get().getSurfaceWind().get();
 
                     surfaceWindType.setVariableWindDirection(surfaceWind.isVariableDirection());
 
