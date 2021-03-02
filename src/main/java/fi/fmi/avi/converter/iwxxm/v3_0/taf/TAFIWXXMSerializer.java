@@ -569,7 +569,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
 
     @Override
     protected InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException {
-        final InputStream retval = this.getClass().getResourceAsStream("TAF30CleanUp.xsl");
+        final InputStream retval = TAFIWXXMSerializer.class.getResourceAsStream("TAF30CleanUp.xsl");
         if (retval == null) {
             throw new ConversionException("Error accessing cleanup XSLT sheet file");
         }
