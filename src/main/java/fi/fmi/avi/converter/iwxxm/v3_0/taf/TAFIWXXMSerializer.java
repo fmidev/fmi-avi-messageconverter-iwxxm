@@ -464,66 +464,65 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
     protected void updateBaseForecast(final TAF source, final TAFType target, final String validTimeId, final ConversionResult<?> result) {
 
         final Optional<TAFBaseForecast> baseForecastInput = source.getBaseForecast();
-        if (baseForecastInput.isPresent()) {
-            final MeteorologicalAerodromeForecastType baseFct = create(MeteorologicalAerodromeForecastType.class);
-            baseFct.setId("uuid." + UUID.randomUUID().toString());
-
-            baseFct.setPhenomenonTime(create(TimePeriodPropertyType.class, (prop) -> {
-                prop.setHref("#" + validTimeId);
-                prop.setTitle("Valid time period of the TAF");
-            }));
-
-            baseFct.setPrevailingVisibility(create(DistanceWithNilReasonType.class, (prop) -> {
-                final NumericMeasure prevailingVisibility = baseForecastInput.get().getPrevailingVisibility().get();
-                prop.setUom(prevailingVisibility.getUom());
-                prop.setValue(prevailingVisibility.getValue());
-            }));
-
-            if (baseForecastInput.get().getSurfaceWind().isPresent()) {
-                baseFct.setSurfaceWind(create(AerodromeSurfaceWindForecastPropertyType.class, prop -> {
-                    final AerodromeSurfaceWindForecastType surfaceWindType = create(AerodromeSurfaceWindForecastType.class);
-                    final SurfaceWind surfaceWind = baseForecastInput.get().getSurfaceWind().get();
-
-                    surfaceWindType.setVariableWindDirection(surfaceWind.isVariableDirection());
-
-                    if (surfaceWind.getMeanWindDirection().isPresent()) {
-                        surfaceWindType.setMeanWindDirection(create(AngleWithNilReasonType.class, (direction) -> {
-                            direction.setUom(surfaceWind.getMeanWindDirection().get().getUom());
-                            direction.setValue(surfaceWind.getMeanWindDirection().get().getValue());
-                        }));
-                    }
-
-                    surfaceWindType.setMeanWindSpeed(create(VelocityWithNilReasonType.class, (speed) -> {
-                        speed.setUom(surfaceWind.getMeanWindSpeed().getUom());
-                        speed.setValue(surfaceWind.getMeanWindSpeed().getValue());
-                    }));
-
-                    if (surfaceWind.getMeanWindSpeedOperator().isPresent()) {
-                        surfaceWindType.setMeanWindSpeedOperator(RelationalOperatorType.valueOf(surfaceWind.getMeanWindSpeedOperator().get().name()));
-                    }
-
-                    if (surfaceWind.getWindGust().isPresent()) {
-                        surfaceWindType.setWindGustSpeed(create(VelocityWithNilReasonType.class, (gustSpeed) -> {
-                            gustSpeed.setUom(surfaceWind.getWindGust().get().getUom());
-                            gustSpeed.setValue(surfaceWind.getWindGust().get().getValue());
-                        }));
-                    }
-
-                    if (surfaceWind.getWindGustOperator().isPresent()) {
-                        surfaceWindType.setWindGustSpeedOperator(RelationalOperatorType.valueOf(surfaceWind.getWindGustOperator().get().name()));
-                    }
-                    prop.setAerodromeSurfaceWindForecast(surfaceWindType);
-                }));
-            }
-
-            this.updateForecastResult(baseForecastInput.get(), baseFct, result);
-            target.setBaseForecast(create(MeteorologicalAerodromeForecastPropertyType.class, (prop) -> prop.setMeteorologicalAerodromeForecast(baseFct)));
-        } else {
-            if (AviationWeatherMessage.ReportStatus.AMENDMENT.equals(source.getReportStatus()) || AviationWeatherMessage.ReportStatus.CORRECTION.equals(
-                    source.getReportStatus())) {
+        if (!baseForecastInput.isPresent()) {
+            if (!source.isCancelMessage()) {
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Base forecast missing for non-cancellation TAF"));
             }
+            return;
         }
+        final MeteorologicalAerodromeForecastType baseFct = create(MeteorologicalAerodromeForecastType.class);
+        baseFct.setId("uuid." + UUID.randomUUID().toString());
+
+        baseFct.setPhenomenonTime(create(TimePeriodPropertyType.class, (prop) -> {
+            prop.setHref("#" + validTimeId);
+            prop.setTitle("Valid time period of the TAF");
+        }));
+
+        baseFct.setPrevailingVisibility(create(DistanceWithNilReasonType.class, (prop) -> {
+            final NumericMeasure prevailingVisibility = baseForecastInput.get().getPrevailingVisibility().get();
+            prop.setUom(prevailingVisibility.getUom());
+            prop.setValue(prevailingVisibility.getValue());
+        }));
+
+        if (baseForecastInput.get().getSurfaceWind().isPresent()) {
+            baseFct.setSurfaceWind(create(AerodromeSurfaceWindForecastPropertyType.class, prop -> {
+                final AerodromeSurfaceWindForecastType surfaceWindType = create(AerodromeSurfaceWindForecastType.class);
+                final SurfaceWind surfaceWind = baseForecastInput.get().getSurfaceWind().get();
+
+                surfaceWindType.setVariableWindDirection(surfaceWind.isVariableDirection());
+
+                if (surfaceWind.getMeanWindDirection().isPresent()) {
+                    surfaceWindType.setMeanWindDirection(create(AngleWithNilReasonType.class, (direction) -> {
+                        direction.setUom(surfaceWind.getMeanWindDirection().get().getUom());
+                        direction.setValue(surfaceWind.getMeanWindDirection().get().getValue());
+                    }));
+                }
+
+                surfaceWindType.setMeanWindSpeed(create(VelocityWithNilReasonType.class, (speed) -> {
+                    speed.setUom(surfaceWind.getMeanWindSpeed().getUom());
+                    speed.setValue(surfaceWind.getMeanWindSpeed().getValue());
+                }));
+
+                if (surfaceWind.getMeanWindSpeedOperator().isPresent()) {
+                    surfaceWindType.setMeanWindSpeedOperator(RelationalOperatorType.valueOf(surfaceWind.getMeanWindSpeedOperator().get().name()));
+                }
+
+                if (surfaceWind.getWindGust().isPresent()) {
+                    surfaceWindType.setWindGustSpeed(create(VelocityWithNilReasonType.class, (gustSpeed) -> {
+                        gustSpeed.setUom(surfaceWind.getWindGust().get().getUom());
+                        gustSpeed.setValue(surfaceWind.getWindGust().get().getValue());
+                    }));
+                }
+
+                if (surfaceWind.getWindGustOperator().isPresent()) {
+                    surfaceWindType.setWindGustSpeedOperator(RelationalOperatorType.valueOf(surfaceWind.getWindGustOperator().get().name()));
+                }
+                prop.setAerodromeSurfaceWindForecast(surfaceWindType);
+            }));
+        }
+
+        this.updateForecastResult(baseForecastInput.get(), baseFct, result);
+        target.setBaseForecast(create(MeteorologicalAerodromeForecastPropertyType.class, (prop) -> prop.setMeteorologicalAerodromeForecast(baseFct)));
     }
 
     protected void updateMessageMetadata(final TAF source, final ConversionResult<?> results, final TAFType target) throws ConversionException {
