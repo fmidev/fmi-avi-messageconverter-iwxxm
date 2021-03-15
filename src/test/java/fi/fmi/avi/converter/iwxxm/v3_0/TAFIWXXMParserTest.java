@@ -4,7 +4,10 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
@@ -306,5 +310,30 @@ public class TAFIWXXMParserTest {
 
         assertEquals("2012-08-16T00:00Z", taf.getReferredReportValidPeriod().get().getStartTime().get().getCompleteTime().get().toString());
         assertEquals("2012-08-16T18:00Z", taf.getReferredReportValidPeriod().get().getEndTime().get().getCompleteTime().get().toString());
+    }
+
+    @Test
+    public void noSignificantWeatherTest() throws IOException {
+        String input = getInput("taf-vertical-visibility-missing.xml");
+
+        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO,
+                ConversionHints.EMPTY);
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertTrue(result.getConvertedMessage().isPresent());
+
+        TAF taf = result.getConvertedMessage().get();
+
+
+        assertTrue(taf.getBaseForecast().get().isNoSignificantWeather());
+        assertTrue(taf.getChangeForecasts().get().get(0).isNoSignificantWeather());
+        assertTrue(taf.getChangeForecasts().get().get(1).isNoSignificantWeather());
+    }
+
+    private String getInput(final String fileName) throws IOException {
+        try (InputStream is = SpaceWeatherIWXXMSerializerTest.class.getResourceAsStream(fileName)) {
+            Objects.requireNonNull(is);
+            return IOUtils.toString(is, "UTF-8");
+        }
     }
 }
