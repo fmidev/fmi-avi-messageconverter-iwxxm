@@ -144,19 +144,38 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             properties.set(CHANGE_FORECAST, changeForecasts);
         }
 
-        if (input.getCancelledReportValidPeriod() != null) {
-            final Optional<ZonedDateTime> cancelStartTimeZoned = getStartTime(input.getCancelledReportValidPeriod().getTimePeriod(), refCtx);
-            final Optional<ZonedDateTime> cancelEndTimeZoned = getEndTime(input.getCancelledReportValidPeriod().getTimePeriod(), refCtx);
-            if (cancelStartTimeZoned.isPresent() && cancelEndTimeZoned.isPresent()) {
-                Optional<PartialOrCompleteTimeInstant> startTime = Optional.of(PartialOrCompleteTimeInstant.of(cancelStartTimeZoned.get()));
-                Optional<PartialOrCompleteTimeInstant> endTime = Optional.of(PartialOrCompleteTimeInstant.of(cancelEndTimeZoned.get()));
-
-                final PartialOrCompleteTimePeriod cancelPeriod = PartialOrCompleteTimePeriod.builder().setStartTime(startTime).setEndTime(endTime).build();
-
-                properties.set(VALID_TIME, cancelPeriod);
-            }
+        if(input.isIsCancelReport()) {
             properties.set(IS_CANCEL_MESSAGE, true);
+
+            if (input.getCancelledReportValidPeriod() != null) {
+                final Optional<ZonedDateTime> cancelStartTimeZoned = getStartTime(input.getCancelledReportValidPeriod().getTimePeriod(), refCtx);
+                final Optional<ZonedDateTime> cancelEndTimeZoned = getEndTime(input.getCancelledReportValidPeriod().getTimePeriod(), refCtx);
+                if (cancelStartTimeZoned.isPresent() && cancelEndTimeZoned.isPresent()) {
+                    issueList.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Cancellation period is missing."));
+                } else {
+                    final PartialOrCompleteTimePeriod.Builder cancelPeriod = PartialOrCompleteTimePeriod.builder();
+                    if(cancelStartTimeZoned.isPresent()) {
+                        cancelPeriod.setStartTime(Optional.of(PartialOrCompleteTimeInstant.of(cancelStartTimeZoned.get())));
+                    } else {
+                        issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.MISSING_DATA,
+                                "Cancellation start time is missing."));
+                    }
+
+                    if(cancelEndTimeZoned.isPresent()) {
+                        cancelPeriod.setEndTime(Optional.of(PartialOrCompleteTimeInstant.of(cancelEndTimeZoned.get())));
+                    } else {
+                        issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.MISSING_DATA, "Cancellation end time is "
+                                + "missing."));
+                    }
+
+                    properties.set(VALID_TIME, cancelPeriod.build());
+                }
+            } else {
+                issueList.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Cancellation period is missing."));
+            }
         }
+
+
 
         return issueList;
     }
