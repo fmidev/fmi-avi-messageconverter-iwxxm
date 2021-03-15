@@ -31,7 +31,9 @@ import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Scanner;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
+import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.SurfaceWind;
@@ -46,6 +48,7 @@ import fi.fmi.avi.model.immutable.SurfaceWindImpl;
 import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
 import fi.fmi.avi.model.taf.immutable.TAFAirTemperatureForecastImpl;
 import icao.iwxxm30.AerodromeAirTemperatureForecastPropertyType;
+import icao.iwxxm30.AerodromeCloudForecastPropertyType;
 import icao.iwxxm30.AerodromeCloudForecastType;
 import icao.iwxxm30.AerodromeForecastWeatherType;
 import icao.iwxxm30.AerodromeSurfaceWindForecastType;
@@ -263,8 +266,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (input.getMeteorologicalAerodromeForecast().getCloud() != null) {
-            props.set(CLOUD_FORECAST,
-                    CloudForecastImpl.builder().setLayers(setCloud(input.getMeteorologicalAerodromeForecast().getCloud().getAerodromeCloudForecast())).build());
+            props.set(CLOUD_FORECAST, setCloudForecast(input.getMeteorologicalAerodromeForecast().getCloud().getAerodromeCloudForecast()));
         }
     }
 
@@ -327,6 +329,29 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         return surfaceWind.build();
+    }
+
+    private static CloudForecast setCloudForecast(AerodromeCloudForecastType cloudForecast) {
+        CloudForecastImpl.Builder forecastBuilder= CloudForecastImpl.builder();
+
+        if(cloudForecast.getVerticalVisibility().isNil()) {
+            forecastBuilder.setVerticalVisibilityMissing(true);
+        } else {
+            forecastBuilder.setVerticalVisibility(NumericMeasureImpl.builder()
+                    .setUom(cloudForecast.getVerticalVisibility().getValue().getUom())
+                    .setValue(cloudForecast.getVerticalVisibility().getValue().getValue())
+                    .build());
+            forecastBuilder.setVerticalVisibilityMissing(false);
+        }
+
+        if(cloudForecast.getLayer().isEmpty()) {
+            forecastBuilder.setNoSignificantCloud(true);
+        } else {
+            forecastBuilder.setLayers(setCloud(cloudForecast));
+            forecastBuilder.setNoSignificantCloud(false);
+        }
+
+        return forecastBuilder.build();
     }
 
     private static List<CloudLayer> setCloud(final AerodromeCloudForecastType cloudForecast) {
