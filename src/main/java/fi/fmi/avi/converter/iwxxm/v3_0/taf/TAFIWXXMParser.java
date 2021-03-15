@@ -144,6 +144,8 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
                 List<Weather> weatherList = new ArrayList<>();
                 forecastProp.get(TAFForecastProperties.Name.FORECAST_WEATHER, List.class).get().stream().forEach(obj -> weatherList.add((Weather) obj));
                 baseForecast.setForecastWeather(weatherList);
+            } else {
+                baseForecast.setNoSignificantWeather(true);
             }
         }
 
@@ -189,6 +191,8 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
                             .stream()
                             .forEach(weatherObj -> weatherList.add((Weather) weatherObj));
                     changeForecast.setForecastWeather(weatherList);
+                } else {
+                    changeForecast.setNoSignificantWeather(true);
                 }
             }
             forecasts.add(changeForecast.build());

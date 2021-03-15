@@ -147,7 +147,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             properties.set(CHANGE_FORECAST, changeForecasts);
         }
 
-        if(input.isIsCancelReport()) {
+        if(input.isIsCancelReport() != null && input.isIsCancelReport()) {
             properties.set(IS_CANCEL_MESSAGE, true);
 
             if (input.getCancelledReportValidPeriod() != null) {
@@ -266,7 +266,9 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (input.getMeteorologicalAerodromeForecast().getCloud() != null) {
-            props.set(CLOUD_FORECAST, setCloudForecast(input.getMeteorologicalAerodromeForecast().getCloud().getAerodromeCloudForecast()));
+            if(input.getMeteorologicalAerodromeForecast().getCloud().getAerodromeCloudForecast() != null) {
+                props.set(CLOUD_FORECAST, setCloudForecast(input.getMeteorologicalAerodromeForecast().getCloud().getAerodromeCloudForecast()));
+            }
         }
     }
 
@@ -334,7 +336,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
     private static CloudForecast setCloudForecast(AerodromeCloudForecastType cloudForecast) {
         CloudForecastImpl.Builder forecastBuilder= CloudForecastImpl.builder();
 
-        if(cloudForecast.getVerticalVisibility().isNil()) {
+        if(cloudForecast.getVerticalVisibility() == null || cloudForecast.getVerticalVisibility().isNil()) {
             forecastBuilder.setVerticalVisibilityMissing(true);
         } else {
             forecastBuilder.setVerticalVisibility(NumericMeasureImpl.builder()
@@ -344,7 +346,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             forecastBuilder.setVerticalVisibilityMissing(false);
         }
 
-        if(cloudForecast.getLayer().isEmpty()) {
+        if(cloudForecast.getLayer() != null && cloudForecast.getLayer().isEmpty()) {
             forecastBuilder.setNoSignificantCloud(true);
         } else {
             forecastBuilder.setLayers(setCloud(cloudForecast));
