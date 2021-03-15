@@ -50,10 +50,10 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
             if (TAFType.class.isAssignableFrom(je.getDeclaredType())) {
                 input = (TAFType) je.getValue();
             } else {
-                throw new IllegalArgumentException("Source is not a SWX JAXB element");
+                throw new IllegalArgumentException("Source is not a TAF JAXB element");
             }
         } else {
-            throw new IllegalArgumentException("Source is not a SWX JAXB element");
+            throw new IllegalArgumentException("Source is not a TAF JAXB element");
         }
 
         final TAFProperties properties = new TAFProperties();
