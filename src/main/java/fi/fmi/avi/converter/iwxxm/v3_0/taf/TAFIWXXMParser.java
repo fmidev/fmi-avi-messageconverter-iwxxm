@@ -137,8 +137,8 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
                 baseForecast.setPrevailingVisibilityOperator(
                         forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR, AviationCodeListUser.RelationalOperator.class));
             }
-            if (forecastProp.contains(TAFForecastProperties.Name.VISIBILITY_OK)) {
-                baseForecast.setCeilingAndVisibilityOk(forecastProp.get(TAFForecastProperties.Name.VISIBILITY_OK, Boolean.class).get().booleanValue());
+            if (forecastProp.contains(TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK)) {
+                baseForecast.setCeilingAndVisibilityOk(forecastProp.get(TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class).get().booleanValue());
             }
             if (forecastProp.contains(TAFForecastProperties.Name.FORECAST_WEATHER)) {
                 List<Weather> weatherList = new ArrayList<>();
@@ -179,8 +179,8 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
                     changeForecast.setPrevailingVisibilityOperator(
                             forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR, AviationCodeListUser.RelationalOperator.class));
                 }
-                if (forecastProp.contains(TAFForecastProperties.Name.VISIBILITY_OK)) {
-                    changeForecast.setCeilingAndVisibilityOk(forecastProp.get(TAFForecastProperties.Name.VISIBILITY_OK, Boolean.class).get().booleanValue());
+                if (forecastProp.contains(TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK)) {
+                    changeForecast.setCeilingAndVisibilityOk(forecastProp.get(TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class).get().booleanValue());
                 }
                 if (forecastProp.contains(TAFForecastProperties.Name.FORECAST_WEATHER)) {
                     List<Weather> weatherList = new ArrayList<>();

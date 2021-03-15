@@ -9,7 +9,7 @@ import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.FOR
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.PREVAILING_VISIBILITY;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.SURFACEWIND;
-import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.VISIBILITY_OK;
+import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFProperties.Name.AERODROME;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFProperties.Name.BASE_FORECAST;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFProperties.Name.CHANGE_FORECAST;
@@ -43,7 +43,6 @@ import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
 import fi.fmi.avi.model.immutable.ElevatedPointImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.SurfaceWindImpl;
-import fi.fmi.avi.model.immutable.WeatherImpl;
 import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
 import fi.fmi.avi.model.taf.immutable.TAFAirTemperatureForecastImpl;
 import icao.iwxxm30.AerodromeAirTemperatureForecastPropertyType;
@@ -216,7 +215,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
     private static void setTAFForecastProperties(final TAFForecastProperties props, final MeteorologicalAerodromeForecastPropertyType input,
             final List<ConversionIssue> issueList, final ReferredObjectRetrievalContext refCtx, ConversionHints hints) {
 
-        props.set(VISIBILITY_OK, input.getMeteorologicalAerodromeForecast().isCloudAndVisibilityOK());
+        props.set(CLOUD_AND_VISIBILITY_OK, input.getMeteorologicalAerodromeForecast().isCloudAndVisibilityOK());
 
         if (input.getMeteorologicalAerodromeForecast().getPrevailingVisibility() != null) {
             props.set(PREVAILING_VISIBILITY, NumericMeasureImpl.builder()

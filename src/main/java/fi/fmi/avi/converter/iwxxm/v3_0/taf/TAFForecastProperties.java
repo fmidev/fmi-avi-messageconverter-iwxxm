@@ -15,7 +15,7 @@ public class TAFForecastProperties extends AbstractPropertyContainer {
 
     public enum Name implements PropertyName {
 
-        VISIBILITY_OK(Boolean.class),
+        CLOUD_AND_qVISIBILITY_OK(Boolean.class),
         PREVAILING_VISIBILITY(NumericMeasure.class),
         PREVAILING_VISIBILIT_OPERATOR(AviationCodeListUser.RelationalOperator.class),
         SURFACEWIND(SurfaceWind.class),

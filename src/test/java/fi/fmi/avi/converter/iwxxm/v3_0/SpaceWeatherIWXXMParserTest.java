@@ -195,7 +195,6 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
         final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.registerModule(new Jdk8Module()).registerModule(new JavaTimeModule());
-        System.out.println(OBJECT_MAPPER.writeValueAsString(swx));
     }
 
     @Test
