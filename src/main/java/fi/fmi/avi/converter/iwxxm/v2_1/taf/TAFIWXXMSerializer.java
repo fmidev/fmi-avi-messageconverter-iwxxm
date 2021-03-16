@@ -120,16 +120,16 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         final AviationWeatherMessage.ReportStatus status = input.getReportStatus().get();
         taf.setStatus(TAFReportStatusType.valueOf(status.name()));
 
-        if (input.getIssueTime().get().getCompleteTime().isPresent()) {
-            taf.setIssueTime(create(TimeInstantPropertyType.class, (prop) -> {
-                final TimeInstantType ti = create(TimeInstantType.class);
-                final TimePositionType tp = create(TimePositionType.class);
-                tp.getValue().add(input.getIssueTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-                ti.setTimePosition(tp);
-                ti.setId(issueTimeId);
-                prop.setTimeInstant(ti);
-            }));
-        }
+        input.getIssueTime()//
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)//
+                .ifPresent(issueTime -> taf.setIssueTime(create(TimeInstantPropertyType.class, (prop) -> {
+                    final TimeInstantType ti = create(TimeInstantType.class);
+                    final TimePositionType tp = create(TimePositionType.class);
+                    tp.getValue().add(issueTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+                    ti.setTimePosition(tp);
+                    ti.setId(issueTimeId);
+                    prop.setTimeInstant(ti);
+                })));
 
         if (!input.isMissingMessage()) {
             if (input.getValidityTime().isPresent()) {
@@ -246,12 +246,18 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
             final String processId, final ConversionResult<?> result) {
 
         final Optional<List<TAFChangeForecast>> fcts = source.getChangeForecasts();
-        if (!source.getValidityTime().isPresent() || !source.getValidityTime().get().isComplete()) {
+        final ZonedDateTime tafValidityStart = source.getValidityTime()//
+                .flatMap(PartialOrCompleteTimePeriod::getStartTime)//
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)//
+                .orElse(null);
+        final ZonedDateTime tafValidityEnd = source.getValidityTime()//
+                .flatMap(PartialOrCompleteTimePeriod::getEndTime)//
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)//
+                .orElse(null);
+        if (tafValidityStart == null || tafValidityEnd == null) {
             result.addIssue(new ConversionIssue(Type.SYNTAX, "TAF validity time is not complete"));
             return;
         }
-        final ZonedDateTime tafValidityStart = source.getValidityTime().get().getStartTime().get().getCompleteTime().get();
-        final ZonedDateTime tafValidityEnd = source.getValidityTime().get().getEndTime().get().getCompleteTime().get();
         if (fcts.isPresent()) {
             for (final TAFChangeForecast fctInput : fcts.get()) {
                 final OMObservationType changeFct = create(OMObservationType.class);
