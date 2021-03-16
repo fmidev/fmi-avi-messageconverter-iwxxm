@@ -32,7 +32,6 @@ import net.opengis.om20.TimeObjectPropertyType;
 
 import org.w3c.dom.Document;
 
-import aero.aixm511.AirportHeliportType;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -44,7 +43,6 @@ import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationCodeListUser.TAFStatus;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.NumericMeasure;
@@ -57,7 +55,6 @@ import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
 import fi.fmi.avi.model.taf.TAFBaseForecast;
 import fi.fmi.avi.model.taf.TAFChangeForecast;
 import fi.fmi.avi.model.taf.TAFForecast;
-import fi.fmi.avi.model.taf.TAFReference;
 import icao.iwxxm21.AerodromeAirTemperatureForecastPropertyType;
 import icao.iwxxm21.AerodromeAirTemperatureForecastType;
 import icao.iwxxm21.AerodromeCloudForecastPropertyType;
@@ -79,7 +76,8 @@ import wmo.metce2013.ProcessType;
 /**
  * Common functionality for conversions related to producing IWXXM TAF messages.
  *
- * @param <T> the type of the
+ * @param <T>
+ *         the type of the
  */
 public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TAF, T> {
 
@@ -133,7 +131,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
             }));
         }
 
-        if (!input.isMissingMessage() || (input.isMissingMessage() && input.isCancelMessage())) {
+        if (!input.isMissingMessage()) {
             if (input.getValidityTime().isPresent()) {
                 final Optional<PartialOrCompleteTimeInstant> start = input.getValidityTime().get().getStartTime();
                 final Optional<PartialOrCompleteTimeInstant> end = input.getValidityTime().get().getEndTime();
@@ -167,7 +165,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         } else {
             //TAF: previousReportValidPeriod must not be present unless this cancels, corrects or amends a previous report
             if (input.getReferredReportValidPeriod().isPresent()) {
-                result.addIssue(new ConversionIssue(Type.LOGICAL, "TAF contains reference to the previous report even if its type is " + "not amendment, cancellation or correction"));
+                result.addIssue(new ConversionIssue(Type.LOGICAL,
+                        "TAF contains reference to the previous report even if its type is not amendment, cancellation or correction"));
             }
         }
         try {
@@ -183,7 +182,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         return result;
     }
 
-    protected void updateBaseForecast(final TAF source, final TAFType target, final String issueTimeId, final String validTimeId, final String foiId, final String processId, final String aerodromeId, final ConversionResult<?> result) {
+    protected void updateBaseForecast(final TAF source, final TAFType target, final String issueTimeId, final String validTimeId, final String foiId,
+            final String processId, final String aerodromeId, final ConversionResult<?> result) {
 
         final Optional<TAFBaseForecast> baseForecastInput = source.getBaseForecast();
         if (baseForecastInput.isPresent()) {
@@ -197,7 +197,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
             }));
 
             baseFct.setPhenomenonTime(create(TimeObjectPropertyType.class, (prop) -> {
-                if (source.isMissingMessage() && !source.isCancelMessage()) {
+                if (source.isMissingMessage()) {
                     prop.setHref("#" + issueTimeId);
                     prop.setTitle("issueTime of the TAF missing");
                 } else {
@@ -211,8 +211,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                 prop.setTitle("issueTime of the TAF");
             }));
 
-            //if (AviationCodeListUser.TAFStatus.MISSING != source.getStatus()) {
-            if (!source.isMissingMessage() || (source.isMissingMessage() && source.isCancelMessage())) {
+            if (!source.isMissingMessage()) {
                 baseFct.setValidTime(create(TimePeriodPropertyType.class, (prop) -> {
                     prop.setHref("#" + validTimeId);
                     prop.setTitle("Valid time period of the TAF");
@@ -243,7 +242,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
     }
 
     @SuppressWarnings("unchecked")
-    protected void updateChangeForecast(final TAF source, final TAFType target, final String issueTimeId, final String validTimeId, final String foid, final String processId, final ConversionResult<?> result) {
+    protected void updateChangeForecast(final TAF source, final TAFType target, final String issueTimeId, final String validTimeId, final String foid,
+            final String processId, final ConversionResult<?> result) {
 
         final Optional<List<TAFChangeForecast>> fcts = source.getChangeForecasts();
         if (!source.getValidityTime().isPresent() || !source.getValidityTime().get().isComplete()) {
@@ -267,20 +267,22 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                     final ZonedDateTime endTime = end.get().getCompleteTime().get();
                     if (startTime.isBefore(tafValidityStart)) {
                         result.addIssue(new ConversionIssue(Type.LOGICAL,
-                                "Change group start time '" + startTime.toString() + "'" + " is before TAF validity start time " + tafValidityStart.format(
+                                "Change group start time '" + startTime.toString() + "' is before TAF validity start time " + tafValidityStart.format(
                                         DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
                     }
                     if (endTime.isAfter(tafValidityEnd)) {
                         result.addIssue(new ConversionIssue(Type.LOGICAL,
-                                "Change group end time '" + endTime.toString() + "' is " + " after TAF validity end time " + tafValidityEnd.format(
+                                "Change group end time '" + endTime.toString() + "' is after TAF validity end time " + tafValidityEnd.format(
                                         DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
                     }
 
                     changeFct.setPhenomenonTime(create(TimeObjectPropertyType.class, (toProp) -> {
                         final JAXBElement<?> wrapped = createAndWrap(TimePeriodType.class, (period) -> {
                             period.setId("time-" + UUID.randomUUID().toString());
-                            period.setBeginPosition(create(TimePositionType.class, (tPos) -> tPos.getValue().add(startTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                            period.setEndPosition(create(TimePositionType.class, (tPos) -> tPos.getValue().add(endTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                            period.setBeginPosition(
+                                    create(TimePositionType.class, (tPos) -> tPos.getValue().add(startTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                            period.setEndPosition(
+                                    create(TimePositionType.class, (tPos) -> tPos.getValue().add(endTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
                         });
                         toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
                     }));
@@ -328,11 +330,12 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
             return;
         }
 
-        if (taf.isMissingMessage() && !taf.isCancelMessage()) {
+        if (taf.isMissingMessage()) {
             if (source instanceof TAFBaseForecast) {
                 target.setResult(null);
             } else {
-                throw new IllegalArgumentException("Can only add NIL result for type TAFBaseForecast. Tried to " + "add NIL result for type " + source.getClass().getCanonicalName());
+                throw new IllegalArgumentException(
+                        "Can only add NIL result for type TAFBaseForecast. Tried to add NIL result for type " + source.getClass().getCanonicalName());
             }
         } else {
             final MeteorologicalAerodromeForecastRecordType fctRecord = create(MeteorologicalAerodromeForecastRecordType.class);
@@ -356,7 +359,9 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                 } else if (source.isNoSignificantWeather()) {
                     //The expected end of occurrence of weather phenomena shall be indicated by a nil "forecastWeather"
                     // with a nil reason of "http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"
-                    fctRecord.getWeather().add(create(AerodromeForecastWeatherType.class, (w) -> w.getNilReason().add(CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)));
+                    fctRecord.getWeather()
+                            .add(create(AerodromeForecastWeatherType.class,
+                                    (w) -> w.getNilReason().add(CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)));
                 }
                 final Optional<CloudForecast> cFct = source.getCloud();
                 if (cFct.isPresent()) {
@@ -396,7 +401,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                     for (final TAFAirTemperatureForecast airTemp : baseFct.getTemperatures().get()) {
                         final AerodromeAirTemperatureForecastType tempFct = create(AerodromeAirTemperatureForecastType.class);
                         this.setAirTemperatureForecast(airTemp, tempFct, result);
-                        fctRecord.getTemperature().add(create(AerodromeAirTemperatureForecastPropertyType.class, (prop) -> prop.setAerodromeAirTemperatureForecast(tempFct)));
+                        fctRecord.getTemperature()
+                                .add(create(AerodromeAirTemperatureForecastPropertyType.class, (prop) -> prop.setAerodromeAirTemperatureForecast(tempFct)));
                     }
                 }
             } else if (source instanceof TAFChangeForecast) {
@@ -406,7 +412,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                 throw new IllegalArgumentException("Unknown TAF forecast type " + source.getClass().getCanonicalName());
             }
 
-            target.setResult(create(MeteorologicalAerodromeForecastRecordPropertyType.class, (prop) -> prop.setMeteorologicalAerodromeForecastRecord(fctRecord)));
+            target.setResult(
+                    create(MeteorologicalAerodromeForecastRecordPropertyType.class, (prop) -> prop.setMeteorologicalAerodromeForecastRecord(fctRecord)));
 
         }
     }
@@ -420,17 +427,20 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         }
     }
 
-    private void setAirTemperatureForecast(final TAFAirTemperatureForecast source, final AerodromeAirTemperatureForecastType target, final ConversionResult<?> result) {
+    private void setAirTemperatureForecast(final TAFAirTemperatureForecast source, final AerodromeAirTemperatureForecastType target,
+            final ConversionResult<?> result) {
         if (source != null) {
             NumericMeasure measure = source.getMinTemperature();
             if (!source.getMinTemperatureTime().getCompleteTime().isPresent()) {
                 result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Time of the base forecast  minimum temperature is not complete"));
             } else {
                 target.setMinimumAirTemperature(asMeasure(measure));
-                target.setMinimumAirTemperatureTime(create(TimeInstantPropertyType.class, (prop) -> prop.setTimeInstant(create(TimeInstantType.class, (time) -> {
-                    time.setId("time-" + UUID.randomUUID().toString());
-                    time.setTimePosition(create(TimePositionType.class, (tPos) -> tPos.getValue().add(source.getMinTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                }))));
+                target.setMinimumAirTemperatureTime(
+                        create(TimeInstantPropertyType.class, (prop) -> prop.setTimeInstant(create(TimeInstantType.class, (time) -> {
+                            time.setId("time-" + UUID.randomUUID().toString());
+                            time.setTimePosition(create(TimePositionType.class, (tPos) -> tPos.getValue()
+                                    .add(source.getMinTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                        }))));
             }
 
             measure = source.getMaxTemperature();
@@ -438,19 +448,22 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                 result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Time of the base forecast  maximum temperature is not complete"));
             } else {
                 target.setMaximumAirTemperature(asMeasure(measure));
-                target.setMaximumAirTemperatureTime(create(TimeInstantPropertyType.class, (prop) -> prop.setTimeInstant(create(TimeInstantType.class, (time) -> {
-                    time.setId("time-" + UUID.randomUUID().toString());
-                    time.setTimePosition(create(TimePositionType.class, (tPos) -> tPos.getValue().add(source.getMaxTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                }))));
+                target.setMaximumAirTemperatureTime(
+                        create(TimeInstantPropertyType.class, (prop) -> prop.setTimeInstant(create(TimeInstantType.class, (time) -> {
+                            time.setId("time-" + UUID.randomUUID().toString());
+                            time.setTimePosition(create(TimePositionType.class, (tPos) -> tPos.getValue()
+                                    .add(source.getMaxTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                        }))));
             }
 
         }
     }
 
     protected void updatePreviousReportReferences(final TAF source, final TAFType target, final String aerodromeId, final ConversionResult<?> result) {
-        if (TAFReportStatusType.CANCELLATION == target.getStatus() || TAFReportStatusType.CORRECTION == target.getStatus() || TAFReportStatusType.AMENDMENT == target.getStatus()) {
-            final Optional<PartialOrCompleteTimePeriod> prevReport = source.getReferredReportValidPeriod();
-            if (prevReport.isPresent()) {
+        if (TAFReportStatusType.CANCELLATION == target.getStatus() || TAFReportStatusType.CORRECTION == target.getStatus()
+                || TAFReportStatusType.AMENDMENT == target.getStatus()) {
+            final Optional<PartialOrCompleteTimePeriod> referredReportValidPeriod = source.getReferredReportValidPeriod();
+            if (referredReportValidPeriod.isPresent()) {
                 target.setPreviousReportAerodrome(create(AirportHeliportPropertyType.class, (prop) -> {
                     if (source.getBaseForecast().isPresent()) {
                         prop.setHref("#" + aerodromeId);
@@ -458,19 +471,22 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                     }
                 }));
 
-                final PartialOrCompleteTimePeriod validity = prevReport.orElse(null);
-                if (validity == null || !validity.isComplete()) {
+                final PartialOrCompleteTimePeriod validity = referredReportValidPeriod.get();
+                if (!validity.isComplete()) {
                     result.addIssue(new ConversionIssue(Type.SYNTAX, "Previous report TAF validity time is not complete"));
                     return;
                 }
                 final Optional<PartialOrCompleteTimeInstant> from = validity.getStartTime();
                 final Optional<PartialOrCompleteTimeInstant> to = validity.getEndTime();
                 if (from.isPresent() && from.get().getCompleteTime().isPresent() && to.isPresent() && to.get().getCompleteTime().isPresent()) {
-                    target.setPreviousReportValidPeriod(create(TimePeriodPropertyType.class, (prop) -> prop.setTimePeriod(create(TimePeriodType.class, (period) -> {
-                        period.setId("time-" + UUID.randomUUID().toString());
-                        period.setBeginPosition(create(TimePositionType.class, (tPos) -> tPos.getValue().add(from.get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                        period.setEndPosition(create(TimePositionType.class, (tPos) -> tPos.getValue().add(to.get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                    }))));
+                    target.setPreviousReportValidPeriod(
+                            create(TimePeriodPropertyType.class, (prop) -> prop.setTimePeriod(create(TimePeriodType.class, (period) -> {
+                                period.setId("time-" + UUID.randomUUID().toString());
+                                period.setBeginPosition(create(TimePositionType.class,
+                                        (tPos) -> tPos.getValue().add(from.get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                                period.setEndPosition(create(TimePositionType.class,
+                                        (tPos) -> tPos.getValue().add(to.get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                            }))));
                 } else {
                     result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Missing full validity time start and/or end of the referred (previous) report"));
                 }
@@ -500,7 +516,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                     target.setTranslatedBulletinID(source.getTranslatedBulletinID().get());
                 }
                 if (source.getTranslatedBulletinReceptionTime().isPresent()) {
-                    target.setTranslatedBulletinReceptionTime(f.newXMLGregorianCalendar(source.getTranslatedBulletinReceptionTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+                    target.setTranslatedBulletinReceptionTime(
+                            f.newXMLGregorianCalendar(source.getTranslatedBulletinReceptionTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
                 }
                 if (source.getTranslationCentreDesignator().isPresent()) {
                     target.setTranslationCentreDesignator(source.getTranslationCentreDesignator().get());
