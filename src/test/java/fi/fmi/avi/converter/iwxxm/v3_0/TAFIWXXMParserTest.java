@@ -6,6 +6,8 @@ import static junit.framework.TestCase.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -328,6 +330,28 @@ public class TAFIWXXMParserTest {
         assertTrue(taf.getBaseForecast().get().isNoSignificantWeather());
         assertTrue(taf.getChangeForecasts().get().get(0).isNoSignificantWeather());
         assertTrue(taf.getChangeForecasts().get().get(1).isNoSignificantWeather());
+        assertFalse(taf.isTranslated());
+    }
+
+    @Test
+    public void translatedMetaPropsTest() throws IOException {
+        String input = getInput("taf-translated.xml");
+
+        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO,
+                ConversionHints.EMPTY);
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertTrue(result.getConvertedMessage().isPresent());
+
+        TAF taf = result.getConvertedMessage().get();
+
+        assertTrue(taf.isTranslated());
+        assertEquals("123456", taf.getTranslatedBulletinID().get());
+        assertEquals("Translator center", taf.getTranslationCentreDesignator().get());
+        assertEquals("Translator center 1", taf.getTranslationCentreName().get());
+        assertEquals("2012-08-16T00:00Z[GMT]" , taf.getTranslatedBulletinReceptionTime().get().toString());
+        assertEquals("2012-08-15T00:00Z[GMT]", taf.getTranslationTime().get().toString());
+
     }
 
     private String getInput(final String fileName) throws IOException {
