@@ -83,6 +83,16 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
             metaProps.get(GenericReportProperties.Name.TRANSLATION_FAILED_TAC, String.class).ifPresent(tafBuilder::setTranslatedTAC); //!!!
         });
 
+        tafBuilder.setTranslated((
+                tafBuilder.getTranslatedBulletinID().isPresent() ||
+                tafBuilder.getTranslatedBulletinReceptionTime().isPresent() ||
+                tafBuilder.getTranslatedTAC().isPresent() ||
+                tafBuilder.getTranslationCentreDesignator().isPresent() ||
+                tafBuilder.getTranslationCentreName().isPresent() ||
+                tafBuilder.getTranslationTime().isPresent()
+                ));
+
+
         properties.get(TAFProperties.Name.ISSUE_TIME, PartialOrCompleteTimeInstant.class).ifPresent((prop) -> {
             tafBuilder.setIssueTime(prop);
         });
