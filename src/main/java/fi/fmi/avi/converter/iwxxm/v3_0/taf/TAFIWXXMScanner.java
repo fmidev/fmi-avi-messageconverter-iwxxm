@@ -153,7 +153,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             if (input.getCancelledReportValidPeriod() != null) {
                 final Optional<ZonedDateTime> cancelStartTimeZoned = getStartTime(input.getCancelledReportValidPeriod().getTimePeriod(), refCtx);
                 final Optional<ZonedDateTime> cancelEndTimeZoned = getEndTime(input.getCancelledReportValidPeriod().getTimePeriod(), refCtx);
-                if (cancelStartTimeZoned.isPresent() && cancelEndTimeZoned.isPresent()) {
+                if (!cancelStartTimeZoned.isPresent() && !cancelEndTimeZoned.isPresent()) {
                     issueList.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Cancellation period is missing."));
                 } else {
                     final PartialOrCompleteTimePeriod.Builder cancelPeriod = PartialOrCompleteTimePeriod.builder();
