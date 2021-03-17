@@ -68,6 +68,12 @@ public class IWXXMTestConfiguration {
     @Autowired
     private AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXMDOMSerializer;
 
+    @Autowired
+    private AviMessageSpecificConverter<String, TAF> tafIWXXM30StringParser;
+
+    @Autowired
+    private AviMessageSpecificConverter<Document, TAF> tafIWXXM30DOMParser;
+
     // METAR & SPECI
 
     @Autowired
@@ -149,6 +155,8 @@ public class IWXXMTestConfiguration {
         p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM, tafBulletinIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_STRING_TO_TAF_BULLETIN_POJO, tafBulletinIWXXMStringParser);
         p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_DOM_TO_TAF_BULLETIN_POJO, tafBulletinIWXXMDOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, tafIWXXM30StringParser);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_DOM_TO_TAF_POJO, tafIWXXM30DOMParser);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING, taf30IWXXMStringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM, taf30IWXXMDomSerializer);
 

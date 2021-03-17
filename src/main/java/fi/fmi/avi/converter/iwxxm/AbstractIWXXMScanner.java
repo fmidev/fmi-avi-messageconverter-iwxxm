@@ -1,5 +1,7 @@
 package fi.fmi.avi.converter.iwxxm;
 
+import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -33,9 +35,11 @@ import aero.aixm511.ElevatedPointPropertyType;
 import aero.aixm511.ElevatedPointType;
 import aero.aixm511.SurfaceType;
 import aero.aixm511.ValDistanceVerticalType;
+import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.model.Aerodrome;
+import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
@@ -44,6 +48,7 @@ import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
 import fi.fmi.avi.model.immutable.ElevatedPointImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.PolygonGeometryImpl;
+import fi.fmi.avi.model.immutable.WeatherImpl;
 
 /**
  * Common functionality for parsing validation of IWXXM messages.
@@ -279,6 +284,49 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER, "Unsupported surface patch type " + patch.getDeclaredType().getCanonicalName()));
         }
         return retval;
+    }
+
+    public static void withWeatherBuilderFor(String codeListValue, String description, final ConversionHints hints,
+            final Consumer<WeatherImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
+        ConversionIssue issue = null;
+        if (codeListValue != null && codeListValue.startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER)) {
+            final String code = codeListValue.substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER.length());
+            final WeatherImpl.Builder wBuilder = WeatherImpl.builder();
+            boolean codeOk = false;
+            if (hints == null || hints.isEmpty() || !hints.containsKey(ConversionHints.KEY_WEATHER_CODES) || ConversionHints.VALUE_WEATHER_CODES_STRICT_WMO_4678
+                    .equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
+                // Only the official codes allowed by default
+                if (WEATHER_CODES.containsKey(code)) {
+                    wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
+                    codeOk = true;
+                } else {
+                    issue = new ConversionIssue(ConversionIssue.Type.SYNTAX, "Illegal weather code " + code + " found with strict WMO 4678 " + "checking");
+                }
+            } else {
+                if (ConversionHints.VALUE_WEATHER_CODES_ALLOW_ANY.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
+                    wBuilder.setCode(code);
+                    if (description != null) {
+                        wBuilder.setDescription(description);
+                    } else if (WEATHER_CODES.containsKey(code)) {
+                        wBuilder.setDescription(WEATHER_CODES.get(code));
+                    }
+                } else if (ConversionHints.VALUE_WEATHER_CODES_IGNORE_NON_WMO_4678.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
+                    if (WEATHER_CODES.containsKey(code)) {
+                        wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
+                        codeOk = true;
+                    }
+                }
+            }
+            if (codeOk) {
+                resultHandler.accept(wBuilder);
+            }
+        } else {
+            issue = new ConversionIssue(ConversionIssue.Type.SYNTAX,
+                    "Weather codelist value does not begin with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER);
+        }
+        if (issue != null) {
+            issueHandler.accept(issue);
+        }
     }
 
     protected static CoordinateReferenceSystemImpl.Builder mergeToBuilder(final net.opengis.gml32.AbstractGeometryType source,

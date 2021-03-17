@@ -53,86 +53,65 @@ public class SpaceWeatherIWXXMSerializerTest {
 
     private ObjectMapper OBJECT_MAPPER;
 
-    private void assertEqualsXML(final String input, final String actual) throws SAXException, IOException {
-        XMLUnit.setIgnoreWhitespace(true);
-        final Diff xmlDiff = new Diff(input, actual);
-        final DetailedDiff detailedDiff = new DetailedDiff(xmlDiff);
-
-        @SuppressWarnings("unchecked")
-        final String diffMessage = ((List<Difference>) detailedDiff.getAllDifferences()).stream()//
-                .filter(difference -> !UUID_DIFFERENCE_PATTERN.matcher(difference.toString()).find() //
-                        && !COORDINATE_FORMATTING_DIFFERENCE_PATTERN.matcher(difference.toString()).find())//
-                .map(difference -> difference.getDescription() + "\n" + difference + "\n")//
-                .collect(Collectors.joining("------------------------------------------------\n"));
-        assertEquals("", diffMessage);
-    }
-
     @Before
     public void setup() {
         OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.registerModule(new Jdk8Module()).registerModule(new JavaTimeModule());
     }
 
-    private String getInput(final String fileName) throws IOException {
-        try (InputStream is = SpaceWeatherIWXXMSerializerTest.class.getResourceAsStream(fileName)) {
-            Objects.requireNonNull(is);
-            return IOUtils.toString(is, "UTF-8");
-        }
-    }
-
     @Test
     public void serialize_spacewx_A2_3() throws Exception {
-        final String input = getInput("spacewx-A2-3.json");
+        final String input = TestHelper.getXMLString("spacewx-A2-3.json");
         final ConversionResult<String> result = serialize(input);
 
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
-        assertEqualsXML(getInput("spacewx-A2-3.xml"), result.getConvertedMessage().get());
+        TestHelper.assertEqualsXML(TestHelper.getXMLString("spacewx-A2-3.xml"), result.getConvertedMessage().get());
     }
 
     @Test
     public void serialize_spacewx_A2_4() throws Exception {
-        final String input = getInput("spacewx-A2-4.json");
+        final String input = TestHelper.getXMLString("spacewx-A2-4.json");
         final ConversionResult<String> result = serialize(input);
 
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
-        assertEqualsXML(getInput("spacewx-A2-4.xml"), result.getConvertedMessage().get());
+        TestHelper.assertEqualsXML(TestHelper.getXMLString("spacewx-A2-4.xml"), result.getConvertedMessage().get());
     }
 
     @Test
     public void serialize_spacewx_A2_5() throws Exception {
-        final String input = getInput("spacewx-A2-5.json");
+        final String input = TestHelper.getXMLString("spacewx-A2-5.json");
         final ConversionResult<String> result = serialize(input);
 
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
-        assertEqualsXML(getInput("spacewx-A2-5.xml"), result.getConvertedMessage().get());
+        TestHelper.assertEqualsXML(TestHelper.getXMLString("spacewx-A2-5.xml"), result.getConvertedMessage().get());
     }
 
     @Test
     public void serialize_spacewx_daylight_side_nil_location() throws Exception {
-        final String input = getInput("spacewx-daylight-side-nil-location.json");
+        final String input = TestHelper.getXMLString("spacewx-daylight-side-nil-location.json");
         final ConversionResult<String> result = serialize(input);
 
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
-        assertEqualsXML(getInput("spacewx-daylight-side-nil-location.xml"), result.getConvertedMessage().get());
+        TestHelper.assertEqualsXML(TestHelper.getXMLString("spacewx-daylight-side-nil-location.xml"), result.getConvertedMessage().get());
     }
 
     @Test
     public void serialize_spacewx_issuing_centre() throws Exception {
-        final String input = getInput("spacewx-issuing-centre.json");
+        final String input = TestHelper.getXMLString("spacewx-issuing-centre.json");
         final ConversionResult<String> result = serialize(input);
 
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
-        assertEqualsXML(getInput("spacewx-issuing-centre.xml"), result.getConvertedMessage().get());
+        TestHelper.assertEqualsXML(TestHelper.getXMLString("spacewx-issuing-centre.xml"), result.getConvertedMessage().get());
     }
 
     @Test
@@ -156,7 +135,7 @@ public class SpaceWeatherIWXXMSerializerTest {
     }
 
     private void testParseAndSerialize(final String fileName) throws IOException, SAXException {
-        final String input = getInput(fileName);
+        final String input = TestHelper.getXMLString(fileName);
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
@@ -167,12 +146,12 @@ public class SpaceWeatherIWXXMSerializerTest {
         assertEquals(ConversionResult.Status.SUCCESS, message.getStatus());
         assertTrue(message.getConvertedMessage().isPresent());
         assertNotNull(message.getConvertedMessage().get());
-        assertEqualsXML(input, message.getConvertedMessage().get());
+        TestHelper.assertEqualsXML(input, message.getConvertedMessage().get());
     }
 
     @Test
     public void parse_and_serialize_nil_remark_test() throws Exception {
-        final String input = getInput("spacewx-nil-remark.xml");
+        final String input = TestHelper.getXMLString("spacewx-nil-remark.xml");
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
@@ -187,7 +166,7 @@ public class SpaceWeatherIWXXMSerializerTest {
         assertEquals(ConversionResult.Status.SUCCESS, message.getStatus());
         assertTrue(message.getConvertedMessage().isPresent());
         assertNotNull(message.getConvertedMessage().get());
-        assertEqualsXML(input, message.getConvertedMessage().get());
+        TestHelper.assertEqualsXML(input, message.getConvertedMessage().get());
     }
 
     private ConversionResult<String> serialize(final String input) throws Exception {
@@ -200,17 +179,8 @@ public class SpaceWeatherIWXXMSerializerTest {
 
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING));
         final ConversionResult<String> message = converter.convertMessage(swx, IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING);
-        printIssues(message.getConversionIssues());
+        TestHelper.printIssues(message.getConversionIssues());
         return message;
-    }
-
-    private void printIssues(final List<ConversionIssue> issues) {
-        if (issues.size() > 0) {
-            for (final ConversionIssue item : issues) {
-                System.out.println("********************************************************");
-                System.out.println(item.getMessage());
-            }
-        }
     }
 
 }
