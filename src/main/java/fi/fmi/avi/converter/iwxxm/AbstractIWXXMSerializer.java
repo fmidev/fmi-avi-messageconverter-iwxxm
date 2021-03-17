@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +38,11 @@ import net.opengis.gml32.PolygonPatchType;
 import net.opengis.gml32.RingType;
 import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.SurfacePatchArrayPropertyType;
+import net.opengis.gml32.TimeInstantPropertyType;
+import net.opengis.gml32.TimeInstantType;
+import net.opengis.gml32.TimePeriodPropertyType;
+import net.opengis.gml32.TimePeriodType;
+import net.opengis.gml32.TimePositionType;
 import net.opengis.gml32.TimePrimitivePropertyType;
 
 import org.slf4j.Logger;
@@ -60,18 +66,24 @@ import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
+import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.CoordinateReferenceSystem;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
+import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PointGeometry;
 import fi.fmi.avi.model.PolygonGeometry;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
+import fi.fmi.avi.model.taf.TAF;
 import icao.iwxxm21.AngleWithNilReasonType;
 import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
+import icao.iwxxm21.ReportType;
+import icao.iwxxm21.TAFType;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM.
@@ -274,6 +286,43 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         } catch (final ParserConfigurationException | SAXException | IOException | TransformerException e) {
             throw new ConversionException("Exception in cleaning up", e);
         }
+    }
+
+    public boolean checkCompleteTimeReferences(TAF input, ConversionResult result) {
+        boolean referencesComplete = true;
+        if (!input.areAllTimeReferencesComplete()) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "All time references must be completed before converting to IWXXM"));
+            referencesComplete = false;
+        }
+        return referencesComplete;
+    }
+
+    public void checkAerodromeReferencePositions(TAF input, ConversionResult result) {
+        if (!input.allAerodromeReferencesContainPosition()) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Severity.INFO, ConversionIssue.Type.MISSING_DATA,
+                    "At least one of the Aerodrome references does not contain reference point location"));
+        }
+    }
+
+    public void createTimeInstantProperty(TAF input, TimeInstantPropertyType prop, String id) {
+            final TimeInstantType ti = create(TimeInstantType.class);
+            final TimePositionType tp = create(TimePositionType.class);
+            tp.getValue().add(input.getIssueTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            ti.setTimePosition(tp);
+            ti.setId(id);
+            prop.setTimeInstant(ti);
+    }
+
+    public void createTimePeriodPropertyType(TimePeriodPropertyType prop, PartialOrCompleteTimeInstant start, PartialOrCompleteTimeInstant end, String id) {
+        final TimePeriodType tp = create(TimePeriodType.class);
+        tp.setId(id);
+        final TimePositionType beginPos = create(TimePositionType.class);
+        beginPos.getValue().add(start.getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        final TimePositionType endPos = create(TimePositionType.class);
+        endPos.getValue().add(end.getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        tp.setBeginPosition(beginPos);
+        tp.setEndPosition(endPos);
+        prop.setTimePeriod(tp);
     }
 
     protected abstract InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException;

@@ -35,10 +35,24 @@ public class IWXXMConverter {
             "TAF, XML/IWXXM 2.1");
 
     /**
+     * Pre-configured spec for {@link TAF} to IWXXM 3.0 XML format TAF document String.
+     * This spec ignores the patch version number, generally referring to the latest supported patch version.
+     */
+    public static final ConversionSpecification<TAF, String> TAF_POJO_TO_IWXXM30_STRING = new ConversionSpecification<>(TAF.class, String.class, null,
+            "TAF, XML/IWXXM 3.0");
+
+    /**
      * Pre-configured spec for {@link TAF} to IWXXM 2.1 XML format TAF document DOM Node.
      */
-    public static final ConversionSpecification<TAF, Document> TAF_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(TAF.class, Document.class,
-            null, "TAF, XML/IWXXM 2.1");
+    public static final ConversionSpecification<TAF, Document> TAF_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(TAF.class, Document.class, null,
+            "TAF, XML/IWXXM 2.1");
+
+    /**
+     * Pre-configured spec for {@link TAF} to IWXXM 3.0 XML format TAF document DOM Node.
+     * This spec ignores the patch version number, generally referring to the latest supported patch version.
+     */
+    public static final ConversionSpecification<TAF, Document> TAF_POJO_TO_IWXXM30_DOM = new ConversionSpecification<>(TAF.class, Document.class, null,
+            "TAF, XML/IWXXM 3.0");
 
     /**
      * Pre-configured spec for {@link TAF} to IWXXM 2.1 XML format TAFType JAXB class.
@@ -128,14 +142,14 @@ public class IWXXMConverter {
     /**
      * Pre-configured spec for {@link SIGMET} to IWXXM 2.1 XML format SIGMET document String.
      */
-    public static final ConversionSpecification<SIGMET, String> SIGMET_POJO_TO_IWXXM21_STRING = new ConversionSpecification<>(SIGMET.class, String.class,
-            null, "SIGMET, XML/IWXXM 2.1");
+    public static final ConversionSpecification<SIGMET, String> SIGMET_POJO_TO_IWXXM21_STRING = new ConversionSpecification<>(SIGMET.class, String.class, null,
+            "SIGMET, XML/IWXXM 2.1");
 
     /**
      * Pre-configured spec for {@link SIGMET} to IWXXM 2.1 XML format SIGMET document DOM Node.
      */
-    public static final ConversionSpecification<SIGMET, Document> SIGMET_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(SIGMET.class, Document.class,
-            null, "SIGMET, XML/IWXXM 2.1");
+    public static final ConversionSpecification<SIGMET, Document> SIGMET_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(SIGMET.class, Document.class, null,
+            "SIGMET, XML/IWXXM 2.1");
 
     /**
      * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document String.

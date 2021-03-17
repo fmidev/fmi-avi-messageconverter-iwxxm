@@ -1,7 +1,6 @@
 {
-  "reportStatus": "NORMAL",
+  "cancelMessage": true,
   "permissibleUsage": "OPERATIONAL",
-  "cancelMessage": "true",
   "issueTime": {
     "completeTime": "2012-08-16T15:00:00Z"
   },
@@ -25,5 +24,6 @@
     "endTime": {
       "completeTime": "2012-08-16T18:00:00Z"
     }
-  }
+  },
+  "reportStatus": "AMENDMENT"
 }
