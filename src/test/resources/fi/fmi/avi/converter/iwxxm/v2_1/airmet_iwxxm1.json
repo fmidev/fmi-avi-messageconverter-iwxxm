@@ -1,7 +1,7 @@
 {
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "EXERCISE",
-  "status": "NORMAL",
+  "reportStatus": "NORMAL",
   "issuingAirTrafficServicesUnit": {
     "name": "AMSTERDAM",
     "type": "FIR",
