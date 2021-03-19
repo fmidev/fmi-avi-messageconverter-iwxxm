@@ -222,10 +222,13 @@ public class TAFIWXXMParserTest {
 
         TAF taf = result.getConvertedMessage().get();
 
-
         assertTrue(taf.getBaseForecast().get().isNoSignificantWeather());
         assertTrue(taf.getChangeForecasts().get().get(0).isNoSignificantWeather());
-        assertTrue(taf.getChangeForecasts().get().get(1).isNoSignificantWeather());
+        assertFalse(taf.getChangeForecasts().get().get(1).isNoSignificantWeather());
+        assertTrue(taf.getChangeForecasts().get().get(1).getCloud().get().isVerticalVisibilityMissing());
+        assertFalse(taf.getChangeForecasts().get().get(2).getCloud().get().isVerticalVisibilityMissing());
+        assertEquals("[ft_i]", taf.getChangeForecasts().get().get(2).getCloud().get().getVerticalVisibility().get().getUom());
+        assertEquals(2000d, taf.getChangeForecasts().get().get(2).getCloud().get().getVerticalVisibility().get().getValue());
         assertFalse(taf.isTranslated());
     }
 

@@ -21,7 +21,7 @@ public class TAFForecastProperties extends AbstractPropertyContainer {
         SURFACEWIND(SurfaceWind.class),
         FORECAST_WEATHER(List.class),
         NO_SIGNIFICANT_WEATHER(Boolean.class),
-        CLOUD_FORECAST(CloudForecast.class);
+        CLOUD_FORECAST(TAFCloudForecastProperties.class);
 
         private final Class<?> acceptedType;
 

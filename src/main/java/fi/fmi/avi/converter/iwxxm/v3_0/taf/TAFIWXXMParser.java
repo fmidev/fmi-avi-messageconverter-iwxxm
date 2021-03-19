@@ -21,11 +21,13 @@ import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CloudForecast;
+import fi.fmi.avi.model.CloudLayer;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.Weather;
+import fi.fmi.avi.model.immutable.CloudForecastImpl;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
 import fi.fmi.avi.model.taf.TAFBaseForecast;
@@ -135,7 +137,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
         if (prop.contains(TAFBaseForecastProperties.Name.FORECAST)) {
             TAFForecastProperties forecastProp = prop.get(TAFBaseForecastProperties.Name.FORECAST, TAFForecastProperties.class).get();
             if (forecastProp.contains(TAFForecastProperties.Name.CLOUD_FORECAST)) {
-                baseForecast.setCloud(forecastProp.get(TAFForecastProperties.Name.CLOUD_FORECAST, CloudForecast.class));
+                baseForecast.setCloud(getCloudForecast(forecastProp.get(TAFForecastProperties.Name.CLOUD_FORECAST, TAFCloudForecastProperties.class).get()));
             }
             if (forecastProp.contains(TAFForecastProperties.Name.SURFACEWIND)) {
                 baseForecast.setSurfaceWind(forecastProp.get(TAFForecastProperties.Name.SURFACEWIND, SurfaceWind.class));
@@ -154,8 +156,11 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
                 List<Weather> weatherList = new ArrayList<>();
                 forecastProp.get(TAFForecastProperties.Name.FORECAST_WEATHER, List.class).get().stream().forEach(obj -> weatherList.add((Weather) obj));
                 baseForecast.setForecastWeather(weatherList);
+            }
+            if(forecastProp.contains(TAFForecastProperties.Name.NO_SIGNIFICANT_WEATHER)) {
+                baseForecast.setNoSignificantWeather(forecastProp.get(TAFForecastProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class).get());
             } else {
-                baseForecast.setNoSignificantWeather(true);
+                baseForecast.setNoSignificantWeather(false);
             }
         }
 
@@ -179,7 +184,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
             if (prop.contains(TAFChangeForecastProperties.Name.FORECAST)) {
                 TAFForecastProperties forecastProp = prop.get(TAFChangeForecastProperties.Name.FORECAST, TAFForecastProperties.class).get();
                 if (forecastProp.contains(TAFForecastProperties.Name.CLOUD_FORECAST)) {
-                    changeForecast.setCloud(forecastProp.get(TAFForecastProperties.Name.CLOUD_FORECAST, CloudForecast.class));
+                    changeForecast.setCloud(getCloudForecast(forecastProp.get(TAFForecastProperties.Name.CLOUD_FORECAST, TAFCloudForecastProperties.class).get()));
                 }
                 if (forecastProp.contains(TAFForecastProperties.Name.SURFACEWIND)) {
                     changeForecast.setSurfaceWind(forecastProp.get(TAFForecastProperties.Name.SURFACEWIND, SurfaceWind.class));
@@ -201,13 +206,33 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
                             .stream()
                             .forEach(weatherObj -> weatherList.add((Weather) weatherObj));
                     changeForecast.setForecastWeather(weatherList);
-                } else {
-                    changeForecast.setNoSignificantWeather(true);
+                }
+                if(forecastProp.contains(TAFForecastProperties.Name.NO_SIGNIFICANT_WEATHER)) {
+                    changeForecast.setNoSignificantWeather(forecastProp.get(TAFForecastProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class).get());
                 }
             }
             forecasts.add(changeForecast.build());
         });
         return forecasts;
+    }
+
+    private CloudForecast getCloudForecast(TAFCloudForecastProperties prop) {
+        CloudForecastImpl.Builder cloudForecast = CloudForecastImpl.builder();
+        if(prop.contains(TAFCloudForecastProperties.Name.CLOUD_LAYER)) {
+            cloudForecast.setLayers((List<CloudLayer>)prop.get(TAFCloudForecastProperties.Name.CLOUD_LAYER, List.class).get());
+        }
+        if(prop.contains(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_CLOUD)) {
+            cloudForecast.setNoSignificantCloud(prop.get(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_CLOUD,  Boolean.class).get());
+        } else {
+            cloudForecast.setNoSignificantCloud(false);
+        }
+        if(prop.contains(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY)) {
+            cloudForecast.setVerticalVisibility(prop.get(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY, NumericMeasure.class).get());
+        }
+        if(prop.contains(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_VERTICAL_VISIBILITY)) {
+            cloudForecast.setVerticalVisibilityMissing(prop.get(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_VERTICAL_VISIBILITY, Boolean.class).get());
+        }
+        return cloudForecast.build();
     }
 
     public static class FromDOM extends TAFIWXXMParser<Document> {

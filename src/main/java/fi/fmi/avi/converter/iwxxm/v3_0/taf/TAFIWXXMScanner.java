@@ -6,6 +6,7 @@ import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFChangeForecastProperties.Na
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFChangeForecastProperties.Name.CHANGE_PERIOD;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.CLOUD_FORECAST;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.FORECAST_WEATHER;
+import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.NO_SIGNIFICANT_WEATHER;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.PREVAILING_VISIBILITY;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.SURFACEWIND;
@@ -240,10 +241,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         props.set(CLOUD_AND_VISIBILITY_OK, input.getMeteorologicalAerodromeForecast().isCloudAndVisibilityOK());
 
         if (input.getMeteorologicalAerodromeForecast().getPrevailingVisibility() != null) {
-            props.set(PREVAILING_VISIBILITY, NumericMeasureImpl.builder()
-                    .setUom(input.getMeteorologicalAerodromeForecast().getPrevailingVisibility().getUom())
-                    .setValue(input.getMeteorologicalAerodromeForecast().getPrevailingVisibility().getValue())
-                    .build());
+            asNumericMeasure(input.getMeteorologicalAerodromeForecast().getPrevailingVisibility()).ifPresent(nm -> props.set(PREVAILING_VISIBILITY, nm));
         }
 
         if (input.getMeteorologicalAerodromeForecast().getPrevailingVisibilityOperator() != null) {
@@ -256,9 +254,10 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             for (AerodromeForecastWeatherType weatherType : input.getMeteorologicalAerodromeForecast().getWeather()) {
                 withWeatherBuilderFor(weatherType, hints, value -> weatherList.add(value.build())
                         , issue -> issueList.add(issue));
-                //weatherList.add(WeatherImpl.builder().setCode(weatherType.getHref()).build());
             }
             props.set(FORECAST_WEATHER, weatherList);
+        } else {
+            props.set(NO_SIGNIFICANT_WEATHER, true);
         }
 
         if (input.getMeteorologicalAerodromeForecast().getSurfaceWind() != null) {
@@ -267,7 +266,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
 
         if (input.getMeteorologicalAerodromeForecast().getCloud() != null) {
             if(input.getMeteorologicalAerodromeForecast().getCloud().getAerodromeCloudForecast() != null) {
-                props.set(CLOUD_FORECAST, setCloudForecast(input.getMeteorologicalAerodromeForecast().getCloud().getAerodromeCloudForecast()));
+                props.set(CLOUD_FORECAST, setCloudForecast(input.getMeteorologicalAerodromeForecast().getCloud().getAerodromeCloudForecast(), issueList));
             }
         }
     }
@@ -277,10 +276,10 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         TAFAirTemperatureForecastImpl.Builder temp = TAFAirTemperatureForecastImpl.builder();
 
         if (input.getAerodromeAirTemperatureForecast().getMaximumAirTemperature() != null) {
-            temp.setMaxTemperature(NumericMeasureImpl.builder()
-                    .setUom(input.getAerodromeAirTemperatureForecast().getMaximumAirTemperature().getUom())
-                    .setValue(input.getAerodromeAirTemperatureForecast().getMaximumAirTemperature().getValue())
-                    .build());
+            Optional<NumericMeasure> maxTemp = asNumericMeasure(input.getAerodromeAirTemperatureForecast().getMaximumAirTemperature());
+            if(maxTemp.isPresent()) {
+                temp.setMaxTemperature(maxTemp.get());
+            }
         }
 
         if (input.getAerodromeAirTemperatureForecast().getMaximumAirTemperatureTime() != null) {
@@ -292,10 +291,10 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (input.getAerodromeAirTemperatureForecast().getMinimumAirTemperature() != null) {
-            temp.setMinTemperature(NumericMeasureImpl.builder()
-                    .setUom(input.getAerodromeAirTemperatureForecast().getMinimumAirTemperature().getUom())
-                    .setValue(input.getAerodromeAirTemperatureForecast().getMinimumAirTemperature().getValue())
-                    .build());
+            Optional<NumericMeasure> minTemp = asNumericMeasure(input.getAerodromeAirTemperatureForecast().getMinimumAirTemperature());
+            if(minTemp.isPresent()) {
+                temp.setMinTemperature(minTemp.get());
+            }
         }
 
         if (input.getAerodromeAirTemperatureForecast().getMinimumAirTemperatureTime() != null) {
@@ -314,49 +313,41 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         surfaceWind.setVariableDirection(swForecast.isVariableWindDirection());
 
         if (swForecast.getMeanWindDirection() != null) {
-            surfaceWind.setMeanWindDirection(NumericMeasureImpl.builder()
-                    .setUom(swForecast.getMeanWindDirection().getUom())
-                    .setValue(swForecast.getMeanWindDirection().getValue())
-                    .build());
+            surfaceWind.setMeanWindDirection(asNumericMeasure(swForecast.getMeanWindDirection()));
+
         }
 
         if (swForecast.getMeanWindSpeed() != null) {
-            surfaceWind.setMeanWindSpeed(
-                    NumericMeasureImpl.builder().setUom(swForecast.getMeanWindSpeed().getUom()).setValue(swForecast.getMeanWindSpeed().getValue()).build());
+            asNumericMeasure(swForecast.getMeanWindSpeed()).ifPresent(surfaceWind::setMeanWindSpeed);
         }
 
         if (swForecast.getWindGustSpeed() != null) {
-            surfaceWind.setWindGust(
-                    NumericMeasureImpl.builder().setUom(swForecast.getWindGustSpeed().getUom()).setValue(swForecast.getWindGustSpeed().getValue()).build());
+            asNumericMeasure(swForecast.getWindGustSpeed()).ifPresent(surfaceWind::setWindGust);
         }
 
         return surfaceWind.build();
     }
 
-    private static CloudForecast setCloudForecast(AerodromeCloudForecastType cloudForecast) {
-        CloudForecastImpl.Builder forecastBuilder= CloudForecastImpl.builder();
+    private static TAFCloudForecastProperties setCloudForecast(AerodromeCloudForecastType cloudForecast, List<ConversionIssue> issueList) {
+        TAFCloudForecastProperties prop = new TAFCloudForecastProperties();
 
-        if(cloudForecast.getVerticalVisibility() == null || cloudForecast.getVerticalVisibility().isNil()) {
-            forecastBuilder.setVerticalVisibilityMissing(true);
+        if(cloudForecast.getVerticalVisibility() != null) {
+            if(!cloudForecast.getVerticalVisibility().getValue().getNilReason().isEmpty()) {
+                prop.set(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_VERTICAL_VISIBILITY, true);
+            } else {
+                asNumericMeasure(cloudForecast.getVerticalVisibility().getValue()).ifPresent(nm -> prop.set(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY, nm));
+            }
         } else {
-            forecastBuilder.setVerticalVisibility(NumericMeasureImpl.builder()
-                    .setUom(cloudForecast.getVerticalVisibility().getValue().getUom())
-                    .setValue(cloudForecast.getVerticalVisibility().getValue().getValue())
-                    .build());
-            forecastBuilder.setVerticalVisibilityMissing(false);
+            if(cloudForecast.getLayer() != null && cloudForecast.getLayer().isEmpty()) {
+                prop.set(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_CLOUD, true);
+            } else {
+                prop.set(TAFCloudForecastProperties.Name.CLOUD_LAYER, setCloud(cloudForecast, issueList));
+            }
         }
-
-        if(cloudForecast.getLayer() != null && cloudForecast.getLayer().isEmpty()) {
-            forecastBuilder.setNoSignificantCloud(true);
-        } else {
-            forecastBuilder.setLayers(setCloud(cloudForecast));
-            forecastBuilder.setNoSignificantCloud(false);
-        }
-
-        return forecastBuilder.build();
+        return prop;
     }
 
-    private static List<CloudLayer> setCloud(final AerodromeCloudForecastType cloudForecast) {
+    private static List<CloudLayer> setCloud(final AerodromeCloudForecastType cloudForecast, List<ConversionIssue> issueList) {
         List<CloudLayer> cloudLayers = new ArrayList<>();
 
         for (CloudLayerPropertyType layer : cloudForecast.getLayer()) {
@@ -383,7 +374,11 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
 
             cloudLayers.add(cloudLayer.build());
         }
-        return cloudLayers;
+
+        if(cloudLayers.isEmpty()) {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No vertical visibility or cloud layers in forecast"));
+        }
+            return cloudLayers;
     }
 
 }

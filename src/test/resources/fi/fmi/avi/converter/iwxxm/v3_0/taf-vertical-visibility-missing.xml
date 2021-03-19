@@ -111,6 +111,12 @@
           <iwxxm:windGustSpeed uom="m/s">12</iwxxm:windGustSpeed>
         </iwxxm:AerodromeSurfaceWindForecast>
       </iwxxm:surfaceWind>
+      <iwxxm:weather xlink:href="http://codes.wmo.int/306/4678/TSRA"/>
+      <iwxxm:cloud>
+        <iwxxm:AerodromeCloudForecast gml:id="uuid.ad9464f9-84de-49bd-8770-596b774591e5">
+          <iwxxm:verticalVisibility nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance" uom="[ft_i]">0</iwxxm:verticalVisibility>
+        </iwxxm:AerodromeCloudForecast>
+      </iwxxm:cloud>
     </iwxxm:MeteorologicalAerodromeForecast>
   </iwxxm:changeForecast>
 
@@ -132,12 +138,7 @@
       </iwxxm:surfaceWind>
       <iwxxm:cloud>
         <iwxxm:AerodromeCloudForecast gml:id="uuid.ad9464f9-82de-49bd-8770-596b774591e5">
-          <iwxxm:layer>
-            <iwxxm:CloudLayer>
-              <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN"/>
-              <iwxxm:base uom="[ft_i]">2000</iwxxm:base>
-            </iwxxm:CloudLayer>
-          </iwxxm:layer>
+          <iwxxm:verticalVisibility uom="[ft_i]">2000</iwxxm:verticalVisibility>
         </iwxxm:AerodromeCloudForecast>
       </iwxxm:cloud>
     </iwxxm:MeteorologicalAerodromeForecast>
