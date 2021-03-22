@@ -46,7 +46,6 @@ import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
 import fi.fmi.avi.model.ElevatedPoint;
@@ -107,12 +106,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         final TAFType taf = create(TAFType.class);
         taf.setId("uuid." + UUID.randomUUID().toString());
 
-        final Optional<AviationWeatherMessage.ReportStatus> reportStatus = input.getReportStatus();
-        if (!reportStatus.isPresent()) {
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Report status for TAF is missing"));
-            return result;
-        }
-        taf.setReportStatus(ReportStatusType.valueOf(reportStatus.get().name()));
+        taf.setReportStatus(ReportStatusType.valueOf(input.getReportStatus().name()));
 
         final Optional<PartialOrCompleteTimeInstant> issueTime = input.getIssueTime();
         if (!issueTime.isPresent()) {

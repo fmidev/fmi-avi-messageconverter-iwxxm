@@ -117,7 +117,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         final String processId = "process-" + UUID.randomUUID().toString();
         final String aerodromeId = "ad-" + UUID.randomUUID().toString();
 
-        final AviationWeatherMessage.ReportStatus status = input.getReportStatus().get();
+        final AviationWeatherMessage.ReportStatus status = input.getReportStatus();
         taf.setStatus(TAFReportStatusType.valueOf(status.name()));
 
         input.getIssueTime()//
