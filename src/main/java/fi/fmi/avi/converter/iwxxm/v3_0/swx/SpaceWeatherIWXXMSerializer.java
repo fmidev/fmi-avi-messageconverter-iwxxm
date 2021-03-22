@@ -50,7 +50,6 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
@@ -156,16 +155,16 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         try {
             final DatatypeFactory f = DatatypeFactory.newInstance();
 
-            if (source.getReportStatus().isPresent()) {
-                if (source.getReportStatus().get().equals(AviationWeatherMessage.ReportStatus.AMENDMENT)) {
+            switch (source.getReportStatus()) {
+                case AMENDMENT:
                     target.setReportStatus(ReportStatusType.AMENDMENT);
-                } else if (source.getReportStatus().get().equals(AviationWeatherMessage.ReportStatus.CORRECTION)) {
+                    break;
+                case CORRECTION:
                     target.setReportStatus(ReportStatusType.CORRECTION);
-                } else if (source.getReportStatus().get().equals(AviationWeatherMessage.ReportStatus.NORMAL)) {
+                    break;
+                case NORMAL:
                     target.setReportStatus(ReportStatusType.NORMAL);
-                }
-            } else {
-                results.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Report status is required"));
+                    break;
             }
 
             if (source.getPermissibleUsage().isPresent()) {
