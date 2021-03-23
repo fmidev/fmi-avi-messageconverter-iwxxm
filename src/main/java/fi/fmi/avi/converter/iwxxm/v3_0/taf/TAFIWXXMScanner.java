@@ -4,13 +4,13 @@ import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFBaseForecastProperties.Name
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFBaseForecastProperties.Name.TEMPERATURES;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFChangeForecastProperties.Name.CHANGE_INDICATOR;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFChangeForecastProperties.Name.CHANGE_PERIOD;
+import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.CLOUD_FORECAST;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.FORECAST_WEATHER;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.NO_SIGNIFICANT_WEATHER;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.PREVAILING_VISIBILITY;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.SURFACEWIND;
-import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFProperties.Name.AERODROME;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFProperties.Name.BASE_FORECAST;
 import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFProperties.Name.CHANGE_FORECAST;
@@ -19,6 +19,7 @@ import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFProperties.Name.VALID_TIME;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,15 +33,12 @@ import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Scanner;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
-import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.Weather;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
-import fi.fmi.avi.model.immutable.CloudForecastImpl;
 import fi.fmi.avi.model.immutable.CloudLayerImpl;
 import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
 import fi.fmi.avi.model.immutable.ElevatedPointImpl;
@@ -56,6 +54,7 @@ import icao.iwxxm30.AerodromeSurfaceWindForecastType;
 import icao.iwxxm30.AirportHeliportPropertyType;
 import icao.iwxxm30.CloudLayerPropertyType;
 import icao.iwxxm30.MeteorologicalAerodromeForecastPropertyType;
+import icao.iwxxm30.MeteorologicalAerodromeForecastType;
 import icao.iwxxm30.TAFType;
 
 public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
@@ -80,8 +79,8 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             final Optional<ZonedDateTime> startTimeZoned = getStartTime(input.getValidPeriod().getTimePeriod(), refCtx);
             final Optional<ZonedDateTime> endTimeZoned = getEndTime(input.getValidPeriod().getTimePeriod(), refCtx);
             if (startTimeZoned.isPresent() && endTimeZoned.isPresent()) {
-                Optional<PartialOrCompleteTimeInstant> startTime = Optional.of(PartialOrCompleteTimeInstant.of(startTimeZoned.get()));
-                Optional<PartialOrCompleteTimeInstant> endTime = Optional.of(PartialOrCompleteTimeInstant.of(endTimeZoned.get()));
+                final Optional<PartialOrCompleteTimeInstant> startTime = Optional.of(PartialOrCompleteTimeInstant.of(startTimeZoned.get()));
+                final Optional<PartialOrCompleteTimeInstant> endTime = Optional.of(PartialOrCompleteTimeInstant.of(endTimeZoned.get()));
 
                 final PartialOrCompleteTimePeriod validPeriod = PartialOrCompleteTimePeriod.builder().setStartTime(startTime).setEndTime(endTime).build();
 
@@ -90,12 +89,12 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (input.getAerodrome() != null) {
-            AirportHeliportPropertyType airportHeliportPropertyType = input.getAerodrome();
+            final AirportHeliportPropertyType airportHeliportPropertyType = input.getAerodrome();
 
-            AerodromeImpl.Builder aerodrome = AerodromeImpl.builder();
-            List<AirportHeliportTimeSlicePropertyType> timeslices = airportHeliportPropertyType.getAirportHeliport().getTimeSlice();
-            for (AirportHeliportTimeSlicePropertyType timeslice : timeslices) {
-                AirportHeliportTimeSliceType airportHeliportTimeSlice = timeslice.getAirportHeliportTimeSlice();
+            final AerodromeImpl.Builder aerodrome = AerodromeImpl.builder();
+            final List<AirportHeliportTimeSlicePropertyType> timeslices = airportHeliportPropertyType.getAirportHeliport().getTimeSlice();
+            for (final AirportHeliportTimeSlicePropertyType timeslice : timeslices) {
+                final AirportHeliportTimeSliceType airportHeliportTimeSlice = timeslice.getAirportHeliportTimeSlice();
 
                 aerodrome.setDesignator(airportHeliportTimeSlice.getDesignator().getValue());
                 if (airportHeliportTimeSlice.getDesignatorIATA() != null) {
@@ -105,9 +104,9 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
                 aerodrome.setLocationIndicatorICAO(airportHeliportTimeSlice.getLocationIndicatorICAO().getValue());
 
                 if (airportHeliportTimeSlice.getARP() != null) {
-                    ElevatedPointType arp = airportHeliportTimeSlice.getARP().getElevatedPoint();
+                    final ElevatedPointType arp = airportHeliportTimeSlice.getARP().getElevatedPoint();
 
-                    ElevatedPointImpl.Builder elevatedPoint = ElevatedPointImpl.builder();
+                    final ElevatedPointImpl.Builder elevatedPoint = ElevatedPointImpl.builder();
                     elevatedPoint.setCrs(CoordinateReferenceSystemImpl.builder()
                             .setAxisLabels(arp.getAxisLabels())
                             .setName(arp.getSrsName())
@@ -115,7 +114,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
                             .build());
                     elevatedPoint.setCoordinates(arp.getPos().getValue());
                     elevatedPoint.setElevationUom(arp.getElevation().getUom());
-                    elevatedPoint.setElevationValue(Double.valueOf(arp.getElevation().getValue()));
+                    elevatedPoint.setElevationValue(Double.parseDouble(arp.getElevation().getValue()));
                     elevatedPoint.setVerticalDatum(arp.getVerticalDatum().getValue());
 
                     aerodrome.setReferencePoint(elevatedPoint.build());
@@ -129,26 +128,26 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
                 properties.set(MISSING_MESSAGE, true);
                 return issueList;
             }
-            TAFBaseForecastProperties baseForecastProperties = new TAFBaseForecastProperties();
+            final TAFBaseForecastProperties baseForecastProperties = new TAFBaseForecastProperties();
 
-            setTAFBaseForecastProperties(baseForecastProperties, input.getBaseForecast(), issueList, refCtx, hints);
+            setTAFBaseForecastProperties(baseForecastProperties, input.getBaseForecast().getMeteorologicalAerodromeForecast(), issueList, refCtx, hints);
             properties.set(BASE_FORECAST, baseForecastProperties);
         }
 
         if (input.getChangeForecast() != null) {
-            List<TAFChangeForecastProperties> changeForecasts = new ArrayList<>();
+            final List<TAFChangeForecastProperties> changeForecasts = new ArrayList<>();
 
-            for (MeteorologicalAerodromeForecastPropertyType forecast : input.getChangeForecast()) {
-                TAFChangeForecastProperties changeForecastProperties = new TAFChangeForecastProperties();
+            for (final MeteorologicalAerodromeForecastPropertyType forecast : input.getChangeForecast()) {
+                final TAFChangeForecastProperties changeForecastProperties = new TAFChangeForecastProperties();
 
-                setTAFChangeForecstProperties(changeForecastProperties, forecast, refCtx, issueList, hints);
+                setTAFChangeForecastProperties(changeForecastProperties, forecast.getMeteorologicalAerodromeForecast(), refCtx, issueList, hints);
 
                 changeForecasts.add(changeForecastProperties);
             }
             properties.set(CHANGE_FORECAST, changeForecasts);
         }
 
-        if(input.isIsCancelReport() != null && input.isIsCancelReport()) {
+        if (input.isIsCancelReport() != null && input.isIsCancelReport()) {
             properties.set(IS_CANCEL_MESSAGE, true);
 
             if (input.getCancelledReportValidPeriod() != null) {
@@ -158,18 +157,18 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
                     issueList.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Cancellation period is missing."));
                 } else {
                     final PartialOrCompleteTimePeriod.Builder cancelPeriod = PartialOrCompleteTimePeriod.builder();
-                    if(cancelStartTimeZoned.isPresent()) {
+                    if (cancelStartTimeZoned.isPresent()) {
                         cancelPeriod.setStartTime(Optional.of(PartialOrCompleteTimeInstant.of(cancelStartTimeZoned.get())));
                     } else {
                         issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.MISSING_DATA,
                                 "Cancellation start time is missing."));
                     }
 
-                    if(cancelEndTimeZoned.isPresent()) {
+                    if (cancelEndTimeZoned.isPresent()) {
                         cancelPeriod.setEndTime(Optional.of(PartialOrCompleteTimeInstant.of(cancelEndTimeZoned.get())));
                     } else {
-                        issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.MISSING_DATA, "Cancellation end time is "
-                                + "missing."));
+                        issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.MISSING_DATA,
+                                "Cancellation end time is " + "missing."));
                     }
 
                     properties.set(VALID_TIME, cancelPeriod.build());
@@ -179,24 +178,22 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             }
         }
 
-
-
         return issueList;
     }
 
-    private static void setTAFBaseForecastProperties(final TAFBaseForecastProperties props, final MeteorologicalAerodromeForecastPropertyType input,
-            final List<ConversionIssue> issueList, final ReferredObjectRetrievalContext refCtx, ConversionHints hints) {
-        if (input.getMeteorologicalAerodromeForecast() != null) {
-            if (input.getMeteorologicalAerodromeForecast().getTemperature().size() > 0) {
-                List<TAFAirTemperatureForecast> temperatureForecasts = new ArrayList<>();
-                for (AerodromeAirTemperatureForecastPropertyType type : input.getMeteorologicalAerodromeForecast().getTemperature()) {
+    private static void setTAFBaseForecastProperties(final TAFBaseForecastProperties props, final MeteorologicalAerodromeForecastType input,
+            final List<ConversionIssue> issueList, final ReferredObjectRetrievalContext refCtx, final ConversionHints hints) {
+        if (input != null) {
+            if (input.getTemperature().size() > 0) {
+                final List<TAFAirTemperatureForecast> temperatureForecasts = new ArrayList<>();
+                for (final AerodromeAirTemperatureForecastPropertyType type : input.getTemperature()) {
                     temperatureForecasts.add(setTemperatures(type, refCtx));
                 }
 
                 props.set(TEMPERATURES, temperatureForecasts);
             }
 
-            TAFForecastProperties forecatsProperties = new TAFForecastProperties();
+            final TAFForecastProperties forecatsProperties = new TAFForecastProperties();
             setTAFForecastProperties(forecatsProperties, input, issueList, refCtx, hints);
 
             props.set(TAFBaseForecastProperties.Name.FORECAST, forecatsProperties);
@@ -205,14 +202,16 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         }
     }
 
-    private static void setTAFChangeForecstProperties(final TAFChangeForecastProperties props, final MeteorologicalAerodromeForecastPropertyType input,
-            final ReferredObjectRetrievalContext refCtx, final List<ConversionIssue> issueList, ConversionHints hints) {
-        final Optional<ZonedDateTime> changeForecastStart = getStartTime(input.getMeteorologicalAerodromeForecast().getPhenomenonTime().getTimePeriod(),
-                refCtx);
-        final Optional<ZonedDateTime> changeForecastEnd = getEndTime(input.getMeteorologicalAerodromeForecast().getPhenomenonTime().getTimePeriod(), refCtx);
+    private static void setTAFChangeForecastProperties(final TAFChangeForecastProperties props, final MeteorologicalAerodromeForecastType input,
+            final ReferredObjectRetrievalContext refCtx, final List<ConversionIssue> issueList, final ConversionHints hints) {
+        if (input == null) {
+            return;
+        }
+        final Optional<ZonedDateTime> changeForecastStart = getStartTime(input.getPhenomenonTime().getTimePeriod(), refCtx);
+        final Optional<ZonedDateTime> changeForecastEnd = getEndTime(input.getPhenomenonTime().getTimePeriod(), refCtx);
         if (changeForecastStart.isPresent() && changeForecastEnd.isPresent()) {
-            Optional<PartialOrCompleteTimeInstant> startTime = Optional.of(PartialOrCompleteTimeInstant.of(changeForecastStart.get()));
-            Optional<PartialOrCompleteTimeInstant> endTime = Optional.of(PartialOrCompleteTimeInstant.of(changeForecastEnd.get()));
+            final Optional<PartialOrCompleteTimeInstant> startTime = Optional.of(PartialOrCompleteTimeInstant.of(changeForecastStart.get()));
+            final Optional<PartialOrCompleteTimeInstant> endTime = Optional.of(PartialOrCompleteTimeInstant.of(changeForecastEnd.get()));
 
             final PartialOrCompleteTimePeriod changePeriod = PartialOrCompleteTimePeriod.builder().setStartTime(startTime).setEndTime(endTime).build();
 
@@ -221,94 +220,96 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Valid period is required in change forecasts"));
         }
 
-        if (input.getMeteorologicalAerodromeForecast().getChangeIndicator() != null) {
-            props.set(CHANGE_INDICATOR,
-                    AviationCodeListUser.TAFChangeIndicator.valueOf(input.getMeteorologicalAerodromeForecast().getChangeIndicator().value()));
+        if (input.getChangeIndicator() != null) {
+            props.set(CHANGE_INDICATOR, AviationCodeListUser.TAFChangeIndicator.valueOf(input.getChangeIndicator().value()));
         } else {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Change indicator is required in change forecasts"));
         }
 
-        TAFForecastProperties forecatsProperties = new TAFForecastProperties();
+        final TAFForecastProperties forecatsProperties = new TAFForecastProperties();
 
         setTAFForecastProperties(forecatsProperties, input, issueList, refCtx, hints);
 
         props.set(TAFChangeForecastProperties.Name.FORECAST, forecatsProperties);
     }
 
-    private static void setTAFForecastProperties(final TAFForecastProperties props, final MeteorologicalAerodromeForecastPropertyType input,
-            final List<ConversionIssue> issueList, final ReferredObjectRetrievalContext refCtx, ConversionHints hints) {
+    private static void setTAFForecastProperties(final TAFForecastProperties props, final MeteorologicalAerodromeForecastType input,
+            final List<ConversionIssue> issueList, final ReferredObjectRetrievalContext refCtx, final ConversionHints hints) {
 
-        props.set(CLOUD_AND_VISIBILITY_OK, input.getMeteorologicalAerodromeForecast().isCloudAndVisibilityOK());
+        props.set(CLOUD_AND_VISIBILITY_OK, input.isCloudAndVisibilityOK());
 
-        if (input.getMeteorologicalAerodromeForecast().getPrevailingVisibility() != null) {
-            asNumericMeasure(input.getMeteorologicalAerodromeForecast().getPrevailingVisibility()).ifPresent(nm -> props.set(PREVAILING_VISIBILITY, nm));
+        if (input.getPrevailingVisibility() != null) {
+            asNumericMeasure(input.getPrevailingVisibility())//
+                    .ifPresent(nm -> props.set(PREVAILING_VISIBILITY, nm));
         }
 
-        if (input.getMeteorologicalAerodromeForecast().getPrevailingVisibilityOperator() != null) {
-            props.set(PREVAILING_VISIBILIT_OPERATOR,
-                    AviationCodeListUser.RelationalOperator.valueOf(input.getMeteorologicalAerodromeForecast().getPrevailingVisibilityOperator().value()));
+        if (input.getPrevailingVisibilityOperator() != null) {
+            props.set(PREVAILING_VISIBILIT_OPERATOR, AviationCodeListUser.RelationalOperator.valueOf(input.getPrevailingVisibilityOperator().value()));
         }
 
-        if (input.getMeteorologicalAerodromeForecast().getWeather().size() > 0) {
-            List<Weather> weatherList = new ArrayList<>();
-            for (AerodromeForecastWeatherType weatherType : input.getMeteorologicalAerodromeForecast().getWeather()) {
-                withWeatherBuilderFor(weatherType, hints, value -> weatherList.add(value.build())
-                        , issue -> issueList.add(issue));
-            }
-            props.set(FORECAST_WEATHER, weatherList);
-        } else {
+        if (isNoSignificantWeather(input.getWeather())) {
             props.set(NO_SIGNIFICANT_WEATHER, true);
-        }
-
-        if (input.getMeteorologicalAerodromeForecast().getSurfaceWind() != null) {
-            props.set(SURFACEWIND, setSurfaceWind(input.getMeteorologicalAerodromeForecast().getSurfaceWind().getAerodromeSurfaceWindForecast()));
-        }
-
-        if (input.getMeteorologicalAerodromeForecast().getCloud() != null) {
-            if(input.getMeteorologicalAerodromeForecast().getCloud().getAerodromeCloudForecast() != null) {
-                props.set(CLOUD_FORECAST, setCloudForecast(input.getMeteorologicalAerodromeForecast().getCloud().getAerodromeCloudForecast(), issueList));
+        } else if (!input.getWeather().isEmpty()) {
+            final List<Weather> weatherList = new ArrayList<>();
+            for (final AerodromeForecastWeatherType weatherType : input.getWeather()) {
+                withWeatherBuilderFor(weatherType, hints, value -> weatherList.add(value.build()), issueList::add);
+            }
+            if (!weatherList.isEmpty()) {
+                props.set(FORECAST_WEATHER, weatherList);
             }
         }
+
+        if (input.getSurfaceWind() != null) {
+            props.set(SURFACEWIND, setSurfaceWind(input.getSurfaceWind().getAerodromeSurfaceWindForecast()));
+        }
+
+        if (isNoSignificantCloud(input.getCloud())) {
+            final TAFCloudForecastProperties prop = new TAFCloudForecastProperties();
+            prop.set(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_CLOUD, true);
+            props.set(CLOUD_FORECAST, prop);
+        } else if (input.getCloud() != null && input.getCloud().getNilReason().isEmpty() && input.getCloud().getAerodromeCloudForecast() != null) {
+            props.set(CLOUD_FORECAST, setCloudForecast(input.getCloud().getAerodromeCloudForecast(), issueList));
+        }
+    }
+
+    private static boolean isNoSignificantWeather(final List<AerodromeForecastWeatherType> weather) {
+        return weather != null && weather.size() == 1 && weather.get(0)
+                .getNilReason()
+                .contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
+    }
+
+    private static boolean isNoSignificantCloud(final AerodromeCloudForecastPropertyType cloud) {
+        return cloud != null && cloud.getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
     }
 
     private static TAFAirTemperatureForecast setTemperatures(final AerodromeAirTemperatureForecastPropertyType input,
             final ReferredObjectRetrievalContext refCtx) {
-        TAFAirTemperatureForecastImpl.Builder temp = TAFAirTemperatureForecastImpl.builder();
+        final TAFAirTemperatureForecastImpl.Builder builder = TAFAirTemperatureForecastImpl.builder();
 
         if (input.getAerodromeAirTemperatureForecast().getMaximumAirTemperature() != null) {
-            Optional<NumericMeasure> maxTemp = asNumericMeasure(input.getAerodromeAirTemperatureForecast().getMaximumAirTemperature());
-            if(maxTemp.isPresent()) {
-                temp.setMaxTemperature(maxTemp.get());
-            }
+            asNumericMeasure(input.getAerodromeAirTemperatureForecast().getMaximumAirTemperature())//
+                    .ifPresent(builder::setMaxTemperature);
         }
 
         if (input.getAerodromeAirTemperatureForecast().getMaximumAirTemperatureTime() != null) {
-            Optional<PartialOrCompleteTimeInstant> maxTempTime = getCompleteTimeInstant(
-                    input.getAerodromeAirTemperatureForecast().getMaximumAirTemperatureTime(), refCtx);
-            if (maxTempTime.isPresent()) {
-                temp.setMaxTemperatureTime(maxTempTime.get());
-            }
+            getCompleteTimeInstant(input.getAerodromeAirTemperatureForecast().getMaximumAirTemperatureTime(), refCtx)//
+                    .ifPresent(builder::setMaxTemperatureTime);
         }
 
         if (input.getAerodromeAirTemperatureForecast().getMinimumAirTemperature() != null) {
-            Optional<NumericMeasure> minTemp = asNumericMeasure(input.getAerodromeAirTemperatureForecast().getMinimumAirTemperature());
-            if(minTemp.isPresent()) {
-                temp.setMinTemperature(minTemp.get());
-            }
+            asNumericMeasure(input.getAerodromeAirTemperatureForecast().getMinimumAirTemperature())//
+                    .ifPresent(builder::setMinTemperature);
         }
 
         if (input.getAerodromeAirTemperatureForecast().getMinimumAirTemperatureTime() != null) {
-            Optional<PartialOrCompleteTimeInstant> minTempTime = getCompleteTimeInstant(
-                    (input.getAerodromeAirTemperatureForecast().getMinimumAirTemperatureTime()), refCtx);
-            if (minTempTime.isPresent()) {
-                temp.setMinTemperatureTime(minTempTime.get());
-            }
+            getCompleteTimeInstant((input.getAerodromeAirTemperatureForecast().getMinimumAirTemperatureTime()), refCtx)//
+                    .ifPresent(builder::setMinTemperatureTime);
         }
-        return temp.build();
+        return builder.build();
     }
 
     private static SurfaceWind setSurfaceWind(final AerodromeSurfaceWindForecastType swForecast) {
-        SurfaceWindImpl.Builder surfaceWind = SurfaceWindImpl.builder();
+        final SurfaceWindImpl.Builder surfaceWind = SurfaceWindImpl.builder();
 
         surfaceWind.setVariableDirection(swForecast.isVariableWindDirection());
 
@@ -318,40 +319,45 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (swForecast.getMeanWindSpeed() != null) {
-            asNumericMeasure(swForecast.getMeanWindSpeed()).ifPresent(surfaceWind::setMeanWindSpeed);
+            asNumericMeasure(swForecast.getMeanWindSpeed())//
+                    .ifPresent(surfaceWind::setMeanWindSpeed);
         }
 
         if (swForecast.getWindGustSpeed() != null) {
-            asNumericMeasure(swForecast.getWindGustSpeed()).ifPresent(surfaceWind::setWindGust);
+            asNumericMeasure(swForecast.getWindGustSpeed())//
+                    .ifPresent(surfaceWind::setWindGust);
         }
 
         return surfaceWind.build();
     }
 
-    private static TAFCloudForecastProperties setCloudForecast(AerodromeCloudForecastType cloudForecast, List<ConversionIssue> issueList) {
-        TAFCloudForecastProperties prop = new TAFCloudForecastProperties();
+    private static TAFCloudForecastProperties setCloudForecast(final AerodromeCloudForecastType input, final List<ConversionIssue> issueList) {
+        final TAFCloudForecastProperties prop = new TAFCloudForecastProperties();
 
-        if(cloudForecast.getVerticalVisibility() != null) {
-            if(!cloudForecast.getVerticalVisibility().getValue().getNilReason().isEmpty()) {
-                prop.set(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_VERTICAL_VISIBILITY, true);
-            } else {
-                asNumericMeasure(cloudForecast.getVerticalVisibility().getValue()).ifPresent(nm -> prop.set(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY, nm));
-            }
-        } else {
-            if(cloudForecast.getLayer() != null && cloudForecast.getLayer().isEmpty()) {
-                prop.set(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_CLOUD, true);
-            } else {
-                prop.set(TAFCloudForecastProperties.Name.CLOUD_LAYER, setCloud(cloudForecast, issueList));
-            }
+        if (input.getVerticalVisibility() == null //
+                || input.getVerticalVisibility().isNil() //
+                || !input.getVerticalVisibility().getValue().getNilReason().isEmpty()) {
+            prop.set(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY_MISSING, true);
+        } else if (input.getVerticalVisibility() != null) {
+            asNumericMeasure(input.getVerticalVisibility().getValue())//
+                    .ifPresent(nm -> prop.set(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY, nm));
+        }
+        if (input.getLayer() != null) {
+            prop.set(TAFCloudForecastProperties.Name.CLOUD_LAYER, setCloudLayers(input.getLayer()));
+        }
+
+        if (!prop.contains(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY) && prop.getList(TAFCloudForecastProperties.Name.CLOUD_LAYER, CloudLayer.class)
+                .isEmpty()) {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No vertical visibility or cloud layers in forecast"));
         }
         return prop;
     }
 
-    private static List<CloudLayer> setCloud(final AerodromeCloudForecastType cloudForecast, List<ConversionIssue> issueList) {
-        List<CloudLayer> cloudLayers = new ArrayList<>();
+    private static List<CloudLayer> setCloudLayers(final List<CloudLayerPropertyType> input) {
+        final List<CloudLayer> cloudLayers = new ArrayList<>();
 
-        for (CloudLayerPropertyType layer : cloudForecast.getLayer()) {
-            CloudLayerImpl.Builder cloudLayer = CloudLayerImpl.builder();
+        for (final CloudLayerPropertyType layer : input) {
+            final CloudLayerImpl.Builder cloudLayer = CloudLayerImpl.builder();
             if (layer.getCloudLayer().getAmount() != null) {
                 cloudLayer.setAmount(AviationCodeListUser.CloudAmount.valueOf(layer.getCloudLayer()
                         .getAmount()
@@ -374,11 +380,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
 
             cloudLayers.add(cloudLayer.build());
         }
-
-        if(cloudLayers.isEmpty()) {
-            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "No vertical visibility or cloud layers in forecast"));
-        }
-            return cloudLayers;
+        return cloudLayers.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(cloudLayers);
     }
 
 }

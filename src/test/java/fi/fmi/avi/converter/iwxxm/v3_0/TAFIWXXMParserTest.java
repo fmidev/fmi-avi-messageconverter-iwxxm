@@ -6,8 +6,6 @@ import static junit.framework.TestCase.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,19 +40,22 @@ public class TAFIWXXMParserTest {
     @Autowired
     private AviMessageConverter converter;
 
+    private static void assertSuccess(final ConversionResult<TAF> result) {
+        assertEquals("Expected SUCCESS but had issues: " + result.getConversionIssues(), ConversionResult.Status.SUCCESS, result.getStatus());
+    }
+
     @Test
     public void normalMessageTest() throws IOException {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO));
-        String input = getInput("taf-reportstatus-normal.xml");
+        final String input = getInput("taf-reportstatus-normal.xml");
 
-        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO,
-                ConversionHints.EMPTY);
+        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
 
         //assertEquals(0 ,result.getConversionIssues().size());
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertSuccess(result);
         assertTrue(result.getConvertedMessage().isPresent());
 
-        TAF taf = result.getConvertedMessage().get();
+        final TAF taf = result.getConvertedMessage().get();
         assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, taf.getReportStatus().get());
         assertEquals(AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL, taf.getPermissibleUsage().get());
         assertEquals(AviationCodeListUser.PermissibleUsageReason.TEST, taf.getPermissibleUsageReason().get());
@@ -62,15 +63,15 @@ public class TAFIWXXMParserTest {
         assertEquals("2012-08-15T18:00Z", taf.getIssueTime().get().getCompleteTime().get().toString());
         //Valid Time
         assertEquals("2012-08-16T00:00Z", taf.getValidityTime().get().getStartTime().get().getCompleteTime().get().toString());
-        assertEquals("2012-08-16T18:00Z",taf.getValidityTime().get().getEndTime().get().getCompleteTime().get().toString());
+        assertEquals("2012-08-16T18:00Z", taf.getValidityTime().get().getEndTime().get().getCompleteTime().get().toString());
 
         //Aerodrome
-        Aerodrome aerodrome = taf.getAerodrome();
+        final Aerodrome aerodrome = taf.getAerodrome();
         assertEquals("YUDO", aerodrome.getDesignator());
         assertEquals("DONLON/INTERNATIONAL", aerodrome.getName().get());
         assertEquals("YUDO", aerodrome.getLocationIndicatorICAO().get());
         assertTrue(aerodrome.getReferencePoint().isPresent());
-        ElevatedPoint point = aerodrome.getReferencePoint().get();
+        final ElevatedPoint point = aerodrome.getReferencePoint().get();
         assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", point.getCrs().get().getName());
         assertEquals("Lat", point.getCrs().get().getAxisLabels().get(0));
         assertEquals("Long", point.getCrs().get().getAxisLabels().get(1));
@@ -83,7 +84,7 @@ public class TAFIWXXMParserTest {
 
         //Base Forecast
         assertTrue(taf.getBaseForecast().isPresent());
-        TAFBaseForecast base = taf.getBaseForecast().get();
+        final TAFBaseForecast base = taf.getBaseForecast().get();
         assertFalse(base.isCeilingAndVisibilityOk());
         assertTrue(base.isNoSignificantWeather());
         assertEquals("m", base.getPrevailingVisibility().get().getUom());
@@ -186,22 +187,21 @@ public class TAFIWXXMParserTest {
 
     @Test
     public void cancelMessageTest() throws IOException {
-        String input = getInput("taf-cancel-message.xml");
+        final String input = getInput("taf-cancel-message.xml");
 
-        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO,
-                ConversionHints.EMPTY);
+        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
 
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertSuccess(result);
         assertTrue(result.getConvertedMessage().isPresent());
 
-        TAF taf = result.getConvertedMessage().get();
+        final TAF taf = result.getConvertedMessage().get();
         assertEquals(AviationWeatherMessage.ReportStatus.AMENDMENT, taf.getReportStatus().get());
         assertEquals(AviationCodeListUser.PermissibleUsage.OPERATIONAL, taf.getPermissibleUsage().get());
         assertTrue(taf.isCancelMessage());
         //Issue Time
         assertEquals("2012-08-16T15:00Z", taf.getIssueTime().get().getCompleteTime().get().toString());
 
-        Aerodrome aerodrome = taf.getAerodrome();
+        final Aerodrome aerodrome = taf.getAerodrome();
         assertEquals("YUDO", aerodrome.getDesignator());
         assertEquals("DONLON/INTERNATIONAL", aerodrome.getName().get());
         assertEquals("YUDO", aerodrome.getLocationIndicatorICAO().get());
@@ -212,43 +212,63 @@ public class TAFIWXXMParserTest {
 
     @Test
     public void noSignificantWeatherTest() throws IOException {
-        String input = getInput("taf-vertical-visibility-missing.xml");
-
-        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO,
-                ConversionHints.EMPTY);
-
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        final String input = getInput("taf-no-significant-weather-or-cloud.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertSuccess(result);
         assertTrue(result.getConvertedMessage().isPresent());
+        final TAF taf = result.getConvertedMessage().get();
 
-        TAF taf = result.getConvertedMessage().get();
+        assertTrue("Expected noSignificantWeather on nothingOfOperationalSignificance nilReason", //
+                taf.getBaseForecast().get().isNoSignificantWeather());
+        assertFalse("Expected no noSignificantWeather missing weather", //
+                taf.getChangeForecasts().get().get(0).isNoSignificantWeather());
+        assertFalse("Expected no noSignificantWeather on present weather", //
+                taf.getChangeForecasts().get().get(1).isNoSignificantWeather());
+        assertFalse("Expected no noSignificantWeather on 'missing' nilReason", //
+                taf.getChangeForecasts().get().get(3).isNoSignificantWeather());
+        assertFalse("Expected no weather on 'missing' nilReason", //
+                taf.getChangeForecasts().get().get(3).getForecastWeather().isPresent());
+        assertFalse(taf.isTranslated());
+    }
 
-        assertTrue(taf.getBaseForecast().get().isNoSignificantWeather());
-        assertTrue(taf.getChangeForecasts().get().get(0).isNoSignificantWeather());
-        assertFalse(taf.getChangeForecasts().get().get(1).isNoSignificantWeather());
-        assertTrue(taf.getChangeForecasts().get().get(1).getCloud().get().isVerticalVisibilityMissing());
+    @Test
+    public void noSignificantCloudTest() throws IOException {
+        final String input = getInput("taf-no-significant-weather-or-cloud.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertSuccess(result);
+        assertTrue(result.getConvertedMessage().isPresent());
+        final TAF taf = result.getConvertedMessage().get();
+
+        assertTrue("Expected noSignificantCloud on nothingOfOperationalSignificance nilReason", //
+                taf.getBaseForecast().get().getCloud().get().isNoSignificantCloud());
+        assertFalse("Expected empty cloud on missing cloud", //
+                taf.getChangeForecasts().get().get(0).getCloud().isPresent());
+        assertFalse("Expected no noSignificantCloud on present cloud", //
+                taf.getChangeForecasts().get().get(1).getCloud().get().isNoSignificantCloud());
         assertFalse(taf.getChangeForecasts().get().get(2).getCloud().get().isVerticalVisibilityMissing());
         assertEquals("[ft_i]", taf.getChangeForecasts().get().get(2).getCloud().get().getVerticalVisibility().get().getUom());
-        assertEquals(2000d, taf.getChangeForecasts().get().get(2).getCloud().get().getVerticalVisibility().get().getValue());
+        assertEquals(2000.0, taf.getChangeForecasts().get().get(2).getCloud().get().getVerticalVisibility().get().getValue());
+        assertFalse("Expected no cloud on 'missing' nilReason", //
+                taf.getChangeForecasts().get().get(3).getCloud().isPresent());
         assertFalse(taf.isTranslated());
     }
 
     @Test
     public void translatedMetaPropsTest() throws IOException {
-        String input = getInput("taf-translated.xml");
+        final String input = getInput("taf-translated.xml");
 
-        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO,
-                ConversionHints.EMPTY);
+        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
 
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertSuccess(result);
         assertTrue(result.getConvertedMessage().isPresent());
 
-        TAF taf = result.getConvertedMessage().get();
+        final TAF taf = result.getConvertedMessage().get();
 
         assertTrue(taf.isTranslated());
         assertEquals("123456", taf.getTranslatedBulletinID().get());
         assertEquals("Translator center", taf.getTranslationCentreDesignator().get());
         assertEquals("Translator center 1", taf.getTranslationCentreName().get());
-        assertEquals("2012-08-16T00:00Z[GMT]" , taf.getTranslatedBulletinReceptionTime().get().toString());
+        assertEquals("2012-08-16T00:00Z[GMT]", taf.getTranslatedBulletinReceptionTime().get().toString());
         assertEquals("2012-08-15T00:00Z[GMT]", taf.getTranslationTime().get().toString());
 
     }
