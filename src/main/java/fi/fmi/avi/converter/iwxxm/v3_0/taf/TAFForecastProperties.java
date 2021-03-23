@@ -15,13 +15,13 @@ public class TAFForecastProperties extends AbstractPropertyContainer {
 
     public enum Name implements PropertyName {
 
-        VISIBILITY_OK(Boolean.class),
+        CLOUD_AND_VISIBILITY_OK(Boolean.class),
         PREVAILING_VISIBILITY(NumericMeasure.class),
         PREVAILING_VISIBILIT_OPERATOR(AviationCodeListUser.RelationalOperator.class),
         SURFACEWIND(SurfaceWind.class),
         FORECAST_WEATHER(List.class),
         NO_SIGNIFICANT_WEATHER(Boolean.class),
-        CLOUD_FORECAST(CloudForecast.class);
+        CLOUD_FORECAST(TAFCloudForecastProperties.class);
 
         private final Class<?> acceptedType;
 

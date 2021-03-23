@@ -1,7 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
-
 import java.time.ZonedDateTime;
 import java.util.function.Consumer;
 
@@ -21,7 +19,7 @@ import icao.iwxxm30.ReportType;
 public class AbstractIWXXM30Scanner extends AbstractIWXXMScanner {
 
     public static IssueList collectReportMetadata(final ReportType input, final GenericReportProperties properties, final ConversionHints hints) {
-        IssueList retval = new IssueList();
+        final IssueList retval = new IssueList();
 
         //Issues for the permissibleUsage and reportStatus reported already by XML Schema or Schematron validation, so not checking them here:
         if (input.getReportStatus() != null) {
@@ -66,8 +64,10 @@ public class AbstractIWXXM30Scanner extends AbstractIWXXMScanner {
         return retval;
     }
 
-    public static void withWeatherBuilderFor(final AerodromeForecastWeatherType weather, final ConversionHints hints, final Consumer<WeatherImpl.Builder> resultHandler,
-            final Consumer<ConversionIssue> issueHandler) {
-        withWeatherBuilderFor(weather.getHref(), weather.getTitle(), hints, resultHandler, issueHandler);
+    public static void withWeatherBuilderFor(final AerodromeForecastWeatherType weather, final ConversionHints hints,
+            final Consumer<WeatherImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
+        if (weather.getNilReason().isEmpty()) {
+            withWeatherBuilderFor(weather.getHref(), weather.getTitle(), hints, resultHandler, issueHandler);
+        }
     }
 }
