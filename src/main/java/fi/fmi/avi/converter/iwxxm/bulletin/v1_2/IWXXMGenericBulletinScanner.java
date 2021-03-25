@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin.generic;
+package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
 import java.io.StringWriter;
 import java.time.ZonedDateTime;
@@ -26,7 +26,6 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
-import fi.fmi.avi.converter.iwxxm.bulletin.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
@@ -37,83 +36,6 @@ import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
-
-    @Override
-    protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
-        final ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
-        final XPathFactory factory = XPathFactory.newInstance();
-        final XPath xpath = factory.newXPath();
-        xpath.setNamespaceContext(new IWXXMNamespaceContext());
-        final GenericAviationWeatherMessageImpl.Builder builder = new GenericAviationWeatherMessageImpl.Builder();
-        builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
-        builder.setTranslated(true);
-
-        try {
-            final String messageType = featureElement.getLocalName();
-            switch (messageType) {
-                case "TAF":
-                    builder.setMessageType(MessageType.TAF);
-                    retval.addIssue(collectTAFMessage(featureElement, xpath, builder));
-                    break;
-
-                case "METAR":
-                    builder.setMessageType(MessageType.METAR);
-                    break;
-
-                case "SPECI":
-                    builder.setMessageType(MessageType.SPECI);
-
-                case "SIGMET":
-                case "TropicalCycloneSIGMET":
-                case "VolcanicAshSIGMET":
-                    builder.setMessageType(MessageType.SIGMET);
-                    retval.addIssue(collectSIGMETMessage(featureElement, xpath, builder));
-                    break;
-
-                case "AIRMET":
-                    builder.setMessageType(MessageType.AIRMET);
-                    break;
-
-                case "TropicalCycloneAdvisory":
-                    builder.setMessageType(MessageType.TROPICAL_CYCLONE_ADVISORY);
-                    break;
-
-                case "VolcanicAshAdvisory":
-                    builder.setMessageType(MessageType.VOLCANIC_ASH_ADVISORY);
-                    break;
-
-                default:
-                    retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                            "Unknown message type '" + messageType + "', unable to parse as " + "generic bulletin"));
-
-            }
-
-            //original message (as String)
-            try {
-                final StringWriter sw = new StringWriter();
-                final Result output = new StreamResult(sw);
-                final TransformerFactory tFactory = TransformerFactory.newInstance();
-                final Transformer transformer = tFactory.newTransformer();
-
-                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-
-                final DOMSource dsource = new DOMSource(featureElement);
-                transformer.transform(dsource, output);
-                builder.setOriginalMessage(sw.toString());
-            } catch (final TransformerException e) {
-                retval.addIssue(
-                        new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Unable to write the message content as " + "string",
-                                e));
-            }
-            retval.setConvertedMessage(builder.build());
-        } catch (final XPathExpressionException xpee) {
-            retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER,
-                    "Error in parsing content as a GenericAviationWeatherMessage", xpee));
-        }
-        return retval;
-    }
 
     private static IssueList collectSIGMETMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {
@@ -258,5 +180,82 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
         } else {
             throw new IllegalArgumentException("No valid time end found from element " + timeElement.getTagName());
         }
+    }
+
+    @Override
+    protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
+        final ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
+        final XPathFactory factory = XPathFactory.newInstance();
+        final XPath xpath = factory.newXPath();
+        xpath.setNamespaceContext(new IWXXMNamespaceContext());
+        final GenericAviationWeatherMessageImpl.Builder builder = new GenericAviationWeatherMessageImpl.Builder();
+        builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
+        builder.setTranslated(true);
+
+        try {
+            final String messageType = featureElement.getLocalName();
+            switch (messageType) {
+                case "TAF":
+                    builder.setMessageType(MessageType.TAF);
+                    retval.addIssue(collectTAFMessage(featureElement, xpath, builder));
+                    break;
+
+                case "METAR":
+                    builder.setMessageType(MessageType.METAR);
+                    break;
+
+                case "SPECI":
+                    builder.setMessageType(MessageType.SPECI);
+
+                case "SIGMET":
+                case "TropicalCycloneSIGMET":
+                case "VolcanicAshSIGMET":
+                    builder.setMessageType(MessageType.SIGMET);
+                    retval.addIssue(collectSIGMETMessage(featureElement, xpath, builder));
+                    break;
+
+                case "AIRMET":
+                    builder.setMessageType(MessageType.AIRMET);
+                    break;
+
+                case "TropicalCycloneAdvisory":
+                    builder.setMessageType(MessageType.TROPICAL_CYCLONE_ADVISORY);
+                    break;
+
+                case "VolcanicAshAdvisory":
+                    builder.setMessageType(MessageType.VOLCANIC_ASH_ADVISORY);
+                    break;
+
+                default:
+                    retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                            "Unknown message type '" + messageType + "', unable to parse as " + "generic bulletin"));
+
+            }
+
+            //original message (as String)
+            try {
+                final StringWriter sw = new StringWriter();
+                final Result output = new StreamResult(sw);
+                final TransformerFactory tFactory = TransformerFactory.newInstance();
+                final Transformer transformer = tFactory.newTransformer();
+
+                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+                final DOMSource dsource = new DOMSource(featureElement);
+                transformer.transform(dsource, output);
+                builder.setOriginalMessage(sw.toString());
+            } catch (final TransformerException e) {
+                retval.addIssue(
+                        new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Unable to write the message content as " + "string",
+                                e));
+            }
+            retval.setConvertedMessage(builder.build());
+        } catch (final XPathExpressionException xpee) {
+            retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER,
+                    "Error in parsing content as a GenericAviationWeatherMessage", xpee));
+        }
+        return retval;
     }
 }

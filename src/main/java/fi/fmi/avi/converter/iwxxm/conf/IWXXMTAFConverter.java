@@ -6,9 +6,9 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMDOMSerializer;
-import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMStringSerializer;
-import fi.fmi.avi.converter.iwxxm.v2_1.taf.TAFBulletinIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.BulletinIWXXMDOMSerializer;
+import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.BulletinIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.TAFBulletinIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.v2_1.taf.TAFIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.v2_1.taf.TAFIWXXMSerializer;
 import fi.fmi.avi.model.taf.TAF;
