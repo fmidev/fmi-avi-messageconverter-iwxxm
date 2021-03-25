@@ -6,9 +6,9 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMDOMSerializer;
-import fi.fmi.avi.converter.iwxxm.bulletin.BulletinIWXXMStringSerializer;
-import fi.fmi.avi.converter.iwxxm.v2_1.taf.TAFBulletinIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.BulletinIWXXMDOMSerializer;
+import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.BulletinIWXXMStringSerializer;
+import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.TAFBulletinIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.v2_1.taf.TAFIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.v2_1.taf.TAFIWXXMSerializer;
 import fi.fmi.avi.model.taf.TAF;
@@ -47,9 +47,23 @@ public class IWXXMTAFConverter {
     }
 
     @Bean
+    public AviMessageSpecificConverter<String, TAFBulletin> tafBulletinIWXXM30StringParser() {
+        final TAFBulletinIWXXMParser<String> retval = new TAFBulletinIWXXMParser.FromString();
+        retval.setMessageConverter(tafIWXXM30DOMParser());
+        return retval;
+    }
+
+    @Bean
     public AviMessageSpecificConverter<Document, TAFBulletin> tafBulletinIWXXMDOMParser() {
         final TAFBulletinIWXXMParser<Document> retval = new TAFBulletinIWXXMParser.FromDOM();
         retval.setMessageConverter(tafIWXXMDOMParser());
+        return retval;
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<Document, TAFBulletin> tafBulletinIWXXM30DOMParser() {
+        final TAFBulletinIWXXMParser<Document> retval = new TAFBulletinIWXXMParser.FromDOM();
+        retval.setMessageConverter(tafIWXXM30DOMParser());
         return retval;
     }
 
@@ -61,18 +75,18 @@ public class IWXXMTAFConverter {
     }
 
     @Bean
-    public AviMessageSpecificConverter<TAF, String> taf30IWXXMStringSerializer() {
+    public AviMessageSpecificConverter<TAF, String> tafIWXXM30StringSerializer() {
         return new fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFIWXXMSerializer.ToString();
-    }
-
-    @Bean
-    public AviMessageSpecificConverter<TAF, Document> taf30IWXXMDomSerializer() {
-        return new fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFIWXXMSerializer.ToDOM();
     }
 
     @Bean
     public AbstractIWXXMSerializer<TAF, Document> tafIWXXMDOMSerializer() {
         return new TAFIWXXMSerializer.ToDOM();
+    }
+
+    @Bean
+    public AbstractIWXXMSerializer<TAF, Document> tafIWXXM30DOMSerializer() {
+        return new fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFIWXXMSerializer.ToDOM();
     }
 
     // TODO: check if this bean / class is actually used / required somewhere?
@@ -89,9 +103,23 @@ public class IWXXMTAFConverter {
     }
 
     @Bean
+    public AviMessageSpecificConverter<TAFBulletin, String> tafBulletinIWXXM30StringSerializer() {
+        final BulletinIWXXMStringSerializer<TAF, TAFBulletin> retval = new BulletinIWXXMStringSerializer<>();
+        retval.setMessageConverter(tafIWXXM30DOMSerializer());
+        return retval;
+    }
+
+    @Bean
     public AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXMDOMSerializer() {
         final BulletinIWXXMDOMSerializer<TAF, TAFBulletin> retval = new BulletinIWXXMDOMSerializer<>();
         retval.setMessageConverter(tafIWXXMDOMSerializer());
+        return retval;
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXM30DOMSerializer() {
+        final BulletinIWXXMDOMSerializer<TAF, TAFBulletin> retval = new BulletinIWXXMDOMSerializer<>();
+        retval.setMessageConverter(tafIWXXM30DOMSerializer());
         return retval;
     }
 

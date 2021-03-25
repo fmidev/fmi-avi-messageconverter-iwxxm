@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin.generic;
+package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -9,8 +9,6 @@ import org.w3c.dom.Document;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMParser;
-import fi.fmi.avi.converter.iwxxm.bulletin.BulletinProperties;
-import fi.fmi.avi.converter.iwxxm.bulletin.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;

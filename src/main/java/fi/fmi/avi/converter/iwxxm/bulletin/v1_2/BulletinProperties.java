@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin;
+package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
 import java.time.Month;
 
@@ -7,6 +7,9 @@ import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
 
 public class BulletinProperties extends AbstractPropertyContainer {
+
+    public BulletinProperties() {
+    }
 
     public enum Name implements PropertyName {
         HEADING(BulletinHeading.class),
@@ -28,9 +31,6 @@ public class BulletinProperties extends AbstractPropertyContainer {
         public Class<?> getAcceptedType() {
             return this.acceptedType;
         }
-    }
-
-    public BulletinProperties() {
     }
 
 }
