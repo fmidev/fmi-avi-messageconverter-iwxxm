@@ -206,10 +206,12 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                         final ElevatedPointType targetPoint = create(ElevatedPointType.class);
                         targetPoint.setId("uuid." + UUID.randomUUID());
 
-                        targetPoint.setElevation(create(ValDistanceVerticalType.class, verticalType -> {
-                            verticalType.setUom(sourcePoint.getElevationUom().get());
-                            verticalType.setValue(sourcePoint.getElevationValue().get().toString());
-                        }));
+                        if (sourcePoint.getElevationValue().isPresent() && sourcePoint.getElevationUom().isPresent()) {
+                            targetPoint.setElevation(create(ValDistanceVerticalType.class, verticalType -> {
+                                verticalType.setUom(sourcePoint.getElevationUom().get());
+                                verticalType.setValue(sourcePoint.getElevationValue().get().toString());
+                            }));
+                        }
 
                         targetPoint.setPos(create(DirectPositionType.class, pos -> {
                             pos.getValue().addAll(sourcePoint.getCoordinates());
