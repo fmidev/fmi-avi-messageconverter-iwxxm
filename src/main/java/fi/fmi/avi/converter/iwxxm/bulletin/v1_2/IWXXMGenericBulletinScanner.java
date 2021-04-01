@@ -206,6 +206,7 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
 
                 case "SPECI":
                     builder.setMessageType(MessageType.SPECI);
+                    break;
 
                 case "SIGMET":
                 case "TropicalCycloneSIGMET":
