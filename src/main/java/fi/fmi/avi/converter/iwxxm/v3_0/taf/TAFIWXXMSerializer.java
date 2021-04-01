@@ -469,11 +469,13 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             prop.setHref("#" + validTimeId);
         }));
 
-        baseFct.setPrevailingVisibility(create(DistanceWithNilReasonType.class, (prop) -> {
-            final NumericMeasure prevailingVisibility = baseForecastInput.get().getPrevailingVisibility().get();
-            prop.setUom(prevailingVisibility.getUom());
-            prop.setValue(prevailingVisibility.getValue());
-        }));
+        if (baseForecastInput.get().getPrevailingVisibility().isPresent()) {
+            baseFct.setPrevailingVisibility(create(DistanceWithNilReasonType.class, (prop) -> {
+                final NumericMeasure prevailingVisibility = baseForecastInput.get().getPrevailingVisibility().get();
+                prop.setUom(prevailingVisibility.getUom());
+                prop.setValue(prevailingVisibility.getValue());
+            }));
+        }
 
         if (baseForecastInput.get().getSurfaceWind().isPresent()) {
             baseFct.setSurfaceWind(create(AerodromeSurfaceWindForecastPropertyType.class, prop -> {
