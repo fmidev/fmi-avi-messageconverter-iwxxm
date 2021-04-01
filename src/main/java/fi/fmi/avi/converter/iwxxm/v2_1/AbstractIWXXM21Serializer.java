@@ -87,10 +87,17 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
         return Optional.empty();
     }
 
+    private static synchronized IWXXMNamespaceContext getNSContext() {
+        if (nsCtx == null) {
+            nsCtx = new IWXXMNamespaceContext();
+        }
+        return nsCtx;
+    }
+
     @Override
     public XMLSchemaInfo getSchemaInfo() {
         final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
-        schemaInfo.addSchemaSource(TAFType.class.getResourceAsStream("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
+        schemaInfo.addSchemaSource(TAFType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
         schemaInfo.addSchematronRule(TAFType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
         schemaInfo.addSchemaLocation("http://icao.int/iwxxm/2.1", "https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd");
         schemaInfo.addSchemaLocation("http://def.wmo.int/metce/2013", "http://schemas.wmo.int/metce/1.2/metce.xsd");
@@ -101,13 +108,6 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
     @Override
     protected IWXXMNamespaceContext getNamespaceContext() {
         return getNSContext();
-    }
-
-    private static synchronized IWXXMNamespaceContext getNSContext() {
-        if (nsCtx == null) {
-            nsCtx = new IWXXMNamespaceContext();
-        }
-        return nsCtx;
     }
 
     @SuppressWarnings("unchecked")
