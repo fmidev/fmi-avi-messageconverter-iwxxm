@@ -1,7 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -10,18 +9,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
-import net.opengis.gml32.AbstractRingPropertyType;
 import net.opengis.gml32.AbstractTimeObjectType;
-import net.opengis.gml32.CircleByCenterPointType;
-import net.opengis.gml32.CurvePropertyType;
-import net.opengis.gml32.CurveSegmentArrayPropertyType;
-import net.opengis.gml32.DirectPositionListType;
-import net.opengis.gml32.DirectPositionType;
-import net.opengis.gml32.LengthType;
-import net.opengis.gml32.LinearRingType;
-import net.opengis.gml32.PolygonPatchType;
-import net.opengis.gml32.RingType;
-import net.opengis.gml32.SurfacePatchArrayPropertyType;
 import net.opengis.gml32.TimeIndeterminateValueType;
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
@@ -34,9 +22,7 @@ import aero.aixm511.AirspaceVolumeType;
 import aero.aixm511.CodeOrganisationDesignatorType;
 import aero.aixm511.CodeUnitType;
 import aero.aixm511.CodeVerticalReferenceType;
-import aero.aixm511.CurveType;
 import aero.aixm511.SurfacePropertyType;
-import aero.aixm511.SurfaceType;
 import aero.aixm511.TextNameType;
 import aero.aixm511.UnitTimeSlicePropertyType;
 import aero.aixm511.UnitTimeSliceType;
@@ -50,11 +36,8 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.CircleByCenterPoint;
-import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PolygonGeometry;
 import fi.fmi.avi.model.swx.AirspaceVolume;
 import fi.fmi.avi.model.swx.IssuingCenter;
 import fi.fmi.avi.model.swx.NextAdvisory;
@@ -80,7 +63,6 @@ import icao.iwxxm30.UnitPropertyType;
 
 public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Serializer<SpaceWeatherAdvisory, T> {
     private static final int REQUIRED_NUMBER_OF_ANALYSES = 5;
-    private static final aero.aixm511.ObjectFactory AIXM_OF = new aero.aixm511.ObjectFactory();
     private static final net.opengis.gml32.ObjectFactory GML_OF = new net.opengis.gml32.ObjectFactory();
 
     protected abstract T render(SpaceWeatherAdvisoryType swx, ConversionHints hints) throws ConversionException;
@@ -368,65 +350,6 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             valDistanceVerticalType.setValue(nullableVerticalDistance.getValue().toString());
         }
         return valDistanceVerticalType;
-    }
-
-    private void getSurfaceProperty(final SurfacePropertyType surfacePropertyType, final AirspaceVolume volume) {
-        if (volume.getHorizontalProjection().isPresent()) {
-            final SurfaceType surfaceType = create(SurfaceType.class);
-            final Geometry geom = volume.getHorizontalProjection().get();
-            geom.getCrs().ifPresent(crs -> setCrsToType(surfaceType, crs));
-            surfaceType.setId(UUID_PREFIX + UUID.randomUUID().toString());
-
-            final SurfacePatchArrayPropertyType surfacePatchArrayPropertyType = new SurfacePatchArrayPropertyType();
-            final PolygonPatchType polygonPatchType = create(PolygonPatchType.class);
-            final AbstractRingPropertyType ringPropertyType = create(AbstractRingPropertyType.class);
-            if (volume.getHorizontalProjection().isPresent()) {
-                if (volume.getHorizontalProjection().get() instanceof PolygonGeometry) {
-                    getPolygonGeometry(ringPropertyType, (PolygonGeometry) volume.getHorizontalProjection().get());
-                } else if (volume.getHorizontalProjection().get() instanceof CircleByCenterPoint) {
-                    getCircleByCenterPointGeometry(ringPropertyType, (CircleByCenterPoint) volume.getHorizontalProjection().get());
-                }
-            }
-            polygonPatchType.setExterior(ringPropertyType);
-            surfacePatchArrayPropertyType.getAbstractSurfacePatch().add(GML_OF.createPolygonPatch(polygonPatchType));
-            surfaceType.setPatches(GML_OF.createPatches(surfacePatchArrayPropertyType));
-
-            surfacePropertyType.setSurface(AIXM_OF.createSurface(surfaceType));
-        }
-    }
-
-    private void getPolygonGeometry(final AbstractRingPropertyType prop, final PolygonGeometry geometry) {
-        final LinearRingType ring = create(LinearRingType.class);
-        final DirectPositionListType posList = create(DirectPositionListType.class);
-        posList.getValue().addAll(geometry.getExteriorRingPositions());
-        ring.setPosList(posList);
-        prop.setAbstractRing(GML_OF.createLinearRing(ring));
-    }
-
-    private void getCircleByCenterPointGeometry(final AbstractRingPropertyType prop, final CircleByCenterPoint geometry) {
-        final RingType ring = create(RingType.class);
-        final CurvePropertyType curvePropertyType = create(CurvePropertyType.class);
-        final CurveType curveType = create(CurveType.class);
-        curveType.setId(UUID_PREFIX + UUID.randomUUID().toString());
-        final CurveSegmentArrayPropertyType curveSegmentArrayPropertyType = create(CurveSegmentArrayPropertyType.class);
-        final CircleByCenterPointType circleByCenterPointType = create(CircleByCenterPointType.class);
-        final LengthType lengthType = create(LengthType.class);
-        lengthType.setUom((geometry.getRadius().getUom()));
-        lengthType.setValue(geometry.getRadius().getValue());
-
-        //Number of arcs for the circle by center point is always 1:
-        circleByCenterPointType.setNumArc(BigInteger.ONE);
-
-        circleByCenterPointType.setRadius(lengthType);
-
-        final DirectPositionType directPosition = create(DirectPositionType.class);
-        directPosition.getValue().addAll(geometry.getCenterPointCoordinates());
-        circleByCenterPointType.setPos(directPosition);
-        curveSegmentArrayPropertyType.getAbstractCurveSegment().add(GML_OF.createCircleByCenterPoint(circleByCenterPointType));
-        curveType.setSegments(curveSegmentArrayPropertyType);
-        curvePropertyType.setAbstractCurve(GML_OF.createCurve(curveType));
-        ring.getCurveMember().add(curvePropertyType);
-        prop.setAbstractRing(GML_OF.createRing(ring));
     }
 
     private void getNextAdvisory(final TimeInstantPropertyType prop, final NextAdvisory nextAdvisory) {
