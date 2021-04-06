@@ -108,7 +108,7 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
                 endTime = parseEndTime(validTimeElement, xpath);
             }
             if (startTime != null && endTime != null) {
-                builder.setValidityTime(new PartialOrCompleteTimePeriod.Builder()//
+                builder.setValidityTime(PartialOrCompleteTimePeriod.builder()//
                         .setStartTime(PartialOrCompleteTimeInstant.of(startTime))//
                         .setEndTime(PartialOrCompleteTimeInstant.of(endTime))//
                         .build());
@@ -142,7 +142,7 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
         //NOTE: the ARP field elevation of the Aerodrome info is intentionally not parsed here, it's currently not needed in the use cases,
         // and would require more than a few lines of code.
 
-        retval = Optional.of(new AerodromeImpl.Builder()//
+        retval = Optional.of(AerodromeImpl.builder()//
                 .setDesignator(designator)//
                 .setLocationIndicatorICAO(Optional.ofNullable(locationIndicatorICAO))//
                 .setName(Optional.ofNullable(name))//
@@ -188,7 +188,7 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
         xpath.setNamespaceContext(new IWXXMNamespaceContext());
-        final GenericAviationWeatherMessageImpl.Builder builder = new GenericAviationWeatherMessageImpl.Builder();
+        final GenericAviationWeatherMessageImpl.Builder builder = GenericAviationWeatherMessageImpl.builder();
         builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
         builder.setTranslated(true);
 
