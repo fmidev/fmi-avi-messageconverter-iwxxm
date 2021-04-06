@@ -271,9 +271,9 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         final TimePositionType timePositionType = create(TimePositionType.class);
         time.getCompleteTime().ifPresent(t -> timePositionType.getValue().add(t.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
         timeInstantType.setTimePosition(timePositionType);
-        final JAXBElement<?> jaxbTimeInstant = GML_OF.createTimeInstant(timeInstantType);
-
-        prop.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) jaxbTimeInstant);
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        final JAXBElement<AbstractTimeObjectType> jaxbTimeInstant = (JAXBElement) GML_OF.createTimeInstant(timeInstantType);
+        prop.setAbstractTimeObject(jaxbTimeInstant);
     }
 
     private void getIssuingCenter(final UnitPropertyType prop, final IssuingCenter issuingCenter) {

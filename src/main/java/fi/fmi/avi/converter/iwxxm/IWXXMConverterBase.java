@@ -14,12 +14,15 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -395,7 +398,7 @@ public abstract class IWXXMConverterBase {
                 retval.add(IWXXM_TEMPLATES.get(ruleURLString));
             }
         }
-        return retval;
+        return toUnmodifiableList(retval);
     }
 
     private static Object getObjectFactory(final Class<?> clz) {
@@ -611,6 +614,14 @@ public abstract class IWXXMConverterBase {
             }
         }
         return null;
+    }
+
+    protected static <E> List<E> toUnmodifiableList(final List<E> list) {
+        return list.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(list);
+    }
+
+    protected static <E> Collector<E, ?, List<E>> toImmutableList() {
+        return Collectors.collectingAndThen(Collectors.<E> toList(), IWXXMConverterBase::toUnmodifiableList);
     }
 
     protected static class ConverterValidationEventHandler implements ValidationEventHandler {

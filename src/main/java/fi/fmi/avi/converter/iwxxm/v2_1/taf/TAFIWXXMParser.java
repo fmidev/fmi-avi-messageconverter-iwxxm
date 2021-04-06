@@ -1,7 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v2_1.taf;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -86,11 +85,9 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
             properties.get(TAFProperties.Name.VALID_TIME, PartialOrCompleteTimePeriod.class).ifPresent(tafBuilder::setValidityTime);
             final List<OMObservationProperties> fctProps = properties.getList(TAFProperties.Name.CHANGE_FORECAST, OMObservationProperties.class);
             if (!fctProps.isEmpty()) {
-                final List<TAFChangeForecast> changeForecasts = new ArrayList<>();
-                for (final OMObservationProperties fctProp : fctProps) {
-                    changeForecasts.add(createChangeForecast(fctProp));
-                }
-                tafBuilder.setChangeForecasts(changeForecasts);
+                tafBuilder.setChangeForecasts(fctProps.stream()//
+                        .map(this::createChangeForecast)//
+                        .collect(toImmutableList()));
             }
         }
 
@@ -147,7 +144,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         source.get(TAFForecastRecordProperties.Name.SURFACE_WIND, SurfaceWind.class).ifPresent(builder::setSurfaceWind);
         final Optional<Boolean> nsw = source.get(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class);
         final List<Weather> weather = source.getList(TAFForecastRecordProperties.Name.WEATHER, Weather.class);
-        if (nsw.isPresent() && nsw.get()) {
+        if (nsw.orElse(false)) {
             builder.setNoSignificantWeather(true);
         } else if (!weather.isEmpty()) {
             builder.setForecastWeather(weather);

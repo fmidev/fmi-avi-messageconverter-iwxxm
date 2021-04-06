@@ -43,7 +43,8 @@ public abstract class AbstractPropertyContainer {
         final Object o = this.properties.get(name);
         if (o != null) {
             if (o instanceof List) {
-                return (List<S>) o;
+                final List<S> list = (List<S>) o;
+                return list.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(list);
             } else {
                 throw new IllegalArgumentException("Value for " + name + " is not a List");
             }
@@ -56,12 +57,15 @@ public abstract class AbstractPropertyContainer {
      * Sets a value for the named property.
      * Note: silently ignores setting a null value to any property.
      *
-     * @param key the key
-     * @param value to set
+     * @param key
+     *         the key
+     * @param value
+     *         to set
      *
      * @return the previous value if set
      *
-     * @throws IllegalArgumentException if the value type is not acceptable for the given key
+     * @throws IllegalArgumentException
+     *         if the value type is not acceptable for the given key
      */
     public Object set(final PropertyName key, final Object value) throws IllegalArgumentException {
         if (value == null) {
@@ -117,9 +121,13 @@ public abstract class AbstractPropertyContainer {
     /**
      * Adds all given values to the list of values for the given key.
      *
-     * @param key    the key
-     * @param values the new list items
-     * @throws IllegalArgumentException if the property with this key already has non-list value, or if the value is of wrong type
+     * @param key
+     *         the key
+     * @param values
+     *         the new list items
+     *
+     * @throws IllegalArgumentException
+     *         if the property with this key already has non-list value, or if the value is of wrong type
      */
     public void addAllToList(final PropertyName key, final Collection<?> values) throws IllegalArgumentException {
         if (values != null) {

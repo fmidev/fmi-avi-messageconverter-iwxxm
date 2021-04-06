@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,28 +18,28 @@ public class SpaceWeatherRegionIdMapper {
     }
 
     public List<RegionId> getRegionList(final int analysisNumber) {
-        List<RegionId> list = new ArrayList<>();
-        for (RegionId region : regionList) {
+        final List<RegionId> list = new ArrayList<>();
+        for (final RegionId region : regionList) {
             if (region.getAnalysisNumber() == analysisNumber) {
                 list.add(region);
             }
         }
-        return list;
+        return list.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(list);
     }
 
     private void createIdMap(final List<SpaceWeatherAdvisoryAnalysis> analyses) {
         for (int i = 0; i < analyses.size(); i++) {
-            SpaceWeatherAdvisoryAnalysis analysis = analyses.get(i);
+            final SpaceWeatherAdvisoryAnalysis analysis = analyses.get(i);
             for (int a = 0; a < analysis.getRegions().size(); a++) {
-                SpaceWeatherRegion region = analysis.getRegions().get(a);
+                final SpaceWeatherRegion region = analysis.getRegions().get(a);
                 regionList.add(new RegionId(region, i, a));
             }
         }
 
-        for (RegionId r : regionList) {
+        for (final RegionId r : regionList) {
             if (isEmpty(r.getId())) {
                 r.setId(IWXXMConverterBase.UUID_PREFIX + UUID.randomUUID().toString());
-                for (RegionId r2 : regionList) {
+                for (final RegionId r2 : regionList) {
                     if (isEmpty(r2.getId()) && r2.getRegion().equals(r.getRegion())) {
                         r2.setId(r.getId());
                         r2.setDuplicate(true);
@@ -54,9 +55,10 @@ public class SpaceWeatherRegionIdMapper {
 
     public static class RegionId {
         private final SpaceWeatherRegion region;
-        private String id;
         private final int analysisNumber;
         private final int regionNumber;
+
+        private String id;
         private boolean duplicate;
 
         public RegionId(final SpaceWeatherRegion region, final int analysisNumber, final int regionNumber) {

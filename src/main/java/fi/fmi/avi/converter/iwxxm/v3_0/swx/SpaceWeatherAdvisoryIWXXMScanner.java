@@ -118,7 +118,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (input.getPhenomenon() != null) {
-            final List<SpaceWeatherPhenomenon> phenomena = parsePhenomenonList(input.getPhenomenon());
+            final List<SpaceWeatherPhenomenon> phenomena = toSpaceWeatherPhenomenons(input.getPhenomenon());
             properties.addAllToList(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, phenomena);
         } else {
             issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Space weather phenomena are missing is missing"));
@@ -126,7 +126,7 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
 
         //Set analysis
         if (input.getAnalysis().size() == REQUIRED_NUMBER_OF_ANALYSES) {
-            final List<SpaceWeatherAnalysisProperties> analyses = getAnalyses(input.getAnalysis(), issueList, refCtx);
+            final List<SpaceWeatherAnalysisProperties> analyses = toSpaceWeatherAnalysisProperties(input.getAnalysis(), issueList, refCtx);
             properties.addAllToList(SpaceWeatherAdvisoryProperties.Name.ANALYSES, analyses);
         } else {
             issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER, "Found incorrect number of analyses."));
@@ -194,16 +194,14 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
         }
     }
 
-    private static List<SpaceWeatherPhenomenon> parsePhenomenonList(final List<SpaceWeatherPhenomenaType> elements) {
-        final List<SpaceWeatherPhenomenon> phenomena = new ArrayList<>();
-        for (final SpaceWeatherPhenomenaType element : elements) {
-            phenomena.add(SpaceWeatherPhenomenon.fromWMOCodeListValue(element.getHref()));
-        }
-        return phenomena;
+    private static List<SpaceWeatherPhenomenon> toSpaceWeatherPhenomenons(final List<SpaceWeatherPhenomenaType> elements) {
+        return elements.stream()//
+                .map(element -> SpaceWeatherPhenomenon.fromWMOCodeListValue(element.getHref()))//
+                .collect(toImmutableList());
     }
 
-    private static List<SpaceWeatherAnalysisProperties> getAnalyses(final List<SpaceWeatherAnalysisPropertyType> elements, final IssueList issueList,
-            final ReferredObjectRetrievalContext refCtx) {
+    private static List<SpaceWeatherAnalysisProperties> toSpaceWeatherAnalysisProperties(final List<SpaceWeatherAnalysisPropertyType> elements,
+            final IssueList issueList, final ReferredObjectRetrievalContext refCtx) {
         final List<SpaceWeatherAnalysisProperties> analyses = new ArrayList<>();
         for (final SpaceWeatherAnalysisPropertyType spaceWeatherAnalysisElement : elements) {
 
@@ -278,18 +276,15 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
 
     private static List<SpaceWeatherRegionProperties> getSpaceWeatherRegion(final SpaceWeatherAnalysisType spaceWeatherAnalysisType, final IssueList issueList,
             final ReferredObjectRetrievalContext refCtx) {
-        final List<SpaceWeatherRegionProperties> regions = new ArrayList<>();
-        for (final SpaceWeatherRegionPropertyType regionPropertyType : spaceWeatherAnalysisType.getRegion()) {
-            final SpaceWeatherRegionProperties regionProperties = parseSpaceWeatherRegion(regionPropertyType, issueList, refCtx);
-            regions.add(regionProperties);
-        }
-        return regions;
+        return spaceWeatherAnalysisType.getRegion().stream()//
+                .map(regionPropertyType -> parseSpaceWeatherRegion(regionPropertyType, issueList, refCtx))//
+                .collect(toImmutableList());
     }
 
     private static SpaceWeatherRegionProperties parseSpaceWeatherRegion(final SpaceWeatherRegionPropertyType regionProperty, final IssueList issueList,
             final ReferredObjectRetrievalContext refCtx) {
         final SpaceWeatherRegionProperties properties = new SpaceWeatherRegionProperties();
-        SpaceWeatherRegionType regionType;
+        final SpaceWeatherRegionType regionType;
         if (!regionProperty.getNilReason().isEmpty()) {
             if (regionProperty.getNilReason().size() > 1) {
                 issueList.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.OTHER,
