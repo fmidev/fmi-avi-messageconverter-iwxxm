@@ -89,6 +89,9 @@ public class MeteorologicalBulletinIWXXMScanner<S extends AviationWeatherMessage
     }
 
     protected ConversionResult<S> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
+        if (this.contentMessageConverter == null) {
+            throw new IllegalStateException("messageConverter is not set");
+        }
         ConversionResult<S> retval = new ConversionResult<>();
         try {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

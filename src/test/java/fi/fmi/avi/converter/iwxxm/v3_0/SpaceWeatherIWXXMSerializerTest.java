@@ -6,17 +6,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import org.custommonkey.xmlunit.DetailedDiff;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.Difference;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,22 +16,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryImpl;
 
+@SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
 public class SpaceWeatherIWXXMSerializerTest {
@@ -51,12 +43,12 @@ public class SpaceWeatherIWXXMSerializerTest {
     @Autowired
     private AviMessageConverter converter;
 
-    private ObjectMapper OBJECT_MAPPER;
+    private ObjectMapper objectMapper;
 
     @Before
     public void setup() {
-        OBJECT_MAPPER = new ObjectMapper();
-        OBJECT_MAPPER.registerModule(new Jdk8Module()).registerModule(new JavaTimeModule());
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Jdk8Module()).registerModule(new JavaTimeModule());
     }
 
     @Test
@@ -170,7 +162,7 @@ public class SpaceWeatherIWXXMSerializerTest {
     }
 
     private ConversionResult<String> serialize(final String input) throws Exception {
-        final SpaceWeatherAdvisory swx = OBJECT_MAPPER.readValue(input, SpaceWeatherAdvisoryImpl.class);
+        final SpaceWeatherAdvisory swx = objectMapper.readValue(input, SpaceWeatherAdvisoryImpl.class);
 
         return serialize(swx);
     }
