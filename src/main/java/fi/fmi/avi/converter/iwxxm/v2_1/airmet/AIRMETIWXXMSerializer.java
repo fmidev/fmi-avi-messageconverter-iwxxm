@@ -3,6 +3,7 @@ package fi.fmi.avi.converter.iwxxm.v2_1.airmet;
 import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBElement;
@@ -265,7 +266,14 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                         final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, (period) -> {
                             period.setId("phent-" + airmetUUID);
                             period.setTimePosition(create(TimePositionType.class, (tPos) -> {
-                                tPos.getValue().add(input.getAnalysisGeometries().get().get(0).getTime().get().getCompleteTime().get()
+                                tPos.getValue()
+                                        .add(input.getAnalysisGeometries()
+                                                .get()
+                                                .get(0)
+                                                .getTime()
+                                                .get()
+                                                .getCompleteTime()
+                                                .get()
                                                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
                             }));
                         });
@@ -536,7 +544,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                         if (base.getUom().equalsIgnoreCase("ft")) {
                                             lt.setUom("[ft_i]");
                                         } else {
-                                            lt.setUom(base.getUom().toLowerCase());
+                                            lt.setUom(base.getUom().toLowerCase(Locale.US));
                                         }
                                     }));
                                 }
@@ -546,7 +554,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                         if (top.getUom().equalsIgnoreCase("ft")) {
                                             lt.setUom("[ft_i]");
                                         } else {
-                                            lt.setUom(top.getUom().toLowerCase());
+                                            lt.setUom(top.getUom().toLowerCase(Locale.US));
                                         }
                                     }));
                                 }
@@ -558,7 +566,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                             if (input.getVisibility().isPresent()) {
                                 sect.setSurfaceVisibility(create(LengthType.class, (lt) -> {
                                     lt.setValue(input.getVisibility().get().getValue().intValue());
-                                    lt.setUom(input.getVisibility().get().getUom().toLowerCase());
+                                    lt.setUom(input.getVisibility().get().getUom().toLowerCase(Locale.US));
                                 }));
                                 for (final AviationCodeListUser.WeatherCausingVisibilityReduction w : input.getObscuration().get()) {
                                     final WeatherCausingVisibilityReductionType wt = new WeatherCausingVisibilityReductionType();

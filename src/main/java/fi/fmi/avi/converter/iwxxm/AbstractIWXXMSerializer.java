@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.xml.XMLConstants;
@@ -82,8 +83,6 @@ import fi.fmi.avi.model.taf.TAF;
 import icao.iwxxm21.AngleWithNilReasonType;
 import icao.iwxxm21.DistanceWithNilReasonType;
 import icao.iwxxm21.LengthWithNilReasonType;
-import icao.iwxxm21.ReportType;
-import icao.iwxxm21.TAFType;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM.
@@ -232,8 +231,8 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
                             timeSlice.setDesignator(
                                     create(CodeAirportHeliportDesignatorType.class, (designator) -> designator.setValue(input.getDesignator())));
                             input.getName()
-                                    .ifPresent(
-                                            inputName -> timeSlice.setPortName(create(TextNameType.class, (name) -> name.setValue(inputName.toUpperCase()))));
+                                    .ifPresent(inputName -> timeSlice.setPortName(
+                                            create(TextNameType.class, (name) -> name.setValue(inputName.toUpperCase(Locale.US)))));
                             input.getLocationIndicatorICAO()
                                     .ifPresent(inputLocator -> timeSlice.setLocationIndicatorICAO(
                                             create(CodeICAOType.class, (locator) -> locator.setValue(inputLocator))));
@@ -262,7 +261,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
                                                 if (inputPosition.getElevationValue().isPresent() && inputPosition.getElevationUom().isPresent()) {
                                                     point.setElevation(create(ValDistanceVerticalType.class, (dist) -> {
                                                         inputPosition.getElevationValue().ifPresent(value -> dist.setValue(String.format("%.00f", value)));
-                                                        inputPosition.getElevationUom().ifPresent(uom -> dist.setUom(uom.toUpperCase()));
+                                                        inputPosition.getElevationUom().ifPresent(uom -> dist.setUom(uom.toUpperCase(Locale.US)));
                                                     }));
                                                 }
                                             })))));
@@ -288,7 +287,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         }
     }
 
-    public boolean checkCompleteTimeReferences(TAF input, ConversionResult result) {
+    public boolean checkCompleteTimeReferences(final TAF input, final ConversionResult result) {
         boolean referencesComplete = true;
         if (!input.areAllTimeReferencesComplete()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "All time references must be completed before converting to IWXXM"));
@@ -297,23 +296,24 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         return referencesComplete;
     }
 
-    public void checkAerodromeReferencePositions(TAF input, ConversionResult result) {
+    public void checkAerodromeReferencePositions(final TAF input, final ConversionResult result) {
         if (!input.allAerodromeReferencesContainPosition()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Severity.INFO, ConversionIssue.Type.MISSING_DATA,
                     "At least one of the Aerodrome references does not contain reference point location"));
         }
     }
 
-    public void createTimeInstantProperty(TAF input, TimeInstantPropertyType prop, String id) {
-            final TimeInstantType ti = create(TimeInstantType.class);
-            final TimePositionType tp = create(TimePositionType.class);
-            tp.getValue().add(input.getIssueTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-            ti.setTimePosition(tp);
-            ti.setId(id);
-            prop.setTimeInstant(ti);
+    public void createTimeInstantProperty(final TAF input, final TimeInstantPropertyType prop, final String id) {
+        final TimeInstantType ti = create(TimeInstantType.class);
+        final TimePositionType tp = create(TimePositionType.class);
+        tp.getValue().add(input.getIssueTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        ti.setTimePosition(tp);
+        ti.setId(id);
+        prop.setTimeInstant(ti);
     }
 
-    public void createTimePeriodPropertyType(TimePeriodPropertyType prop, PartialOrCompleteTimeInstant start, PartialOrCompleteTimeInstant end, String id) {
+    public void createTimePeriodPropertyType(final TimePeriodPropertyType prop, final PartialOrCompleteTimeInstant start,
+            final PartialOrCompleteTimeInstant end, final String id) {
         final TimePeriodType tp = create(TimePeriodType.class);
         tp.setId(id);
         final TimePositionType beginPos = create(TimePositionType.class);

@@ -10,11 +10,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -144,7 +146,7 @@ public abstract class IWXXMConverterBase {
             String methodName = null;
             if (clz.getEnclosingClass() != null) {
                 Class<?> encClass = clz.getEnclosingClass();
-                final StringBuilder sb = new StringBuilder("create").append(encClass.getSimpleName().substring(0, 1).toUpperCase())
+                final StringBuilder sb = new StringBuilder("create").append(encClass.getSimpleName().substring(0, 1).toUpperCase(Locale.US))
                         .append(encClass.getSimpleName().substring(1));
                 while (encClass.getEnclosingClass() != null) {
                     sb.append(clz.getSimpleName());
@@ -152,7 +154,7 @@ public abstract class IWXXMConverterBase {
                 }
                 methodName = sb.append(clz.getSimpleName()).toString();
             } else {
-                methodName = "create" + clz.getSimpleName().substring(0, 1).toUpperCase() + clz.getSimpleName().substring(1);
+                methodName = "create" + clz.getSimpleName().substring(0, 1).toUpperCase(Locale.US) + clz.getSimpleName().substring(1);
             }
             try {
                 final Method toCall = objectFactory.getClass().getMethod(methodName);
@@ -188,8 +190,8 @@ public abstract class IWXXMConverterBase {
     }
 
     public static <T> JAXBElement<T> wrap(final T element, final Class<T> clz, final Consumer<T> consumer) {
-        final String methodName =
-                "create" + clz.getSimpleName().substring(0, 1).toUpperCase() + clz.getSimpleName().substring(1, clz.getSimpleName().lastIndexOf("Type"));
+        final String methodName = "create" + clz.getSimpleName().substring(0, 1).toUpperCase(Locale.US) + clz.getSimpleName()
+                .substring(1, clz.getSimpleName().lastIndexOf("Type"));
         return wrap(element, clz, methodName, consumer);
     }
 
@@ -575,13 +577,14 @@ public abstract class IWXXMConverterBase {
 
     protected static Document parseStringToDOM(final String input) throws ConversionException {
         Document retval = null;
-        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
+        final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setNamespaceAware(true);
         try {
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
-            final DocumentBuilder db = dbf.newDocumentBuilder();
-            final ByteArrayInputStream bais = new ByteArrayInputStream(input.getBytes());
-            retval = db.parse(bais);
+            documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
+            final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            try (ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8))) {
+                retval = documentBuilder.parse(inputStream);
+            }
         } catch (final Exception e) {
             throw new ConversionException("Error in parsing input as to an XML document", e);
         }
