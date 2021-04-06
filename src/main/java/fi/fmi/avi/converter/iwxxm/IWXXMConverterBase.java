@@ -255,7 +255,6 @@ public abstract class IWXXMConverterBase {
         return retval;
     }
 
-    @SuppressWarnings("unchecked")
     protected static <S> IssueList validateJAXBObjectAgainstSchemaAndSchematron(final S input, final Class<S> clz, final XMLSchemaInfo schemaInfo,
             final ConversionHints hints) {
         final IssueList retval = new IssueList();

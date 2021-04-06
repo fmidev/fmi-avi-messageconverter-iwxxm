@@ -29,7 +29,7 @@ public abstract class AbstractPropertyContainer {
 
     @SuppressWarnings("unchecked")
     public <S> Optional<S> get(final PropertyName name, final Class<S> clz) {
-        Object o = this.properties.get(name);
+        final Object o = this.properties.get(name);
         if (o != null) {
             if (name.getAcceptedType().isAssignableFrom(o.getClass())) {
                 return (Optional<S>) Optional.of(o);
@@ -40,7 +40,7 @@ public abstract class AbstractPropertyContainer {
 
     @SuppressWarnings("unchecked")
     public <S> List<S> getList(final PropertyName name, final Class<S> itemClz) {
-        Object o = this.properties.get(name);
+        final Object o = this.properties.get(name);
         if (o != null) {
             if (o instanceof List) {
                 return (List<S>) o;
@@ -63,7 +63,6 @@ public abstract class AbstractPropertyContainer {
      *
      * @throws IllegalArgumentException if the value type is not acceptable for the given key
      */
-    @SuppressWarnings("unchecked")
     public Object set(final PropertyName key, final Object value) throws IllegalArgumentException {
         if (value == null) {
             return null;
@@ -101,9 +100,9 @@ public abstract class AbstractPropertyContainer {
     @SuppressWarnings("unchecked")
     public void addToList(final PropertyName key, final Object value) throws IllegalArgumentException {
         if (key.getAcceptedType().isAssignableFrom(value.getClass())) {
-            Object o = this.properties.computeIfAbsent(key, k -> new ArrayList<>());
+            final Object o = this.properties.computeIfAbsent(key, k -> new ArrayList<>());
             if (o instanceof List) {
-                List retval = (List) o;
+                final List retval = (List) o;
                 retval.add(value);
             } else {
                 throw new IllegalArgumentException("Property " + key + " has non-list value set, cannot add as list value");
