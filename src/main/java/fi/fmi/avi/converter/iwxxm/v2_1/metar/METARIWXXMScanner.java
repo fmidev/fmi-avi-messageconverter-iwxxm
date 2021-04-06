@@ -202,7 +202,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
         } else {
             retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "phenomenonTime missing for METAR observation");
         }
-        final Optional<Aerodrome> aerodrome = properties.get(OMObservationProperties.Name.AERODROME, Aerodrome.class);
+        final Aerodrome aerodrome = properties.get(OMObservationProperties.Name.AERODROME, Aerodrome.class).orElse(null);
 
         final Optional<MeteorologicalAerodromeObservationRecordType> obsRecord = AbstractIWXXM21Scanner.getAerodromeObservationRecordResult(obs, refCtx);
         if (obsRecord.isPresent()) {
@@ -534,7 +534,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
         }
     }
 
-    private static void withWindShearBuilderFor(final AerodromeWindShearPropertyType shearProp, final Optional<Aerodrome> aerodrome,
+    private static void withWindShearBuilderFor(final AerodromeWindShearPropertyType shearProp, final Aerodrome aerodrome,
             final ReferredObjectRetrievalContext refCtx, final Consumer<WindShearImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         final IssueList issues = new IssueList();
         final Optional<AerodromeWindShearType> windShear = resolveProperty(shearProp, AerodromeWindShearType.class, refCtx);
@@ -604,7 +604,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
         }
     }
 
-    private static void withRunwayStateBuilderFor(final AerodromeRunwayStatePropertyType rwsProp, final Optional<Aerodrome> aerodrome,
+    private static void withRunwayStateBuilderFor(final AerodromeRunwayStatePropertyType rwsProp, final Aerodrome aerodrome,
             final ReferredObjectRetrievalContext refCtx, final Consumer<RunwayStateImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         final IssueList issues = new IssueList();
         final Optional<AerodromeRunwayStateType> runwayState = resolveProperty(rwsProp, AerodromeRunwayStateType.class, refCtx);
@@ -741,7 +741,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
         }
     }
 
-    private static void withRunwayVisualRangeBuilderFor(final AerodromeRunwayVisualRangePropertyType rvrProp, final Optional<Aerodrome> aerodrome,
+    private static void withRunwayVisualRangeBuilderFor(final AerodromeRunwayVisualRangePropertyType rvrProp, final Aerodrome aerodrome,
             final ReferredObjectRetrievalContext refCtx, final Consumer<RunwayVisualRangeImpl.Builder> resultHandler,
             final Consumer<ConversionIssue> issueHandler) {
         final IssueList issues = new IssueList();
@@ -901,7 +901,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
         }
     }
 
-    private static void withRunwayDirectionBuilderFor(final RunwayDirectionPropertyType rwdProp, final Optional<Aerodrome> aerodrome,
+    private static void withRunwayDirectionBuilderFor(final RunwayDirectionPropertyType rwdProp, final Aerodrome aerodrome,
             final ReferredObjectRetrievalContext refCtx, final Consumer<RunwayDirectionImpl.Builder> resultHandler,
             final Consumer<ConversionIssue> issueHandler) {
         final IssueList issues = new IssueList();
@@ -926,7 +926,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                     final RunwayDirectionImpl.Builder rwdBuilder = RunwayDirectionImpl.builder();
                     final TextDesignatorType designator = slice.get().getDesignator();
                     final ValBearingType trueBearing = slice.get().getTrueBearing();
-                    rwdBuilder.setAssociatedAirportHeliport(aerodrome);
+                    rwdBuilder.setNullableAssociatedAirportHeliport(aerodrome);
                     if (designator != null && designator.getValue() != null) {
                         rwdBuilder.setDesignator(designator.getValue());
                     }
