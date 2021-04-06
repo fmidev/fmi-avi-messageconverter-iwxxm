@@ -15,7 +15,6 @@ import javax.xml.datatype.DatatypeFactory;
 import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.DirectPositionType;
 import net.opengis.gml32.FeaturePropertyType;
-import net.opengis.gml32.ObjectFactory;
 import net.opengis.gml32.PointPropertyType;
 import net.opengis.gml32.PointType;
 import net.opengis.gml32.ReferenceType;
@@ -101,25 +100,20 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
     private static final Logger LOG = LoggerFactory.getLogger(SIGMETIWXXMSerializer.class);
 
     @SuppressWarnings("unchecked")
-    private static OMObservationPropertyType createForecastPositionAnalysis(SIGMET inputs, String designator, String issueTime, String sigmetUUID) {
-        OMObservationPropertyType forecastPositionAnalysis = create(OMObservationPropertyType.class, (omObsType) -> {
+    private static OMObservationPropertyType createForecastPositionAnalysis(final SIGMET inputs, final String designator, final String issueTime,
+            final String sigmetUUID) {
+        final OMObservationPropertyType forecastPositionAnalysis = create(OMObservationPropertyType.class, (omObsType) -> {
             omObsType.setOMObservation(create(OMObservationType.class, (omObs) -> {
                 omObs.setId("forecastPositionAnalysis-" + sigmetUUID);
                 omObs.setType(create(ReferenceType.class, (ref) -> {
                     ref.setHref(AviationCodeListUser.CODELIST_SIGMET_POSITION_COLLECTION_ANALYSIS);
                 }));
                 omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, (toProp) -> {
-                    JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, (period) -> {
+                    final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, (period) -> {
                         period.setId("time-" + UUID.randomUUID().toString());
                         period.setTimePosition(create(TimePositionType.class, (tPos) -> {
-                            Object o = tPos.getValue();
-                            tPos.getValue()
-                                    .add(inputs.getForecastGeometries()
-                                            .get()
-                                            .get(0)
-                                            .getTime()
-                                            .get()
-                                            .getCompleteTime()
+                            final Object o = tPos.getValue();
+                            tPos.getValue().add(inputs.getForecastGeometries().get().get(0).getTime().get().getCompleteTime()
                                             .get()
                                             .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
                         }));
@@ -148,7 +142,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                 }));
 
                 int cnt = 0;
-                for (PhenomenonGeometry geometry : inputs.getForecastGeometries().get()) {
+                for (final PhenomenonGeometry geometry : inputs.getForecastGeometries().get()) {
                     LOG.debug("About to setResult for FPA");
                     omObs.setResult(createFPAResult(geometry, designator, cnt, sigmetUUID));
                     cnt++;
@@ -158,9 +152,9 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         return forecastPositionAnalysis;
     }
 
-    private static SIGMETPositionCollectionPropertyType createFPAResult(PhenomenonGeometry geometry, String designator, int cnt, String sigmetUUID) {
-        ObjectFactory of = new ObjectFactory();
-        SIGMETPositionCollectionPropertyType _spcpt = create(SIGMETPositionCollectionPropertyType.class, (spcpt) -> {
+    private static SIGMETPositionCollectionPropertyType createFPAResult(final PhenomenonGeometry geometry, final String designator, final int cnt,
+            final String sigmetUUID) {
+        final SIGMETPositionCollectionPropertyType _spcpt = create(SIGMETPositionCollectionPropertyType.class, (spcpt) -> {
             spcpt.setSIGMETPositionCollection(create(SIGMETPositionCollectionType.class, (spct) -> {
                 spct.setId("spc-" + designator + "-" + cnt + "-" + sigmetUUID);
                 spct.getMember().add(create(SIGMETPositionPropertyType.class, (sppt) -> {
@@ -268,9 +262,9 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         return _spcpt;
     }
 
-    private static String getTimePeriodId(SIGMET input) {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmm'Z'");
-        PartialOrCompleteTimePeriod valTime = input.getValidityPeriod();
+    private static String getTimePeriodId(final SIGMET input) {
+        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmm'Z'");
+        final PartialOrCompleteTimePeriod valTime = input.getValidityPeriod();
         return "sigmet-" + valTime.getStartTime().get().getCompleteTime().get().format(dtf) + "-" + valTime.getEndTime()
                 .get()
                 .getCompleteTime()
@@ -278,22 +272,22 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                 .format(dtf);
     }
 
-    protected static TimePeriodPropertyType getTimePeriodPropertyType(SIGMET input, String uuid) {
+    protected static TimePeriodPropertyType getTimePeriodPropertyType(final SIGMET input, final String uuid) {
         return getATimePeriodPropertyType(input.getValidityPeriod(), uuid);
     }
 
-    protected static TimePeriodPropertyType getCancelledTimePeriodPropertyType(SIGMET input, String uuid) {
+    protected static TimePeriodPropertyType getCancelledTimePeriodPropertyType(final SIGMET input, final String uuid) {
         return getATimePeriodPropertyType(input.getCancelledReference().get().getValidityPeriod(), uuid);
     }
 
-    protected static TimePeriodPropertyType getATimePeriodPropertyType(PartialOrCompleteTimePeriod valTime, String uuid) {
+    protected static TimePeriodPropertyType getATimePeriodPropertyType(final PartialOrCompleteTimePeriod valTime, final String uuid) {
         return create(TimePeriodPropertyType.class, (prop) -> {
-            TimePeriodType tp = create(TimePeriodType.class);
+            final TimePeriodType tp = create(TimePeriodType.class);
             tp.setId("validt-" + uuid);
-            TimePositionType beginPos = create(TimePositionType.class);
+            final TimePositionType beginPos = create(TimePositionType.class);
             beginPos.getValue().add(valTime.getStartTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
             tp.setBeginPosition(beginPos);
-            TimePositionType endPos = create(TimePositionType.class);
+            final TimePositionType endPos = create(TimePositionType.class);
             endPos.getValue().add(valTime.getEndTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
             tp.setEndPosition(endPos);
             prop.setTimePeriod(tp);
@@ -346,13 +340,16 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
     /**
      * Converts a TAF object into another format.
      *
-     * @param input input message
-     * @param hints parsing hints
+     * @param input
+     *         input message
+     * @param hints
+     *         parsing hints
+     *
      * @return the conversion result.
      */
     @Override
     public ConversionResult<T> convertMessage(final SIGMET input, final ConversionHints hints) {
-        ConversionResult<T> result = new ConversionResult<>();
+        final ConversionResult<T> result = new ConversionResult<>();
 
         if (!input.areAllTimeReferencesComplete()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "All time references must be completed before converting to IWXXM"));
@@ -360,12 +357,12 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         }
 
         final String sigmetUuid = UUID.randomUUID().toString();
-        final String validTimeId = "validt-" + sigmetUuid;
-        final String phenomenonTimeId = "phent-" + sigmetUuid;
-        final String resultTimeId = "resltt-" + sigmetUuid;
-        final String procedureId = "proc-" + sigmetUuid;
-        final String sfSpatialId = "sampling-surface-" + sigmetUuid;
-        final String foiId = "foi-" + sigmetUuid;
+        //        final String validTimeId = "validt-" + sigmetUuid;
+        //        final String phenomenonTimeId = "phent-" + sigmetUuid;
+        //        final String resultTimeId = "resltt-" + sigmetUuid;
+        //        final String procedureId = "proc-" + sigmetUuid;
+        //        final String sfSpatialId = "sampling-surface-" + sigmetUuid;
+        //        final String foiId = "foi-" + sigmetUuid;
 
         final SIGMETType sigmet;
         switch (input.getSigmetPhenomenon()) {
@@ -450,10 +447,10 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             sigmet.setAnalysis(createCancelAnalysis(input, issueTime, sigmetUuid));
             if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
                 if (input.getVAInfo().get().getVolcanicAshMovedToFIR().isPresent()) {
-                    String designator = input.getVAInfo().get().getVolcanicAshMovedToFIR().get().getDesignator();
-                    String airSpaceName = input.getVAInfo().get().getVolcanicAshMovedToFIR().get().getName();
+                    final String designator = input.getVAInfo().get().getVolcanicAshMovedToFIR().get().getDesignator();
+                    final String airSpaceName = input.getVAInfo().get().getVolcanicAshMovedToFIR().get().getName();
                     sigmet.setVolcanicAshMovedToFIR(create(AirspacePropertyType.class, (apt) -> {
-                        AirspaceType airspace = create(AirspaceType.class);
+                        final AirspaceType airspace = create(AirspaceType.class);
                         airspace.setValidTime(null);
                         airspace.setId("movedto-fir-" + designator + "-" + UUID.randomUUID());
                         airspace.getTimeSlice().add(create(AirspaceTimeSlicePropertyType.class, (timeSliceProp) -> {
@@ -478,7 +475,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                 }
             }
         } else {
-            AeronauticalSignificantWeatherPhenomenonType phenType = create(AeronauticalSignificantWeatherPhenomenonType.class, (ref) -> {
+            final AeronauticalSignificantWeatherPhenomenonType phenType = create(AeronauticalSignificantWeatherPhenomenonType.class, (ref) -> {
                 ref.setHref(AviationCodeListUser.CODELIST_SIGWX_PHENOMENA_ROOT + input.getSigmetPhenomenon());
                 ref.setTitle("Sigmet PhenomenonType");
 
@@ -495,13 +492,13 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
         }
         if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
-            VolcanoDescription volcano = input.getVAInfo().get().getVolcano();
-            icao.iwxxm21.ObjectFactory of = new icao.iwxxm21.ObjectFactory();
+            final VolcanoDescription volcano = input.getVAInfo().get().getVolcano();
+            final icao.iwxxm21.ObjectFactory of = new icao.iwxxm21.ObjectFactory();
             ((VolcanicAshSIGMETType) sigmet).getRest().add(of.createVolcanicAshSIGMETTypeEruptingVolcano(create(VolcanoPropertyType.class, (vpt) -> {
 
                 vpt.setVolcano(createAndWrap(VolcanoType.class, (v) -> {
                     if (volcano.getVolcanoPosition().isPresent()) {
-                        Double[] pts = volcano.getVolcanoPosition().get().getCoordinates().toArray(new Double[0]);
+                        final Double[] pts = volcano.getVolcanoPosition().get().getCoordinates().toArray(new Double[0]);
                         v.setPosition(create(PointPropertyType.class, (ppt) -> {
                             ppt.setPoint(create(PointType.class, (pt) -> {
                                 pt.setPos(create(DirectPositionType.class, (dpt) -> {
@@ -521,7 +518,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                         v.setVolcanoName(volcano.getVolcanoName().get());
                         v.setId("wv-" + volcano.getVolcanoName().get().replace(" ", "_") + "-" + sigmetUuid);
                     } else {
-                        String generatedVolcanoName = "Unknown";
+                        final String generatedVolcanoName = "Unknown";
                         v.setVolcanoName(generatedVolcanoName);
                         v.setId("wv-" + generatedVolcanoName + "-" + sigmetUuid);
                     }
@@ -531,10 +528,10 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             })));
         }
 
-    try {
-        this.updateMessageMetadata(input, result, sigmet);
-        final T rendered = this.render(sigmet, hints);
-        result.addIssue(validate(rendered, getSchemaInfo(), hints));
+        try {
+            this.updateMessageMetadata(input, result, sigmet);
+            final T rendered = this.render(sigmet, hints);
+            result.addIssue(validate(rendered, getSchemaInfo(), hints));
         /*
         if (input.getSigmetPhenomenon().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
             result.addIssue(validateDocument(((VolcanicAshSIGMETType) sigmet), VolcanicAshSIGMETType.class, getSchemaInfo(), hints));
@@ -542,8 +539,8 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             result.addIssue(validateDocument(sigmet, SIGMETType.class, getSchemaInfo(), hints));
         }
         */
-        result.setConvertedMessage(rendered);
-    } catch (ConversionException e) {
+            result.setConvertedMessage(rendered);
+        } catch (final ConversionException e) {
             result.setStatus(Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render SIGMET IWXXM message to String", e));
         }
@@ -551,8 +548,9 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
     }
 
     @SuppressWarnings("unchecked")
-    private OMObservationPropertyType createAnalysis(SIGMET input, String designator, String airspaceName, String issueTime, String sigmetUUID) {
-        OMObservationPropertyType analysis = create(OMObservationPropertyType.class, (omObsType) -> {
+    private OMObservationPropertyType createAnalysis(final SIGMET input, final String designator, final String airspaceName, final String issueTime,
+            final String sigmetUUID) {
+        final OMObservationPropertyType analysis = create(OMObservationPropertyType.class, (omObsType) -> {
             omObsType.setOMObservation(create(OMObservationType.class, (omObs) -> {
                 omObs.setId("analysis-" + sigmetUUID);
                 omObs.setType(create(ReferenceType.class, (ref) -> {
@@ -567,17 +565,10 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     }));
                 } else {
                     omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, (toProp) -> {
-                        JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, (period) -> {
+                        final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, (period) -> {
                             period.setId("phent-" + sigmetUUID);
                             period.setTimePosition(create(TimePositionType.class, (tPos) -> {
-                                tPos.getValue()
-                                        .add(input.getAnalysisGeometries()
-                                                .get()
-                                                .get(0)
-                                                .getTime()
-                                                .get()
-                                                .getCompleteTime()
-                                                .get()
+                                tPos.getValue().add(input.getAnalysisGeometries().get().get(0).getTime().get().getCompleteTime().get()
                                                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
                             }));
                         });
@@ -612,7 +603,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
                 omObs.setFeatureOfInterest(getFeatureOfInterest(input, designator, airspaceName, "sampling-surface-" + sigmetUUID));
 
-                SIGMETEvolvingConditionCollectionPropertyType _seccpt = getResult(input, sigmetUUID);
+                final SIGMETEvolvingConditionCollectionPropertyType _seccpt = getResult(input, sigmetUUID);
                 omObs.setResult(_seccpt);
             }));
 
@@ -620,8 +611,8 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         return analysis;
     }
 
-    private FeaturePropertyType getFeatureOfInterest(SIGMET input, String designator, String airSpaceName, String sfSpatialUUID) {
-        FeaturePropertyType ftp = create(FeaturePropertyType.class, (prop) -> {
+    private FeaturePropertyType getFeatureOfInterest(final SIGMET input, final String designator, final String airSpaceName, final String sfSpatialUUID) {
+        final FeaturePropertyType ftp = create(FeaturePropertyType.class, (prop) -> {
             prop.setAbstractFeature(createAndWrap(SFSpatialSamplingFeatureType.class, (samsFeature) -> {
                 samsFeature.setId(sfSpatialUUID);
                 samsFeature.setType(create(ReferenceType.class, (ref) -> {
@@ -630,7 +621,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                 }));
 
                 samsFeature.getSampledFeature().add(create(FeaturePropertyType.class, (samProp) -> {
-                    AirspaceType airspace = create(AirspaceType.class);
+                    final AirspaceType airspace = create(AirspaceType.class);
                     airspace.setValidTime(null);
                     airspace.setId("fir-" + designator + "-" + UUID.randomUUID());
                     airspace.getTimeSlice().add(create(AirspaceTimeSlicePropertyType.class, (timeSliceProp) -> {
@@ -661,17 +652,16 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         //return null;
     }
 
-    private SIGMETEvolvingConditionCollectionPropertyType getResult(SIGMET input, String sigmetUUID) {
-        ObjectFactory of = new ObjectFactory();
-        SIGMETEvolvingConditionCollectionPropertyType _seccpt = create(SIGMETEvolvingConditionCollectionPropertyType.class, (seccpt) -> {
+    private SIGMETEvolvingConditionCollectionPropertyType getResult(final SIGMET input, final String sigmetUUID) {
+        final SIGMETEvolvingConditionCollectionPropertyType _seccpt = create(SIGMETEvolvingConditionCollectionPropertyType.class, (seccpt) -> {
             seccpt.setSIGMETEvolvingConditionCollection(create(SIGMETEvolvingConditionCollectionType.class, (secct) -> {
                 secct.setId("fcst-" + sigmetUUID);
                 secct.setTimeIndicator(TimeIndicatorType.OBSERVATION);
                 if (input.getAnalysisType() == SigmetAnalysisType.FORECAST) {
                     secct.setTimeIndicator(TimeIndicatorType.FORECAST);
                 }
-                int cnt = 0;
-                for (PhenomenonGeometryWithHeight geometryWithHeight : input.getAnalysisGeometries().get()) {
+                final int cnt = 0;
+                for (final PhenomenonGeometryWithHeight geometryWithHeight : input.getAnalysisGeometries().get()) {
                     secct.getMember().add(create(SIGMETEvolvingConditionPropertyType.class, (secpt) -> {
                         secpt.setSIGMETEvolvingCondition(create(SIGMETEvolvingConditionType.class, (sect) -> {
                             sect.setId("sec-" + cnt + "-" + sigmetUUID);
@@ -694,13 +684,14 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                 }
                             });
                             if (input.getMovingDirection().isPresent()) {
-                                icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
-                                AngleWithNilReasonType angl = new AngleWithNilReasonType();
-                                NumericMeasure md = input.getMovingDirection().get();
+                                final icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
+                                final AngleWithNilReasonType angl = new AngleWithNilReasonType();
+                                final NumericMeasure md = input.getMovingDirection().get();
                                 angl.setUom(md.getUom());
                                 angl.setValue(md.getValue());
 
-                                JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm21.createSIGMETEvolvingConditionTypeDirectionOfMotion(angl);
+                                final JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm21.createSIGMETEvolvingConditionTypeDirectionOfMotion(
+                                        angl);
                                 sect.setDirectionOfMotion(directionOfMotion);
 
                                 input.getMovingSpeed().ifPresent((ms) -> {
@@ -849,8 +840,8 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         return _seccpt;
     }
 
-    private OMObservationPropertyType createCancelAnalysis(SIGMET input, String issueTime, String sigmetUUID) {
-        OMObservationPropertyType analysis = create(OMObservationPropertyType.class, (omObsType) -> {
+    private OMObservationPropertyType createCancelAnalysis(final SIGMET input, final String issueTime, final String sigmetUUID) {
+        final OMObservationPropertyType analysis = create(OMObservationPropertyType.class, (omObsType) -> {
             omObsType.setOMObservation(create(OMObservationType.class, (omObs) -> {
                 omObs.setId("cnl-analysis");
                 omObs.setType(create(ReferenceType.class, (ref) -> {
@@ -876,7 +867,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     ref.setHref(AviationCodeListUser.CODELIST_SIGMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS);
                 }));
 
-                FeaturePropertyType ftp = create(FeaturePropertyType.class, (prop) -> {
+                final FeaturePropertyType ftp = create(FeaturePropertyType.class, (prop) -> {
                     prop.setAbstractFeature(createAndWrap(SFSpatialSamplingFeatureType.class, (samsFeature) -> {
                         samsFeature.setId("sampling-surface-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + UUID.randomUUID());
                         samsFeature.setType(create(ReferenceType.class, (ref) -> {
@@ -885,7 +876,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                         }));
 
                         samsFeature.getSampledFeature().add(create(FeaturePropertyType.class, (samProp) -> {
-                            AirspaceType airspace = create(AirspaceType.class);
+                            final AirspaceType airspace = create(AirspaceType.class);
                             airspace.setValidTime(null);
                             airspace.setId("fir-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + UUID.randomUUID());
                             airspace.getTimeSlice().add(create(AirspaceTimeSlicePropertyType.class, (timeSliceProp) -> {
@@ -913,7 +904,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     }));
                 });
                 omObs.setFeatureOfInterest(ftp);
-                SIGMETEvolvingConditionCollectionPropertyType _seccpt = create(SIGMETEvolvingConditionCollectionPropertyType.class, (eccpt) -> {
+                final SIGMETEvolvingConditionCollectionPropertyType _seccpt = create(SIGMETEvolvingConditionCollectionPropertyType.class, (eccpt) -> {
                     eccpt.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
                 });
                 omObs.setResult(_seccpt);
@@ -926,7 +917,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
     protected void updateMessageMetadata(final SIGMET source, final ConversionResult<?> results, final SIGMETType target) throws ConversionException {
         try {
-            DatatypeFactory f = DatatypeFactory.newInstance();
+            final DatatypeFactory f = DatatypeFactory.newInstance();
 
             //Default permissions
             target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
@@ -964,7 +955,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     target.setTranslationFailedTAC(source.getTranslatedTAC().get());
                 }
             }
-        } catch (DatatypeConfigurationException e) {
+        } catch (final DatatypeConfigurationException e) {
             throw new ConversionException("Exception in setting the translation time", e);
         }
 
@@ -1008,8 +999,8 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
  */
 
     @Override
-    protected InputStream getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
-        InputStream retval = this.getClass().getResourceAsStream("SIGMETCleanup.xsl");
+    protected InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException {
+        final InputStream retval = this.getClass().getResourceAsStream("SIGMETCleanup.xsl");
         if (retval == null) {
             throw new ConversionException("Error accessing cleanup XSLT sheet file");
         }
@@ -1031,7 +1022,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
     public static class ToString extends SIGMETIWXXMSerializer<String> {
         @Override
         protected String render(final SIGMETType sigmet, final ConversionHints hints) throws ConversionException {
-            Document result = renderXMLDocument(sigmet, hints);
+            final Document result = renderXMLDocument(sigmet, hints);
             return renderDOMToString(result, hints);
         }
 

@@ -13,7 +13,6 @@ import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.AngleType;
 import net.opengis.gml32.FeaturePropertyType;
 import net.opengis.gml32.LengthType;
-import net.opengis.gml32.ObjectFactory;
 import net.opengis.gml32.ReferenceType;
 import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.StringOrRefType;
@@ -82,6 +81,38 @@ import wmo.metce2013.ProcessType;
 
 public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer<AIRMET, T> {
 
+    protected static TimePeriodPropertyType getTimePeriodPropertyType(final AIRMET input, final String uuid) {
+        return getATimePeriodPropertyType(input.getValidityPeriod(), uuid);
+    }
+
+    protected static TimePeriodPropertyType getCancelledTimePeriodPropertyType(final AIRMET input, final String uuid) {
+        return getATimePeriodPropertyType(input.getCancelledReference().get().getValidityPeriod(), uuid);
+    }
+
+    protected static TimePeriodPropertyType getATimePeriodPropertyType(final PartialOrCompleteTimePeriod valTime, final String uuid) {
+        return create(TimePeriodPropertyType.class, (prop) -> {
+            final TimePeriodType tp = create(TimePeriodType.class);
+            tp.setId("validt-" + uuid);
+            final TimePositionType beginPos = create(TimePositionType.class);
+            beginPos.getValue().add(valTime.getStartTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            tp.setBeginPosition(beginPos);
+            final TimePositionType endPos = create(TimePositionType.class);
+            endPos.getValue().add(valTime.getEndTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            tp.setEndPosition(endPos);
+            prop.setTimePeriod(tp);
+        });
+    }
+
+    private static String getTimePeriodId(final AIRMET input) {
+        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmm'Z'");
+        final PartialOrCompleteTimePeriod valTime = input.getValidityPeriod();
+        return "airmet-" + valTime.getStartTime().get().getCompleteTime().get().format(dtf) + "-" + valTime.getEndTime()
+                .get()
+                .getCompleteTime()
+                .get()
+                .format(dtf);
+    }
+
     protected abstract T render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException;
 
     protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
@@ -89,13 +120,16 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
     /**
      * Converts a TAF object into another format.
      *
-     * @param input input message
-     * @param hints parsing hints
+     * @param input
+     *         input message
+     * @param hints
+     *         parsing hints
+     *
      * @return the conversion result.
      */
     @Override
     public ConversionResult<T> convertMessage(final AIRMET input, final ConversionHints hints) {
-        ConversionResult<T> result = new ConversionResult<>();
+        final ConversionResult<T> result = new ConversionResult<>();
 
         if (!input.areAllTimeReferencesComplete()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "All time references must be completed before converting to IWXXM"));
@@ -103,12 +137,12 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         }
 
         final String airmetUuid = UUID.randomUUID().toString();
-        final String validTimeId = "validt-" + airmetUuid;
-        final String phenomenonTimeId = "phent-" + airmetUuid;
-        final String resultTimeId = "resltt-" + airmetUuid;
-        final String procedureId = "proc-" + airmetUuid;
-        final String sfSpatialId = "sampling-surface-" + airmetUuid;
-        final String foiId = "foi-" + airmetUuid;
+        //        final String validTimeId = "validt-" + airmetUuid;
+        //        final String phenomenonTimeId = "phent-" + airmetUuid;
+        //        final String resultTimeId = "resltt-" + airmetUuid;
+        //        final String procedureId = "proc-" + airmetUuid;
+        //        final String sfSpatialId = "sampling-surface-" + airmetUuid;
+        //        final String foiId = "foi-" + airmetUuid;
 
         final AIRMETType airmet;
 
@@ -179,7 +213,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             airmet.setAnalysis(createCancelAnalysis(input, issueTime, airmetUuid));
 
         } else {
-            AeronauticalAreaWeatherPhenomenonType phenType = create(AeronauticalAreaWeatherPhenomenonType.class, (ref) -> {
+            final AeronauticalAreaWeatherPhenomenonType phenType = create(AeronauticalAreaWeatherPhenomenonType.class, (ref) -> {
                 ref.setHref(AviationCodeListUser.CODELIST_AIRMET_PHENOMENA_ROOT + input.getAirmetPhenomenon());
                 ref.setTitle("Airmet PhenomenonType");
 
@@ -200,7 +234,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             final T rendered = this.render(airmet, hints);
             result.addIssue(validate(rendered, getSchemaInfo(), hints));
             result.setConvertedMessage(rendered);
-        } catch (ConversionException e) {
+        } catch (final ConversionException e) {
             result.setStatus(Status.FAIL);
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message", e));
         }
@@ -208,33 +242,12 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         return result;
     }
 
-    protected static TimePeriodPropertyType getTimePeriodPropertyType(AIRMET input, String uuid) {
-        return getATimePeriodPropertyType(input.getValidityPeriod(), uuid);
-    }
-
-    protected static TimePeriodPropertyType getCancelledTimePeriodPropertyType(AIRMET input, String uuid) {
-        return getATimePeriodPropertyType(input.getCancelledReference().get().getValidityPeriod(), uuid);
-    }
-
-    protected static TimePeriodPropertyType getATimePeriodPropertyType(PartialOrCompleteTimePeriod valTime, String uuid) {
-        return create(TimePeriodPropertyType.class, (prop) -> {
-            TimePeriodType tp = create(TimePeriodType.class);
-            tp.setId("validt-" + uuid);
-            TimePositionType beginPos = create(TimePositionType.class);
-            beginPos.getValue().add(valTime.getStartTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-            tp.setBeginPosition(beginPos);
-            TimePositionType endPos = create(TimePositionType.class);
-            endPos.getValue().add(valTime.getEndTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-            tp.setEndPosition(endPos);
-            prop.setTimePeriod(tp);
-        });
-    }
-
     /**************************************************************************/
 
     @SuppressWarnings("unchecked")
-    private OMObservationPropertyType createAnalysis(AIRMET input, String designator, String airspaceName, String issueTime, String airmetUUID) {
-        OMObservationPropertyType analysis = create(OMObservationPropertyType.class, (omObsType) -> {
+    private OMObservationPropertyType createAnalysis(final AIRMET input, final String designator, final String airspaceName, final String issueTime,
+            final String airmetUUID) {
+        final OMObservationPropertyType analysis = create(OMObservationPropertyType.class, (omObsType) -> {
             omObsType.setOMObservation(create(OMObservationType.class, (omObs) -> {
                 omObs.setId("analysis-" + airmetUUID);
                 omObs.setType(create(ReferenceType.class, (ref) -> {
@@ -249,17 +262,10 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     }));
                 } else {
                     omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, (toProp) -> {
-                        JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, (period) -> {
+                        final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, (period) -> {
                             period.setId("phent-" + airmetUUID);
                             period.setTimePosition(create(TimePositionType.class, (tPos) -> {
-                                tPos.getValue()
-                                        .add(input.getAnalysisGeometries()
-                                                .get()
-                                                .get(0)
-                                                .getTime()
-                                                .get()
-                                                .getCompleteTime()
-                                                .get()
+                                tPos.getValue().add(input.getAnalysisGeometries().get().get(0).getTime().get().getCompleteTime().get()
                                                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
                             }));
                         });
@@ -294,7 +300,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
                 omObs.setFeatureOfInterest(getFeatureOfInterest(input, designator, airspaceName, "sampling-surface-" + airmetUUID));
 
-                AIRMETEvolvingConditionCollectionPropertyType _seccpt = getResult(input, airmetUUID);
+                final AIRMETEvolvingConditionCollectionPropertyType _seccpt = getResult(input, airmetUUID);
                 omObs.setResult(_seccpt);
             }));
 
@@ -302,8 +308,8 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         return analysis;
     }
 
-    private FeaturePropertyType getFeatureOfInterest(AIRMET input, String designator, String airSpaceName, String sfSpatialUUID) {
-        FeaturePropertyType ftp = create(FeaturePropertyType.class, (prop) -> {
+    private FeaturePropertyType getFeatureOfInterest(final AIRMET input, final String designator, final String airSpaceName, final String sfSpatialUUID) {
+        final FeaturePropertyType ftp = create(FeaturePropertyType.class, (prop) -> {
             prop.setAbstractFeature(createAndWrap(SFSpatialSamplingFeatureType.class, (samsFeature) -> {
                 samsFeature.setId(sfSpatialUUID);
                 samsFeature.setType(create(ReferenceType.class, (ref) -> {
@@ -312,7 +318,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                 }));
 
                 samsFeature.getSampledFeature().add(create(FeaturePropertyType.class, (samProp) -> {
-                    AirspaceType airspace = create(AirspaceType.class);
+                    final AirspaceType airspace = create(AirspaceType.class);
                     airspace.setValidTime(null);
                     airspace.setId("fir-" + designator + "-" + UUID.randomUUID());
                     airspace.getTimeSlice().add(create(AirspaceTimeSlicePropertyType.class, (timeSliceProp) -> {
@@ -343,17 +349,16 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         //return null;
     }
 
-    private AIRMETEvolvingConditionCollectionPropertyType getResult(AIRMET input, String airmetUUID) {
-        ObjectFactory of = new ObjectFactory();
-        AIRMETEvolvingConditionCollectionPropertyType _seccpt = create(AIRMETEvolvingConditionCollectionPropertyType.class, (seccpt) -> {
+    private AIRMETEvolvingConditionCollectionPropertyType getResult(final AIRMET input, final String airmetUUID) {
+        final AIRMETEvolvingConditionCollectionPropertyType _seccpt = create(AIRMETEvolvingConditionCollectionPropertyType.class, (seccpt) -> {
             seccpt.setAIRMETEvolvingConditionCollection(create(AIRMETEvolvingConditionCollectionType.class, (secct) -> {
                 secct.setId("fcst-" + airmetUUID);
                 secct.setTimeIndicator(TimeIndicatorType.OBSERVATION);
                 if (input.getAnalysisType() == SigmetAnalysisType.FORECAST) {
                     secct.setTimeIndicator(TimeIndicatorType.FORECAST);
                 }
-                int cnt = 0;
-                for (PhenomenonGeometryWithHeight geometryWithHeight : input.getAnalysisGeometries().get()) {
+                final int cnt = 0;
+                for (final PhenomenonGeometryWithHeight geometryWithHeight : input.getAnalysisGeometries().get()) {
                     secct.getMember().add(create(AIRMETEvolvingConditionPropertyType.class, (secpt) -> {
                         secpt.setAIRMETEvolvingCondition(create(AIRMETEvolvingConditionType.class, (sect) -> {
                             sect.setId("sec-" + cnt + "-" + airmetUUID);
@@ -377,13 +382,14 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                             });
 
                             if (input.getMovingDirection().isPresent()) {
-                                icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
-                                AngleWithNilReasonType angl = new AngleWithNilReasonType();
-                                NumericMeasure md = input.getMovingDirection().get();
+                                final icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
+                                final AngleWithNilReasonType angl = new AngleWithNilReasonType();
+                                final NumericMeasure md = input.getMovingDirection().get();
                                 angl.setUom(md.getUom());
                                 angl.setValue(md.getValue());
 
-                                JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm21.createAIRMETEvolvingConditionTypeDirectionOfMotion(angl);
+                                final JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm21.createAIRMETEvolvingConditionTypeDirectionOfMotion(
+                                        angl);
                                 sect.setDirectionOfMotion(directionOfMotion);
 
                                 input.getMovingSpeed().ifPresent((ms) -> {
@@ -522,12 +528,12 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                             }
 
                             if (input.getCloudLevels().isPresent()) {
-                                NumericMeasure base = input.getCloudLevels().get().getCloudBase();
-                                NumericMeasure top = input.getCloudLevels().get().getCloudTop();
+                                final NumericMeasure base = input.getCloudLevels().get().getCloudBase();
+                                final NumericMeasure top = input.getCloudLevels().get().getCloudTop();
                                 if (base != null) {
                                     sect.setCloudBase(create(LengthType.class, (lt) -> {
                                         lt.setValue(base.getValue());
-                                        if (base.getUom().toLowerCase().equals("ft")) {
+                                        if (base.getUom().equalsIgnoreCase("ft")) {
                                             lt.setUom("[ft_i]");
                                         } else {
                                             lt.setUom(base.getUom().toLowerCase());
@@ -537,7 +543,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                 if (top != null) {
                                     sect.setCloudTop(create(LengthType.class, (lt) -> {
                                         lt.setValue(top.getValue());
-                                        if (top.getUom().toLowerCase().equals("ft")) {
+                                        if (top.getUom().equalsIgnoreCase("ft")) {
                                             lt.setUom("[ft_i]");
                                         } else {
                                             lt.setUom(top.getUom().toLowerCase());
@@ -554,15 +560,15 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                     lt.setValue(input.getVisibility().get().getValue().intValue());
                                     lt.setUom(input.getVisibility().get().getUom().toLowerCase());
                                 }));
-                                for (AviationCodeListUser.WeatherCausingVisibilityReduction w : input.getObscuration().get()) {
-                                    WeatherCausingVisibilityReductionType wt = new WeatherCausingVisibilityReductionType();
+                                for (final AviationCodeListUser.WeatherCausingVisibilityReduction w : input.getObscuration().get()) {
+                                    final WeatherCausingVisibilityReductionType wt = new WeatherCausingVisibilityReductionType();
                                     wt.setHref(AviationCodeListUser.CODELIST_VALUE_WEATHERCAUSINGVISIBILITYREDUCTION + "/" + w.getText());
                                     sect.getSurfaceVisibilityCause().add(wt);
                                 }
                             }
 
                             if (input.getWind().isPresent()) {
-                                AirmetWind w = input.getWind().get();
+                                final AirmetWind w = input.getWind().get();
                                 sect.setSurfaceWindSpeed(create(SpeedType.class, (st) -> {
                                     st.setValue(w.getSpeed().getValue());
                                     st.setUom(w.getSpeed().getUom());
@@ -581,8 +587,8 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         return _seccpt;
     }
 
-    private OMObservationPropertyType createCancelAnalysis(AIRMET input, String issueTime, String airmetUUID) {
-        OMObservationPropertyType analysis = create(OMObservationPropertyType.class, (omObsType) -> {
+    private OMObservationPropertyType createCancelAnalysis(final AIRMET input, final String issueTime, final String airmetUUID) {
+        final OMObservationPropertyType analysis = create(OMObservationPropertyType.class, (omObsType) -> {
             omObsType.setOMObservation(create(OMObservationType.class, (omObs) -> {
                 omObs.setId("cnl-analysis");
                 omObs.setType(create(ReferenceType.class, (ref) -> {
@@ -608,7 +614,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     ref.setHref(AviationCodeListUser.CODELIST_AIRMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS);
                 }));
 
-                FeaturePropertyType ftp = create(FeaturePropertyType.class, (prop) -> {
+                final FeaturePropertyType ftp = create(FeaturePropertyType.class, (prop) -> {
                     prop.setAbstractFeature(createAndWrap(SFSpatialSamplingFeatureType.class, (samsFeature) -> {
                         samsFeature.setId("sampling-surface-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + UUID.randomUUID());
                         samsFeature.setType(create(ReferenceType.class, (ref) -> {
@@ -617,7 +623,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                         }));
 
                         samsFeature.getSampledFeature().add(create(FeaturePropertyType.class, (samProp) -> {
-                            AirspaceType airspace = create(AirspaceType.class);
+                            final AirspaceType airspace = create(AirspaceType.class);
                             airspace.setValidTime(null);
                             airspace.setId("fir-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + UUID.randomUUID());
                             airspace.getTimeSlice().add(create(AirspaceTimeSlicePropertyType.class, (timeSliceProp) -> {
@@ -645,7 +651,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     }));
                 });
                 omObs.setFeatureOfInterest(ftp);
-                AIRMETEvolvingConditionCollectionPropertyType _seccpt = create(AIRMETEvolvingConditionCollectionPropertyType.class, (eccpt) -> {
+                final AIRMETEvolvingConditionCollectionPropertyType _seccpt = create(AIRMETEvolvingConditionCollectionPropertyType.class, (eccpt) -> {
                     eccpt.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
                 });
                 omObs.setResult(_seccpt);
@@ -658,7 +664,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
     protected void updateMessageMetadata(final AIRMET source, final ConversionResult<?> results, final AIRMETType target) throws ConversionException {
         try {
-            DatatypeFactory f = DatatypeFactory.newInstance();
+            final DatatypeFactory f = DatatypeFactory.newInstance();
 
             //Default permissions
             target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
@@ -696,25 +702,15 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     target.setTranslationFailedTAC(source.getTranslatedTAC().get());
                 }
             }
-        } catch (DatatypeConfigurationException e) {
+        } catch (final DatatypeConfigurationException e) {
             throw new ConversionException("Exception in setting the translation time", e);
         }
 
     }
 
-    private static String getTimePeriodId(AIRMET input) {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmm'Z'");
-        PartialOrCompleteTimePeriod valTime = input.getValidityPeriod();
-        return "airmet-" + valTime.getStartTime().get().getCompleteTime().get().format(dtf) + "-" + valTime.getEndTime()
-                .get()
-                .getCompleteTime()
-                .get()
-                .format(dtf);
-    }
-
     @Override
-    protected InputStream getCleanupTransformationStylesheet(ConversionHints hints) throws ConversionException {
-        InputStream retval = this.getClass().getResourceAsStream("AIRMETCleanup.xsl");
+    protected InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException {
+        final InputStream retval = this.getClass().getResourceAsStream("AIRMETCleanup.xsl");
         if (retval == null) {
             throw new ConversionException("Error accessing cleanup XSLT sheet file");
         }

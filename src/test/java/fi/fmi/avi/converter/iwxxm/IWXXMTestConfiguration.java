@@ -147,7 +147,7 @@ public class IWXXMTestConfiguration {
     private AviMessageSpecificConverter<String, GenericMeteorologicalBulletin> genericBulletinIWXXMStringParser;
 
     @Bean
-    private static ObjectMapper getObjectMapper() {
+    static ObjectMapper getObjectMapper() {
         final ObjectMapper om = new ObjectMapper();
         om.registerModule(new Jdk8Module());
         om.registerModule(new JavaTimeModule());

@@ -1,6 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
-import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertSame;
 import static junit.framework.TestCase.assertTrue;
 
@@ -58,10 +57,5 @@ public class VASIGMETIWWXXMSerializerTest {
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
-        assertNotNull(result.getConvertedMessage().get());
-
-        if (result.getConvertedMessage().isPresent()) {
-            final String sigmet = result.getConvertedMessage().get();
-        }
     }
 }
