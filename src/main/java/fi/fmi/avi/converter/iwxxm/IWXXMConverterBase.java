@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
@@ -75,8 +76,6 @@ import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
  */
 public abstract class IWXXMConverterBase {
     public static final String UUID_PREFIX = "uuid.";
-
-    private static final Logger LOG = LoggerFactory.getLogger(IWXXMConverterBase.class);
     /*
       XMLConstants.FEATURE_SECURE_PROCESSING flag value "true" forces the XML schema
       loader to check the allowed protocols using the system property "javax.xml.accessExternalSchema".
@@ -93,12 +92,13 @@ public abstract class IWXXMConverterBase {
 
     */
     protected static final boolean F_SECURE_PROCESSING;
+
+    private static final Logger LOG = LoggerFactory.getLogger(IWXXMConverterBase.class);
     private static final Map<String, Object> CLASS_TO_OBJECT_FACTORY = new HashMap<>();
     private static final Map<String, Object> OBJECT_FACTORY_MAP = new HashMap<>();
+    private static final HashMap<String, Templates> IWXXM_TEMPLATES = new HashMap<>();
+
     private static JAXBContext jaxbCtx = null;
-
-
-    private final static HashMap<URL, Templates> iwxxmTemplates = new HashMap<>();
 
     static {
         if (System.getSecurityManager() != null) {
@@ -119,7 +119,9 @@ public abstract class IWXXMConverterBase {
      * needs to scan all the jars in classpath.
      *
      * @return the context
-     * @throws JAXBException if the context cannot be created
+     *
+     * @throws JAXBException
+     *         if the context cannot be created
      */
     public static synchronized JAXBContext getJAXBContext() throws JAXBException {
         if (jaxbCtx == null) {
@@ -142,7 +144,8 @@ public abstract class IWXXMConverterBase {
             String methodName = null;
             if (clz.getEnclosingClass() != null) {
                 Class<?> encClass = clz.getEnclosingClass();
-                final StringBuilder sb = new StringBuilder("create").append(encClass.getSimpleName().substring(0, 1).toUpperCase()).append(encClass.getSimpleName().substring(1));
+                final StringBuilder sb = new StringBuilder("create").append(encClass.getSimpleName().substring(0, 1).toUpperCase())
+                        .append(encClass.getSimpleName().substring(1));
                 while (encClass.getEnclosingClass() != null) {
                     sb.append(clz.getSimpleName());
                     encClass = encClass.getEnclosingClass();
@@ -264,11 +267,11 @@ public abstract class IWXXMConverterBase {
             final ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(retval);
             marshaller.setEventHandler(eventHandler);
 
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
             dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document dom = db.newDocument();
+            final DocumentBuilder db = dbf.newDocumentBuilder();
+            final Document dom = db.newDocument();
 
             //Marshall to run the validation:
             marshaller.marshal(wrap(input, clz), dom);
@@ -312,8 +315,11 @@ public abstract class IWXXMConverterBase {
      * Checks the DOM Document against the official IWXXM Schematron validation rules.
      * Uses a pre-generated XLS transformation files producing Schematron SVRL reports.
      *
-     * @param input IWXXM message Document
-     * @param hints conversion hints to guide the validaton
+     * @param input
+     *         IWXXM message Document
+     * @param hints
+     *         conversion hints to guide the validaton
+     *
      * @return the list of Schematron validation issues (failed asserts)
      */
     protected static IssueList validateAgainstIWXXMSchematron(final Document input, final XMLSchemaInfo schemaInfo, final ConversionHints hints) {
@@ -373,22 +379,19 @@ public abstract class IWXXMConverterBase {
         if (schemaInfo.getSchematronRules() == null) {
             throw new TransformerException("No Schematron rules source available in XMLSchemaInfo");
         }
-        List<Templates> retval = new ArrayList<>();
-        final TransformerFactory tFactory = TransformerFactory.newInstance();
-        for (final URL ruleURI : schemaInfo.getSchematronRules()) {
-            synchronized (iwxxmTemplates) {
-                if (!iwxxmTemplates.containsKey(ruleURI)) {
-                    StreamSource ss = null;
-                    try {
-                        ss = new StreamSource(ruleURI.openStream(), ruleURI.toString());
+        final List<Templates> retval = new ArrayList<>();
+        final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        for (final URL ruleURL : schemaInfo.getSchematronRules()) {
+            final String ruleURLString = ruleURL.toString();
+            synchronized (IWXXM_TEMPLATES) {
+                if (!IWXXM_TEMPLATES.containsKey(ruleURLString)) {
+                    try (InputStream inputStream = ruleURL.openStream()) {
+                        IWXXM_TEMPLATES.put(ruleURLString, transformerFactory.newTemplates(new StreamSource(inputStream, ruleURLString)));
                     } catch (final IOException e) {
-                        LOG.warn("Unable to create StreamSource for the schematron rule from '{}'", ruleURI.toExternalForm(), e);
-                    }
-                    if (ss != null) {
-                        iwxxmTemplates.put(ruleURI, tFactory.newTemplates(ss));
+                        LOG.warn("Unable to create StreamSource for the schematron rule from '{}'", ruleURL.toExternalForm(), e);
                     }
                 }
-                retval.add(iwxxmTemplates.get(ruleURI));
+                retval.add(IWXXM_TEMPLATES.get(ruleURLString));
             }
         }
         return retval;
@@ -505,7 +508,8 @@ public abstract class IWXXMConverterBase {
         return Optional.empty();
     }
 
-    protected static Optional<PartialOrCompleteTimePeriod> getCompleteTimePeriod(final TimePeriodPropertyType timePeriodPropertyType, final ReferredObjectRetrievalContext refCtx) {
+    protected static Optional<PartialOrCompleteTimePeriod> getCompleteTimePeriod(final TimePeriodPropertyType timePeriodPropertyType,
+            final ReferredObjectRetrievalContext refCtx) {
         final Optional<TimePeriodType> tp = resolveProperty(timePeriodPropertyType, TimePeriodType.class, refCtx);
         if (tp.isPresent()) {
             final PartialOrCompleteTimePeriod.Builder retval = PartialOrCompleteTimePeriod.builder();
@@ -523,7 +527,8 @@ public abstract class IWXXMConverterBase {
         return Optional.empty();
     }
 
-    protected static Optional<PartialOrCompleteTimeInstant> getCompleteTimeInstant(final TimeInstantPropertyType timeInstantPropertyType, final ReferredObjectRetrievalContext refCtx) {
+    protected static Optional<PartialOrCompleteTimeInstant> getCompleteTimeInstant(final TimeInstantPropertyType timeInstantPropertyType,
+            final ReferredObjectRetrievalContext refCtx) {
         final Optional<ZonedDateTime> time = getTime(timeInstantPropertyType, refCtx);
         if (time.isPresent()) {
             return Optional.of(PartialOrCompleteTimeInstant.builder().setCompleteTime(time.get()).build());
@@ -583,23 +588,23 @@ public abstract class IWXXMConverterBase {
         return retval;
     }
 
-    protected static String renderDOMToString(final Document source, ConversionHints hints) throws ConversionException {
+    protected static String renderDOMToString(final Document source, final ConversionHints hints) throws ConversionException {
         if (source != null) {
             try {
-                StringWriter sw = new StringWriter();
-                Result output = new StreamResult(sw);
-                TransformerFactory tFactory = TransformerFactory.newInstance();
-                Transformer transformer = tFactory.newTransformer();
+                final StringWriter sw = new StringWriter();
+                final Result output = new StreamResult(sw);
+                final TransformerFactory tFactory = TransformerFactory.newInstance();
+                final Transformer transformer = tFactory.newTransformer();
 
                 //TODO: switch these on based on the ConversionHints:
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
                 transformer.setOutputProperty(OutputKeys.INDENT, "yes");
                 transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 
-                DOMSource dsource = new DOMSource(source);
+                final DOMSource dsource = new DOMSource(source);
                 transformer.transform(dsource, output);
                 return sw.toString();
-            } catch (TransformerException e) {
+            } catch (final TransformerException e) {
                 throw new ConversionException("Exception in rendering to String", e);
             }
         }
@@ -621,7 +626,7 @@ public abstract class IWXXMConverterBase {
 
         @Override
         public boolean handleEvent(final ValidationEvent event) {
-            ConversionIssue.Severity severity;
+            final ConversionIssue.Severity severity;
             if (event.getSeverity() == ValidationEvent.ERROR) {
                 this.errorsFound = true;
                 severity = ConversionIssue.Severity.ERROR;
