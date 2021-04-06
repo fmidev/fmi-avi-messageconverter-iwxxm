@@ -249,7 +249,7 @@ public abstract class IWXXMConverterBase {
             } catch (final SAXException | IOException e) {
                 //noop, issues have already been collected by the error handler
             }
-        } catch (final Exception e) {
+        } catch (final RuntimeException | SAXException e) {
             throw new ConversionException("Error in validating document", e);
         }
         return retval;
@@ -282,7 +282,7 @@ public abstract class IWXXMConverterBase {
 
             //Schematron validation:
             retval.addAll(validateAgainstIWXXMSchematron(dom, schemaInfo, hints));
-        } catch (final Exception e) {
+        } catch (final RuntimeException | JAXBException | SAXException | ParserConfigurationException e) {
             throw new RuntimeException("Error in validating document", e);
         }
         return retval;
@@ -585,7 +585,7 @@ public abstract class IWXXMConverterBase {
             try (ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8))) {
                 retval = documentBuilder.parse(inputStream);
             }
-        } catch (final Exception e) {
+        } catch (final RuntimeException | ParserConfigurationException | IOException | SAXException e) {
             throw new ConversionException("Error in parsing input as to an XML document", e);
         }
         return retval;
