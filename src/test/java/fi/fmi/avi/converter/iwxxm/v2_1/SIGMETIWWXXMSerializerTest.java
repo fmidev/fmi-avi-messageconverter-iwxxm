@@ -32,21 +32,22 @@ public class SIGMETIWWXXMSerializerTest {
     @Autowired
     private AviMessageConverter converter;
 
-    protected SIGMET readFromJSON(String fileName) throws IOException {
-        ObjectMapper om = new ObjectMapper();
-        om.registerModule(new Jdk8Module());
-        om.registerModule(new JavaTimeModule());
-        InputStream is = this.getClass().getResourceAsStream(fileName);
-        if (is != null) {
-            return om.readValue(is, SIGMETImpl.class);
-        } else {
-            throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+    protected SIGMET readFromJSON(final String fileName) throws IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Jdk8Module());
+        objectMapper.registerModule(new JavaTimeModule());
+        try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                return objectMapper.readValue(inputStream, SIGMETImpl.class);
+            } else {
+                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+            }
         }
     }
 
     @Test
     public void testSIGMETStringSerialization1() throws Exception {
-       doTestSIGMETStringSerialization("sigmet1.json");
+        doTestSIGMETStringSerialization("sigmet1.json");
     }
 
     @Test
@@ -75,16 +76,16 @@ public class SIGMETIWWXXMSerializerTest {
     }
 
     @Test
-     public void testSIGMETForecastPosition() throws Exception {
+    public void testSIGMETForecastPosition() throws Exception {
         //SIGMET with forecast position for phenomenon
         //should result in IWXXM with no speedOfMotion or directionOfMotion elements
         doTestSIGMETStringSerialization("sigmetFORECASTPOSITION.json");
     }
 
-    public void doTestSIGMETStringSerialization(String fn) throws Exception {
+    public void doTestSIGMETStringSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING));
-        SIGMET s=readFromJSON(fn);
-        ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
+        final SIGMET s = readFromJSON(fn);
+        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
 
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());

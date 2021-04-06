@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.bulletin;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -76,11 +77,13 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
         try {
             final Document dom;
             try {
-                final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                dbf.setNamespaceAware(true);
-                dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-                final DocumentBuilder db = dbf.newDocumentBuilder();
-                dom = db.parse(this.getClass().getResourceAsStream("collect-template.xml"));
+                final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+                documentBuilderFactory.setNamespaceAware(true);
+                documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                try (InputStream inputStream = this.getClass().getResourceAsStream("collect-template.xml")) {
+                    dom = documentBuilder.parse(inputStream);
+                }
                 final Element collect = dom.getDocumentElement();
                 final Attr id = dom.createAttributeNS(IWXXMNamespaceContext.getDefaultURI("gml"), "id");
                 id.setPrefix("gml");

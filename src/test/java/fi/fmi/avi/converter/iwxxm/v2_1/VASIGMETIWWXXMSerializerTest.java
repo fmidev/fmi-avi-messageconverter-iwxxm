@@ -34,33 +34,34 @@ public class VASIGMETIWWXXMSerializerTest {
     private AviMessageConverter converter;
 
     private SIGMET getSIGMET() throws IOException {
-        SIGMET s = readFromJSON("vasigmet1.json");
+        final SIGMET s = readFromJSON("vasigmet1.json");
         return s;
     }
 
-    protected SIGMET readFromJSON(String fileName) throws IOException {
-        ObjectMapper om = new ObjectMapper();
-        om.registerModule(new Jdk8Module());
-        om.registerModule(new JavaTimeModule());
-        InputStream is = VASIGMETIWWXXMSerializerTest.class.getResourceAsStream(fileName);
-        if (is != null) {
-            return om.readValue(is, SIGMETImpl.class);
-        } else {
-            throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+    protected SIGMET readFromJSON(final String fileName) throws IOException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Jdk8Module());
+        objectMapper.registerModule(new JavaTimeModule());
+        try (InputStream inputStream = VASIGMETIWWXXMSerializerTest.class.getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                return objectMapper.readValue(inputStream, SIGMETImpl.class);
+            } else {
+                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+            }
         }
     }
 
     @Test
     public void testSIGMETStringSerialization() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING));
-        SIGMET s=getSIGMET();
-        ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
+        final SIGMET s = getSIGMET();
+        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
 
         if (result.getConvertedMessage().isPresent()) {
-            String sigmet = result.getConvertedMessage().get();
+            final String sigmet = result.getConvertedMessage().get();
         }
     }
 }

@@ -81,7 +81,7 @@ public class TAFIWXXMSerializerTest {
 
     @Test
     public void conversionTest() throws IOException {
-        TAF input = getTafObject();
+        final TAF input = getTafObject();
 
         final ConversionResult<String> result = converter.convertMessage(input, IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING, ConversionHints.EMPTY);
 
@@ -94,17 +94,17 @@ public class TAFIWXXMSerializerTest {
 
     @Test
     public void serializeA51Taf() throws XPathExpressionException {
-        TAF input = createTafMessage();
+        final TAF input = createTafMessage();
 
         final ConversionResult<Document> result = converter.convertMessage(input, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM, ConversionHints.EMPTY);
 
         checkConversionIssues(result.getConversionIssues());
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
 
-        Element doc = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
+        final Element doc = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
 
-        XPathFactory xPathfactory = XPathFactory.newInstance();
-        XPath xpath = xPathfactory.newXPath();
+        final XPathFactory xPathfactory = XPathFactory.newInstance();
+        final XPath xpath = xPathfactory.newXPath();
         xpath.setNamespaceContext(new IWXXMNamespaceContext());
 
         XPathExpression expr = xpath.compile("/iwxxm30:TAF/iwxxm30:issueTime/gml:TimeInstant/gml:timePosition");
@@ -406,7 +406,7 @@ public class TAFIWXXMSerializerTest {
 
     @Test
     public void serializeA52Taf() throws XPathExpressionException {
-        TAF input = createTafMessageWithCancellation();
+        final TAF input = createTafMessageWithCancellation();
 
         final ConversionResult<Document> result = converter.convertMessage(input, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM, ConversionHints.EMPTY);
 
@@ -414,10 +414,10 @@ public class TAFIWXXMSerializerTest {
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
         //System.out.println(result.getConvertedMessage().get());
 
-        Element doc = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
+        final Element doc = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
 
-        XPathFactory xPathfactory = XPathFactory.newInstance();
-        XPath xpath = xPathfactory.newXPath();
+        final XPathFactory xPathfactory = XPathFactory.newInstance();
+        final XPath xpath = xPathfactory.newXPath();
         xpath.setNamespaceContext(new IWXXMNamespaceContext());
 
         XPathExpression expr = xpath.compile("/iwxxm30:TAF/iwxxm30:issueTime/gml:TimeInstant/gml:timePosition");
@@ -458,7 +458,7 @@ public class TAFIWXXMSerializerTest {
         final NamespaceContext ctx = new IWXXMNamespaceContext();
         xpath.setNamespaceContext(ctx);
 
-        Element docElement = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
+        final Element docElement = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
         assertNotNull(docElement);
 
         XPathExpression expr = xpath.compile("/iwxxm30:TAF/iwxxm30:issueTime/gml:TimeInstant/@gml:id");
@@ -709,7 +709,7 @@ public class TAFIWXXMSerializerTest {
         timeRef = expr.evaluate(docElement);
         Assert.assertEquals("Change forecast 2 phenomenonTime end pos does not match", "2017-07-30T20:00:00Z", timeRef);
 
-        String procedureId = "";
+        final String procedureId = "";
 
         //Change indicator:
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/@changeIndicator");
@@ -897,9 +897,9 @@ public class TAFIWXXMSerializerTest {
 
     }
 
-    private void checkConversionIssues(List<ConversionIssue> issues) {
+    private void checkConversionIssues(final List<ConversionIssue> issues) {
         if (!issues.isEmpty()) {
-            for (ConversionIssue issue : issues) {
+            for (final ConversionIssue issue : issues) {
                 System.out.println("******************");
                 System.out.println("Severity: " + issue.getSeverity());
                 System.out.println(issue.getMessage());
@@ -935,24 +935,25 @@ public class TAFIWXXMSerializerTest {
     }
 
     protected TAF readFromJSON(final String fileName) throws IOException {
-        final ObjectMapper om = new ObjectMapper();
-        om.registerModule(new Jdk8Module());
-        om.registerModule(new JavaTimeModule());
-        final InputStream is = fi.fmi.avi.converter.iwxxm.v2_1.TAFIWXXMSerializerTest.class.getResourceAsStream(fileName);
-        if (is != null) {
-            return om.readValue(is, TAFImpl.class);
-        } else {
-            throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Jdk8Module());
+        objectMapper.registerModule(new JavaTimeModule());
+        try (InputStream inputStream = fi.fmi.avi.converter.iwxxm.v2_1.TAFIWXXMSerializerTest.class.getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                return objectMapper.readValue(inputStream, TAFImpl.class);
+            } else {
+                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+            }
         }
     }
 
     private TAF createTafMessageWithCancellation() {
-        TAFImpl.Builder tafBuilder = TAFImpl.builder();
+        final TAFImpl.Builder tafBuilder = TAFImpl.builder();
         tafBuilder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 15, 0, 0, 0, ZoneId.of("Z"))));
 
         tafBuilder.setAerodrome(createAeroDrome());
 
-        PartialOrCompleteTimePeriod cancelPeriod = PartialOrCompleteTimePeriod.builder()
+        final PartialOrCompleteTimePeriod cancelPeriod = PartialOrCompleteTimePeriod.builder()
                 .setStartTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 0, 0, 0, 0, ZoneId.of("Z"))))
                 .setEndTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 18, 0, 0, 0, ZoneId.of("Z"))))
                 .build();
@@ -967,7 +968,7 @@ public class TAFIWXXMSerializerTest {
     }
 
     private TAF createTafMessage() {
-        TAFImpl.Builder tafBuilder = TAFImpl.builder();
+        final TAFImpl.Builder tafBuilder = TAFImpl.builder();
         tafBuilder.setReportStatus(AviationWeatherMessage.ReportStatus.NORMAL);
         tafBuilder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 15, 18, 0, 0, 0, ZoneId.of("Z"))));
 
@@ -979,14 +980,14 @@ public class TAFIWXXMSerializerTest {
         tafBuilder.setAerodrome(createAeroDrome());
         tafBuilder.setBaseForecast(createBaseForecast());
 
-        List<TAFChangeForecast> forecasts = new ArrayList<>();
+        final List<TAFChangeForecast> forecasts = new ArrayList<>();
 
-        PartialOrCompleteTimePeriod t1 = PartialOrCompleteTimePeriod.builder()
+        final PartialOrCompleteTimePeriod t1 = PartialOrCompleteTimePeriod.builder()
                 .setStartTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 6, 0, 0, 0, ZoneId.of("Z"))))
                 .setEndTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 8, 0, 0, 0, ZoneId.of("Z"))))
                 .build();
 
-        CloudForecast f1 = CloudForecastImpl.builder()
+        final CloudForecast f1 = CloudForecastImpl.builder()
                 .setLayers(Arrays.asList(CloudLayerImpl.builder()
                         .setAmount(AviationCodeListUser.CloudAmount.SCT)
                         .setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(1500d).build())
@@ -998,16 +999,16 @@ public class TAFIWXXMSerializerTest {
                 .build();
 
         //Weather
-        List<Weather> w1 = Arrays.asList(WeatherImpl.builder().setCode("TSRA").build());
+        final List<Weather> w1 = Arrays.asList(WeatherImpl.builder().setCode("TSRA").build());
 
         forecasts.add(createChangeForecast(t1, AviationCodeListUser.TAFChangeIndicator.BECOMING, f1, null, null, null, w1));
 
-        PartialOrCompleteTimePeriod t2 = PartialOrCompleteTimePeriod.builder()
+        final PartialOrCompleteTimePeriod t2 = PartialOrCompleteTimePeriod.builder()
                 .setStartTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 8, 0, 0, 0, ZoneId.of("Z"))))
                 .setEndTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 12, 0, 0, 0, ZoneId.of("Z"))))
                 .build();
 
-        CloudForecast f2 = CloudForecastImpl.builder()
+        final CloudForecast f2 = CloudForecastImpl.builder()
                 .setLayers(Arrays.asList(CloudLayerImpl.builder()
                         .setAmount(AviationCodeListUser.CloudAmount.SCT)
                         .setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(1000d).build())
@@ -1018,7 +1019,7 @@ public class TAFIWXXMSerializerTest {
                         .build()))
                 .build();
 
-        SurfaceWind w2 = SurfaceWindImpl.builder()
+        final SurfaceWind w2 = SurfaceWindImpl.builder()
                 .setVariableDirection(false)
                 .setMeanWindDirection(NumericMeasureImpl.builder().setUom("deg").setValue(170d).build())
                 .setMeanWindSpeed(NumericMeasureImpl.builder().setUom("m/s").setValue(6d).build())
@@ -1028,19 +1029,19 @@ public class TAFIWXXMSerializerTest {
         forecasts.add(createChangeForecast(t2, AviationCodeListUser.TAFChangeIndicator.TEMPORARY_FLUCTUATIONS, f2,
                 NumericMeasureImpl.builder().setUom("m").setValue(1000d).build(), null, w2, null));
 
-        PartialOrCompleteTimePeriod t3 = PartialOrCompleteTimePeriod.builder()
+        final PartialOrCompleteTimePeriod t3 = PartialOrCompleteTimePeriod.builder()
                 .setStartTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 12, 30, 0, 0, ZoneId.of("Z"))))
                 .setEndTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 18, 0, 0, 0, ZoneId.of("Z"))))
                 .build();
 
-        CloudForecast f3 = CloudForecastImpl.builder()
+        final CloudForecast f3 = CloudForecastImpl.builder()
                 .setLayers(Arrays.asList(CloudLayerImpl.builder()
                         .setAmount(AviationCodeListUser.CloudAmount.BKN)
                         .setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(2000d).build())
                         .build()))
                 .build();
 
-        SurfaceWind w3 = SurfaceWindImpl.builder()
+        final SurfaceWind w3 = SurfaceWindImpl.builder()
                 .setVariableDirection(false)
                 .setMeanWindDirection(NumericMeasureImpl.builder().setUom("deg").setValue(150d).build())
                 .setMeanWindSpeed(NumericMeasureImpl.builder().setUom("m/s").setValue(4d).build())
@@ -1056,12 +1057,12 @@ public class TAFIWXXMSerializerTest {
     }
 
     private Aerodrome createAeroDrome() {
-        AerodromeImpl.Builder builder = AerodromeImpl.builder();
+        final AerodromeImpl.Builder builder = AerodromeImpl.builder();
         builder.setName("DONLON/INTERNATIONAL");
         builder.setDesignator("YUDO");
         builder.setLocationIndicatorICAO(Optional.of("YUDO"));
 
-        ElevatedPointImpl.Builder point = ElevatedPointImpl.builder();
+        final ElevatedPointImpl.Builder point = ElevatedPointImpl.builder();
         point.setCoordinates(Arrays.asList(12.34, -12.34));
         point.setElevationUom("M");
         point.setElevationValue(12);
@@ -1071,16 +1072,16 @@ public class TAFIWXXMSerializerTest {
     }
 
     private TAFBaseForecast createBaseForecast() {
-        TAFBaseForecastImpl.Builder builder = TAFBaseForecastImpl.builder();
+        final TAFBaseForecastImpl.Builder builder = TAFBaseForecastImpl.builder();
         builder.setPrevailingVisibility(NumericMeasureImpl.builder().setUom("m").setValue(9000d).build());
 
-        SurfaceWindImpl.Builder wind = SurfaceWindImpl.builder();
+        final SurfaceWindImpl.Builder wind = SurfaceWindImpl.builder();
         wind.setVariableDirection(false);
         wind.setMeanWindDirection(NumericMeasureImpl.builder().setUom("deg").setValue(130d).build());
         wind.setMeanWindSpeed(NumericMeasureImpl.builder().setUom("m/s").setValue(5d).build());
         builder.setSurfaceWind(wind.build());
 
-        CloudLayerImpl.Builder cloud = CloudLayerImpl.builder();
+        final CloudLayerImpl.Builder cloud = CloudLayerImpl.builder();
         cloud.setAmount(AviationCodeListUser.CloudAmount.BKN);
         cloud.setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(2000d).build());
         builder.setCloud(CloudForecastImpl.builder().setLayers(Arrays.asList(cloud.build())).build());
@@ -1088,9 +1089,10 @@ public class TAFIWXXMSerializerTest {
         return builder.build();
     }
 
-    private TAFChangeForecast createChangeForecast(PartialOrCompleteTimePeriod timePeriod, AviationCodeListUser.TAFChangeIndicator indicator,
-            CloudForecast forecast, NumericMeasure prevailingVisibility, Integer visbilityOperator, SurfaceWind wind, List<Weather> weather) {
-        TAFChangeForecastImpl.Builder builder = TAFChangeForecastImpl.builder();
+    private TAFChangeForecast createChangeForecast(final PartialOrCompleteTimePeriod timePeriod, final AviationCodeListUser.TAFChangeIndicator indicator,
+            final CloudForecast forecast, final NumericMeasure prevailingVisibility, final Integer visbilityOperator, final SurfaceWind wind,
+            final List<Weather> weather) {
+        final TAFChangeForecastImpl.Builder builder = TAFChangeForecastImpl.builder();
         if (timePeriod != null) {
             builder.setPeriodOfChange(timePeriod);
         }

@@ -3,6 +3,7 @@ package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
 import java.util.Optional;
 
 import javax.xml.XMLConstants;
@@ -36,11 +37,13 @@ public class GenericBulletinParserTest {
     private AviMessageConverter converter;
 
     private Document getBulletinDocument(final String filename) throws Exception {
-        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        final DocumentBuilder db = dbf.newDocumentBuilder();
-        return db.parse(GenericBulletinParserTest.class.getResourceAsStream(filename));
+        final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setNamespaceAware(true);
+        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        try (InputStream inputStream = GenericBulletinParserTest.class.getResourceAsStream(filename)) {
+            return documentBuilder.parse(inputStream);
+        }
     }
 
     @Test

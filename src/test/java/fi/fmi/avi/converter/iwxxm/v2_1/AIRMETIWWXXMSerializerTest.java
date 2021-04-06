@@ -30,31 +30,31 @@ import fi.fmi.avi.model.sigmet.immutable.AIRMETImpl;
 public class AIRMETIWWXXMSerializerTest {
 
     @Autowired
+    ObjectMapper om;
+    @Autowired
     private AviMessageConverter converter;
 
     private AIRMET getAIRMET() throws IOException {
-        AIRMET s = readFromJSON("airmet2.json");
+        final AIRMET s = readFromJSON("airmet2.json");
         return s;
     }
 
-    @Autowired
-    ObjectMapper om;
-
-    protected AIRMET readFromJSON(String fileName) throws IOException {
-        InputStream is = AIRMETIWWXXMSerializerTest.class.getResourceAsStream(fileName);
-        if (is != null) {
-            AIRMET am=om.readValue(is, AIRMETImpl.Builder.class).build();
-            is.close();
-            return am;
-        } else {
-            throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+    protected AIRMET readFromJSON(final String fileName) throws IOException {
+        try (InputStream inputStream = AIRMETIWWXXMSerializerTest.class.getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                final AIRMET airmet = om.readValue(inputStream, AIRMETImpl.Builder.class).build();
+                inputStream.close();
+                return airmet;
+            } else {
+                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+            }
         }
     }
 
-    public void doTestAIRMETStringSerialization(String fn) throws Exception {
+    public void doTestAIRMETStringSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING));
-        AIRMET s = readFromJSON(fn);
-        ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING);
+        final AIRMET s = readFromJSON(fn);
+        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING);
         //Severity check modified to pass the following Schematron-originating warning for the rule AIRMET.AECC1:
         // "When AIRMETEvolvingConditionCollection timeIndicator is an observation, the phenomenonTime must be earlier than or equal to the beginning of the validPeriod of the report."
         // This seems to be a shortcoming of the rule (xlinked validTime is not considered)
@@ -63,29 +63,29 @@ public class AIRMETIWWXXMSerializerTest {
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
         if (result.getConvertedMessage().isPresent()) {
-            String airmet = result.getConvertedMessage().get();
+            final String airmet = result.getConvertedMessage().get();
             //            System.err.println("Converted AIRMET=:"+airmet);
         }
 
     }
 
-    public void doTestAIRMETDOMSerialization(String fn) throws Exception {
+    public void doTestAIRMETDOMSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM));
-        AIRMET s= readFromJSON(fn);
-        ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM);
+        final AIRMET s = readFromJSON(fn);
+        final ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM);
         assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
 
         if (result.getConvertedMessage().isPresent()) {
-            Document airmet = result.getConvertedMessage().get();
+            final Document airmet = result.getConvertedMessage().get();
         }
 
     }
 
     @Test
     public void dotestAIRMETStringSerialization1() throws Exception {
-      doTestAIRMETStringSerialization("airmet_iwxxm1.json");
+        doTestAIRMETStringSerialization("airmet_iwxxm1.json");
     }
 
     @Test
@@ -133,7 +133,7 @@ public class AIRMETIWWXXMSerializerTest {
         doTestAIRMETDOMSerialization("airmetMOVING.json");
     }
 
-//    @Test
+    //    @Test
     public void dotestAIRMETDOMSerialization3() throws Exception {
         doTestAIRMETDOMSerialization("airmet2.json");
     }

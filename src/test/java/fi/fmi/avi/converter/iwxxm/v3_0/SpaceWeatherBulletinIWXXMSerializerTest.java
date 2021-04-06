@@ -57,7 +57,7 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
     private SpaceWeatherBulletin getSWXBulletin(final String... fileNames) throws IOException {
         final List<SpaceWeatherAdvisory> swxMessages = new ArrayList<>();
         for (final String fName : fileNames) {
-            SpaceWeatherAdvisory t = readFromJSON(fName);
+            final SpaceWeatherAdvisory t = readFromJSON(fName);
             //Need to do any patching with external data here? (complete dates or geometries?)
             swxMessages.add(t);
         }
@@ -143,14 +143,15 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
     }
 
     protected SpaceWeatherAdvisory readFromJSON(final String fileName) throws IOException {
-        final ObjectMapper om = new ObjectMapper();
-        om.registerModule(new Jdk8Module());
-        om.registerModule(new JavaTimeModule());
-        final InputStream is = SpaceWeatherBulletinIWXXMSerializerTest.class.getResourceAsStream(fileName);
-        if (is != null) {
-            return om.readValue(is, SpaceWeatherAdvisoryImpl.class);
-        } else {
-            throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Jdk8Module());
+        objectMapper.registerModule(new JavaTimeModule());
+        try (InputStream inputStream = SpaceWeatherBulletinIWXXMSerializerTest.class.getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                return objectMapper.readValue(inputStream, SpaceWeatherAdvisoryImpl.class);
+            } else {
+                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+            }
         }
     }
 }
