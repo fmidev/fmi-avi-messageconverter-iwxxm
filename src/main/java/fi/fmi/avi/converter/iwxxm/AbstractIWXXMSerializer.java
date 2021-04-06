@@ -94,71 +94,52 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
     protected static SurfacePropertyType createSurface(final Geometry geom, final String id) throws IllegalArgumentException {
         SurfacePropertyType retval = null;
         if (geom != null) {
-            retval = create(SurfacePropertyType.class, (spt) -> {
-                spt.setSurface(createAndWrap(SurfaceType.class, (sft) -> {
-                    geom.getCrs().ifPresent(crs -> setCrsToType(sft, crs));
-                    sft.setId(id);
-                    JAXBElement<SurfacePatchArrayPropertyType> spapt = null;
-                    if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass()) || PointGeometry.class.isAssignableFrom(geom.getClass())) {
-                        final List<Double> centerPointCoords;
-                        final LengthType radius;
-                        if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass())) {
-                            final CircleByCenterPoint cbcp = (CircleByCenterPoint) geom;
-                            centerPointCoords = cbcp.getCenterPointCoordinates();
-                            radius = asMeasure(cbcp.getRadius(), LengthType.class);
-                        } else {
-                            //Create a zero-radius circle if a point geometry is given
-                            final PointGeometry point = (PointGeometry) geom;
-                            centerPointCoords = point.getCoordinates();
-                            radius = asMeasure(NumericMeasureImpl.of(0.0, "[nmi_i]"), LengthType.class);
-                        }
+            retval = create(SurfacePropertyType.class, spt -> spt.setSurface(createAndWrap(SurfaceType.class, sft -> {
+                geom.getCrs().ifPresent(crs -> setCrsToType(sft, crs));
+                sft.setId(id);
+                final JAXBElement<SurfacePatchArrayPropertyType> spapt;
+                if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass()) || PointGeometry.class.isAssignableFrom(geom.getClass())) {
+                    final List<Double> centerPointCoords;
+                    final LengthType radius;
+                    if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass())) {
+                        final CircleByCenterPoint cbcp = (CircleByCenterPoint) geom;
+                        centerPointCoords = cbcp.getCenterPointCoordinates();
+                        radius = asMeasure(cbcp.getRadius(), LengthType.class);
+                    } else {
+                        //Create a zero-radius circle if a point geometry is given
+                        final PointGeometry point = (PointGeometry) geom;
+                        centerPointCoords = point.getCoordinates();
+                        radius = asMeasure(NumericMeasureImpl.of(0.0, "[nmi_i]"), LengthType.class);
+                    }
 
-                        final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
-                            poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
-                                arpt.setAbstractRing(createAndWrap(RingType.class, (rt) -> {
-                                    rt.getCurveMember().add(create(CurvePropertyType.class, (curvept) -> {
-                                        curvept.setAbstractCurve(createAndWrap(CurveType.class, (curvet) -> {
-                                            curvet.setId(UUID_PREFIX + UUID.randomUUID().toString());
-                                            curvet.setSegments(create(CurveSegmentArrayPropertyType.class, (curvesat) -> {
-                                                curvesat.getAbstractCurveSegment().add(createAndWrap(CircleByCenterPointType.class, (cbcpt) -> {
-                                                    cbcpt.setPos(create(DirectPositionType.class, (dpt) -> {
-                                                        dpt.getValue().addAll(centerPointCoords);
-                                                    }));
+                    final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> poly.setExterior(
+                            create(AbstractRingPropertyType.class, arpt -> arpt.setAbstractRing(createAndWrap(RingType.class, rt -> rt.getCurveMember()
+                                    .add(create(CurvePropertyType.class, curvept -> curvept.setAbstractCurve(createAndWrap(CurveType.class, curvet -> {
+                                        curvet.setId(UUID_PREFIX + UUID.randomUUID().toString());
+                                        curvet.setSegments(create(CurveSegmentArrayPropertyType.class,
+                                                curvesat -> curvesat.getAbstractCurveSegment().add(createAndWrap(CircleByCenterPointType.class, cbcpt -> {
+                                                    cbcpt.setPos(create(DirectPositionType.class, dpt -> dpt.getValue().addAll(centerPointCoords)));
                                                     cbcpt.setNumArc(BigInteger.valueOf(1));
                                                     cbcpt.setRadius(radius);
-                                                }));
-                                            }));
-                                        }));
-                                    }));
-                                }));
-                            }));
-                        });
-                        spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", (_spapt) -> {
-                            _spapt.getAbstractSurfacePatch().add(ppt);
-                        });
-                    } else if (PolygonGeometry.class.isAssignableFrom(geom.getClass())) { //Polygon
-                        final PolygonGeometry polygon = (PolygonGeometry) geom;
-                        final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
-                            poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
-                                arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
-                                    final DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
-                                        dpl.getValue().addAll(polygon.getExteriorRingPositions());
-                                    });
-                                    lrt.setPosList(dplt);
-                                }));
-                            }));
-                        });
-                        spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", (_spapt) -> {
-                            _spapt.getAbstractSurfacePatch().add(ppt);
-                        });
-                    } else {
-                        throw new IllegalArgumentException("Unable to create a Surface from geometry of type " + geom.getClass().getCanonicalName());
-                    }
-                    if (spapt != null) {
-                        sft.setPatches(spapt);
-                    }
-                }));
-            });
+                                                }))));
+                                    })))))))));
+                    spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", _spapt -> _spapt.getAbstractSurfacePatch().add(ppt));
+                } else if (PolygonGeometry.class.isAssignableFrom(geom.getClass())) { //Polygon
+                    final PolygonGeometry polygon = (PolygonGeometry) geom;
+                    final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> poly.setExterior(
+                            create(AbstractRingPropertyType.class, arpt -> arpt.setAbstractRing(createAndWrap(LinearRingType.class, lrt -> {
+                                final DirectPositionListType dplt = create(DirectPositionListType.class,
+                                        dpl -> dpl.getValue().addAll(polygon.getExteriorRingPositions()));
+                                lrt.setPosList(dplt);
+                            })))));
+                    spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", _spapt -> _spapt.getAbstractSurfacePatch().add(ppt));
+                } else {
+                    throw new IllegalArgumentException("Unable to create a Surface from geometry of type " + geom.getClass().getCanonicalName());
+                }
+                if (spapt != null) {
+                    sft.setPatches(spapt);
+                }
+            })));
         }
         return retval;
     }
@@ -224,24 +205,23 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         aerodrome.setId(aerodromeId);
         aerodrome.getTimeSlice()
                 .add(create(AirportHeliportTimeSlicePropertyType.class,
-                        (prop) -> prop.setAirportHeliportTimeSlice(create(AirportHeliportTimeSliceType.class, (timeSlice) -> {
+                        prop -> prop.setAirportHeliportTimeSlice(create(AirportHeliportTimeSliceType.class, timeSlice -> {
                             timeSlice.setId("aerodrome-" + UUID.randomUUID().toString());
                             timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
                             timeSlice.setInterpretation("SNAPSHOT");
-                            timeSlice.setDesignator(
-                                    create(CodeAirportHeliportDesignatorType.class, (designator) -> designator.setValue(input.getDesignator())));
+                            timeSlice.setDesignator(create(CodeAirportHeliportDesignatorType.class, designator -> designator.setValue(input.getDesignator())));
                             input.getName()
                                     .ifPresent(inputName -> timeSlice.setPortName(
-                                            create(TextNameType.class, (name) -> name.setValue(inputName.toUpperCase(Locale.US)))));
+                                            create(TextNameType.class, name -> name.setValue(inputName.toUpperCase(Locale.US)))));
                             input.getLocationIndicatorICAO()
                                     .ifPresent(inputLocator -> timeSlice.setLocationIndicatorICAO(
-                                            create(CodeICAOType.class, (locator) -> locator.setValue(inputLocator))));
+                                            create(CodeICAOType.class, locator -> locator.setValue(inputLocator))));
 
                             input.getDesignatorIATA()
                                     .ifPresent(inputDesignator -> timeSlice.setDesignatorIATA(
-                                            create(CodeIATAType.class, (designator) -> designator.setValue(inputDesignator))));
+                                            create(CodeIATAType.class, designator -> designator.setValue(inputDesignator))));
                             input.getFieldElevationValue()
-                                    .ifPresent(inputElevation -> timeSlice.setFieldElevation(create(ValDistanceVerticalType.class, (elevation) -> {
+                                    .ifPresent(inputElevation -> timeSlice.setFieldElevation(create(ValDistanceVerticalType.class, elevation -> {
                                         elevation.setValue(String.format("%.00f", inputElevation));
                                         if (input.getFieldElevationUom().isPresent()) {
                                             elevation.setUom(input.getFieldElevationUom().get());
@@ -250,16 +230,16 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
 
                             input.getReferencePoint()
                                     .ifPresent(inputPosition -> timeSlice.setARP(create(ElevatedPointPropertyType.class,
-                                            (pointProp) -> pointProp.setElevatedPoint(create(ElevatedPointType.class, (point) -> {
+                                            pointProp -> pointProp.setElevatedPoint(create(ElevatedPointType.class, point -> {
                                                 point.setId("point-" + UUID.randomUUID().toString());
                                                 inputPosition.getCrs().ifPresent(crs -> setCrsToType(point, crs));
                                                 if (inputPosition.getCoordinates() != null) {
                                                     point.setSrsDimension(BigInteger.valueOf(inputPosition.getCoordinates().size()));
                                                     point.setPos(
-                                                            create(DirectPositionType.class, (pos) -> pos.getValue().addAll(inputPosition.getCoordinates())));
+                                                            create(DirectPositionType.class, pos -> pos.getValue().addAll(inputPosition.getCoordinates())));
                                                 }
                                                 if (inputPosition.getElevationValue().isPresent() && inputPosition.getElevationUom().isPresent()) {
-                                                    point.setElevation(create(ValDistanceVerticalType.class, (dist) -> {
+                                                    point.setElevation(create(ValDistanceVerticalType.class, dist -> {
                                                         inputPosition.getElevationValue().ifPresent(value -> dist.setValue(String.format("%.00f", value)));
                                                         inputPosition.getElevationUom().ifPresent(uom -> dist.setUom(uom.toUpperCase(Locale.US)));
                                                     }));

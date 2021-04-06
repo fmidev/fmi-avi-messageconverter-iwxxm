@@ -151,7 +151,7 @@ public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T,
             }
         }
 
-        properties.get(METARProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent((metaProps) -> {
+        properties.get(METARProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent(metaProps -> {
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class).ifPresent(builder::setPermissibleUsage);
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_REASON, AviationCodeListUser.PermissibleUsageReason.class)
                     .ifPresent(builder::setPermissibleUsageReason);

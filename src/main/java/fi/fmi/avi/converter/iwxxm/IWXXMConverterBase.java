@@ -143,33 +143,29 @@ public abstract class IWXXMConverterBase {
 
     @SuppressWarnings("unchecked")
     public static <T> T create(final Class<T> clz, final Consumer<T> consumer) throws IllegalArgumentException {
-        Object result = null;
+        final Object result;
         final Object objectFactory = getObjectFactory(clz);
-        if (objectFactory != null) {
-            String methodName = null;
-            if (clz.getEnclosingClass() != null) {
-                Class<?> encClass = clz.getEnclosingClass();
-                final StringBuilder sb = new StringBuilder("create").append(encClass.getSimpleName().substring(0, 1).toUpperCase(Locale.US))
-                        .append(encClass.getSimpleName().substring(1));
-                while (encClass.getEnclosingClass() != null) {
-                    sb.append(clz.getSimpleName());
-                    encClass = encClass.getEnclosingClass();
-                }
-                methodName = sb.append(clz.getSimpleName()).toString();
-            } else {
-                methodName = "create" + clz.getSimpleName().substring(0, 1).toUpperCase(Locale.US) + clz.getSimpleName().substring(1);
+        final String methodName;
+        if (clz.getEnclosingClass() != null) {
+            Class<?> encClass = clz.getEnclosingClass();
+            final StringBuilder sb = new StringBuilder("create").append(encClass.getSimpleName().substring(0, 1).toUpperCase(Locale.US))
+                    .append(encClass.getSimpleName().substring(1));
+            while (encClass.getEnclosingClass() != null) {
+                sb.append(clz.getSimpleName());
+                encClass = encClass.getEnclosingClass();
             }
-            try {
-                final Method toCall = objectFactory.getClass().getMethod(methodName);
-                result = toCall.invoke(objectFactory);
-            } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InvocationTargetException | IllegalArgumentException e) {
-                throw new IllegalArgumentException("Unable to create JAXB element object for type " + clz, e);
-            }
-            if (consumer != null) {
-                consumer.accept((T) result);
-            }
+            methodName = sb.append(clz.getSimpleName()).toString();
         } else {
-            throw new IllegalArgumentException("Unable to find ObjectFactory for JAXB element type " + clz);
+            methodName = "create" + clz.getSimpleName().substring(0, 1).toUpperCase(Locale.US) + clz.getSimpleName().substring(1);
+        }
+        try {
+            final Method toCall = objectFactory.getClass().getMethod(methodName);
+            result = toCall.invoke(objectFactory);
+        } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InvocationTargetException | IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unable to create JAXB element object for type " + clz, e);
+        }
+        if (consumer != null) {
+            consumer.accept((T) result);
         }
         return (T) result;
     }
@@ -200,17 +196,13 @@ public abstract class IWXXMConverterBase {
 
     @SuppressWarnings("unchecked")
     public static <T> JAXBElement<T> wrap(final T element, final Class<T> clz, final String methodName, final Consumer<T> consumer) {
-        Object result = null;
+        final Object result;
         final Object objectFactory = getObjectFactory(clz);
-        if (objectFactory != null) {
-            try {
-                final Method toCall = objectFactory.getClass().getMethod(methodName, clz);
-                result = toCall.invoke(objectFactory, element);
-            } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InvocationTargetException | IllegalArgumentException e) {
-                throw new IllegalArgumentException("Unable to create JAXBElement wrapper", e);
-            }
-        } else {
-            throw new IllegalArgumentException("Unable to find ObjectFactory for JAXB element type " + clz);
+        try {
+            final Method toCall = objectFactory.getClass().getMethod(methodName, clz);
+            result = toCall.invoke(objectFactory, element);
+        } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InvocationTargetException | IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unable to create JAXBElement wrapper", e);
         }
         if (consumer != null) {
             consumer.accept(element);
@@ -336,7 +328,7 @@ public abstract class IWXXMConverterBase {
                 try {
                     final URI maybeRelative = URI.create(href);
                     if (!maybeRelative.isAbsolute()) {
-                        final Optional<URL> baseURL = schemaInfo.getSchematronRules().stream().filter((url) -> url.toExternalForm().equals(base)).findAny();
+                        final Optional<URL> baseURL = schemaInfo.getSchematronRules().stream().filter(url -> url.toExternalForm().equals(base)).findAny();
                         if (baseURL.isPresent()) {
                             final String ruleBase = baseURL.get().toExternalForm();
                             return new StreamSource(new URL(ruleBase.substring(0, ruleBase.lastIndexOf('/') + 1) + href).openStream());
@@ -402,10 +394,9 @@ public abstract class IWXXMConverterBase {
     }
 
     private static Object getObjectFactory(final Class<?> clz) {
-        Object objectFactory = null;
+        Object objectFactory;
         try {
             synchronized (OBJECT_FACTORY_MAP) {
-
                 objectFactory = CLASS_TO_OBJECT_FACTORY.get(clz.getCanonicalName());
                 if (objectFactory == null) {
                     String objectFactoryPath = clz.getPackage().getName();
@@ -436,10 +427,13 @@ public abstract class IWXXMConverterBase {
                     CLASS_TO_OBJECT_FACTORY.put(clz.getCanonicalName(), objectFactory);
                 }
             }
-            return objectFactory;
         } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InstantiationException | InvocationTargetException e) {
             throw new IllegalArgumentException("Unable to get ObjectFactory for " + clz.getCanonicalName(), e);
         }
+        if (objectFactory == null) {
+            throw new IllegalArgumentException("Unable to find ObjectFactory for JAXB element type " + clz);
+        }
+        return objectFactory;
     }
 
     public static <T> Optional<T> resolveProperty(final Object prop, final Class<T> clz, final ReferredObjectRetrievalContext refCtx) {
@@ -517,15 +511,11 @@ public abstract class IWXXMConverterBase {
         final Optional<TimePeriodType> tp = resolveProperty(timePeriodPropertyType, TimePeriodType.class, refCtx);
         if (tp.isPresent()) {
             final PartialOrCompleteTimePeriod.Builder retval = PartialOrCompleteTimePeriod.builder();
-            getStartTime(tp.get(), refCtx).ifPresent((start) -> {
-                retval.setStartTime(PartialOrCompleteTimeInstant.builder()//
-                        .setCompleteTime(start).build());
-            });
+            getStartTime(tp.get(), refCtx).ifPresent(start -> retval.setStartTime(PartialOrCompleteTimeInstant.builder()//
+                    .setCompleteTime(start).build()));
 
-            getEndTime(tp.get(), refCtx).ifPresent((end) -> {
-                retval.setEndTime(PartialOrCompleteTimeInstant.builder()//
-                        .setCompleteTime(end).build());
-            });
+            getEndTime(tp.get(), refCtx).ifPresent(end -> retval.setEndTime(PartialOrCompleteTimeInstant.builder()//
+                    .setCompleteTime(end).build()));
             return Optional.of(retval.build());
         }
         return Optional.empty();
@@ -533,11 +523,8 @@ public abstract class IWXXMConverterBase {
 
     protected static Optional<PartialOrCompleteTimeInstant> getCompleteTimeInstant(final TimeInstantPropertyType timeInstantPropertyType,
             final ReferredObjectRetrievalContext refCtx) {
-        final Optional<ZonedDateTime> time = getTime(timeInstantPropertyType, refCtx);
-        if (time.isPresent()) {
-            return Optional.of(PartialOrCompleteTimeInstant.builder().setCompleteTime(time.get()).build());
-        }
-        return Optional.empty();
+        return getTime(timeInstantPropertyType, refCtx)//
+                .map(zonedDateTime -> PartialOrCompleteTimeInstant.builder().setCompleteTime(zonedDateTime).build());
     }
 
     protected static Optional<ZonedDateTime> getStartTime(final TimePeriodType period, final ReferredObjectRetrievalContext ctx) {
@@ -578,7 +565,7 @@ public abstract class IWXXMConverterBase {
     }
 
     protected static Document parseStringToDOM(final String input) throws ConversionException {
-        Document retval = null;
+        final Document retval;
         final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setNamespaceAware(true);
         try {

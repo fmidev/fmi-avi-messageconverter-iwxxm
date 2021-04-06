@@ -43,7 +43,7 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
         //Issue time:
         final XPathExpression expr = xpath.compile("./iwxxm:analysis/om:OM_Observation/om:resultTime/gml:TimeInstant/gml:timePosition");
         final String timeStr = expr.evaluate(featureElement);
-        if (!"".equals(timeStr)) {
+        if (!timeStr.isEmpty()) {
             builder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
         } else {
             retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM SIGMET");
@@ -57,10 +57,10 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
             throws XPathExpressionException {
         final IssueList retval = new IssueList();
         //Issue time:
-        String timeStr = null;
+        final String timeStr;
         XPathExpression expr = xpath.compile("./iwxxm:issueTime/gml:TimeInstant/gml:timePosition");
         timeStr = expr.evaluate(featureElement);
-        if (!"".equals(timeStr)) {
+        if (!timeStr.isEmpty()) {
             builder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
         } else {
             retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM TAF");
@@ -75,7 +75,6 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
         }
 
         //target aerodrome
-        expr = null;
         if ("CANCELLATION".equals(status)) {
             expr = xpath.compile("./iwxxm:previousReportAerodrome/aixm:AirportHeliport");
         } else {
@@ -125,7 +124,7 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
         XPathExpression expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:designator");
         final String designator = expr.evaluate(airportHeliport);
 
-        if ("".equals(designator)) {
+        if (designator.isEmpty()) {
             issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No aerodrome designator in AirportHeliportTimeSlice");
             return retval;
         }
@@ -155,12 +154,12 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
     private static ZonedDateTime parseStartTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
         XPathExpression expr = xpath.compile("./gml:TimePeriod/gml:beginPosition");
         String timeStr = expr.evaluate(timeElement);
-        if ("".equals(timeStr)) {
+        if (timeStr.isEmpty()) {
             //validity time, begin/TimeInstant variant:
             expr = xpath.compile("./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition");
             timeStr = expr.evaluate(timeElement);
         }
-        if (!"".equals(timeStr)) {
+        if (!timeStr.isEmpty()) {
             return ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         } else {
             throw new IllegalArgumentException("No valid time begin found from element " + timeElement.getTagName());
@@ -170,12 +169,12 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
     private static ZonedDateTime parseEndTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
         XPathExpression expr = xpath.compile("./gml:TimePeriod/gml:endPosition");
         String timeStr = expr.evaluate(timeElement);
-        if ("".equals(timeStr)) {
+        if (timeStr.isEmpty()) {
             //validity time, begin/TimeInstant variant:
             expr = xpath.compile("./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition");
             timeStr = expr.evaluate(timeElement);
         }
-        if (!"".equals(timeStr)) {
+        if (!timeStr.isEmpty()) {
             return ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         } else {
             throw new IllegalArgumentException("No valid time end found from element " + timeElement.getTagName());

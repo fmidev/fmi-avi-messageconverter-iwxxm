@@ -24,7 +24,7 @@ public class BulletinIWXXMDOMSerializer<U extends AviationWeatherMessage, S exte
         extends AbstractBulletinIWXXMSerializer<Document, U, S> {
 
     @Override
-    protected Document aggregateAsBulletin(final Document collection, final List<Document> messages, final ConversionHints hints) throws ConversionException {
+    protected Document aggregateAsBulletin(final Document collection, final List<Document> messages, final ConversionHints hints) {
         try {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);

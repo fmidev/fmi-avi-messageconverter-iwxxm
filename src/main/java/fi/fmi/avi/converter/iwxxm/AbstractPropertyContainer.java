@@ -1,7 +1,6 @@
 package fi.fmi.avi.converter.iwxxm;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,7 +23,12 @@ public abstract class AbstractPropertyContainer {
     }
 
     public boolean containsAny(final PropertyName... keys) {
-        return this.properties.keySet().stream().anyMatch((key) -> Arrays.stream(keys).anyMatch((key::equals)));
+        for (final PropertyName key : keys) {
+            if (contains(key)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")
@@ -86,7 +90,7 @@ public abstract class AbstractPropertyContainer {
      * @param key
      *         the property to unset
      */
-    public void unset(final Object key) {
+    public void unset(final PropertyName key) {
         this.properties.remove(key);
     }
 

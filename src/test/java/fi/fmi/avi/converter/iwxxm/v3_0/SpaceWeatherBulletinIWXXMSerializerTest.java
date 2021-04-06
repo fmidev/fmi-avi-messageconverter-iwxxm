@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.v3_0;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
@@ -81,7 +82,7 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         final SpaceWeatherBulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
         final ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.SWX_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
@@ -99,7 +100,7 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
 
         //Messages:
         final String swxAdvisoryFQN = "iwxxm:SpaceWeatherAdvisory";
-        int swxElementStartIndex = -1;
+        int swxElementStartIndex;
         int swxElementEndIndex = bulletinElementEndIndex;
         for (int i = 0; i < 3; i++) {
             swxElementStartIndex = s.indexOf("<" + swxAdvisoryFQN, swxElementEndIndex + 1);
@@ -118,7 +119,7 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
         final SpaceWeatherBulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
         final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.SWX_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
@@ -134,7 +135,7 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
         assertEquals("A_LNXX31EFKL180815_C_EFKL_2020051808----.xml", bulletinId);
 
         expr = xpath.compile("count(/collect:MeteorologicalBulletin/collect:meteorologicalInformation)");
-        assertTrue(3 == Integer.parseInt(expr.evaluate(docElement)));
+        assertEquals(3, Integer.parseInt(expr.evaluate(docElement)));
         expr = xpath.compile("/collect:MeteorologicalBulletin/collect:meteorologicalInformation[1]/iwxxm30:SpaceWeatherAdvisory/"
                 + "iwxxm30:analysis[1]/iwxxm30:SpaceWeatherAnalysis/iwxxm30:region[1]/iwxxm30:SpaceWeatherRegion/iwxxm30:location[1]"
                 + "/aixm:AirspaceVolume/aixm:horizontalProjection/aixm:Surface/gml:patches[1]/gml:PolygonPatch/gml:exterior/gml:LinearRing/gml:posList");

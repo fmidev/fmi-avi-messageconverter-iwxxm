@@ -19,7 +19,6 @@ import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
  */
 public class IWXXMNamespaceContext extends NamespacePrefixMapper implements NamespaceContext {
     private static final Map<String, String> DEFAULT_MAPPING;
-    private final Map<String, String> mapping;
 
     static {
         final Map<String, String> m = new HashMap<>();
@@ -39,11 +38,17 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
         m.put("http://www.opengis.net/sampling/2.0", "sam");
         m.put("http://www.opengis.net/samplingSpatial/2.0", "sams");
         m.put("http://purl.oclc.org/dsdl/svrl", "svrl");
-        Set<String> duplicates = findDuplicatePrefixes(m);
+        final Set<String> duplicates = findDuplicatePrefixes(m);
         if (duplicates.size() > 0) {
             throw new RuntimeException("The default namespace-prefix mapping contains duplicate prefixes, this is not allowed: " + duplicates.toString());
         }
         DEFAULT_MAPPING = Collections.unmodifiableMap(m);
+    }
+
+    private final Map<String, String> mapping;
+
+    public IWXXMNamespaceContext() {
+        this.mapping = new HashMap<>(DEFAULT_MAPPING);
     }
 
     public static String getDefaultURI(final String prefix) {
@@ -59,10 +64,6 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
         return mapping.values().stream().filter(s -> !prefixes.add(s)).collect(Collectors.toSet());
     }
 
-    public IWXXMNamespaceContext() {
-        this.mapping = new HashMap<>(DEFAULT_MAPPING);
-    }
-
     public String getURI(final String prefix) {
         return this.mapping.entrySet().stream().filter(entry -> entry.getValue().equals(prefix)).map(Map.Entry::getKey).findAny().orElse(null);
     }
@@ -75,7 +76,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
     @Override
     public String getNamespaceURI(final String prefix) {
         return getURI(prefix);
-    };
+    }
 
     @Override
     public String getPrefix(final String uri) {
@@ -97,7 +98,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
             if (mapping.get(uri).equals(prefix)) {
                 return prefix;
             }
-            Optional<Map.Entry<String, String>> duplicate = this.mapping.entrySet().stream().filter(e -> e.getValue().equals(prefix)).findFirst();
+            final Optional<Map.Entry<String, String>> duplicate = this.mapping.entrySet().stream().filter(e -> e.getValue().equals(prefix)).findFirst();
             if (duplicate.isPresent()) {
                 throw new IllegalArgumentException("The prefix '" + prefix + "' is already mapped to '" + duplicate.get().getKey());
             }
@@ -110,7 +111,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
 
     public void addNamespacePrefix(final String uri, final String prefix) {
         if (!mapping.containsKey(uri)) {
-            Optional<Map.Entry<String, String>> duplicate = this.mapping.entrySet().stream().filter(e -> e.getValue().equals(prefix)).findFirst();
+            final Optional<Map.Entry<String, String>> duplicate = this.mapping.entrySet().stream().filter(e -> e.getValue().equals(prefix)).findFirst();
             if (duplicate.isPresent()) {
                 throw new IllegalArgumentException("The prefix '" + prefix + "' is already mapped to '" + duplicate.get().getKey());
             }

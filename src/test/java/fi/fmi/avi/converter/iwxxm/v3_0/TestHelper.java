@@ -1,6 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -17,11 +16,7 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 import org.xml.sax.SAXException;
 
-import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.ConversionSpecification;
-import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 
 public class TestHelper {
     private static final Pattern UUID_DIFFERENCE_PATTERN = Pattern.compile(
@@ -29,7 +24,7 @@ public class TestHelper {
     private static final Pattern COORDINATE_FORMATTING_DIFFERENCE_PATTERN = Pattern.compile(
             "(((Expected\\stext\\svalue\\s)?(\\sbut\\swas\\s)?)('([\\-0-9.]*[\\s]?){10}')){2}");
 
-    protected static String getXMLString(final String fileName) throws IOException{
+    protected static String getXMLString(final String fileName) throws IOException {
         try (InputStream is = TestHelper.class.getResourceAsStream(fileName)) {
             Objects.requireNonNull(is);
             return IOUtils.toString(is, "UTF-8");

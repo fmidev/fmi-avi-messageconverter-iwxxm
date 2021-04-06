@@ -42,7 +42,7 @@ public abstract class SpaceWeatherBulletinIWXXMParser<T> extends AbstractBulleti
 
     public static class FromDOM extends SpaceWeatherBulletinIWXXMParser<Document> {
         @Override
-        protected Document parseAsDom(final Document input) throws ConversionException {
+        protected Document parseAsDom(final Document input) {
             return input;
         }
     }

@@ -1,5 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
@@ -31,97 +32,96 @@ public class TAFIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testStringParser() throws Exception {
-        InputStream is = TAFIWXXMParserTest.class.getResourceAsStream("taf-A5-1.xml");
+        final InputStream is = TAFIWXXMParserTest.class.getResourceAsStream("taf-A5-1.xml");
         Objects.requireNonNull(is);
-        String input = IOUtils.toString(is,"UTF-8");
+        final String input = IOUtils.toString(is, "UTF-8");
         is.close();
-        ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertTrue( "No issues should have been found", result.getConversionIssues().isEmpty());
+        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
     @Test
     public void testNoIssuesWithValidTAF() throws Exception {
-        Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-A5-1.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertTrue( "No issues should have been found", result.getConversionIssues().isEmpty());
+        final Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-A5-1.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
     }
 
     @Test
     public void testCatchesNoIssueTime() throws Exception {
-        Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-no-issue-time.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        final Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-no-issue-time.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
         assertTrue(result.getConversionIssues().size() > 0);
     }
 
     @Test
     public void testCatchesNonExistentTimeReference() throws Exception {
-        Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-non-existent-basefct-phenomenonTime-ref.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        final Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-non-existent-basefct-phenomenonTime-ref.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
         assertTrue(result.getConversionIssues().size() > 0);
     }
 
     @Test
     public void testCatchesNoPointFOI() throws Exception {
-        Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-basefct-no-foi-position-shape.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        final Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-basefct-no-foi-position-shape.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
         assertTrue(result.getConversionIssues().size() > 0);
     }
 
     @Test
     public void testCatchesWrongForecastRecordType() throws Exception {
-        Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-wrong-basefct-type.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        final Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-wrong-basefct-type.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
         assertTrue(result.getConversionIssues().size() > 0);
     }
 
     @Test
     public void testCatchesWrongObservedProperty() throws Exception {
-        Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-wrong-obsproperty.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        final Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-wrong-obsproperty.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
         assertTrue(result.getConversionIssues().size() > 0);
     }
 
     @Test
     public void testCatchesIllegalWeatherCode() throws Exception {
-        Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-illegal-weather-code.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        final Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-illegal-weather-code.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
         assertTrue(result.getConversionIssues().size() > 0);
     }
 
     @Test
     public void testCancelledTAFParsing() throws Exception {
-        Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-A5-2.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        final Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-A5-2.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConversionIssues().isEmpty());
     }
 
     @Test
     public void testTAFParsingWithTemperature() throws Exception {
-        Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-with_temperature_fct.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        final Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-with_temperature_fct.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConversionIssues().isEmpty());
         assertTrue(result.getConvertedMessage().get().getBaseForecast().get().getTemperatures().isPresent());
     }
 
     @Test
     public void testTAFParsingWithARP() throws Exception {
-        Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-with_airport_ARP.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        final Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-with_airport_ARP.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConversionIssues().isEmpty());
         assertTrue(result.getConvertedMessage().get().getAerodrome().getFieldElevationValue().isPresent());
     }
 
     @Test
     public void testTAFParsingWithFieldElevationUomFt() throws Exception {
-        Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-field-elevation-uom-ft.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        final Document toValidate = readDocument(TAFIWXXMParserTest.class, "taf-field-elevation-uom-ft.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConversionIssues().isEmpty());
         assertTrue(result.getConvertedMessage().get().getAerodrome().getFieldElevationValue().isPresent());
     }
-
 
 }

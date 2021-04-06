@@ -91,7 +91,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
     }
 
     protected static TimePeriodPropertyType getATimePeriodPropertyType(final PartialOrCompleteTimePeriod valTime, final String uuid) {
-        return create(TimePeriodPropertyType.class, (prop) -> {
+        return create(TimePeriodPropertyType.class, prop -> {
             final TimePeriodType tp = create(TimePeriodType.class);
             tp.setId("validt-" + uuid);
             final TimePositionType beginPos = create(TimePositionType.class);
@@ -158,63 +158,48 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         } else {
             airmet.setStatus(AIRMETReportStatusType.NORMAL);
         }
-        airmet.setIssuingAirTrafficServicesUnit(create(UnitPropertyType.class, (prop) -> {
-            prop.setUnit(create(UnitType.class, (unit) -> {
-                unit.setId("fic-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + airmetUuid);
-                unit.getTimeSlice().add(create(UnitTimeSlicePropertyType.class, sliceProp -> {
-                    sliceProp.setUnitTimeSlice(create(UnitTimeSliceType.class, (slice) -> {
-                        slice.setId("fic-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-ts-" + airmetUuid);
-                        slice.setValidTime(create(TimePrimitivePropertyType.class, (tp) -> {
-                        }));
-                        slice.setInterpretation("SNAPSHOT");
-                        slice.setType(create(CodeUnitType.class, (codeUnitType) -> {
-                            codeUnitType.setValue("FIC");
-                        }));
-                        slice.setUnitName(create(TextNameType.class, (tnt) -> {
-                            tnt.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator());
-                            slice.setDesignator(create(CodeOrganisationDesignatorType.class, (desig) -> {
-                                desig.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator());
-                            }));
-                        }));
-                    }));
+        airmet.setIssuingAirTrafficServicesUnit(create(UnitPropertyType.class, prop -> prop.setUnit(create(UnitType.class, unit -> {
+            unit.setId("fic-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + airmetUuid);
+            unit.getTimeSlice().add(create(UnitTimeSlicePropertyType.class, sliceProp -> sliceProp.setUnitTimeSlice(create(UnitTimeSliceType.class, slice -> {
+                slice.setId("fic-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-ts-" + airmetUuid);
+                slice.setValidTime(create(TimePrimitivePropertyType.class, tp -> {
                 }));
-            }));
-        }));
+                slice.setInterpretation("SNAPSHOT");
+                slice.setType(create(CodeUnitType.class, codeUnitType -> codeUnitType.setValue("FIC")));
+                slice.setUnitName(create(TextNameType.class, tnt -> {
+                    tnt.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator());
+                    slice.setDesignator(
+                            create(CodeOrganisationDesignatorType.class, desig -> desig.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator())));
+                }));
+            }))));
+        }))));
 
-        airmet.setOriginatingMeteorologicalWatchOffice(create(UnitPropertyType.class, (prop) -> {
-            prop.setUnit(create(UnitType.class, (unit) -> {
-                unit.setId("mwo-" + input.getMeteorologicalWatchOffice().getDesignator() + "-" + airmetUuid);
-                unit.getTimeSlice().add(create(UnitTimeSlicePropertyType.class, (sliceProp) -> {
-                    sliceProp.setUnitTimeSlice(create(UnitTimeSliceType.class, (slice) -> {
-                        slice.setId("mwo-" + input.getMeteorologicalWatchOffice().getDesignator() + "-ts-" + airmetUuid);
-                        slice.setValidTime(create(TimePrimitivePropertyType.class, (tp) -> {
-                        }));
-                        slice.setInterpretation("SNAPSHOT");
-                        slice.setType(create(CodeUnitType.class, (codeUnitType) -> {
-                            codeUnitType.setValue("MWO");
-                        }));
-                        slice.setUnitName(create(TextNameType.class, (tnt) -> {
-                            tnt.setValue(input.getMeteorologicalWatchOffice().getDesignator() + " MWO");
-                            slice.setDesignator(create(CodeOrganisationDesignatorType.class, (desig) -> {
-                                desig.setValue(input.getMeteorologicalWatchOffice().getDesignator());
-                            }));
-                        }));
-                    }));
+        airmet.setOriginatingMeteorologicalWatchOffice(create(UnitPropertyType.class, prop -> prop.setUnit(create(UnitType.class, unit -> {
+            unit.setId("mwo-" + input.getMeteorologicalWatchOffice().getDesignator() + "-" + airmetUuid);
+            unit.getTimeSlice().add(create(UnitTimeSlicePropertyType.class, sliceProp -> sliceProp.setUnitTimeSlice(create(UnitTimeSliceType.class, slice -> {
+                slice.setId("mwo-" + input.getMeteorologicalWatchOffice().getDesignator() + "-ts-" + airmetUuid);
+                slice.setValidTime(create(TimePrimitivePropertyType.class, tp -> {
                 }));
-            }));
-        }));
+                slice.setInterpretation("SNAPSHOT");
+                slice.setType(create(CodeUnitType.class, codeUnitType -> codeUnitType.setValue("MWO")));
+                slice.setUnitName(create(TextNameType.class, tnt -> {
+                    tnt.setValue(input.getMeteorologicalWatchOffice().getDesignator() + " MWO");
+                    slice.setDesignator(
+                            create(CodeOrganisationDesignatorType.class, desig -> desig.setValue(input.getMeteorologicalWatchOffice().getDesignator())));
+                }));
+            }))));
+        }))));
 
         if (airmet.getStatus().equals(AIRMETReportStatusType.CANCELLATION)) {
             airmet.setCancelledSequenceNumber(input.getCancelledReference().get().getSequenceNumber());
             airmet.setCancelledValidPeriod(getCancelledTimePeriodPropertyType(input, "cnl-tp-" + getTimePeriodId(input)));
-            airmet.setPhenomenon(create(AeronauticalAreaWeatherPhenomenonType.class, (phen) -> {
-                phen.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
-            }));
+            airmet.setPhenomenon(create(AeronauticalAreaWeatherPhenomenonType.class,
+                    phen -> phen.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE)));
 
             airmet.setAnalysis(createCancelAnalysis(input, issueTime, airmetUuid));
 
         } else {
-            final AeronauticalAreaWeatherPhenomenonType phenType = create(AeronauticalAreaWeatherPhenomenonType.class, (ref) -> {
+            final AeronauticalAreaWeatherPhenomenonType phenType = create(AeronauticalAreaWeatherPhenomenonType.class, ref -> {
                 ref.setHref(AviationCodeListUser.CODELIST_AIRMET_PHENOMENA_ROOT + input.getAirmetPhenomenon());
                 ref.setTitle("Airmet PhenomenonType");
 
@@ -248,426 +233,370 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
     @SuppressWarnings("unchecked")
     private OMObservationPropertyType createAnalysis(final AIRMET input, final String designator, final String airspaceName, final String issueTime,
             final String airmetUUID) {
-        final OMObservationPropertyType analysis = create(OMObservationPropertyType.class, (omObsType) -> {
-            omObsType.setOMObservation(create(OMObservationType.class, (omObs) -> {
-                omObs.setId("analysis-" + airmetUUID);
-                omObs.setType(create(ReferenceType.class, (ref) -> {
-                    ref.setHref(AviationCodeListUser.CODELIST_AIRMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS);
+        return create(OMObservationPropertyType.class, omObsType -> omObsType.setOMObservation(create(OMObservationType.class, omObs -> {
+            omObs.setId("analysis-" + airmetUUID);
+            omObs.setType(create(ReferenceType.class, ref -> ref.setHref(AviationCodeListUser.CODELIST_AIRMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS)));
+
+            //TODO Only if FCST or OBS time are given
+            if ((input.getAnalysisType() == SigmetAnalysisType.UNKNOWN) || !input.getAnalysisGeometries().get().get(0).getTime().isPresent()) {
+                //set Phen time to nil with nilReason of "missing"
+                omObs.setPhenomenonTime(
+                        create(TimeObjectPropertyType.class, toProp -> toProp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING)));
+            } else {
+                omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, toProp -> {
+                    final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period -> {
+                        period.setId("phent-" + airmetUUID);
+                        period.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue()
+                                .add(input.getAnalysisGeometries()
+                                        .get()
+                                        .get(0)
+                                        .getTime()
+                                        .get()
+                                        .getCompleteTime()
+                                        .get()
+                                        .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                    });
+                    toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
                 }));
+            }
+            omObs.setValidTime(create(TimePeriodPropertyType.class, tppt -> tppt.setHref("#validt-" + airmetUUID)));
 
-                //TODO Only if FCST or OBS time are given
-                if ((input.getAnalysisType() == SigmetAnalysisType.UNKNOWN) || !input.getAnalysisGeometries().get().get(0).getTime().isPresent()) {
-                    //set Phen time to nil with nilReason of "missing"
-                    omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, (toProp) -> {
-                        toProp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING);
-                    }));
-                } else {
-                    omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, (toProp) -> {
-                        final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, (period) -> {
-                            period.setId("phent-" + airmetUUID);
-                            period.setTimePosition(create(TimePositionType.class, (tPos) -> {
-                                tPos.getValue()
-                                        .add(input.getAnalysisGeometries()
-                                                .get()
-                                                .get(0)
-                                                .getTime()
-                                                .get()
-                                                .getCompleteTime()
-                                                .get()
-                                                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-                            }));
-                        });
-                        toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
-                    }));
-                }
-                omObs.setValidTime(create(TimePeriodPropertyType.class, (tppt) -> {
-                    tppt.setHref("#validt-" + airmetUUID);
-                }));
+            omObs.setResultTime(create(TimeInstantPropertyType.class, tip -> tip.setTimeInstant(create(TimeInstantType.class, ti -> {
+                ti.setTimePosition(create(TimePositionType.class, tp -> tp.getValue().add(issueTime)));
+                ti.setId("resltt-" + airmetUUID);
+            }))));
 
-                omObs.setResultTime(create(TimeInstantPropertyType.class, (tip) -> {
-                    tip.setTimeInstant(create(TimeInstantType.class, (ti) -> {
-                        ti.setTimePosition(create(TimePositionType.class, (tp) -> {
-                            tp.getValue().add(issueTime);
-                        }));
-                        ti.setId("resltt-" + airmetUUID);
-                    }));
-                }));
+            omObs.setProcedure(create(OMProcessPropertyType.class, omppt -> omppt.setAny(createAndWrap(ProcessType.class, process -> {
+                process.setId("proc-" + airmetUUID);
+                process.setDescription(create(StringOrRefType.class, descr -> descr.setValue(AviationCodeListUser.CODELIST_VALUE_AIRMET_PROCESS)));
+            }))));
 
-                omObs.setProcedure(create(OMProcessPropertyType.class, (omppt) -> {
-                    omppt.setAny(createAndWrap(ProcessType.class, (process) -> {
-                        process.setId("proc-" + airmetUUID);
-                        process.setDescription(create(StringOrRefType.class, (descr) -> {
-                            descr.setValue(AviationCodeListUser.CODELIST_VALUE_AIRMET_PROCESS);
-                        }));
-                    }));
-                }));
+            omObs.setObservedProperty(
+                    create(ReferenceType.class, ref -> ref.setHref(AviationCodeListUser.CODELIST_AIRMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS)));
 
-                omObs.setObservedProperty(create(ReferenceType.class, (ref) -> {
-                    ref.setHref(AviationCodeListUser.CODELIST_AIRMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS);
-                }));
+            omObs.setFeatureOfInterest(getFeatureOfInterest(input, designator, airspaceName, "sampling-surface-" + airmetUUID));
 
-                omObs.setFeatureOfInterest(getFeatureOfInterest(input, designator, airspaceName, "sampling-surface-" + airmetUUID));
-
-                final AIRMETEvolvingConditionCollectionPropertyType _seccpt = getResult(input, airmetUUID);
-                omObs.setResult(_seccpt);
-            }));
-
-        });
-        return analysis;
+            final AIRMETEvolvingConditionCollectionPropertyType _seccpt = getResult(input, airmetUUID);
+            omObs.setResult(_seccpt);
+        })));
     }
 
     private FeaturePropertyType getFeatureOfInterest(final AIRMET input, final String designator, final String airSpaceName, final String sfSpatialUUID) {
-        final FeaturePropertyType ftp = create(FeaturePropertyType.class, (prop) -> {
-            prop.setAbstractFeature(createAndWrap(SFSpatialSamplingFeatureType.class, (samsFeature) -> {
-                samsFeature.setId(sfSpatialUUID);
-                samsFeature.setType(create(ReferenceType.class, (ref) -> {
-                    ref.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_OM_SAMPLING + "SF_SamplingSurface");
-                    ref.setTitle("Sampling surface");
-                }));
-
-                samsFeature.getSampledFeature().add(create(FeaturePropertyType.class, (samProp) -> {
-                    final AirspaceType airspace = create(AirspaceType.class);
-                    airspace.setValidTime(null);
-                    airspace.setId("fir-" + designator + "-" + UUID.randomUUID());
-                    airspace.getTimeSlice().add(create(AirspaceTimeSlicePropertyType.class, (timeSliceProp) -> {
-                        timeSliceProp.setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, (timeSlice) -> {
-                            timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
-                            timeSlice.setInterpretation("SNAPSHOT");
-                            timeSlice.setType(create(CodeAirspaceType.class, (type) -> {
-                                type.setValue("FIR");
-                            }));
-                            timeSlice.setAirspaceName(create(TextNameType.class, (name) -> {
-                                name.setValue(airSpaceName);
-                            }));
-                            timeSlice.setId("fir-" + designator + "-" + UUID.randomUUID() + "-ts");
-                            timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, (desig) -> {
-                                desig.setValue(designator);
-                            }));
-
-                        }));
-                    }));
-                    samProp.setAbstractFeature(wrap(airspace, AirspaceType.class));
-                }));
-                samsFeature.setShape(create(ShapeType.class, (shp) -> {
-                    shp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_WITHHELD);
-                }));
+        return create(FeaturePropertyType.class, prop -> prop.setAbstractFeature(createAndWrap(SFSpatialSamplingFeatureType.class, samsFeature -> {
+            samsFeature.setId(sfSpatialUUID);
+            samsFeature.setType(create(ReferenceType.class, ref -> {
+                ref.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_OM_SAMPLING + "SF_SamplingSurface");
+                ref.setTitle("Sampling surface");
             }));
-        });
-        return ftp;
-        //return null;
+
+            samsFeature.getSampledFeature().add(create(FeaturePropertyType.class, samProp -> {
+                final AirspaceType airspace = create(AirspaceType.class);
+                airspace.setValidTime(null);
+                airspace.setId("fir-" + designator + "-" + UUID.randomUUID());
+                airspace.getTimeSlice()
+                        .add(create(AirspaceTimeSlicePropertyType.class,
+                                timeSliceProp -> timeSliceProp.setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, timeSlice -> {
+                                    timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
+                                    timeSlice.setInterpretation("SNAPSHOT");
+                                    timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue("FIR")));
+                                    timeSlice.setAirspaceName(create(TextNameType.class, name -> name.setValue(airSpaceName)));
+                                    timeSlice.setId("fir-" + designator + "-" + UUID.randomUUID() + "-ts");
+                                    timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, desig -> desig.setValue(designator)));
+
+                                }))));
+                samProp.setAbstractFeature(wrap(airspace, AirspaceType.class));
+            }));
+            samsFeature.setShape(create(ShapeType.class, shp -> shp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_WITHHELD)));
+        })));
     }
 
     private AIRMETEvolvingConditionCollectionPropertyType getResult(final AIRMET input, final String airmetUUID) {
-        final AIRMETEvolvingConditionCollectionPropertyType _seccpt = create(AIRMETEvolvingConditionCollectionPropertyType.class, (seccpt) -> {
-            seccpt.setAIRMETEvolvingConditionCollection(create(AIRMETEvolvingConditionCollectionType.class, (secct) -> {
-                secct.setId("fcst-" + airmetUUID);
-                secct.setTimeIndicator(TimeIndicatorType.OBSERVATION);
-                if (input.getAnalysisType() == SigmetAnalysisType.FORECAST) {
-                    secct.setTimeIndicator(TimeIndicatorType.FORECAST);
-                }
-                final int cnt = 0;
-                for (final PhenomenonGeometryWithHeight geometryWithHeight : input.getAnalysisGeometries().get()) {
-                    secct.getMember().add(create(AIRMETEvolvingConditionPropertyType.class, (secpt) -> {
-                        secpt.setAIRMETEvolvingCondition(create(AIRMETEvolvingConditionType.class, (sect) -> {
-                            sect.setId("sec-" + cnt + "-" + airmetUUID);
+        return create(AIRMETEvolvingConditionCollectionPropertyType.class,
+                seccpt -> seccpt.setAIRMETEvolvingConditionCollection(create(AIRMETEvolvingConditionCollectionType.class, secct -> {
+                    secct.setId("fcst-" + airmetUUID);
+                    secct.setTimeIndicator(TimeIndicatorType.OBSERVATION);
+                    if (input.getAnalysisType() == SigmetAnalysisType.FORECAST) {
+                        secct.setTimeIndicator(TimeIndicatorType.FORECAST);
+                    }
+                    final int cnt = 0;
+                    for (final PhenomenonGeometryWithHeight geometryWithHeight : input.getAnalysisGeometries().get()) {
+                        secct.getMember()
+                                .add(create(AIRMETEvolvingConditionPropertyType.class,
+                                        secpt -> secpt.setAIRMETEvolvingCondition(create(AIRMETEvolvingConditionType.class, sect -> {
+                                            sect.setId("sec-" + cnt + "-" + airmetUUID);
 
-                            sect.setApproximateLocation(geometryWithHeight.getApproximateLocation().orElse(false));
-                            input.getIntensityChange().ifPresent((intensityChange) -> {
-                                switch (intensityChange) {
-                                    case NO_CHANGE:
-                                        sect.setIntensityChange(AIRMETExpectedIntensityChangeType.NO_CHANGE);
-                                        break;
-                                    case WEAKENING:
-                                        sect.setIntensityChange(AIRMETExpectedIntensityChangeType.WEAKEN);
-                                        break;
-                                    case INTENSIFYING:
-                                        sect.setIntensityChange(AIRMETExpectedIntensityChangeType.INTENSIFY);
-                                        break;
-                                    default:
-                                        sect.setIntensityChange(AIRMETExpectedIntensityChangeType.NO_CHANGE);
-                                        break;
-                                }
-                            });
+                                            sect.setApproximateLocation(geometryWithHeight.getApproximateLocation().orElse(false));
+                                            input.getIntensityChange().ifPresent(intensityChange -> {
+                                                switch (intensityChange) {
+                                                    case WEAKENING:
+                                                        sect.setIntensityChange(AIRMETExpectedIntensityChangeType.WEAKEN);
+                                                        break;
+                                                    case INTENSIFYING:
+                                                        sect.setIntensityChange(AIRMETExpectedIntensityChangeType.INTENSIFY);
+                                                        break;
+                                                    case NO_CHANGE:
+                                                    default:
+                                                        sect.setIntensityChange(AIRMETExpectedIntensityChangeType.NO_CHANGE);
+                                                        break;
+                                                }
+                                            });
 
-                            if (input.getMovingDirection().isPresent()) {
-                                final icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
-                                final AngleWithNilReasonType angl = new AngleWithNilReasonType();
-                                final NumericMeasure md = input.getMovingDirection().get();
-                                angl.setUom(md.getUom());
-                                angl.setValue(md.getValue());
+                                            if (input.getMovingDirection().isPresent()) {
+                                                final icao.iwxxm21.ObjectFactory of_iwxxm21 = new icao.iwxxm21.ObjectFactory();
+                                                final AngleWithNilReasonType angl = new AngleWithNilReasonType();
+                                                final NumericMeasure md = input.getMovingDirection().get();
+                                                angl.setUom(md.getUom());
+                                                angl.setValue(md.getValue());
 
-                                final JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm21.createAIRMETEvolvingConditionTypeDirectionOfMotion(
-                                        angl);
-                                sect.setDirectionOfMotion(directionOfMotion);
+                                                final JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm21.createAIRMETEvolvingConditionTypeDirectionOfMotion(
+                                                        angl);
+                                                sect.setDirectionOfMotion(directionOfMotion);
 
-                                input.getMovingSpeed().ifPresent((ms) -> {
-                                    sect.setSpeedOfMotion(create(SpeedType.class, (spd) -> {
-                                        spd.setUom(ms.getUom());
-                                        spd.setValue(ms.getValue());
-                                    }));
-                                });
+                                                input.getMovingSpeed().ifPresent(ms -> sect.setSpeedOfMotion(create(SpeedType.class, spd -> {
+                                                    spd.setUom(ms.getUom());
+                                                    spd.setValue(ms.getValue());
+                                                })));
 
-                            } else { //Add zero speedOfMotion for STNR
-                                sect.setSpeedOfMotion(create(SpeedType.class, (spd) -> {
-                                    spd.setUom("[kn_i]");
-                                    spd.setValue(0);
-                                }));
-                            }
-
-                            sect.setGeometry(create(AirspaceVolumePropertyType.class, (avpt) -> {
-                                avpt.setAirspaceVolume(create(AirspaceVolumeType.class, (avt) -> {
-                                    avt.setId("as-" + cnt + "-" + airmetUUID);
-                                    geometryWithHeight.getUpperLimit().ifPresent((l) -> {
-                                        avt.setUpperLimit(create(ValDistanceVerticalType.class, (vdvt) -> {
-                                            vdvt.setUom(l.getUom());
-                                            vdvt.setValue(l.getValue().toString());
-                                        }));
-                                        avt.setUpperLimitReference(create(CodeVerticalReferenceType.class, (cvrt) -> {
-                                            if (l.getValue() == 0.) {
-                                                cvrt.setValue("SFC");
-                                            } else {
-                                                cvrt.setValue("STD");
+                                            } else { //Add zero speedOfMotion for STNR
+                                                sect.setSpeedOfMotion(create(SpeedType.class, spd -> {
+                                                    spd.setUom("[kn_i]");
+                                                    spd.setValue(0);
+                                                }));
                                             }
-                                        }));
-                                    });
-                                    geometryWithHeight.getLowerLimit().ifPresent((l) -> {
-                                        avt.setLowerLimit(create(ValDistanceVerticalType.class, (vdvt) -> {
-                                            vdvt.setUom(l.getUom());
-                                            vdvt.setValue(l.getValue().toString());
-                                        }));
-                                        avt.setLowerLimitReference(create(CodeVerticalReferenceType.class, (cvrt) -> {
-                                            if (l.getValue() == 0.) {
-                                                cvrt.setValue("SFC");
-                                            } else {
-                                                cvrt.setValue("STD");
-                                            }
-                                        }));
-                                    });
-                                    geometryWithHeight.getGeometry().flatMap(TacOrGeoGeometry::getGeoGeometry).ifPresent(geom -> {
-                                        avt.setHorizontalProjection(createSurface(geom, "an-sfc-" + cnt + "-" + airmetUUID));
-                                    });
-                                    /*
-                                    avt.setHorizontalProjection(create(SurfacePropertyType.class, (spt) -> {
-                                        spt.setSurface(createAndWrap(SurfaceType.class, (sft) -> {
-                                            try {
-                                                if (geometryWithHeight.getGeometry().isPresent()) {
-                                                    Geometry geom = geometryWithHeight.getGeometry().get().getGeoGeometry().get();
-                                                    geom.getSrsName().ifPresent(sft::setSrsName);
-                                                    geom.getSrsDimension().ifPresent(sft::setSrsDimension);
-                                                    geom.getAxisLabels().ifPresent(labels -> sft.getAxisLabels().addAll(labels));
-                                                    if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass())) {
-                                                        CircleByCenterPoint cbcp = (CircleByCenterPoint) geom;
-                                                        JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
-                                                            poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
-                                                                arpt.setAbstractRing(createAndWrap(RingType.class, (rt) -> {
-                                                                    rt.getCurveMember().add(create(CurvePropertyType.class, (curvept) -> {
-                                                                        curvept.setAbstractCurve(createAndWrap(CurveType.class, (curvet) -> {
-                                                                            curvet.setId("curve-analysis-" + cnt + "-" + airmetUUID);
-                                                                            curvet.setSegments(create(CurveSegmentArrayPropertyType.class, (curvesat) -> {
-                                                                                curvesat.getAbstractCurveSegment()
-                                                                                        .add(createAndWrap(CircleByCenterPointType.class, (cbcpt) -> {
-                                                                                            cbcpt.setPos(create(DirectPositionType.class, (dpt) -> {
-                                                                                                dpt.getValue()
-                                                                                                        //.addAll(Arrays.asList(pts.toArray(new Double[0])));
-                                                                                                .addAll(cbcp.getCoordinates());
-                                                                                            }));
-                                                                                            cbcpt.setNumArc(BigInteger.valueOf(1));
-                                                                                            cbcpt.setRadius(create(LengthType.class, (lt) -> {
-                                                                                                lt.setValue(0.0);
-                                                                                                lt.setUom("[nmi_i]");
-                                                                                            }));
-                                                                                        }));
-                                                                            }));
-                                                                        }));
+
+                                            sect.setGeometry(create(AirspaceVolumePropertyType.class,
+                                                    avpt -> avpt.setAirspaceVolume(create(AirspaceVolumeType.class, avt -> {
+                                                        avt.setId("as-" + cnt + "-" + airmetUUID);
+                                                        geometryWithHeight.getUpperLimit().ifPresent(l -> {
+                                                            avt.setUpperLimit(create(ValDistanceVerticalType.class, vdvt -> {
+                                                                vdvt.setUom(l.getUom());
+                                                                vdvt.setValue(l.getValue().toString());
+                                                            }));
+                                                            avt.setUpperLimitReference(create(CodeVerticalReferenceType.class, cvrt -> {
+                                                                if (l.getValue() == 0.) {
+                                                                    cvrt.setValue("SFC");
+                                                                } else {
+                                                                    cvrt.setValue("STD");
+                                                                }
+                                                            }));
+                                                        });
+                                                        geometryWithHeight.getLowerLimit().ifPresent(l -> {
+                                                            avt.setLowerLimit(create(ValDistanceVerticalType.class, vdvt -> {
+                                                                vdvt.setUom(l.getUom());
+                                                                vdvt.setValue(l.getValue().toString());
+                                                            }));
+                                                            avt.setLowerLimitReference(create(CodeVerticalReferenceType.class, cvrt -> {
+                                                                if (l.getValue() == 0.) {
+                                                                    cvrt.setValue("SFC");
+                                                                } else {
+                                                                    cvrt.setValue("STD");
+                                                                }
+                                                            }));
+                                                        });
+                                                        geometryWithHeight.getGeometry()
+                                                                .flatMap(TacOrGeoGeometry::getGeoGeometry)
+                                                                .ifPresent(geom -> avt.setHorizontalProjection(
+                                                                        createSurface(geom, "an-sfc-" + cnt + "-" + airmetUUID)));
+                            /*
+                            avt.setHorizontalProjection(create(SurfacePropertyType.class, spt -> {
+                                spt.setSurface(createAndWrap(SurfaceType.class, sft -> {
+                                    try {
+                                        if (geometryWithHeight.getGeometry().isPresent()) {
+                                            Geometry geom = geometryWithHeight.getGeometry().get().getGeoGeometry().get();
+                                            geom.getSrsName().ifPresent(sft::setSrsName);
+                                            geom.getSrsDimension().ifPresent(sft::setSrsDimension);
+                                            geom.getAxisLabels().ifPresent(labels -> sft.getAxisLabels().addAll(labels));
+                                            if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass())) {
+                                                CircleByCenterPoint cbcp = (CircleByCenterPoint) geom;
+                                                JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> {
+                                                    poly.setExterior(create(AbstractRingPropertyType.class, arpt -> {
+                                                        arpt.setAbstractRing(createAndWrap(RingType.class, rt -> {
+                                                            rt.getCurveMember().add(create(CurvePropertyType.class, curvept -> {
+                                                                curvept.setAbstractCurve(createAndWrap(CurveType.class, curvet -> {
+                                                                    curvet.setId("curve-analysis-" + cnt + "-" + airmetUUID);
+                                                                    curvet.setSegments(create(CurveSegmentArrayPropertyType.class, curvesat -> {
+                                                                        curvesat.getAbstractCurveSegment()
+                                                                                .add(createAndWrap(CircleByCenterPointType.class, cbcpt -> {
+                                                                                    cbcpt.setPos(create(DirectPositionType.class, dpt -> {
+                                                                                        dpt.getValue()
+                                                                                                //.addAll(Arrays.asList(pts.toArray(new Double[0])));
+                                                                                        .addAll(cbcp.getCoordinates());
+                                                                                    }));
+                                                                                    cbcpt.setNumArc(BigInteger.valueOf(1));
+                                                                                    cbcpt.setRadius(create(LengthType.class, lt -> {
+                                                                                        lt.setValue(0.0);
+                                                                                        lt.setUom("[nmi_i]");
+                                                                                    }));
+                                                                                }));
                                                                     }));
                                                                 }));
                                                             }));
-                                                        });
-                                                        SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
-                                                        JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
-                                                        spapt.getValue().getAbstractSurfacePatch().add(ppt);
+                                                        }));
+                                                    }));
+                                                });
+                                                SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
+                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
+                                                spapt.getValue().getAbstractSurfacePatch().add(ppt);
 /*                                                    JAXBElement<SurfacePatchArrayPropertyType> spapt = createAndWrap(SurfacePatchArrayPropertyType.class,
-                                                            (_spapt)-> {
-                                                                _spapt.getAbstractSurfacePatch().add(ppt);
-                                                            });*/
-                                    /*
-                                                        sft.setPatches(spapt);
-                                                    } else if (PolygonGeometry.class.isAssignableFrom(geom.getClass())){ //Polygon
-                                                        PolygonGeometry polygon = (PolygonGeometry)geom;
-                                                        JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, (poly) -> {
-                                                            poly.setExterior(create(AbstractRingPropertyType.class, (arpt) -> {
-                                                                arpt.setAbstractRing(createAndWrap(LinearRingType.class, (lrt) -> {
-                                                                    DirectPositionListType dplt = create(DirectPositionListType.class, (dpl) -> {
-                                                                        dpl.getValue().addAll(polygon.getExteriorPoints().stream().map(
-                                                                                PointGeometry::getCoordinates).flatMap(List::stream).collect(Collectors.toList()));
-                                                                    });
-                                                                    lrt.setPosList(dplt);
-                                                                }));
-                                                            }));
-                                                        });
+                                                    _spapt -> {
+                                                        _spapt.getAbstractSurfacePatch().add(ppt);
+                                                    });*/
+                            /*
+                                                sft.setPatches(spapt);
+                                            } else if (PolygonGeometry.class.isAssignableFrom(geom.getClass())){ //Polygon
+                                                PolygonGeometry polygon = (PolygonGeometry)geom;
+                                                JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> {
+                                                    poly.setExterior(create(AbstractRingPropertyType.class, arpt -> {
+                                                        arpt.setAbstractRing(createAndWrap(LinearRingType.class, lrt -> {
+                                                            DirectPositionListType dplt = create(DirectPositionListType.class, dpl -> {
+                                                                dpl.getValue().addAll(polygon.getExteriorPoints().stream().map(
+                                                                        PointGeometry::getCoordinates).flatMap(List::stream).collect(Collectors.toList()));
+                                                            });
+                                                            lrt.setPosList(dplt);
+                                                        }));
+                                                    }));
+                                                });
 
-                                                        SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
-                                                        JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
-                                                        spapt.getValue().getAbstractSurfacePatch().add(ppt);
+                                                SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
+                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
+                                                spapt.getValue().getAbstractSurfacePatch().add(ppt);
 
-                                                        sft.setPatches(spapt);
-                                                    } else {
-                                                        //Woot?
-                                                    }
-                                                }
-                                            } catch (Exception e) {
-                                                sft.setPatches(null);
-                                                e.printStackTrace();
+                                                sft.setPatches(spapt);
+                                            } else {
+                                                //Woot?
                                             }
-                                            sft.setId("an-sfc-" + cnt + "-" + airmetUUID);
-                                            sft.setSrsDimension(new BigInteger("2"));
-                                            sft.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
-                                        }));
-                                    }));
-
-                                     */
+                                        }
+                                    } catch (Exception e) {
+                                        sft.setPatches(null);
+                                        e.printStackTrace();
+                                    }
+                                    sft.setId("an-sfc-" + cnt + "-" + airmetUUID);
+                                    sft.setSrsDimension(new BigInteger("2"));
+                                    sft.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
                                 }));
                             }));
-                            if (geometryWithHeight.getLowerLimitOperator().isPresent()) {
-                                sect.setGeometryLowerLimitOperator(RelationalOperatorType.fromValue(geometryWithHeight.getLowerLimitOperator().get().name()));
-                            }
-                            if (geometryWithHeight.getUpperLimitOperator().isPresent()) {
-                                sect.setGeometryUpperLimitOperator(RelationalOperatorType.fromValue(geometryWithHeight.getUpperLimitOperator().get().name()));
-                            }
 
-                            if (input.getCloudLevels().isPresent()) {
-                                final NumericMeasure base = input.getCloudLevels().get().getCloudBase();
-                                final NumericMeasure top = input.getCloudLevels().get().getCloudTop();
-                                if (base != null) {
-                                    sect.setCloudBase(create(LengthType.class, (lt) -> {
-                                        lt.setValue(base.getValue());
-                                        if (base.getUom().equalsIgnoreCase("ft")) {
-                                            lt.setUom("[ft_i]");
-                                        } else {
-                                            lt.setUom(base.getUom().toLowerCase(Locale.US));
-                                        }
-                                    }));
-                                }
-                                if (top != null) {
-                                    sect.setCloudTop(create(LengthType.class, (lt) -> {
-                                        lt.setValue(top.getValue());
-                                        if (top.getUom().equalsIgnoreCase("ft")) {
-                                            lt.setUom("[ft_i]");
-                                        } else {
-                                            lt.setUom(top.getUom().toLowerCase(Locale.US));
-                                        }
-                                    }));
-                                }
-                                if (input.getCloudLevels().get().getTopAbove().isPresent() && (input.getCloudLevels().get().getTopAbove().get())) {
-                                    sect.setGeometryUpperLimitOperator(RelationalOperatorType.ABOVE);
-                                }
-                            }
+                             */
+                                                    }))));
+                                            if (geometryWithHeight.getLowerLimitOperator().isPresent()) {
+                                                sect.setGeometryLowerLimitOperator(
+                                                        RelationalOperatorType.fromValue(geometryWithHeight.getLowerLimitOperator().get().name()));
+                                            }
+                                            if (geometryWithHeight.getUpperLimitOperator().isPresent()) {
+                                                sect.setGeometryUpperLimitOperator(
+                                                        RelationalOperatorType.fromValue(geometryWithHeight.getUpperLimitOperator().get().name()));
+                                            }
 
-                            if (input.getVisibility().isPresent()) {
-                                sect.setSurfaceVisibility(create(LengthType.class, (lt) -> {
-                                    lt.setValue(input.getVisibility().get().getValue().intValue());
-                                    lt.setUom(input.getVisibility().get().getUom().toLowerCase(Locale.US));
-                                }));
-                                for (final AviationCodeListUser.WeatherCausingVisibilityReduction w : input.getObscuration().get()) {
-                                    final WeatherCausingVisibilityReductionType wt = new WeatherCausingVisibilityReductionType();
-                                    wt.setHref(AviationCodeListUser.CODELIST_VALUE_WEATHERCAUSINGVISIBILITYREDUCTION + "/" + w.getText());
-                                    sect.getSurfaceVisibilityCause().add(wt);
-                                }
-                            }
+                                            if (input.getCloudLevels().isPresent()) {
+                                                final NumericMeasure base = input.getCloudLevels().get().getCloudBase();
+                                                final NumericMeasure top = input.getCloudLevels().get().getCloudTop();
+                                                if (base != null) {
+                                                    sect.setCloudBase(create(LengthType.class, lt -> {
+                                                        lt.setValue(base.getValue());
+                                                        if (base.getUom().equalsIgnoreCase("ft")) {
+                                                            lt.setUom("[ft_i]");
+                                                        } else {
+                                                            lt.setUom(base.getUom().toLowerCase(Locale.US));
+                                                        }
+                                                    }));
+                                                }
+                                                if (top != null) {
+                                                    sect.setCloudTop(create(LengthType.class, lt -> {
+                                                        lt.setValue(top.getValue());
+                                                        if (top.getUom().equalsIgnoreCase("ft")) {
+                                                            lt.setUom("[ft_i]");
+                                                        } else {
+                                                            lt.setUom(top.getUom().toLowerCase(Locale.US));
+                                                        }
+                                                    }));
+                                                }
+                                                if (input.getCloudLevels().get().getTopAbove().isPresent() && (input.getCloudLevels()
+                                                        .get()
+                                                        .getTopAbove()
+                                                        .get())) {
+                                                    sect.setGeometryUpperLimitOperator(RelationalOperatorType.ABOVE);
+                                                }
+                                            }
 
-                            if (input.getWind().isPresent()) {
-                                final AirmetWind w = input.getWind().get();
-                                sect.setSurfaceWindSpeed(create(SpeedType.class, (st) -> {
-                                    st.setValue(w.getSpeed().getValue());
-                                    st.setUom(w.getSpeed().getUom());
-                                }));
-                                sect.setSurfaceWindDirection(create(AngleType.class, (at) -> {
-                                    at.setValue(w.getDirection().getValue());
-                                    at.setUom(w.getDirection().getUom());
-                                }));
-                            }
-                        }));
-                    }));
-                }
-            }));
-        });
+                                            if (input.getVisibility().isPresent()) {
+                                                sect.setSurfaceVisibility(create(LengthType.class, lt -> {
+                                                    lt.setValue(input.getVisibility().get().getValue().intValue());
+                                                    lt.setUom(input.getVisibility().get().getUom().toLowerCase(Locale.US));
+                                                }));
+                                                for (final AviationCodeListUser.WeatherCausingVisibilityReduction w : input.getObscuration().get()) {
+                                                    final WeatherCausingVisibilityReductionType wt = new WeatherCausingVisibilityReductionType();
+                                                    wt.setHref(AviationCodeListUser.CODELIST_VALUE_WEATHERCAUSINGVISIBILITYREDUCTION + "/" + w.getText());
+                                                    sect.getSurfaceVisibilityCause().add(wt);
+                                                }
+                                            }
 
-        return _seccpt;
+                                            if (input.getWind().isPresent()) {
+                                                final AirmetWind w = input.getWind().get();
+                                                sect.setSurfaceWindSpeed(create(SpeedType.class, st -> {
+                                                    st.setValue(w.getSpeed().getValue());
+                                                    st.setUom(w.getSpeed().getUom());
+                                                }));
+                                                sect.setSurfaceWindDirection(create(AngleType.class, at -> {
+                                                    at.setValue(w.getDirection().getValue());
+                                                    at.setUom(w.getDirection().getUom());
+                                                }));
+                                            }
+                                        }))));
+                    }
+                })));
     }
 
     private OMObservationPropertyType createCancelAnalysis(final AIRMET input, final String issueTime, final String airmetUUID) {
-        final OMObservationPropertyType analysis = create(OMObservationPropertyType.class, (omObsType) -> {
-            omObsType.setOMObservation(create(OMObservationType.class, (omObs) -> {
-                omObs.setId("cnl-analysis");
-                omObs.setType(create(ReferenceType.class, (ref) -> {
-                    ref.setHref(AviationCodeListUser.CODELIST_AIRMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS);
-                }));
-                omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, (toProp) -> {
-                    toProp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
-                }));
-                omObs.setResultTime(create(TimeInstantPropertyType.class, (tip) -> {
-                    tip.setHref("#" + "resltt-" + airmetUUID);
-                }));
+        return create(OMObservationPropertyType.class, omObsType -> omObsType.setOMObservation(create(OMObservationType.class, omObs -> {
+            omObs.setId("cnl-analysis");
+            omObs.setType(create(ReferenceType.class, ref -> ref.setHref(AviationCodeListUser.CODELIST_AIRMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS)));
+            omObs.setPhenomenonTime(
+                    create(TimeObjectPropertyType.class, toProp -> toProp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE)));
+            omObs.setResultTime(create(TimeInstantPropertyType.class, tip -> tip.setHref("#" + "resltt-" + airmetUUID)));
 
-                omObs.setProcedure(create(OMProcessPropertyType.class, (omppt) -> {
-                    omppt.setAny(createAndWrap(ProcessType.class, (process) -> {
-                        process.setId("p-49-2-airmet-" + airmetUUID);
-                        process.setDescription(create(StringOrRefType.class, (descr) -> {
-                            descr.setValue(AviationCodeListUser.CODELIST_VALUE_AIRMET_PROCESS);
-                        }));
-                    }));
-                }));
+            omObs.setProcedure(create(OMProcessPropertyType.class, omppt -> omppt.setAny(createAndWrap(ProcessType.class, process -> {
+                process.setId("p-49-2-airmet-" + airmetUUID);
+                process.setDescription(create(StringOrRefType.class, descr -> descr.setValue(AviationCodeListUser.CODELIST_VALUE_AIRMET_PROCESS)));
+            }))));
 
-                omObs.setObservedProperty(create(ReferenceType.class, (ref) -> {
-                    ref.setHref(AviationCodeListUser.CODELIST_AIRMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS);
-                }));
+            omObs.setObservedProperty(
+                    create(ReferenceType.class, ref -> ref.setHref(AviationCodeListUser.CODELIST_AIRMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS)));
 
-                final FeaturePropertyType ftp = create(FeaturePropertyType.class, (prop) -> {
-                    prop.setAbstractFeature(createAndWrap(SFSpatialSamplingFeatureType.class, (samsFeature) -> {
+            final FeaturePropertyType ftp = create(FeaturePropertyType.class,
+                    prop -> prop.setAbstractFeature(createAndWrap(SFSpatialSamplingFeatureType.class, samsFeature -> {
                         samsFeature.setId("sampling-surface-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + UUID.randomUUID());
-                        samsFeature.setType(create(ReferenceType.class, (ref) -> {
+                        samsFeature.setType(create(ReferenceType.class, ref -> {
                             ref.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_OM_SAMPLING + "SF_SamplingSurface");
                             ref.setTitle("Sampling surface");
                         }));
 
-                        samsFeature.getSampledFeature().add(create(FeaturePropertyType.class, (samProp) -> {
+                        samsFeature.getSampledFeature().add(create(FeaturePropertyType.class, samProp -> {
                             final AirspaceType airspace = create(AirspaceType.class);
                             airspace.setValidTime(null);
                             airspace.setId("fir-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + UUID.randomUUID());
-                            airspace.getTimeSlice().add(create(AirspaceTimeSlicePropertyType.class, (timeSliceProp) -> {
-                                timeSliceProp.setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, (timeSlice) -> {
-                                    timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
-                                    timeSlice.setInterpretation("SNAPSHOT");
-                                    timeSlice.setType(create(CodeAirspaceType.class, (type) -> {
-                                        type.setValue("FIR");
-                                    }));
-                                    timeSlice.setAirspaceName(create(TextNameType.class, (name) -> {
-                                        name.setValue(input.getIssuingAirTrafficServicesUnit().getName());
-                                    }));
-                                    timeSlice.setId("fir-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + UUID.randomUUID() + "-ts");
-                                    timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, (desig) -> {
-                                        desig.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator());
-                                    }));
+                            airspace.getTimeSlice()
+                                    .add(create(AirspaceTimeSlicePropertyType.class,
+                                            timeSliceProp -> timeSliceProp.setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, timeSlice -> {
+                                                timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
+                                                timeSlice.setInterpretation("SNAPSHOT");
+                                                timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue("FIR")));
+                                                timeSlice.setAirspaceName(
+                                                        create(TextNameType.class, name -> name.setValue(input.getIssuingAirTrafficServicesUnit().getName())));
+                                                timeSlice.setId(
+                                                        "fir-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + UUID.randomUUID() + "-ts");
+                                                timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class,
+                                                        desig -> desig.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator())));
 
-                                }));
-                            }));
+                                            }))));
                             samProp.setAbstractFeature(wrap(airspace, AirspaceType.class));
                         }));
-                        samsFeature.setShape(create(ShapeType.class, (shp) -> {
-                            shp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_WITHHELD);
-                        }));
-                    }));
-                });
-                omObs.setFeatureOfInterest(ftp);
-                final AIRMETEvolvingConditionCollectionPropertyType _seccpt = create(AIRMETEvolvingConditionCollectionPropertyType.class, (eccpt) -> {
-                    eccpt.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
-                });
-                omObs.setResult(_seccpt);
-            }));
-
-        });
-        return analysis;
-        //return null;
+                        samsFeature.setShape(create(ShapeType.class, shp -> shp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_WITHHELD)));
+                    })));
+            omObs.setFeatureOfInterest(ftp);
+            final AIRMETEvolvingConditionCollectionPropertyType _seccpt = create(AIRMETEvolvingConditionCollectionPropertyType.class,
+                    eccpt -> eccpt.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE));
+            omObs.setResult(_seccpt);
+        })));
     }
 
     protected void updateMessageMetadata(final AIRMET source, final ConversionResult<?> results, final AIRMETType target) throws ConversionException {
@@ -677,7 +606,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             //Default permissions
             target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
             target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
-            source.getPermissibleUsage().ifPresent((us) -> {
+            source.getPermissibleUsage().ifPresent(us -> {
                 if (us == AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL) {
                     target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
                     if (source.getPermissibleUsageReason().isPresent()) {

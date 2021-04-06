@@ -88,7 +88,7 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
 
         properties.get(SpaceWeatherAdvisoryProperties.Name.NEXT_ADVISORY, NextAdvisory.class).ifPresent(builder::setNextAdvisory);
 
-        properties.get(SpaceWeatherAdvisoryProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent((metaProps) -> {
+        properties.get(SpaceWeatherAdvisoryProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent(metaProps -> {
             metaProps.get(GenericReportProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.class).ifPresent(builder::setReportStatus);
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class).ifPresent(builder::setPermissibleUsage);
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_REASON, AviationCodeListUser.PermissibleUsageReason.class)

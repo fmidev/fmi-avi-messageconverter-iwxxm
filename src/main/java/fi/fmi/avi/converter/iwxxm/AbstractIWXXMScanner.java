@@ -286,7 +286,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         return retval;
     }
 
-    public static void withWeatherBuilderFor(String codeListValue, String description, final ConversionHints hints,
+    public static void withWeatherBuilderFor(final String codeListValue, final String description, final ConversionHints hints,
             final Consumer<WeatherImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
         if (codeListValue != null && codeListValue.startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER)) {

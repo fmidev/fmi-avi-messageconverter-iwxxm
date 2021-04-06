@@ -92,7 +92,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         }
 
         final Aerodrome[] aerodrome = new Aerodrome[1];
-        properties.get(TAFProperties.Name.BASE_FORECAST, OMObservationProperties.class).ifPresent((fctProp) -> {
+        properties.get(TAFProperties.Name.BASE_FORECAST, OMObservationProperties.class).ifPresent(fctProp -> {
             aerodrome[0] = fctProp.get(OMObservationProperties.Name.AERODROME, Aerodrome.class).orElse(null);
             final Optional<ElevatedPoint> samplingPos = fctProp.get(OMObservationProperties.Name.SAMPLING_POINT, ElevatedPoint.class);
             if (aerodrome[0] != null) {
@@ -105,7 +105,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
             }
             if (tafStatus != AviationCodeListUser.TAFStatus.MISSING) {
                 fctProp.get(OMObservationProperties.Name.RESULT, TAFForecastRecordProperties.class)
-                        .ifPresent((recordProp) -> tafBuilder.setBaseForecast(createBaseForecast(recordProp)));
+                        .ifPresent(recordProp -> tafBuilder.setBaseForecast(createBaseForecast(recordProp)));
             }
         });
 
@@ -118,7 +118,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         properties.get(TAFProperties.Name.PREV_REPORT_VALID_TIME, PartialOrCompleteTimePeriod.class)//
                 .ifPresent(tafBuilder::setReferredReportValidPeriod);
 
-        properties.get(TAFProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent((metaProps) -> {
+        properties.get(TAFProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent(metaProps -> {
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class)
                     .ifPresent(tafBuilder::setPermissibleUsage);
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_REASON, AviationCodeListUser.PermissibleUsageReason.class)

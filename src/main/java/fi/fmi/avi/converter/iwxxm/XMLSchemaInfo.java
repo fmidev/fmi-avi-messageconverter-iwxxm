@@ -97,7 +97,7 @@ public class XMLSchemaInfo {
     }
 
     public String getCombinedSchemaLocations() {
-        return schemaLocations.entrySet().stream().map((entry) -> entry.getKey() + " " + entry.getValue() + " ").reduce("", String::concat).trim();
+        return schemaLocations.entrySet().stream().map(entry -> entry.getKey() + " " + entry.getValue() + " ").reduce("", String::concat).trim();
     }
 
     public List<URL> getSchematronRules() {

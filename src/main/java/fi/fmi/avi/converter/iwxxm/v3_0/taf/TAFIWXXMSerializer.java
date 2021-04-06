@@ -113,7 +113,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Issue time for TAF is missing"));
             return result;
         }
-        taf.setIssueTime(create(TimeInstantPropertyType.class, (prop) -> createTimeInstantProperty(input, prop, issueTimeId)));
+        taf.setIssueTime(create(TimeInstantPropertyType.class, prop -> createTimeInstantProperty(input, prop, issueTimeId)));
 
         if (input.getValidityTime().isPresent()) {
             final Optional<PartialOrCompleteTimeInstant> start = input.getValidityTime().get().getStartTime();
@@ -126,7 +126,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Validity time for TAF is not a fully qualified time period"));
                 return result;
             }
-            taf.setValidPeriod(create(TimePeriodPropertyType.class, (prop) -> createTimePeriodPropertyType(prop, start.get(), end.get(), validTimeId)));
+            taf.setValidPeriod(create(TimePeriodPropertyType.class, prop -> createTimePeriodPropertyType(prop, start.get(), end.get(), validTimeId)));
         }
 
         this.updateAerodrome(input.getAerodrome(), taf, aerodromeId);
@@ -157,82 +157,74 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
     }
 
     private void updateCancellationReportValidPeriod(final PartialOrCompleteTimePeriod cancelTime, final TAFType target) {
-        target.setCancelledReportValidPeriod(create(TimePeriodPropertyType.class, prop -> {
-            prop.setTimePeriod(create(TimePeriodType.class, type -> {
-                type.setId("uuid." + UUID.randomUUID());
+        target.setCancelledReportValidPeriod(create(TimePeriodPropertyType.class, prop -> prop.setTimePeriod(create(TimePeriodType.class, type -> {
+            type.setId("uuid." + UUID.randomUUID());
 
-                if (cancelTime.getStartTime().isPresent()) {
-                    type.setBeginPosition(create(TimePositionType.class, begin -> {
-                        begin.getValue().add(cancelTime.getStartTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-                    }));
-                }
+            if (cancelTime.getStartTime().isPresent()) {
+                type.setBeginPosition(create(TimePositionType.class,
+                        begin -> begin.getValue().add(cancelTime.getStartTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+            }
 
-                if (cancelTime.getEndTime().isPresent()) {
-                    type.setEndPosition(create(TimePositionType.class, begin -> {
-                        begin.getValue().add(cancelTime.getEndTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-                    }));
-                }
-            }));
-        }));
+            if (cancelTime.getEndTime().isPresent()) {
+                type.setEndPosition(create(TimePositionType.class,
+                        begin -> begin.getValue().add(cancelTime.getEndTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+            }
+        }))));
     }
 
     private void updateAerodrome(final Aerodrome aerodrome, final TAFType target, final String aerodromeId) {
-        target.setAerodrome(create(AirportHeliportPropertyType.class, prop -> {
-            prop.setAirportHeliport(create(AirportHeliportType.class, type -> {
-                type.setId(aerodromeId);
-                final AirportHeliportTimeSliceType timeSlice = create(AirportHeliportTimeSliceType.class);
-                timeSlice.setId("uuid." + UUID.randomUUID());
+        target.setAerodrome(create(AirportHeliportPropertyType.class, prop -> prop.setAirportHeliport(create(AirportHeliportType.class, type -> {
+            type.setId(aerodromeId);
+            final AirportHeliportTimeSliceType timeSlice = create(AirportHeliportTimeSliceType.class);
+            timeSlice.setId("uuid." + UUID.randomUUID());
 
-                timeSlice.setInterpretation("SNAPSHOT");
-                timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
+            timeSlice.setInterpretation("SNAPSHOT");
+            timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
 
-                timeSlice.setDesignator(create(CodeAirportHeliportDesignatorType.class, (code) -> code.setValue(aerodrome.getDesignator())));
+            timeSlice.setDesignator(create(CodeAirportHeliportDesignatorType.class, code -> code.setValue(aerodrome.getDesignator())));
 
-                if (aerodrome.getName().isPresent()) {
-                    final TextNameType name = new TextNameType();
-                    name.setValue(aerodrome.getName().get());
-                    timeSlice.setPortName(name);
-                }
+            if (aerodrome.getName().isPresent()) {
+                final TextNameType name = new TextNameType();
+                name.setValue(aerodrome.getName().get());
+                timeSlice.setPortName(name);
+            }
 
-                if (aerodrome.getLocationIndicatorICAO().isPresent()) {
-                    final CodeICAOType code = new CodeICAOType();
-                    code.setValue(aerodrome.getLocationIndicatorICAO().get());
-                    timeSlice.setLocationIndicatorICAO(code);
-                }
+            if (aerodrome.getLocationIndicatorICAO().isPresent()) {
+                final CodeICAOType code = new CodeICAOType();
+                code.setValue(aerodrome.getLocationIndicatorICAO().get());
+                timeSlice.setLocationIndicatorICAO(code);
+            }
 
-                if (aerodrome.getReferencePoint().isPresent()) {
-                    timeSlice.setARP(create(ElevatedPointPropertyType.class, elevatedPointProp -> {
-                        final ElevatedPoint sourcePoint = aerodrome.getReferencePoint().get();
-                        final ElevatedPointType targetPoint = create(ElevatedPointType.class);
-                        targetPoint.setId("uuid." + UUID.randomUUID());
+            if (aerodrome.getReferencePoint().isPresent()) {
+                timeSlice.setARP(create(ElevatedPointPropertyType.class, elevatedPointProp -> {
+                    final ElevatedPoint sourcePoint = aerodrome.getReferencePoint().get();
+                    final ElevatedPointType targetPoint = create(ElevatedPointType.class);
+                    targetPoint.setId("uuid." + UUID.randomUUID());
 
-                        if (sourcePoint.getElevationValue().isPresent() && sourcePoint.getElevationUom().isPresent()) {
-                            targetPoint.setElevation(create(ValDistanceVerticalType.class, verticalType -> {
-                                verticalType.setUom(sourcePoint.getElevationUom().get());
-                                verticalType.setValue(sourcePoint.getElevationValue().get().toString());
-                            }));
-                        }
-
-                        targetPoint.setPos(create(DirectPositionType.class, pos -> {
-                            pos.getValue().addAll(sourcePoint.getCoordinates());
+                    if (sourcePoint.getElevationValue().isPresent() && sourcePoint.getElevationUom().isPresent()) {
+                        targetPoint.setElevation(create(ValDistanceVerticalType.class, verticalType -> {
+                            verticalType.setUom(sourcePoint.getElevationUom().get());
+                            verticalType.setValue(sourcePoint.getElevationValue().get().toString());
                         }));
+                    }
 
-                        if (sourcePoint.getVerticalDatum().isPresent()) {
-                            targetPoint.setVerticalDatum(
-                                    create(CodeVerticalDatumType.class, verticalCode -> verticalCode.setValue(sourcePoint.getVerticalDatum().get())));
-                        }
+                    targetPoint.setPos(create(DirectPositionType.class, pos -> pos.getValue().addAll(sourcePoint.getCoordinates())));
 
-                        targetPoint.setSrsDimension(BigInteger.valueOf(2));
-                        targetPoint.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
+                    if (sourcePoint.getVerticalDatum().isPresent()) {
+                        targetPoint.setVerticalDatum(
+                                create(CodeVerticalDatumType.class, verticalCode -> verticalCode.setValue(sourcePoint.getVerticalDatum().get())));
+                    }
 
-                        targetPoint.getAxisLabels().addAll(Arrays.asList("Lat", "Long"));
-                        elevatedPointProp.setElevatedPoint(targetPoint);
-                    }));
-                }
-                type.getTimeSlice().add(create(AirportHeliportTimeSlicePropertyType.class, sliceProp -> sliceProp.setAirportHeliportTimeSlice(timeSlice)));
-                prop.setAirportHeliport(type);
-            }));
-        }));
+                    targetPoint.setSrsDimension(BigInteger.valueOf(2));
+                    targetPoint.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
+
+                    targetPoint.getAxisLabels().addAll(Arrays.asList("Lat", "Long"));
+                    elevatedPointProp.setElevatedPoint(targetPoint);
+                }));
+            }
+            type.getTimeSlice().add(create(AirportHeliportTimeSlicePropertyType.class, sliceProp -> sliceProp.setAirportHeliportTimeSlice(timeSlice)));
+            prop.setAirportHeliport(type);
+        }))));
     }
 
     protected void updateChangeForecast(final TAF source, final TAFType target, final ConversionResult<?> result) {
@@ -264,13 +256,13 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                                         DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
                     }
 
-                    changeFct.setPhenomenonTime(create(TimePeriodPropertyType.class, (toProp) -> {
-                        final TimePeriodType wrapped = create(TimePeriodType.class, (period) -> {
+                    changeFct.setPhenomenonTime(create(TimePeriodPropertyType.class, toProp -> {
+                        final TimePeriodType wrapped = create(TimePeriodType.class, period -> {
                             period.setId("uuid." + UUID.randomUUID().toString());
                             period.setBeginPosition(
-                                    create(TimePositionType.class, (tPos) -> tPos.getValue().add(startTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                                    create(TimePositionType.class, tPos -> tPos.getValue().add(startTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
                             period.setEndPosition(
-                                    create(TimePositionType.class, (tPos) -> tPos.getValue().add(endTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                                    create(TimePositionType.class, tPos -> tPos.getValue().add(endTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
                         });
                         toProp.setTimePeriod(wrapped);
                     }));
@@ -278,7 +270,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                     this.updateForecastResult(fctInput, changeFct, result);
 
                     target.getChangeForecast()
-                            .add(create(MeteorologicalAerodromeForecastPropertyType.class, (prop) -> prop.setMeteorologicalAerodromeForecast(changeFct)));
+                            .add(create(MeteorologicalAerodromeForecastPropertyType.class, prop -> prop.setMeteorologicalAerodromeForecast(changeFct)));
 
                 } else {
                     result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
@@ -304,16 +296,16 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             }
             if (source.getForecastWeather().isPresent()) {
                 for (final Weather weather : source.getForecastWeather().get()) {
-                    target.getWeather().add(create(AerodromeForecastWeatherType.class, (w) -> {
-                        w.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER + weather.getCode());
-                    }));
+                    target.getWeather()
+                            .add(create(AerodromeForecastWeatherType.class,
+                                    w -> w.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER + weather.getCode())));
                 }
             } else if (source.isNoSignificantWeather()) {
                 //The expected end of occurrence of weather phenomena shall be indicated by a nil "forecastWeather"
                 // with a nil reason of "http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"
                 target.getWeather()
                         .add(create(AerodromeForecastWeatherType.class,
-                                (w) -> w.getNilReason().add(CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)));
+                                w -> w.getNilReason().add(CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)));
             }
             final Optional<CloudForecast> cFct = source.getCloud();
             if (cFct.isPresent()) {
@@ -345,7 +337,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         if (source.getSurfaceWind().isPresent()) {
             final AerodromeSurfaceWindForecastType wind = create(AerodromeSurfaceWindForecastType.class);
             this.updateForecastSurfaceWind(source.getSurfaceWind().get(), wind, result);
-            target.setSurfaceWind(create(AerodromeSurfaceWindForecastPropertyType.class, (prop) -> prop.setAerodromeSurfaceWindForecast(wind)));
+            target.setSurfaceWind(create(AerodromeSurfaceWindForecastPropertyType.class, prop -> prop.setAerodromeSurfaceWindForecast(wind)));
         }
 
         if (source instanceof TAFBaseForecast) {
@@ -355,7 +347,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                     final AerodromeAirTemperatureForecastType tempFct = create(AerodromeAirTemperatureForecastType.class);
                     this.setAirTemperatureForecast(airTemp, tempFct, result);
                     target.getTemperature()
-                            .add(create(AerodromeAirTemperatureForecastPropertyType.class, (prop) -> prop.setAerodromeAirTemperatureForecast(tempFct)));
+                            .add(create(AerodromeAirTemperatureForecastPropertyType.class, prop -> prop.setAerodromeAirTemperatureForecast(tempFct)));
                 }
             }
         } else if (source instanceof TAFChangeForecast) {
@@ -374,12 +366,11 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Time of the base forecast  minimum temperature is not complete"));
             } else {
                 target.setMinimumAirTemperature(asMeasure(measure));
-                target.setMinimumAirTemperatureTime(
-                        create(TimeInstantPropertyType.class, (prop) -> prop.setTimeInstant(create(TimeInstantType.class, (time) -> {
-                            time.setId("uuid." + UUID.randomUUID().toString());
-                            time.setTimePosition(create(TimePositionType.class, (tPos) -> tPos.getValue()
-                                    .add(source.getMinTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                        }))));
+                target.setMinimumAirTemperatureTime(create(TimeInstantPropertyType.class, prop -> prop.setTimeInstant(create(TimeInstantType.class, time -> {
+                    time.setId("uuid." + UUID.randomUUID().toString());
+                    time.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue()
+                            .add(source.getMinTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                }))));
             }
 
             measure = source.getMaxTemperature();
@@ -387,12 +378,11 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Time of the base forecast  maximum temperature is not complete"));
             } else {
                 target.setMaximumAirTemperature(asMeasure(measure));
-                target.setMaximumAirTemperatureTime(
-                        create(TimeInstantPropertyType.class, (prop) -> prop.setTimeInstant(create(TimeInstantType.class, (time) -> {
-                            time.setId("uuid." + UUID.randomUUID().toString());
-                            time.setTimePosition(create(TimePositionType.class, (tPos) -> tPos.getValue()
-                                    .add(source.getMaxTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                        }))));
+                target.setMaximumAirTemperatureTime(create(TimeInstantPropertyType.class, prop -> prop.setTimeInstant(create(TimeInstantType.class, time -> {
+                    time.setId("uuid." + UUID.randomUUID().toString());
+                    time.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue()
+                            .add(source.getMaxTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                }))));
             }
 
         }
@@ -412,7 +402,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             target.setId("uuid." + UUID.randomUUID().toString());
             final Optional<NumericMeasure> measure = source.getVerticalVisibility();
             if (measure.isPresent()) {
-                final LengthWithNilReasonType vvValue = create(LengthWithNilReasonType.class, (vv) -> {
+                final LengthWithNilReasonType vvValue = create(LengthWithNilReasonType.class, vv -> {
                     vv.setValue(measure.get().getValue());
                     vv.setUom(measure.get().getUom());
                 });
@@ -422,7 +412,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 for (final CloudLayer layer : source.getLayers().get()) {
                     target.getLayer()
                             .add(create(CloudLayerPropertyType.class,
-                                    (l) -> l.setCloudLayer(create(CloudLayerType.class, (cl) -> this.setForecastCloudLayerData(cl, layer)))));
+                                    l -> l.setCloudLayer(create(CloudLayerType.class, cl -> this.setForecastCloudLayerData(cl, layer)))));
                 }
             }
         }
@@ -431,16 +421,15 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
     protected void setForecastCloudLayerData(final CloudLayerType target, final CloudLayer source) {
         if (source != null) {
             if (source.getBase().isPresent()) {
-                target.setBase(create(DistanceWithNilReasonType.class, (base) -> {
+                target.setBase(create(DistanceWithNilReasonType.class, base -> {
                     base.setUom(source.getBase().get().getUom());
                     base.setValue(source.getBase().get().getValue());
                 }));
             }
 
             final Optional<AviationCodeListUser.CloudAmount> amount = source.getAmount();
-            amount.ifPresent(cloudAmount -> target.setAmount(create(CloudAmountReportedAtAerodromeType.class, (amt) -> {
-                amt.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + cloudAmount.getCode());
-            })));
+            amount.ifPresent(cloudAmount -> target.setAmount(create(CloudAmountReportedAtAerodromeType.class,
+                    amt -> amt.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + cloudAmount.getCode()))));
 
             final Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
             if (type.isPresent()) {
@@ -465,17 +454,13 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         final MeteorologicalAerodromeForecastType baseFct = create(MeteorologicalAerodromeForecastType.class);
         baseFct.setId("uuid." + UUID.randomUUID().toString());
 
-        baseFct.setPhenomenonTime(create(TimePeriodPropertyType.class, (prop) -> {
-            prop.setHref("#" + validTimeId);
-        }));
+        baseFct.setPhenomenonTime(create(TimePeriodPropertyType.class, prop -> prop.setHref("#" + validTimeId)));
 
-        if (baseForecastInput.get().getPrevailingVisibility().isPresent()) {
-            baseFct.setPrevailingVisibility(create(DistanceWithNilReasonType.class, (prop) -> {
-                final NumericMeasure prevailingVisibility = baseForecastInput.get().getPrevailingVisibility().get();
-                prop.setUom(prevailingVisibility.getUom());
-                prop.setValue(prevailingVisibility.getValue());
-            }));
-        }
+        baseFct.setPrevailingVisibility(create(DistanceWithNilReasonType.class, prop -> {
+            final NumericMeasure prevailingVisibility = baseForecastInput.get().getPrevailingVisibility().get();
+            prop.setUom(prevailingVisibility.getUom());
+            prop.setValue(prevailingVisibility.getValue());
+        }));
 
         if (baseForecastInput.get().getSurfaceWind().isPresent()) {
             baseFct.setSurfaceWind(create(AerodromeSurfaceWindForecastPropertyType.class, prop -> {
@@ -485,13 +470,13 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 surfaceWindType.setVariableWindDirection(surfaceWind.isVariableDirection());
 
                 if (surfaceWind.getMeanWindDirection().isPresent()) {
-                    surfaceWindType.setMeanWindDirection(create(AngleWithNilReasonType.class, (direction) -> {
+                    surfaceWindType.setMeanWindDirection(create(AngleWithNilReasonType.class, direction -> {
                         direction.setUom(surfaceWind.getMeanWindDirection().get().getUom());
                         direction.setValue(surfaceWind.getMeanWindDirection().get().getValue());
                     }));
                 }
 
-                surfaceWindType.setMeanWindSpeed(create(VelocityWithNilReasonType.class, (speed) -> {
+                surfaceWindType.setMeanWindSpeed(create(VelocityWithNilReasonType.class, speed -> {
                     speed.setUom(surfaceWind.getMeanWindSpeed().getUom());
                     speed.setValue(surfaceWind.getMeanWindSpeed().getValue());
                 }));
@@ -501,7 +486,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 }
 
                 if (surfaceWind.getWindGust().isPresent()) {
-                    surfaceWindType.setWindGustSpeed(create(VelocityWithNilReasonType.class, (gustSpeed) -> {
+                    surfaceWindType.setWindGustSpeed(create(VelocityWithNilReasonType.class, gustSpeed -> {
                         gustSpeed.setUom(surfaceWind.getWindGust().get().getUom());
                         gustSpeed.setValue(surfaceWind.getWindGust().get().getValue());
                     }));
@@ -515,7 +500,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         }
 
         this.updateForecastResult(baseForecastInput.get(), baseFct, result);
-        target.setBaseForecast(create(MeteorologicalAerodromeForecastPropertyType.class, (prop) -> prop.setMeteorologicalAerodromeForecast(baseFct)));
+        target.setBaseForecast(create(MeteorologicalAerodromeForecastPropertyType.class, prop -> prop.setMeteorologicalAerodromeForecast(baseFct)));
     }
 
     protected void updateMessageMetadata(final TAF source, final ConversionResult<?> results, final TAFType target) throws ConversionException {

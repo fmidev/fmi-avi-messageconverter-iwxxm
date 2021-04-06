@@ -19,9 +19,9 @@ public class SIGMETIWXXMScanner extends AbstractIWXXM21Scanner {
 
     public static List<ConversionIssue> collectSIGMETProperties(final SIGMETType input, final ReferredObjectRetrievalContext refCtx,
             final SIGMETProperties properties, final ConversionHints hints) {
-        IssueList retval = new IssueList();
+        final IssueList retval = new IssueList();
 
-        SIGMETReportStatusType status = input.getStatus();
+        final SIGMETReportStatusType status = input.getStatus();
         if (status != null) {
             properties.set(SIGMETProperties.Name.STATUS, AviationCodeListUser.SigmetAirmetReportStatus.valueOf(status.name()));
         } else {

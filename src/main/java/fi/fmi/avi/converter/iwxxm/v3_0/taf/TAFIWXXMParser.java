@@ -70,7 +70,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
         final TAFImpl.Builder tafBuilder = TAFImpl.builder();
 
         properties.get(TAFProperties.Name.REPORT_METADATA, GenericReportProperties.class)//
-                .ifPresent((metaProps) -> {
+                .ifPresent(metaProps -> {
                     metaProps.get(GenericReportProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.class)//
                             .ifPresent(tafBuilder::setReportStatus);
                     metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class)
@@ -107,7 +107,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
                 .ifPresent(tafBuilder::setCancelMessage);
 
         properties.get(TAFProperties.Name.VALID_TIME, PartialOrCompleteTimePeriod.class)//
-                .ifPresent((prop) -> {
+                .ifPresent(prop -> {
                     if (tafBuilder.isCancelMessage()) {
                         tafBuilder.setReferredReportValidPeriod(prop);
                     } else {
@@ -117,7 +117,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
                 });
 
         properties.get(TAFProperties.Name.BASE_FORECAST, TAFBaseForecastProperties.class)//
-                .ifPresent((prop) -> tafBuilder.setBaseForecast(toBaseForecast(prop)));
+                .ifPresent(prop -> tafBuilder.setBaseForecast(toBaseForecast(prop)));
 
         if (properties.contains(TAFProperties.Name.CHANGE_FORECAST)) {
             tafBuilder.setChangeForecasts(properties.getList(TAFProperties.Name.CHANGE_FORECAST, TAFChangeForecastProperties.class).stream()//
@@ -151,7 +151,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
         return builder.build();
     }
 
-    private <T extends TAFForecast, B extends TAFForecast.Builder<T, B>> void setTAFForecastProperties(final TAFForecast.Builder<T, B> builder,
+    private <F extends TAFForecast, B extends TAFForecast.Builder<F, B>> void setTAFForecastProperties(final TAFForecast.Builder<F, B> builder,
             final TAFForecastProperties forecastProp) {
         forecastProp.get(TAFForecastProperties.Name.CLOUD_FORECAST, TAFCloudForecastProperties.class)
                 .ifPresent(prop -> builder.setCloud(toCloudForecast(prop)));

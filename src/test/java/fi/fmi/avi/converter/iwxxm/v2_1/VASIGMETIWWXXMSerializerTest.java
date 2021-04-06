@@ -33,8 +33,7 @@ public class VASIGMETIWWXXMSerializerTest {
     private AviMessageConverter converter;
 
     private SIGMET getSIGMET() throws IOException {
-        final SIGMET s = readFromJSON("vasigmet1.json");
-        return s;
+        return readFromJSON("vasigmet1.json");
     }
 
     protected SIGMET readFromJSON(final String fileName) throws IOException {

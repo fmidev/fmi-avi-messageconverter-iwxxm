@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +70,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(m.isPresent());
         final Optional<List<RunwayState>> states = m.get().getRunwayStates();
         assertTrue(states.isPresent());
-        assertTrue(states.get().size() == 3);
+        assertEquals(3, states.get().size());
 
     }
 
@@ -92,7 +93,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         final Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_invalid-obs-types.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
-        assertTrue(result.getConversionIssues().stream().filter(issue -> issue.getMessage().contains("Invalid observation type")).count() == 2);
+        assertEquals(2, result.getConversionIssues().stream().filter(issue -> issue.getMessage().contains("Invalid observation type")).count());
     }
 
     @Test
@@ -100,7 +101,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         final Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_invalid-obs-properties.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
-        assertTrue(result.getConversionIssues().stream().filter(issue -> issue.getMessage().contains("Invalid observed property")).count() == 2);
+        assertEquals(2, result.getConversionIssues().stream().filter(issue -> issue.getMessage().contains("Invalid observed property")).count());
     }
 
     @Test
@@ -108,7 +109,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         final Document toValidate = readDocument(METARIWXXMParserTest.class, "metar-A3-1_no-phenomenon-time.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
         assertFalse("Issues should have been found", result.getConversionIssues().isEmpty());
-        assertTrue(result.getConversionIssues().stream().filter(issue -> issue.getMessage().contains("METAR observation phenomenonTime")).count() == 1);
+        assertEquals(1, result.getConversionIssues().stream().filter(issue -> issue.getMessage().contains("METAR observation phenomenonTime")).count());
     }
 
     @Test
@@ -324,7 +325,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         final Optional<List<RunwayState>> runwayStates = m.get().getRunwayStates();
         assertTrue(runwayStates.isPresent());
         RunwayState rws = runwayStates.get().get(0);
-        assertTrue(!rws.isCleared());
+        Assert.assertFalse(rws.isCleared());
         rws = runwayStates.get().get(1);
         assertTrue(rws.isCleared());
         rws = runwayStates.get().get(2);
@@ -349,7 +350,7 @@ public class METARIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(m.isPresent());
         final Optional<List<RunwayState>> states = m.get().getRunwayStates();
         assertTrue(states.isPresent());
-        assertTrue(states.get().size() == 7);
+        assertEquals(7, states.get().size());
 
         RunwayState rws = states.get().get(0);
         assertTrue(rws.getRunwayDirection().isPresent());

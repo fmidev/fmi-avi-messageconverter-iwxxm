@@ -42,7 +42,7 @@ public abstract class TAFBulletinIWXXMParser<T> extends AbstractBulletinIWXXMPar
 
     public static class FromDOM extends TAFBulletinIWXXMParser<Document> {
         @Override
-        protected Document parseAsDom(final Document input) throws ConversionException {
+        protected Document parseAsDom(final Document input) {
             return input;
         }
     }

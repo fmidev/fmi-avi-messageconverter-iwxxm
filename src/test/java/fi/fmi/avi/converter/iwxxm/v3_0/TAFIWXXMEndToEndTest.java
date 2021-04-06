@@ -41,8 +41,7 @@ public class TAFIWXXMEndToEndTest {
     private void testParseAndSerialize(final String fileName) throws IOException, SAXException {
         final String input = TestHelper.getXMLString(fileName);
 
-        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO,
-                ConversionHints.EMPTY);
+        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
 
         final ConversionResult<String> message = serialize(result.getConvertedMessage().get());
 
@@ -53,7 +52,7 @@ public class TAFIWXXMEndToEndTest {
         TestHelper.assertEqualsXML(input, message.getConvertedMessage().get());
     }
 
-    private ConversionResult<String> serialize(TAF src) {
+    private ConversionResult<String> serialize(final TAF src) {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING));
         final ConversionResult<String> message = converter.convertMessage(src, IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING);
         TestHelper.printIssues(message.getConversionIssues());

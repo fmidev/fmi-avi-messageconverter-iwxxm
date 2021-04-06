@@ -12,6 +12,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,7 +75,7 @@ public class TAFIWXXMSerializerTest {
     private AviMessageConverter converter;
 
     @Test
-    public void confTest() throws IOException {
+    public void confTest() {
         Assert.assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING));
         Assert.assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM));
     }
@@ -131,31 +132,38 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("YUDO", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/@srsDimension");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/@srsDimension");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/@axisLabels");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/@axisLabels");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("Lat Long", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/@srsName");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/@srsName");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("http://www.opengis.net/def/crs/EPSG/0/4326", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/gml:pos");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/gml:pos");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("12.34 -12.34", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/aixm:elevation/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/aixm:elevation/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("M", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/aixm:elevation");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/aixm:elevation");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("12.0", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/aixm:verticalDatum");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/aixm:verticalDatum");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("EGM_96", expResult);
 
@@ -168,23 +176,28 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("9000.0", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/@variableWindDirection");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/@variableWindDirection");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("false", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindDirection/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindDirection/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("deg", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindDirection");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindDirection");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("130.0", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindSpeed/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindSpeed/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("m/s", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindSpeed");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindSpeed");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("5.0", expResult);
 
@@ -193,11 +206,13 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer/iwxxm30:CloudLayer/iwxxm30:base/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer/iwxxm30:CloudLayer/iwxxm30:base/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("[ft_i]", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer/iwxxm30:CloudLayer/iwxxm30:base");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer/iwxxm30:CloudLayer/iwxxm30:base");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2000.0", expResult);
 
@@ -206,11 +221,13 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("BECOMING", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2012-08-16T06:00:00Z", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2012-08-16T08:00:00Z", expResult);
 
@@ -219,11 +236,13 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30:CloudLayer/iwxxm30:base/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30:CloudLayer/iwxxm30:base/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("[ft_i]", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30:CloudLayer/iwxxm30:base");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30:CloudLayer/iwxxm30:base");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("1500.0", expResult);
 
@@ -237,11 +256,13 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30:CloudLayer/iwxxm30:base/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30:CloudLayer/iwxxm30:base/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("[ft_i]", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30:CloudLayer/iwxxm30:base");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30:CloudLayer/iwxxm30:base");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2000.0", expResult);
 
@@ -253,11 +274,13 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("TEMPORARY_FLUCTUATIONS", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2012-08-16T08:00:00Z", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2012-08-16T12:00:00Z", expResult);
 
@@ -269,7 +292,8 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("1000.0", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/@variableWindDirection");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/@variableWindDirection");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("false", expResult);
 
@@ -278,23 +302,28 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("deg", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindDirection");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindDirection");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("170.0", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindSpeed/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindSpeed/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("m/s", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindSpeed");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindSpeed");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("6.0", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:windGustSpeed/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:windGustSpeed/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("m/s", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:windGustSpeed");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:windGustSpeed");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("12.0", expResult);
 
@@ -303,11 +332,13 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30:CloudLayer/iwxxm30:base/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30:CloudLayer/iwxxm30:base/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("[ft_i]", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30:CloudLayer/iwxxm30:base");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30:CloudLayer/iwxxm30:base");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("1000.0", expResult);
 
@@ -321,11 +352,13 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30:CloudLayer/iwxxm30:base/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30:CloudLayer/iwxxm30:base/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("[ft_i]", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30:CloudLayer/iwxxm30:base");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30:CloudLayer/iwxxm30:base");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2000.0", expResult);
 
@@ -333,11 +366,13 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("TEMPORARY_FLUCTUATIONS", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2012-08-16T08:00:00Z", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2012-08-16T12:00:00Z", expResult);
 
@@ -353,11 +388,13 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("FROM", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2012-08-16T12:30:00Z", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2012-08-16T18:00:00Z", expResult);
 
@@ -373,19 +410,23 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("ABOVE", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/@variableWindDirection");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/@variableWindDirection");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("false", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindDirection/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindDirection/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("deg", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindDirection");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindDirection");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("150.0", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindSpeed/@uom");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:surfaceWind/iwxxm30:AerodromeSurfaceWindForecast/iwxxm30:meanWindSpeed/@uom");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("m/s", expResult);
 
@@ -399,7 +440,8 @@ public class TAFIWXXMSerializerTest {
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("[ft_i]", expResult);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30:CloudLayer/iwxxm30:base");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30:CloudLayer/iwxxm30:base");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
         assertEquals("2000.0", expResult);
     }
@@ -451,7 +493,7 @@ public class TAFIWXXMSerializerTest {
         final TAF t = getTafObject();
         final ConversionResult<Document> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM);
 
-        Assert.assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        Assert.assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
@@ -503,7 +545,6 @@ public class TAFIWXXMSerializerTest {
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:interpretation");
         Assert.assertEquals("Airport name does not match", "SNAPSHOT", expr.evaluate(docElement));
 
-
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint"
                 + "/aixm:elevation");
         Assert.assertEquals("Airport elevation value does not match", "40.0", expr.evaluate(docElement));
@@ -512,8 +553,8 @@ public class TAFIWXXMSerializerTest {
                 + "/aixm:elevation/@uom");
         Assert.assertEquals("Airport elevation value does not match", "M", expr.evaluate(docElement));
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint"
-                + "/@srsName");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint" + "/@srsName");
         Assert.assertEquals("Airport reference point srsName does not match", "http://www.opengis.net/def/crs/EPSG/0/4326", expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint"
@@ -524,8 +565,8 @@ public class TAFIWXXMSerializerTest {
                 + "/@axisLabels");
         Assert.assertEquals("Airport reference point srsName does not match", "Lat Long", expr.evaluate(docElement));
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint"
-                + "/gml:pos");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint" + "/gml:pos");
         Assert.assertEquals("Airport reference point position value does not match", "24.8325 59.413333", expr.evaluate(docElement));
 
         //Wind:
@@ -565,12 +606,10 @@ public class TAFIWXXMSerializerTest {
         Assert.assertEquals("Wind gust speed does not match", Double.parseDouble(expr.evaluate(docElement)), 26.0, 0.00001);
 
         //Visibility:
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility");
         Assert.assertEquals("Visibility does not match", Double.parseDouble(expr.evaluate(docElement)), 8000.0, 0.00001);
 
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility/@uom");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility/@uom");
         Assert.assertEquals("Visibility uom does not match", "m", expr.evaluate(docElement));
 
         //iwxxm30:clouds:
@@ -585,32 +624,27 @@ public class TAFIWXXMSerializerTest {
 
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1"
-                        + "]/iwxxm30"
-                        + ":CloudLayer/iwxxm30:base/@uom");
+                        + "]/iwxxm30" + ":CloudLayer/iwxxm30:base/@uom");
         Assert.assertEquals("Cloud layer 1 base uom does not match", "[ft_i]", expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1"
-                        + "]/iwxxm30"
-                        + ":CloudLayer/iwxxm30:base");
+                        + "]/iwxxm30" + ":CloudLayer/iwxxm30:base");
         Assert.assertEquals("Cloud layer 1 base does not match", Double.parseDouble(expr.evaluate(docElement)), 1000.0, 0.00001);
 
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[2"
-                        + "]/iwxxm30"
-                        + ":CloudLayer/iwxxm30:amount/@xlink:href");
+                        + "]/iwxxm30" + ":CloudLayer/iwxxm30:amount/@xlink:href");
         Assert.assertEquals("Cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/OVC", expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[2"
-                        + "]/iwxxm30"
-                        + ":CloudLayer/iwxxm30:base/@uom");
+                        + "]/iwxxm30" + ":CloudLayer/iwxxm30:base/@uom");
         Assert.assertEquals("Cloud layer 1 base uom does not match", "[ft_i]", expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:baseForecast/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[2"
-                        + "]/iwxxm30"
-                        + ":CloudLayer/iwxxm30:base");
+                        + "]/iwxxm30" + ":CloudLayer/iwxxm30:base");
         Assert.assertEquals("Cloud layer 1 base does not match", Double.parseDouble(expr.evaluate(docElement)), 1500.0, 0.00001);
 
         //Temperatures:
@@ -641,12 +675,13 @@ public class TAFIWXXMSerializerTest {
         //Change forecast 1: TEMPO 3012/3018 3000 RADZ BR OVC004
 
         //Temporals:
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
         timeRef = expr.evaluate(docElement);
         Assert.assertEquals("Change forecast 1 phenomenonTime begin pos does not match", "2017-07-30T12:00:00Z", timeRef);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml"
-                + ":endPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml" + ":endPosition");
         timeRef = expr.evaluate(docElement);
         Assert.assertEquals("Change forecast 1 phenomenonTime end pos does not match", "2017-07-30T18:00:00Z", timeRef);
 
@@ -655,37 +690,32 @@ public class TAFIWXXMSerializerTest {
         Assert.assertEquals("Change forecast 1 change indicator does not match", "TEMPORARY_FLUCTUATIONS", expr.evaluate(docElement));
 
         //CAVOK:
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/@cloudAndVisibilityOK");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/@cloudAndVisibilityOK");
         Assert.assertEquals("Change forecast 1 CAVOK does not match", "false", expr.evaluate(docElement));
 
         //Visibility:
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility");
         Assert.assertEquals("Change forecast 1 Visibility does not match", Double.parseDouble(expr.evaluate(docElement)), 3000.0, 0.00001);
 
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility/@uom");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility/@uom");
         Assert.assertEquals("Change forecast 1 visibility uom does not match", "m", expr.evaluate(docElement));
 
         //Weather:
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:weather[1]" + "/@xlink:href");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:weather[1]" + "/@xlink:href");
         Assert.assertEquals("Change forecast 1 weather 1 does not match", "http://codes.wmo.int/306/4678/RADZ", expr.evaluate(docElement));
 
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:weather[2]" + "/@xlink:href");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:weather[2]" + "/@xlink:href");
         Assert.assertEquals("Change forecast 1 weather 2 does not match", "http://codes.wmo.int/306/4678/BR", expr.evaluate(docElement));
 
         //clouds:
-        expr = xpath.compile(
-                "count(/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
-                        + ":AerodromeCloudForecast/iwxxm30:layer)");
+        expr = xpath.compile("count(/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
+                + ":AerodromeCloudForecast/iwxxm30:layer)");
         Assert.assertEquals("Change Forecast 1 cloud layer count does not match", "1", expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                 + ":AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30:CloudLayer/iwxxm30:amount/@xlink:href");
-        Assert.assertEquals("Change Forecast 1 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/OVC", expr.evaluate(docElement));
+        Assert.assertEquals("Change Forecast 1 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/OVC",
+                expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:changeForecast[1]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30:AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30"
@@ -700,12 +730,13 @@ public class TAFIWXXMSerializerTest {
         //Change forecast 2: BECMG 3018/3020 BKN008 SCT015CB
 
         //Temporals:
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml"
-                + ":beginPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml" + ":beginPosition");
         timeRef = expr.evaluate(docElement);
         Assert.assertEquals("Change forecast 2 phenomenonTime begin pos does not match", "2017-07-30T18:00:00Z", timeRef);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
         timeRef = expr.evaluate(docElement);
         Assert.assertEquals("Change forecast 2 phenomenonTime end pos does not match", "2017-07-30T20:00:00Z", timeRef);
 
@@ -716,22 +747,21 @@ public class TAFIWXXMSerializerTest {
         Assert.assertEquals("Change forecast 2 change indicator does not match", "BECOMING", expr.evaluate(docElement));
 
         //CAVOK:
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/@cloudAndVisibilityOK");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/@cloudAndVisibilityOK");
         Assert.assertEquals("CAVOK does not match", "false", expr.evaluate(docElement));
 
         //Forecast properties:
 
         //iwxxm30:clouds:
-        expr = xpath.compile(
-                "count(/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
-                        + ":AerodromeCloudForecast/iwxxm30:layer)");
+        expr = xpath.compile("count(/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
+                + ":AerodromeCloudForecast/iwxxm30:layer)");
         Assert.assertEquals("Change Forecast 2 cloud layer count does not match", "2", expr.evaluate(docElement));
 
         //BKN008
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                 + ":AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30" + ":CloudLayer/iwxxm30:amount/@xlink:href");
-        Assert.assertEquals("Change Forecast 2 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expr.evaluate(docElement));
+        Assert.assertEquals("Change Forecast 2 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN",
+                expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                 + ":AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30" + ":CloudLayer/iwxxm30:base/@uom");
@@ -744,7 +774,8 @@ public class TAFIWXXMSerializerTest {
         //SCT015CB
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                 + ":AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30" + ":CloudLayer/iwxxm30:amount/@xlink:href");
-        Assert.assertEquals("Change Forecast 2 cloud layer 2 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT", expr.evaluate(docElement));
+        Assert.assertEquals("Change Forecast 2 cloud layer 2 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT",
+                expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                 + ":AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30" + ":CloudLayer/iwxxm30:base/@uom");
@@ -756,16 +787,19 @@ public class TAFIWXXMSerializerTest {
 
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[2]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                 + ":AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30" + ":CloudLayer/iwxxm30:cloudType/@xlink:href");
-        Assert.assertEquals("Change Forecast 2 cloud layer 2 type does not match", "http://codes.wmo.int/49-2/SigConvectiveCloudType/CB", expr.evaluate(docElement));
+        Assert.assertEquals("Change Forecast 2 cloud layer 2 type does not match", "http://codes.wmo.int/49-2/SigConvectiveCloudType/CB",
+                expr.evaluate(docElement));
 
         //Change forecast 3: TEMPO 3102/3112 3000 SHRASN BKN006 BKN015CB
 
         //Temporals:
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:beginPosition");
         timeRef = expr.evaluate(docElement);
         Assert.assertEquals("Change forecast 3 phenomenonTime begin pos does not match", "2017-07-31T02:00:00Z", timeRef);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml:endPosition");
         timeRef = expr.evaluate(docElement);
         Assert.assertEquals("Change forecast 3 phenomenonTime end pos does not match", "2017-07-31T12:00:00Z", timeRef);
 
@@ -774,24 +808,20 @@ public class TAFIWXXMSerializerTest {
         Assert.assertEquals("Change forecast 3 change indicator does not match", "TEMPORARY_FLUCTUATIONS", expr.evaluate(docElement));
 
         //CAVOK:
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/@cloudAndVisibilityOK");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/@cloudAndVisibilityOK");
         Assert.assertEquals("Change forecast 3 CAVOK does not match", "false", expr.evaluate(docElement));
 
         //Forecast properties:
 
         //Visibility:
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility");
         Assert.assertEquals("Change forecast 3 Visibility does not match", Double.parseDouble(expr.evaluate(docElement)), 3000.0, 0.00001);
 
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility/@uom");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:prevailingVisibility/@uom");
         Assert.assertEquals("Change forecast 3 visibility uom does not match", "m", expr.evaluate(docElement));
 
         //Weather:
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:weather[1]" + "/@xlink:href");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:weather[1]" + "/@xlink:href");
         Assert.assertEquals("Change forecast 3 weather 1 does not match", "http://codes.wmo.int/306/4678/SHRASN", expr.evaluate(docElement));
 
         //iwxxm30:cloud:
@@ -799,7 +829,8 @@ public class TAFIWXXMSerializerTest {
         //BKN006
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                 + ":AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30" + ":CloudLayer/iwxxm30:amount/@xlink:href");
-        Assert.assertEquals("Change Forecast 3 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expr.evaluate(docElement));
+        Assert.assertEquals("Change Forecast 3 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN",
+                expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                 + ":AerodromeCloudForecast/iwxxm30:layer[1]/iwxxm30" + ":CloudLayer/iwxxm30:base/@uom");
@@ -813,7 +844,8 @@ public class TAFIWXXMSerializerTest {
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                 + ":AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30" + ":CloudLayer/iwxxm30:amount/@xlink:href");
 
-        Assert.assertEquals("Change Forecast 3 cloud layer 2 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expr.evaluate(docElement));
+        Assert.assertEquals("Change Forecast 3 cloud layer 2 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN",
+                expr.evaluate(docElement));
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                 + ":AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30" + ":CloudLayer/iwxxm30:base/@uom");
         Assert.assertEquals("Change Forecast 3 cloud layer 2 base uom does not match", "[ft_i]", expr.evaluate(docElement));
@@ -824,18 +856,19 @@ public class TAFIWXXMSerializerTest {
 
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[3]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:cloud/iwxxm30"
                 + ":AerodromeCloudForecast/iwxxm30:layer[2]/iwxxm30" + ":CloudLayer/iwxxm30:cloudType/@xlink:href");
-        Assert.assertEquals("Change Forecast 3 cloud layer 2 type does not match", "http://codes.wmo.int/49-2/SigConvectiveCloudType/CB", expr.evaluate(docElement));
+        Assert.assertEquals("Change Forecast 3 cloud layer 2 type does not match", "http://codes.wmo.int/49-2/SigConvectiveCloudType/CB",
+                expr.evaluate(docElement));
 
         //Change forecast 4: BECMG 3104/3106 21016G30KT VV001=
 
         //Temporals:
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[4]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml"
-                + ":beginPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[4]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml" + ":beginPosition");
         timeRef = expr.evaluate(docElement);
         Assert.assertEquals("Change forecast 4 phenomenonTime begin pos does not match", "2017-07-31T04:00:00Z", timeRef);
 
-        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[4]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml"
-                + ":endPosition");
+        expr = xpath.compile(
+                "/iwxxm30:TAF/iwxxm30:changeForecast[4]/iwxxm30:MeteorologicalAerodromeForecast/iwxxm30:phenomenonTime/gml:TimePeriod/gml" + ":endPosition");
         timeRef = expr.evaluate(docElement);
         Assert.assertEquals("Change forecast 4 phenomenonTime end pos does not match", "2017-07-31T06:00:00Z", timeRef);
 
@@ -844,8 +877,7 @@ public class TAFIWXXMSerializerTest {
         Assert.assertEquals("Change forecast 4 change indicator does not match", "BECOMING", expr.evaluate(docElement));
 
         //CAVOK:
-        expr = xpath.compile(
-                "/iwxxm30:TAF/iwxxm30:changeForecast[4]/iwxxm30:MeteorologicalAerodromeForecast/@cloudAndVisibilityOK");
+        expr = xpath.compile("/iwxxm30:TAF/iwxxm30:changeForecast[4]/iwxxm30:MeteorologicalAerodromeForecast/@cloudAndVisibilityOK");
         Assert.assertEquals("Change forecast 4 CAVOK does not match", "false", expr.evaluate(docElement));
 
         //Forecast properties:
@@ -999,7 +1031,7 @@ public class TAFIWXXMSerializerTest {
                 .build();
 
         //Weather
-        final List<Weather> w1 = Arrays.asList(WeatherImpl.builder().setCode("TSRA").build());
+        final List<Weather> w1 = Collections.singletonList(WeatherImpl.builder().setCode("TSRA").build());
 
         forecasts.add(createChangeForecast(t1, AviationCodeListUser.TAFChangeIndicator.BECOMING, f1, null, null, null, w1));
 
@@ -1035,7 +1067,7 @@ public class TAFIWXXMSerializerTest {
                 .build();
 
         final CloudForecast f3 = CloudForecastImpl.builder()
-                .setLayers(Arrays.asList(CloudLayerImpl.builder()
+                .setLayers(Collections.singletonList(CloudLayerImpl.builder()
                         .setAmount(AviationCodeListUser.CloudAmount.BKN)
                         .setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(2000d).build())
                         .build()))
@@ -1084,7 +1116,7 @@ public class TAFIWXXMSerializerTest {
         final CloudLayerImpl.Builder cloud = CloudLayerImpl.builder();
         cloud.setAmount(AviationCodeListUser.CloudAmount.BKN);
         cloud.setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(2000d).build());
-        builder.setCloud(CloudForecastImpl.builder().setLayers(Arrays.asList(cloud.build())).build());
+        builder.setCloud(CloudForecastImpl.builder().setLayers(Collections.singletonList(cloud.build())).build());
 
         return builder.build();
     }
