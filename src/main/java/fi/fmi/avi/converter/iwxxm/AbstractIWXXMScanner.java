@@ -159,7 +159,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             nilReason.ifPresent(reason -> nilReasons.addAll(Arrays.asList(reason.split("\\s"))));
         } else {
             try {
-                final Class[] params = new Class[0];
+                final Class<?>[] params = new Class<?>[0];
                 final Method getNilReason = clz.getMethod("getNilReason", params);
                 final Object[] paramValues = new Object[0];
                 final Object value = getNilReason.invoke(child, paramValues);

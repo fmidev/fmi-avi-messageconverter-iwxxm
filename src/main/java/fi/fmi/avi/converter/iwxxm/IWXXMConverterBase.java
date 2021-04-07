@@ -492,8 +492,7 @@ public abstract class IWXXMConverterBase {
                         getObject = prop.getClass().getMethod("getAny", (Class<?>[]) null);
                         final Object wrapper = getObject.invoke(prop, (Object[]) null);
                         if (wrapper != null && JAXBElement.class.isAssignableFrom(wrapper.getClass())) {
-                            final Object value = ((JAXBElement) wrapper).getValue();
-                            return (Optional<T>) Optional.of(value);
+                            return Optional.of(((JAXBElement<T>) wrapper).getValue());
                         }
                     } catch (final NoSuchMethodException nsme2) {
                         //NOOP

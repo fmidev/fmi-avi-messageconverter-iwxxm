@@ -287,7 +287,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         }
     }
 
-    public boolean checkCompleteTimeReferences(final TAF input, final ConversionResult result) {
+    public boolean checkCompleteTimeReferences(final TAF input, final ConversionResult<?> result) {
         boolean referencesComplete = true;
         if (!input.areAllTimeReferencesComplete()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "All time references must be completed before converting to IWXXM"));
@@ -296,7 +296,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         return referencesComplete;
     }
 
-    public void checkAerodromeReferencePositions(final TAF input, final ConversionResult result) {
+    public void checkAerodromeReferencePositions(final TAF input, final ConversionResult<?> result) {
         if (!input.allAerodromeReferencesContainPosition()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Severity.INFO, ConversionIssue.Type.MISSING_DATA,
                     "At least one of the Aerodrome references does not contain reference point location"));

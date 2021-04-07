@@ -106,12 +106,12 @@ public abstract class AbstractPropertyContainer {
      *         if the property with this key already has non-list value, or if the value is of wrong type
      */
     @SuppressWarnings("unchecked")
-    public void addToList(final PropertyName key, final Object value) throws IllegalArgumentException {
+    public <E> void addToList(final PropertyName key, final E value) throws IllegalArgumentException {
         if (key.getAcceptedType().isAssignableFrom(value.getClass())) {
             final Object o = this.properties.computeIfAbsent(key, k -> new ArrayList<>());
             if (o instanceof List) {
-                final List retval = (List) o;
-                retval.add(value);
+                final List<E> list = (List<E>) o;
+                list.add(value);
             } else {
                 throw new IllegalArgumentException("Property " + key + " has non-list value set, cannot add as list value");
             }

@@ -67,7 +67,7 @@ public class ReferredObjectRetrievalContext {
                 Object elem = binder.getJAXBNode(hit);
                 if (elem != null) {
                     if (elem instanceof JAXBElement) {
-                        elem = ((JAXBElement) elem).getValue();
+                        elem = ((JAXBElement<?>) elem).getValue();
                     }
                     identifiedObjects.put(idNode.getNodeValue(), elem);
                 }
