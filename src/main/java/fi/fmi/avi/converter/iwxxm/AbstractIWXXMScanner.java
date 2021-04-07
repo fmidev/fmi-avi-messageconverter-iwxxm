@@ -159,7 +159,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             nilReason.ifPresent(reason -> nilReasons.addAll(Arrays.asList(reason.split("\\s"))));
         } else {
             try {
-                final Class[] params = new Class[0];
+                final Class<?>[] params = new Class<?>[0];
                 final Method getNilReason = clz.getMethod("getNilReason", params);
                 final Object[] paramValues = new Object[0];
                 final Object value = getNilReason.invoke(child, paramValues);
@@ -286,7 +286,7 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
         return retval;
     }
 
-    public static void withWeatherBuilderFor(String codeListValue, String description, final ConversionHints hints,
+    public static void withWeatherBuilderFor(final String codeListValue, final String description, final ConversionHints hints,
             final Consumer<WeatherImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
         if (codeListValue != null && codeListValue.startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER)) {

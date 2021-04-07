@@ -14,6 +14,7 @@ import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Parser;
 import fi.fmi.avi.converter.iwxxm.v2_1.OMObservationProperties;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.AviationCodeListUser.TrendForecastChangeIndicator;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTime;
@@ -69,7 +70,7 @@ public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T,
             } else {
                 result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No aerodrome info in METAR"));
             }
-            Optional<PartialOrCompleteTimeInstant> phenTime = observationProperties.get()
+            final Optional<PartialOrCompleteTimeInstant> phenTime = observationProperties.get()
                     .get(OMObservationProperties.Name.PHENOMENON_TIME, PartialOrCompleteTimeInstant.class);
 
             if (phenTime.isPresent()) {
@@ -120,34 +121,29 @@ public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T,
                         trendBuilder.setPeriodOfChange((PartialOrCompleteTimePeriod) phenTime.get());
                     }
                 }
-                final Optional<TrendForecastRecordProperties> trendRecord = trendProperties.get(OMObservationProperties.Name.RESULT,
-                        TrendForecastRecordProperties.class);
-                if (trendRecord.isPresent()) {
-                    trendRecord.get()
-                            .get(TrendForecastRecordProperties.Name.CHANGE_INDICATOR, AviationCodeListUser.TrendForecastChangeIndicator.class)
-                            .ifPresent(trendBuilder::setChangeIndicator);
-                    trendRecord.get().get(TrendForecastRecordProperties.Name.SURFACE_WIND, SurfaceWind.class)
-                            .ifPresent(trendBuilder::setSurfaceWind);
-                    final Optional<Boolean> cavok = trendRecord.get().get(TrendForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class);
-                    if (cavok.isPresent() && cavok.get()) {
-                        trendBuilder.setCeilingAndVisibilityOk(true);
-                    } else {
-                        trendRecord.get()
-                                .get(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class)
-                                .ifPresent(trendBuilder::setPrevailingVisibility);
-                        trendRecord.get()
-                                .get(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, AviationCodeListUser.RelationalOperator.class)
-                                .ifPresent(trendBuilder::setPrevailingVisibilityOperator);
+                trendProperties.get(OMObservationProperties.Name.RESULT, TrendForecastRecordProperties.class)//
+                        .ifPresent(trendRecord -> {
+                            trendRecord.get(TrendForecastRecordProperties.Name.CHANGE_INDICATOR, TrendForecastChangeIndicator.class)
+                                    .ifPresent(trendBuilder::setChangeIndicator);
+                            trendRecord.get(TrendForecastRecordProperties.Name.SURFACE_WIND, SurfaceWind.class).ifPresent(trendBuilder::setSurfaceWind);
+                            final Optional<Boolean> cavok = trendRecord.get(TrendForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class);
+                            if (cavok.orElse(false)) {
+                                trendBuilder.setCeilingAndVisibilityOk(true);
+                            } else {
+                                trendRecord.get(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class)
+                                        .ifPresent(trendBuilder::setPrevailingVisibility);
+                                trendRecord.get(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR,
+                                        AviationCodeListUser.RelationalOperator.class).ifPresent(trendBuilder::setPrevailingVisibilityOperator);
 
-                        final Optional<Boolean> nsw = trendRecord.get().get(TrendForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class);
-                        if (nsw.isPresent() && nsw.get()) {
-                            trendBuilder.setNoSignificantWeather(true);
-                        } else {
-                            trendBuilder.setForecastWeather(trendRecord.get().getList(TrendForecastRecordProperties.Name.FORECAST_WEATHER, Weather.class));
-                        }
-                        trendRecord.get().get(TrendForecastRecordProperties.Name.CLOUD, CloudForecast.class).ifPresent(trendBuilder::setCloud);
-                    }
-                }
+                                final Optional<Boolean> nsw = trendRecord.get(TrendForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class);
+                                if (nsw.orElse(false)) {
+                                    trendBuilder.setNoSignificantWeather(true);
+                                } else {
+                                    trendBuilder.setForecastWeather(trendRecord.getList(TrendForecastRecordProperties.Name.FORECAST_WEATHER, Weather.class));
+                                }
+                                trendRecord.get(TrendForecastRecordProperties.Name.CLOUD, CloudForecast.class).ifPresent(trendBuilder::setCloud);
+                            }
+                        });
                 trends.add(trendBuilder.build());
             }
             if (!trends.isEmpty()) {
@@ -155,7 +151,7 @@ public abstract class MeteorologicalAerodromeObservationReportIWXXMParserBase<T,
             }
         }
 
-        properties.get(METARProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent((metaProps) -> {
+        properties.get(METARProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent(metaProps -> {
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class).ifPresent(builder::setPermissibleUsage);
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_REASON, AviationCodeListUser.PermissibleUsageReason.class)
                     .ifPresent(builder::setPermissibleUsageReason);

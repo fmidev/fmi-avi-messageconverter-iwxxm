@@ -5,14 +5,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -21,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -29,7 +26,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.DOMParsingTestBase;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
@@ -74,6 +70,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
                 .map(method -> {
                     try {
                         final Optional<?> optional = (Optional<?>) method.invoke(region);
+                        //noinspection OptionalAssignedToNull
                         return optional == null ? Optional.empty() : optional;
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new AssertionError("Unable to invoke " + method + ": " + e.getMessage());

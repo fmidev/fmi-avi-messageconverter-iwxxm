@@ -75,7 +75,8 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
         final Optional<AviationCodeListUser.SigmetAirmetReportStatus> status = properties.get(SIGMETProperties.Name.STATUS,
                 AviationCodeListUser.SigmetAirmetReportStatus.class);
         if (!status.isPresent()) {
-            result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "SIGMET status not known, unable to " + "proceed"));
+            result.addIssue(
+                    new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "SIGMET status not known, unable to " + "proceed"));
             return null;
         }
 
@@ -150,7 +151,7 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
 
     private SIGMET createSIGMET(final SIGMETProperties properties, final AviationCodeListUser.SigmetAirmetReportStatus status,
             final ConversionResult<SIGMET> result) {
-        final SIGMETImpl.Builder SIGMETBuilder = new SIGMETImpl.Builder();
+        final SIGMETImpl.Builder SIGMETBuilder = SIGMETImpl.builder();
         SIGMETBuilder.setStatus(status);
 
         return SIGMETBuilder.build();
@@ -177,7 +178,9 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
         /**
          * This implementation simple passes the input Document through.
          *
-         * @param input the raw input format
+         * @param input
+         *         the raw input format
+         *
          * @return the parsed DOM
          */
         @Override
@@ -190,9 +193,13 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM21Parser<T, SIGM
         /**
          * Returns the TAF input message as A DOM Document.
          *
-         * @param input the XML Document input as a String
+         * @param input
+         *         the XML Document input as a String
+         *
          * @return the input parsed as DOM
-         * @throws ConversionException if an exception occurs while converting input to DOM
+         *
+         * @throws ConversionException
+         *         if an exception occurs while converting input to DOM
          */
         @Override
         protected Document parseAsDom(final String input) throws ConversionException {

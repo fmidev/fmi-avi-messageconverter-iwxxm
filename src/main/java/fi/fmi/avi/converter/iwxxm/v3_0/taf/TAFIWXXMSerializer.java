@@ -5,9 +5,8 @@ import static fi.fmi.avi.model.AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NO
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,13 +41,13 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
-import fi.fmi.avi.model.ElevatedPoint;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -113,33 +112,32 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Issue time for TAF is missing"));
             return result;
         }
-        taf.setIssueTime(create(TimeInstantPropertyType.class, (prop) -> createTimeInstantProperty(input, prop, issueTimeId)));
+        taf.setIssueTime(create(TimeInstantPropertyType.class, prop -> createTimeInstantProperty(input, prop, issueTimeId)));
 
         if (input.getValidityTime().isPresent()) {
-            final Optional<PartialOrCompleteTimeInstant> start = input.getValidityTime().get().getStartTime();
-            final Optional<PartialOrCompleteTimeInstant> end = input.getValidityTime().get().getEndTime();
-            if (!start.isPresent() || !end.isPresent()) {
+            final PartialOrCompleteTimeInstant start = input.getValidityTime().get().getStartTime().orElse(null);
+            final PartialOrCompleteTimeInstant end = input.getValidityTime().get().getEndTime().orElse(null);
+            if (start == null || end == null) {
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Validity time for TAF is missing start or end"));
                 return result;
             }
-            if (!start.get().getCompleteTime().isPresent() || !end.get().getCompleteTime().isPresent()) {
+            if (!start.getCompleteTime().isPresent() || !end.getCompleteTime().isPresent()) {
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Validity time for TAF is not a fully qualified time period"));
                 return result;
             }
-            taf.setValidPeriod(create(TimePeriodPropertyType.class, (prop) -> createTimePeriodPropertyType(prop, start.get(), end.get(), validTimeId)));
+            taf.setValidPeriod(create(TimePeriodPropertyType.class, prop -> createTimePeriodPropertyType(prop, start, end, validTimeId)));
         }
 
         this.updateAerodrome(input.getAerodrome(), taf, aerodromeId);
 
         this.updateBaseForecast(input, taf, validTimeId, result);
 
-        if (input.getChangeForecasts().isPresent() && input.getChangeForecasts().get().size() > 0) {
+        if (input.getChangeForecasts().map(changeForecasts -> !changeForecasts.isEmpty()).orElse(false)) {
             this.updateChangeForecast(input, taf, result);
         }
-
-        if (input.isCancelMessage() && input.getReferredReportValidPeriod().isPresent()) {
+        if (input.isCancelMessage()) {
             taf.setIsCancelReport(true);
-            updateCancellationReportValidPeriod(input.getReferredReportValidPeriod().get(), taf);
+            input.getReferredReportValidPeriod().ifPresent(period -> updateCancellationReportValidPeriod(period, taf));
         }
 
         try {
@@ -157,135 +155,115 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
     }
 
     private void updateCancellationReportValidPeriod(final PartialOrCompleteTimePeriod cancelTime, final TAFType target) {
-        target.setCancelledReportValidPeriod(create(TimePeriodPropertyType.class, prop -> {
-            prop.setTimePeriod(create(TimePeriodType.class, type -> {
-                type.setId("uuid." + UUID.randomUUID());
-
-                if (cancelTime.getStartTime().isPresent()) {
-                    type.setBeginPosition(create(TimePositionType.class, begin -> {
-                        begin.getValue().add(cancelTime.getStartTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-                    }));
-                }
-
-                if (cancelTime.getEndTime().isPresent()) {
-                    type.setEndPosition(create(TimePositionType.class, begin -> {
-                        begin.getValue().add(cancelTime.getEndTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-                    }));
-                }
-            }));
-        }));
+        target.setCancelledReportValidPeriod(create(TimePeriodPropertyType.class, prop -> prop.setTimePeriod(create(TimePeriodType.class, type -> {
+            type.setId("uuid." + UUID.randomUUID());
+            if (cancelTime.getStartTime().isPresent()) {
+                type.setBeginPosition(create(TimePositionType.class, begin -> startToIWXXMDateTime(cancelTime).ifPresent(time -> begin.getValue().add(time))));
+            }
+            if (cancelTime.getEndTime().isPresent()) {
+                type.setEndPosition(create(TimePositionType.class, end -> endToIWXXMDateTime(cancelTime).ifPresent(time -> end.getValue().add(time))));
+            }
+        }))));
     }
 
     private void updateAerodrome(final Aerodrome aerodrome, final TAFType target, final String aerodromeId) {
-        target.setAerodrome(create(AirportHeliportPropertyType.class, prop -> {
-            prop.setAirportHeliport(create(AirportHeliportType.class, type -> {
-                type.setId(aerodromeId);
-                final AirportHeliportTimeSliceType timeSlice = create(AirportHeliportTimeSliceType.class);
-                timeSlice.setId("uuid." + UUID.randomUUID());
+        target.setAerodrome(create(AirportHeliportPropertyType.class, prop -> prop.setAirportHeliport(create(AirportHeliportType.class, type -> {
+            type.setId(aerodromeId);
+            final AirportHeliportTimeSliceType timeSlice = create(AirportHeliportTimeSliceType.class);
+            timeSlice.setId("uuid." + UUID.randomUUID());
 
-                timeSlice.setInterpretation("SNAPSHOT");
-                timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
+            timeSlice.setInterpretation("SNAPSHOT");
+            timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
 
-                timeSlice.setDesignator(create(CodeAirportHeliportDesignatorType.class, (code) -> code.setValue(aerodrome.getDesignator())));
+            timeSlice.setDesignator(create(CodeAirportHeliportDesignatorType.class, code -> code.setValue(aerodrome.getDesignator())));
 
-                if (aerodrome.getName().isPresent()) {
-                    final TextNameType name = new TextNameType();
-                    name.setValue(aerodrome.getName().get());
-                    timeSlice.setPortName(name);
-                }
+            aerodrome.getName().ifPresent(value -> {
+                final TextNameType name = new TextNameType();
+                name.setValue(value);
+                timeSlice.setPortName(name);
+            });
+            aerodrome.getLocationIndicatorICAO().ifPresent(value -> {
+                final CodeICAOType code = new CodeICAOType();
+                code.setValue(value);
+                timeSlice.setLocationIndicatorICAO(code);
+            });
+            aerodrome.getReferencePoint().ifPresent(sourcePoint -> timeSlice.setARP(create(ElevatedPointPropertyType.class, elevatedPointProp -> {
+                final ElevatedPointType targetPoint = create(ElevatedPointType.class);
+                targetPoint.setId("uuid." + UUID.randomUUID());
 
-                if (aerodrome.getLocationIndicatorICAO().isPresent()) {
-                    final CodeICAOType code = new CodeICAOType();
-                    code.setValue(aerodrome.getLocationIndicatorICAO().get());
-                    timeSlice.setLocationIndicatorICAO(code);
-                }
-
-                if (aerodrome.getReferencePoint().isPresent()) {
-                    timeSlice.setARP(create(ElevatedPointPropertyType.class, elevatedPointProp -> {
-                        final ElevatedPoint sourcePoint = aerodrome.getReferencePoint().get();
-                        final ElevatedPointType targetPoint = create(ElevatedPointType.class);
-                        targetPoint.setId("uuid." + UUID.randomUUID());
-
-                        if (sourcePoint.getElevationValue().isPresent() && sourcePoint.getElevationUom().isPresent()) {
-                            targetPoint.setElevation(create(ValDistanceVerticalType.class, verticalType -> {
-                                verticalType.setUom(sourcePoint.getElevationUom().get());
-                                verticalType.setValue(sourcePoint.getElevationValue().get().toString());
-                            }));
-                        }
-
-                        targetPoint.setPos(create(DirectPositionType.class, pos -> {
-                            pos.getValue().addAll(sourcePoint.getCoordinates());
-                        }));
-
-                        if (sourcePoint.getVerticalDatum().isPresent()) {
-                            targetPoint.setVerticalDatum(
-                                    create(CodeVerticalDatumType.class, verticalCode -> verticalCode.setValue(sourcePoint.getVerticalDatum().get())));
-                        }
-
-                        targetPoint.setSrsDimension(BigInteger.valueOf(2));
-                        targetPoint.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
-
-                        targetPoint.getAxisLabels().addAll(Arrays.asList("Lat", "Long"));
-                        elevatedPointProp.setElevatedPoint(targetPoint);
+                if (sourcePoint.getElevationValue().isPresent() && sourcePoint.getElevationUom().isPresent()) {
+                    targetPoint.setElevation(create(ValDistanceVerticalType.class, verticalType -> {
+                        verticalType.setUom(sourcePoint.getElevationUom().get());
+                        verticalType.setValue(sourcePoint.getElevationValue().get().toString());
                     }));
                 }
-                type.getTimeSlice().add(create(AirportHeliportTimeSlicePropertyType.class, sliceProp -> sliceProp.setAirportHeliportTimeSlice(timeSlice)));
-                prop.setAirportHeliport(type);
-            }));
-        }));
+
+                targetPoint.setPos(create(DirectPositionType.class, pos -> pos.getValue().addAll(sourcePoint.getCoordinates())));
+
+                sourcePoint.getVerticalDatum()
+                        .ifPresent(verticalDatum -> targetPoint.setVerticalDatum(
+                                create(CodeVerticalDatumType.class, verticalCode -> verticalCode.setValue(verticalDatum))));
+
+                targetPoint.setSrsDimension(BigInteger.valueOf(2));
+                targetPoint.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
+
+                targetPoint.getAxisLabels().addAll(Arrays.asList("Lat", "Long"));
+                elevatedPointProp.setElevatedPoint(targetPoint);
+            })));
+            type.getTimeSlice().add(create(AirportHeliportTimeSlicePropertyType.class, sliceProp -> sliceProp.setAirportHeliportTimeSlice(timeSlice)));
+            prop.setAirportHeliport(type);
+        }))));
     }
 
     protected void updateChangeForecast(final TAF source, final TAFType target, final ConversionResult<?> result) {
-
-        final Optional<List<TAFChangeForecast>> fcts = source.getChangeForecasts();
-        if (!source.getValidityTime().isPresent() || !source.getValidityTime().get().isComplete()) {
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.SYNTAX, "TAF validity time is not complete"));
+        final ZonedDateTime tafValidityStart = source.getValidityTime()//
+                .flatMap(PartialOrCompleteTimePeriod::getStartTime)//
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)//
+                .orElse(null);
+        final ZonedDateTime tafValidityEnd = source.getValidityTime()//
+                .flatMap(PartialOrCompleteTimePeriod::getEndTime)//
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)//
+                .orElse(null);
+        if (tafValidityStart == null || tafValidityEnd == null) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.SYNTAX, "TAF validity time is missing complete start and end time"));
             return;
         }
-        final ZonedDateTime tafValidityStart = source.getValidityTime().get().getStartTime().get().getCompleteTime().get();
-        final ZonedDateTime tafValidityEnd = source.getValidityTime().get().getEndTime().get().getCompleteTime().get();
-        if (fcts.isPresent()) {
-            for (final TAFChangeForecast fctInput : fcts.get()) {
-                final MeteorologicalAerodromeForecastType changeFct = create(MeteorologicalAerodromeForecastType.class);
-                changeFct.setId("uuid." + UUID.randomUUID().toString());
-                final Optional<PartialOrCompleteTimeInstant> start = fctInput.getPeriodOfChange().getStartTime();
-                final Optional<PartialOrCompleteTimeInstant> end = fctInput.getPeriodOfChange().getEndTime();
-                if (start.isPresent() && start.get().getCompleteTime().isPresent() && end.isPresent() && end.get().getCompleteTime().isPresent()) {
-                    final ZonedDateTime startTime = start.get().getCompleteTime().get();
-                    final ZonedDateTime endTime = end.get().getCompleteTime().get();
-                    if (startTime.isBefore(tafValidityStart)) {
-                        result.addIssue(new ConversionIssue(ConversionIssue.Type.LOGICAL,
-                                "Change group start time '" + startTime.toString() + "'" + " is before TAF validity start time " + tafValidityStart.format(
-                                        DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                    }
-                    if (endTime.isAfter(tafValidityEnd)) {
-                        result.addIssue(new ConversionIssue(ConversionIssue.Type.LOGICAL,
-                                "Change group end time '" + endTime.toString() + "' is " + " after TAF validity end time " + tafValidityEnd.format(
-                                        DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                    }
 
-                    changeFct.setPhenomenonTime(create(TimePeriodPropertyType.class, (toProp) -> {
-                        final TimePeriodType wrapped = create(TimePeriodType.class, (period) -> {
-                            period.setId("uuid." + UUID.randomUUID().toString());
-                            period.setBeginPosition(
-                                    create(TimePositionType.class, (tPos) -> tPos.getValue().add(startTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                            period.setEndPosition(
-                                    create(TimePositionType.class, (tPos) -> tPos.getValue().add(endTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                        });
-                        toProp.setTimePeriod(wrapped);
-                    }));
-
-                    this.updateForecastResult(fctInput, changeFct, result);
-
-                    target.getChangeForecast()
-                            .add(create(MeteorologicalAerodromeForecastPropertyType.class, (prop) -> prop.setMeteorologicalAerodromeForecast(changeFct)));
-
-                } else {
-                    result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                            "Missing full validity start and/or end times in change forecast for '" + fctInput.getPeriodOfChange() + "'"));
+        for (final TAFChangeForecast fctInput : source.getChangeForecasts().orElse(Collections.emptyList())) {
+            final MeteorologicalAerodromeForecastType changeFct = create(MeteorologicalAerodromeForecastType.class);
+            changeFct.setId("uuid." + UUID.randomUUID().toString());
+            changeFct.setChangeIndicator(AerodromeForecastChangeIndicatorType.valueOf(fctInput.getChangeIndicator().name()));
+            final ZonedDateTime startTime = fctInput.getPeriodOfChange().getStartTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).orElse(null);
+            final ZonedDateTime endTime = fctInput.getPeriodOfChange().getEndTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).orElse(null);
+            if (startTime != null && endTime != null) {
+                if (startTime.isBefore(tafValidityStart)) {
+                    result.addIssue(new ConversionIssue(ConversionIssue.Type.LOGICAL,
+                            "Change group start time '" + startTime.toString() + "'" + " is before TAF validity start time " + toIWXXMDateTime(
+                                    tafValidityStart)));
+                }
+                if (endTime.isAfter(tafValidityEnd)) {
+                    result.addIssue(new ConversionIssue(ConversionIssue.Type.LOGICAL,
+                            "Change group end time '" + endTime.toString() + "' is " + " after TAF validity end time " + toIWXXMDateTime(tafValidityEnd)));
                 }
 
+                changeFct.setPhenomenonTime(create(TimePeriodPropertyType.class, toProp -> {
+                    final TimePeriodType wrapped = create(TimePeriodType.class, period -> {
+                        period.setId("uuid." + UUID.randomUUID().toString());
+                        period.setBeginPosition(create(TimePositionType.class, tPos -> tPos.getValue().add(toIWXXMDateTime(startTime))));
+                        period.setEndPosition(create(TimePositionType.class, tPos -> tPos.getValue().add(toIWXXMDateTime(endTime))));
+                    });
+                    toProp.setTimePeriod(wrapped);
+                }));
+
+                this.updateForecastResult(fctInput, changeFct, result);
+
+                target.getChangeForecast()
+                        .add(create(MeteorologicalAerodromeForecastPropertyType.class, prop -> prop.setMeteorologicalAerodromeForecast(changeFct)));
+            } else {
+                result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                        "Missing full validity start and/or end times in change forecast for '" + fctInput.getPeriodOfChange() + "'"));
             }
+
         }
     }
 
@@ -299,35 +277,34 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         if (!source.isCeilingAndVisibilityOk()) {
             final Optional<NumericMeasure> measure = source.getPrevailingVisibility();
             measure.ifPresent(numericMeasure -> target.setPrevailingVisibility(asMeasure(numericMeasure, LengthType.class)));
-            if (source.getPrevailingVisibilityOperator().isPresent()) {
-                target.setPrevailingVisibilityOperator(RelationalOperatorType.valueOf(source.getPrevailingVisibilityOperator().get().name()));
-            }
+            source.getPrevailingVisibilityOperator()//
+                    .map(operator -> RelationalOperatorType.valueOf(operator.name()))//
+                    .ifPresent(target::setPrevailingVisibilityOperator);
             if (source.getForecastWeather().isPresent()) {
                 for (final Weather weather : source.getForecastWeather().get()) {
-                    target.getWeather().add(create(AerodromeForecastWeatherType.class, (w) -> {
-                        w.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER + weather.getCode());
-                    }));
+                    target.getWeather()
+                            .add(create(AerodromeForecastWeatherType.class,
+                                    w -> w.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER + weather.getCode())));
                 }
             } else if (source.isNoSignificantWeather()) {
                 //The expected end of occurrence of weather phenomena shall be indicated by a nil "forecastWeather"
                 // with a nil reason of "http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"
                 target.getWeather()
                         .add(create(AerodromeForecastWeatherType.class,
-                                (w) -> w.getNilReason().add(CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)));
+                                w -> w.getNilReason().add(CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)));
             }
-            final Optional<CloudForecast> cFct = source.getCloud();
-            if (cFct.isPresent()) {
+            source.getCloud().ifPresent(cloudForecast -> {
                 final AerodromeCloudForecastPropertyType cloudProp = create(AerodromeCloudForecastPropertyType.class);
-                if (cFct.get().isNoSignificantCloud() && !source.isCeilingAndVisibilityOk()) {
+                if (cloudForecast.isNoSignificantCloud() && !source.isCeilingAndVisibilityOk()) {
                     //NOTE: iwxxm:cloud is not nillable, so cannot set xsi:nil="true"
                     cloudProp.getNilReason().add(CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
                 } else {
                     final AerodromeCloudForecastType acFct = create(AerodromeCloudForecastType.class);
-                    this.updateForecastClouds(cFct.get(), acFct, result);
+                    this.updateForecastClouds(cloudForecast, acFct, result);
                     cloudProp.setAerodromeCloudForecast(acFct);
                 }
                 target.setCloud(cloudProp);
-            }
+            });
         } else {
             //When CAVOK conditions apply, the appropriate Record type shall have "cloudAndVisibilityOK" set to true
             // and visibility, runway visual range, weather, and cloud information shall be missing
@@ -342,28 +319,11 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 result.addIssue(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.LOGICAL, "Cloud included with CAVOK, ignoring"));
             }
         }
-        if (source.getSurfaceWind().isPresent()) {
+        source.getSurfaceWind().ifPresent(sourceWind -> {
             final AerodromeSurfaceWindForecastType wind = create(AerodromeSurfaceWindForecastType.class);
-            this.updateForecastSurfaceWind(source.getSurfaceWind().get(), wind, result);
-            target.setSurfaceWind(create(AerodromeSurfaceWindForecastPropertyType.class, (prop) -> prop.setAerodromeSurfaceWindForecast(wind)));
-        }
-
-        if (source instanceof TAFBaseForecast) {
-            final TAFBaseForecast baseFct = (TAFBaseForecast) source;
-            if (baseFct.getTemperatures().isPresent()) {
-                for (final TAFAirTemperatureForecast airTemp : baseFct.getTemperatures().get()) {
-                    final AerodromeAirTemperatureForecastType tempFct = create(AerodromeAirTemperatureForecastType.class);
-                    this.setAirTemperatureForecast(airTemp, tempFct, result);
-                    target.getTemperature()
-                            .add(create(AerodromeAirTemperatureForecastPropertyType.class, (prop) -> prop.setAerodromeAirTemperatureForecast(tempFct)));
-                }
-            }
-        } else if (source instanceof TAFChangeForecast) {
-            final TAFChangeForecast changeFct = (TAFChangeForecast) source;
-            target.setChangeIndicator(AerodromeForecastChangeIndicatorType.valueOf(changeFct.getChangeIndicator().name()));
-        } else {
-            throw new IllegalArgumentException("Unknown TAF forecast type " + source.getClass().getCanonicalName());
-        }
+            this.updateForecastSurfaceWind(sourceWind, wind, result);
+            target.setSurfaceWind(create(AerodromeSurfaceWindForecastPropertyType.class, prop -> prop.setAerodromeSurfaceWindForecast(wind)));
+        });
     }
 
     private void setAirTemperatureForecast(final TAFAirTemperatureForecast source, final AerodromeAirTemperatureForecastType target,
@@ -374,12 +334,12 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Time of the base forecast  minimum temperature is not complete"));
             } else {
                 target.setMinimumAirTemperature(asMeasure(measure));
-                target.setMinimumAirTemperatureTime(
-                        create(TimeInstantPropertyType.class, (prop) -> prop.setTimeInstant(create(TimeInstantType.class, (time) -> {
-                            time.setId("uuid." + UUID.randomUUID().toString());
-                            time.setTimePosition(create(TimePositionType.class, (tPos) -> tPos.getValue()
-                                    .add(source.getMinTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                        }))));
+                target.setMinimumAirTemperatureTime(create(TimeInstantPropertyType.class, prop -> prop.setTimeInstant(create(TimeInstantType.class, time -> {
+                    time.setId("uuid." + UUID.randomUUID().toString());
+                    time.setTimePosition(create(TimePositionType.class, tPos -> source.getMinTemperatureTime().getCompleteTime()//
+                            .map(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                            .ifPresent(tempTime -> tPos.getValue().add(tempTime))));
+                }))));
             }
 
             measure = source.getMaxTemperature();
@@ -387,12 +347,12 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Time of the base forecast  maximum temperature is not complete"));
             } else {
                 target.setMaximumAirTemperature(asMeasure(measure));
-                target.setMaximumAirTemperatureTime(
-                        create(TimeInstantPropertyType.class, (prop) -> prop.setTimeInstant(create(TimeInstantType.class, (time) -> {
-                            time.setId("uuid." + UUID.randomUUID().toString());
-                            time.setTimePosition(create(TimePositionType.class, (tPos) -> tPos.getValue()
-                                    .add(source.getMaxTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                        }))));
+                target.setMaximumAirTemperatureTime(create(TimeInstantPropertyType.class, prop -> prop.setTimeInstant(create(TimeInstantType.class, time -> {
+                    time.setId("uuid." + UUID.randomUUID().toString());
+                    time.setTimePosition(create(TimePositionType.class, tPos -> source.getMaxTemperatureTime().getCompleteTime()//
+                            .map(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                            .ifPresent(tempTime -> tPos.getValue().add(tempTime))));
+                }))));
             }
 
         }
@@ -408,55 +368,50 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
     }
 
     protected void updateForecastClouds(final CloudForecast source, final AerodromeCloudForecastType target, final ConversionResult<?> result) {
-        if (source != null) {
-            target.setId("uuid." + UUID.randomUUID().toString());
-            final Optional<NumericMeasure> measure = source.getVerticalVisibility();
-            if (measure.isPresent()) {
-                final LengthWithNilReasonType vvValue = create(LengthWithNilReasonType.class, (vv) -> {
-                    vv.setValue(measure.get().getValue());
-                    vv.setUom(measure.get().getUom());
-                });
-                target.setVerticalVisibility(new ObjectFactory().createAerodromeCloudTypeVerticalVisibility(vvValue));
-            }
-            if (source.getLayers().isPresent()) {
-                for (final CloudLayer layer : source.getLayers().get()) {
-                    target.getLayer()
-                            .add(create(CloudLayerPropertyType.class,
-                                    (l) -> l.setCloudLayer(create(CloudLayerType.class, (cl) -> this.setForecastCloudLayerData(cl, layer)))));
-                }
-            }
+        if (source == null) {
+            return;
+        }
+        target.setId("uuid." + UUID.randomUUID().toString());
+        source.getVerticalVisibility()//
+                .map(measure -> new ObjectFactory().createAerodromeCloudTypeVerticalVisibility(create(LengthWithNilReasonType.class, vv -> {
+                    vv.setValue(measure.getValue());
+                    vv.setUom(measure.getUom());
+                })))//
+                .ifPresent(target::setVerticalVisibility);
+        for (final CloudLayer layer : source.getLayers().orElse(Collections.emptyList())) {
+            target.getLayer()
+                    .add(create(CloudLayerPropertyType.class,
+                            l -> l.setCloudLayer(create(CloudLayerType.class, cl -> this.setForecastCloudLayerData(cl, layer)))));
         }
     }
 
     protected void setForecastCloudLayerData(final CloudLayerType target, final CloudLayer source) {
-        if (source != null) {
-            if (source.getBase().isPresent()) {
-                target.setBase(create(DistanceWithNilReasonType.class, (base) -> {
-                    base.setUom(source.getBase().get().getUom());
-                    base.setValue(source.getBase().get().getValue());
-                }));
-            }
-
-            final Optional<AviationCodeListUser.CloudAmount> amount = source.getAmount();
-            amount.ifPresent(cloudAmount -> target.setAmount(create(CloudAmountReportedAtAerodromeType.class, (amt) -> {
-                amt.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + cloudAmount.getCode());
-            })));
-
-            final Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
-            if (type.isPresent()) {
-                final ObjectFactory of = new ObjectFactory();
-                final SigConvectiveCloudTypeType sigConvectiveCloudTypeType = of.createSigConvectiveCloudTypeType();
-                sigConvectiveCloudTypeType.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + type.get().getCode());
-                target.setCloudType(of.createCloudLayerTypeCloudType(sigConvectiveCloudTypeType));
-                target.setCloudType(of.createCloudLayerTypeCloudType(sigConvectiveCloudTypeType));
-            }
+        if (source == null) {
+            return;
         }
+        source.getBase()//
+                .map(sourceBase -> create(DistanceWithNilReasonType.class, targetBase -> {
+                    targetBase.setUom(sourceBase.getUom());
+                    targetBase.setValue(sourceBase.getValue());
+                }))//
+                .ifPresent(target::setBase);
+        source.getAmount()//
+                .map(amount -> create(CloudAmountReportedAtAerodromeType.class,
+                        amt -> amt.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + amount.getCode())))//
+                .ifPresent(target::setAmount);
+
+        source.getCloudType().ifPresent(cloudType -> {
+            final ObjectFactory of = new ObjectFactory();
+            final SigConvectiveCloudTypeType sigConvectiveCloudTypeType = of.createSigConvectiveCloudTypeType();
+            sigConvectiveCloudTypeType.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + cloudType.getCode());
+            target.setCloudType(of.createCloudLayerTypeCloudType(sigConvectiveCloudTypeType));
+            target.setCloudType(of.createCloudLayerTypeCloudType(sigConvectiveCloudTypeType));
+        });
     }
 
     protected void updateBaseForecast(final TAF source, final TAFType target, final String validTimeId, final ConversionResult<?> result) {
-
-        final Optional<TAFBaseForecast> baseForecastInput = source.getBaseForecast();
-        if (!baseForecastInput.isPresent()) {
+        final TAFBaseForecast baseForecastInput = source.getBaseForecast().orElse(null);
+        if (baseForecastInput == null) {
             if (!source.isCancelMessage()) {
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Base forecast missing for non-cancellation TAF"));
             }
@@ -465,93 +420,84 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         final MeteorologicalAerodromeForecastType baseFct = create(MeteorologicalAerodromeForecastType.class);
         baseFct.setId("uuid." + UUID.randomUUID().toString());
 
-        baseFct.setPhenomenonTime(create(TimePeriodPropertyType.class, (prop) -> {
-            prop.setHref("#" + validTimeId);
-        }));
+        baseFct.setPhenomenonTime(create(TimePeriodPropertyType.class, prop -> prop.setHref("#" + validTimeId)));
 
-        if (baseForecastInput.get().getPrevailingVisibility().isPresent()) {
-            baseFct.setPrevailingVisibility(create(DistanceWithNilReasonType.class, (prop) -> {
-                final NumericMeasure prevailingVisibility = baseForecastInput.get().getPrevailingVisibility().get();
-                prop.setUom(prevailingVisibility.getUom());
-                prop.setValue(prevailingVisibility.getValue());
-            }));
-        }
+        baseForecastInput.getPrevailingVisibility()//
+                .map(prevailingVisibility -> create(DistanceWithNilReasonType.class, prop -> {
+                    prop.setUom(prevailingVisibility.getUom());
+                    prop.setValue(prevailingVisibility.getValue());
+                }))//
+                .ifPresent(baseFct::setPrevailingVisibility);
 
-        if (baseForecastInput.get().getSurfaceWind().isPresent()) {
+        if (baseForecastInput.getSurfaceWind().isPresent()) {
             baseFct.setSurfaceWind(create(AerodromeSurfaceWindForecastPropertyType.class, prop -> {
                 final AerodromeSurfaceWindForecastType surfaceWindType = create(AerodromeSurfaceWindForecastType.class);
-                final SurfaceWind surfaceWind = baseForecastInput.get().getSurfaceWind().get();
+                final SurfaceWind surfaceWind = baseForecastInput.getSurfaceWind().get();
 
                 surfaceWindType.setVariableWindDirection(surfaceWind.isVariableDirection());
-
-                if (surfaceWind.getMeanWindDirection().isPresent()) {
-                    surfaceWindType.setMeanWindDirection(create(AngleWithNilReasonType.class, (direction) -> {
-                        direction.setUom(surfaceWind.getMeanWindDirection().get().getUom());
-                        direction.setValue(surfaceWind.getMeanWindDirection().get().getValue());
-                    }));
-                }
-
-                surfaceWindType.setMeanWindSpeed(create(VelocityWithNilReasonType.class, (speed) -> {
+                surfaceWind.getMeanWindDirection()//
+                        .map(direction -> create(AngleWithNilReasonType.class, value -> {
+                            value.setUom(direction.getUom());
+                            value.setValue(direction.getValue());
+                        }))//
+                        .ifPresent(surfaceWindType::setMeanWindDirection);
+                surfaceWindType.setMeanWindSpeed(create(VelocityWithNilReasonType.class, speed -> {
                     speed.setUom(surfaceWind.getMeanWindSpeed().getUom());
                     speed.setValue(surfaceWind.getMeanWindSpeed().getValue());
                 }));
+                surfaceWind.getMeanWindSpeedOperator()//
+                        .map(operator -> RelationalOperatorType.valueOf(operator.name()))//
+                        .ifPresent(surfaceWindType::setMeanWindSpeedOperator);
+                surfaceWind.getWindGust()//
+                        .map(value -> create(VelocityWithNilReasonType.class, gustSpeed -> {
+                            gustSpeed.setUom(value.getUom());
+                            gustSpeed.setValue(value.getValue());
+                        }))//
+                        .ifPresent(surfaceWindType::setWindGustSpeed);
+                surfaceWind.getWindGustOperator()//
+                        .map(operator -> RelationalOperatorType.valueOf(operator.name()))//
+                        .ifPresent(surfaceWindType::setWindGustSpeedOperator);
 
-                if (surfaceWind.getMeanWindSpeedOperator().isPresent()) {
-                    surfaceWindType.setMeanWindSpeedOperator(RelationalOperatorType.valueOf(surfaceWind.getMeanWindSpeedOperator().get().name()));
-                }
-
-                if (surfaceWind.getWindGust().isPresent()) {
-                    surfaceWindType.setWindGustSpeed(create(VelocityWithNilReasonType.class, (gustSpeed) -> {
-                        gustSpeed.setUom(surfaceWind.getWindGust().get().getUom());
-                        gustSpeed.setValue(surfaceWind.getWindGust().get().getValue());
-                    }));
-                }
-
-                if (surfaceWind.getWindGustOperator().isPresent()) {
-                    surfaceWindType.setWindGustSpeedOperator(RelationalOperatorType.valueOf(surfaceWind.getWindGustOperator().get().name()));
-                }
                 prop.setAerodromeSurfaceWindForecast(surfaceWindType);
             }));
         }
+        for (final TAFAirTemperatureForecast airTemp : baseForecastInput.getTemperatures().orElse(Collections.emptyList())) {
+            final AerodromeAirTemperatureForecastType tempFct = create(AerodromeAirTemperatureForecastType.class);
+            this.setAirTemperatureForecast(airTemp, tempFct, result);
+            baseFct.getTemperature().add(create(AerodromeAirTemperatureForecastPropertyType.class, prop -> prop.setAerodromeAirTemperatureForecast(tempFct)));
+        }
 
-        this.updateForecastResult(baseForecastInput.get(), baseFct, result);
-        target.setBaseForecast(create(MeteorologicalAerodromeForecastPropertyType.class, (prop) -> prop.setMeteorologicalAerodromeForecast(baseFct)));
+        this.updateForecastResult(baseForecastInput, baseFct, result);
+        target.setBaseForecast(create(MeteorologicalAerodromeForecastPropertyType.class, prop -> prop.setMeteorologicalAerodromeForecast(baseFct)));
     }
 
     protected void updateMessageMetadata(final TAF source, final ConversionResult<?> results, final TAFType target) throws ConversionException {
         try {
             final DatatypeFactory f = DatatypeFactory.newInstance();
             if (source.getPermissibleUsage().isPresent()) {
-                target.setPermissibleUsage(PermissibleUsageType.valueOf(source.getPermissibleUsage().get().name()));
-                if (source.getPermissibleUsageReason().isPresent()) {
-                    target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
-                }
-                if (source.getPermissibleUsageSupplementary().isPresent()) {
-                    target.setPermissibleUsageSupplementary(source.getPermissibleUsageSupplementary().get());
-                }
+                source.getPermissibleUsage()//
+                        .map(value -> PermissibleUsageType.valueOf(value.name()))//
+                        .ifPresent(target::setPermissibleUsage);
+                source.getPermissibleUsageReason()//
+                        .map(reason -> PermissibleUsageReasonType.valueOf(reason.name()))//
+                        .ifPresent(target::setPermissibleUsageReason);
+                source.getPermissibleUsageSupplementary().ifPresent(target::setPermissibleUsageSupplementary);
             } else {
                 target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
                 target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
             }
             if (source.isTranslated()) {
-                if (source.getTranslatedBulletinID().isPresent()) {
-                    target.setTranslatedBulletinID(source.getTranslatedBulletinID().get());
-                }
-                if (source.getTranslatedBulletinReceptionTime().isPresent()) {
-                    target.setTranslatedBulletinReceptionTime(
-                            f.newXMLGregorianCalendar(source.getTranslatedBulletinReceptionTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (source.getTranslationCentreDesignator().isPresent()) {
-                    target.setTranslationCentreDesignator(source.getTranslationCentreDesignator().get());
-                }
-                if (source.getTranslationCentreName().isPresent()) {
-                    target.setTranslationCentreName(source.getTranslationCentreName().get());
-                }
-                if (source.getTranslationTime().isPresent()) {
-                    target.setTranslationTime(f.newXMLGregorianCalendar(source.getTranslationTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (results.getStatus() != ConversionResult.Status.SUCCESS && source.getTranslatedTAC().isPresent()) {
-                    target.setTranslationFailedTAC(source.getTranslatedTAC().get());
+                source.getTranslatedBulletinID().ifPresent(target::setTranslatedBulletinID);
+                source.getTranslatedBulletinReceptionTime()//
+                        .map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time)))//
+                        .ifPresent(target::setTranslatedBulletinReceptionTime);
+                source.getTranslationCentreDesignator().ifPresent(target::setTranslationCentreDesignator);
+                source.getTranslationCentreName().ifPresent(target::setTranslationCentreName);
+                source.getTranslationTime()//
+                        .map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time)))//
+                        .ifPresent(target::setTranslationTime);
+                if (results.getStatus() != ConversionResult.Status.SUCCESS) {
+                    source.getTranslatedTAC().ifPresent(target::setTranslationFailedTAC);
                 }
             }
         } catch (final DatatypeConfigurationException e) {

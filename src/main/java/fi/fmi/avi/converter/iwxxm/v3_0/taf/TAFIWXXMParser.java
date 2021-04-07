@@ -1,7 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.taf;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,6 +18,7 @@ import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Parser;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.AviationCodeListUser.RelationalOperator;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
@@ -31,7 +31,7 @@ import fi.fmi.avi.model.immutable.CloudForecastImpl;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
 import fi.fmi.avi.model.taf.TAFBaseForecast;
-import fi.fmi.avi.model.taf.TAFChangeForecast;
+import fi.fmi.avi.model.taf.TAFForecast;
 import fi.fmi.avi.model.taf.immutable.TAFBaseForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFChangeForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFImpl;
@@ -70,7 +70,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
         final TAFImpl.Builder tafBuilder = TAFImpl.builder();
 
         properties.get(TAFProperties.Name.REPORT_METADATA, GenericReportProperties.class)//
-                .ifPresent((metaProps) -> {
+                .ifPresent(metaProps -> {
                     metaProps.get(GenericReportProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.class)//
                             .ifPresent(tafBuilder::setReportStatus);
                     metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class)
@@ -107,7 +107,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
                 .ifPresent(tafBuilder::setCancelMessage);
 
         properties.get(TAFProperties.Name.VALID_TIME, PartialOrCompleteTimePeriod.class)//
-                .ifPresent((prop) -> {
+                .ifPresent(prop -> {
                     if (tafBuilder.isCancelMessage()) {
                         tafBuilder.setReferredReportValidPeriod(prop);
                     } else {
@@ -117,117 +117,63 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM30Parser<T, TAF> {
                 });
 
         properties.get(TAFProperties.Name.BASE_FORECAST, TAFBaseForecastProperties.class)//
-                .ifPresent((prop) -> tafBuilder.setBaseForecast(getBaseForecast(prop)));
+                .ifPresent(prop -> tafBuilder.setBaseForecast(toBaseForecast(prop)));
 
-        properties.get(TAFProperties.Name.CHANGE_FORECAST, List.class)//
-                .ifPresent((prop) -> tafBuilder.setChangeForecasts(getChangeForecasts(prop)));
-
+        if (properties.contains(TAFProperties.Name.CHANGE_FORECAST)) {
+            tafBuilder.setChangeForecasts(properties.getList(TAFProperties.Name.CHANGE_FORECAST, TAFChangeForecastProperties.class).stream()//
+                    .map(this::toChangeForecast)//
+                    .collect(toImmutableList()));
+        }
         return tafBuilder.build();
     }
 
-    private TAFBaseForecast getBaseForecast(final TAFBaseForecastProperties prop) {
-        final TAFBaseForecastImpl.Builder baseForecast = TAFBaseForecastImpl.builder();
-        if (prop.contains(TAFBaseForecastProperties.Name.TEMPERATURES)) {
-            final List<TAFAirTemperatureForecast> tempList = new ArrayList<>();
-            prop.get(TAFBaseForecastProperties.Name.TEMPERATURES, List.class).get().forEach(obj -> tempList.add((TAFAirTemperatureForecast) obj));
-            baseForecast.setTemperatures(tempList);
-        }
-        if (prop.contains(TAFBaseForecastProperties.Name.FORECAST)) {
-            final TAFForecastProperties forecastProp = prop.get(TAFBaseForecastProperties.Name.FORECAST, TAFForecastProperties.class).get();
-            if (forecastProp.contains(TAFForecastProperties.Name.CLOUD_FORECAST)) {
-                baseForecast.setCloud(getCloudForecast(forecastProp.get(TAFForecastProperties.Name.CLOUD_FORECAST, TAFCloudForecastProperties.class).get()));
-            }
-            if (forecastProp.contains(TAFForecastProperties.Name.SURFACEWIND)) {
-                baseForecast.setSurfaceWind(forecastProp.get(TAFForecastProperties.Name.SURFACEWIND, SurfaceWind.class));
-            }
-            if (forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILITY)) {
-                baseForecast.setPrevailingVisibility(forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class));
-            }
-            if (forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR)) {
-                baseForecast.setPrevailingVisibilityOperator(
-                        forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR, AviationCodeListUser.RelationalOperator.class));
-            }
-            if (forecastProp.contains(TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK)) {
-                baseForecast.setCeilingAndVisibilityOk(forecastProp.get(TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class).get());
-            }
-            if (forecastProp.contains(TAFForecastProperties.Name.FORECAST_WEATHER)) {
-                final List<Weather> weatherList = new ArrayList<>();
-                forecastProp.get(TAFForecastProperties.Name.FORECAST_WEATHER, List.class).get().forEach(obj -> weatherList.add((Weather) obj));
-                baseForecast.setForecastWeather(weatherList);
-            }
-            if (forecastProp.contains(TAFForecastProperties.Name.NO_SIGNIFICANT_WEATHER)) {
-                baseForecast.setNoSignificantWeather(forecastProp.get(TAFForecastProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class).get());
-            }
+    private TAFBaseForecast toBaseForecast(final TAFBaseForecastProperties baseForecastProp) {
+        final TAFBaseForecastImpl.Builder builder = TAFBaseForecastImpl.builder();
+
+        if (baseForecastProp.contains(TAFBaseForecastProperties.Name.TEMPERATURES)) {
+            builder.setTemperatures(baseForecastProp.getList(TAFBaseForecastProperties.Name.TEMPERATURES, TAFAirTemperatureForecast.class));
         }
 
-        return baseForecast.build();
+        baseForecastProp.get(TAFBaseForecastProperties.Name.FORECAST, TAFForecastProperties.class)
+                .ifPresent(forecastProp -> setTAFForecastProperties(builder, forecastProp));
+        return builder.build();
     }
 
-    private List<TAFChangeForecast> getChangeForecasts(final List list) {
-        final List<TAFChangeForecast> forecasts = new ArrayList<>();
-        list.stream().filter(obj -> obj instanceof TAFChangeForecastProperties).forEach(obj -> {
-            final TAFChangeForecastProperties prop = (TAFChangeForecastProperties) obj;
-            final TAFChangeForecastImpl.Builder changeForecast = TAFChangeForecastImpl.builder();
+    private TAFChangeForecastImpl toChangeForecast(final TAFChangeForecastProperties changeForecastProp) {
+        final TAFChangeForecastImpl.Builder builder = TAFChangeForecastImpl.builder();
 
-            if (prop.contains(TAFChangeForecastProperties.Name.CHANGE_PERIOD)) {
-                changeForecast.setPeriodOfChange(prop.get(TAFChangeForecastProperties.Name.CHANGE_PERIOD, PartialOrCompleteTimePeriod.class).get());
-            }
-            if (prop.contains(TAFChangeForecastProperties.Name.CHANGE_INDICATOR)) {
-                changeForecast.setChangeIndicator(
-                        prop.get(TAFChangeForecastProperties.Name.CHANGE_INDICATOR, AviationCodeListUser.TAFChangeIndicator.class).get());
-            }
+        changeForecastProp.get(TAFChangeForecastProperties.Name.CHANGE_PERIOD, PartialOrCompleteTimePeriod.class).ifPresent(builder::setPeriodOfChange);
+        changeForecastProp.get(TAFChangeForecastProperties.Name.CHANGE_INDICATOR, AviationCodeListUser.TAFChangeIndicator.class)
+                .ifPresent(builder::setChangeIndicator);
 
-            if (prop.contains(TAFChangeForecastProperties.Name.FORECAST)) {
-                final TAFForecastProperties forecastProp = prop.get(TAFChangeForecastProperties.Name.FORECAST, TAFForecastProperties.class).get();
-                if (forecastProp.contains(TAFForecastProperties.Name.CLOUD_FORECAST)) {
-                    changeForecast.setCloud(
-                            getCloudForecast(forecastProp.get(TAFForecastProperties.Name.CLOUD_FORECAST, TAFCloudForecastProperties.class).get()));
-                }
-                if (forecastProp.contains(TAFForecastProperties.Name.SURFACEWIND)) {
-                    changeForecast.setSurfaceWind(forecastProp.get(TAFForecastProperties.Name.SURFACEWIND, SurfaceWind.class));
-                }
-                if (forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILITY)) {
-                    changeForecast.setPrevailingVisibility(forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class));
-                }
-                if (forecastProp.contains(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR)) {
-                    changeForecast.setPrevailingVisibilityOperator(
-                            forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR, AviationCodeListUser.RelationalOperator.class));
-                }
-                if (forecastProp.contains(TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK)) {
-                    changeForecast.setCeilingAndVisibilityOk(forecastProp.get(TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class).get());
-                }
-                if (forecastProp.contains(TAFForecastProperties.Name.FORECAST_WEATHER)) {
-                    final List<Weather> weatherList = new ArrayList<>();
-                    forecastProp.get(TAFForecastProperties.Name.FORECAST_WEATHER, List.class)
-                            .get()
-                            .forEach(weatherObj -> weatherList.add((Weather) weatherObj));
-                    changeForecast.setForecastWeather(weatherList);
-                }
-                if (forecastProp.contains(TAFForecastProperties.Name.NO_SIGNIFICANT_WEATHER)) {
-                    changeForecast.setNoSignificantWeather(forecastProp.get(TAFForecastProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class).get());
-                }
-            }
-            forecasts.add(changeForecast.build());
-        });
-        return forecasts;
+        changeForecastProp.get(TAFChangeForecastProperties.Name.FORECAST, TAFForecastProperties.class)//
+                .ifPresent(forecastProp -> setTAFForecastProperties(builder, forecastProp));
+        return builder.build();
     }
 
-    private CloudForecast getCloudForecast(final TAFCloudForecastProperties prop) {
+    private <F extends TAFForecast, B extends TAFForecast.Builder<F, B>> void setTAFForecastProperties(final TAFForecast.Builder<F, B> builder,
+            final TAFForecastProperties forecastProp) {
+        forecastProp.get(TAFForecastProperties.Name.CLOUD_FORECAST, TAFCloudForecastProperties.class)
+                .ifPresent(prop -> builder.setCloud(toCloudForecast(prop)));
+        forecastProp.get(TAFForecastProperties.Name.SURFACEWIND, SurfaceWind.class).ifPresent(builder::setSurfaceWind);
+        forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILITY, NumericMeasure.class).ifPresent(builder::setPrevailingVisibility);
+        forecastProp.get(TAFForecastProperties.Name.PREVAILING_VISIBILIT_OPERATOR, RelationalOperator.class)
+                .ifPresent(builder::setPrevailingVisibilityOperator);
+        forecastProp.get(TAFForecastProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class).ifPresent(builder::setCeilingAndVisibilityOk);
+        if (forecastProp.contains(TAFForecastProperties.Name.FORECAST_WEATHER)) {
+            builder.setForecastWeather(forecastProp.getList(TAFForecastProperties.Name.FORECAST_WEATHER, Weather.class));
+        }
+        forecastProp.get(TAFForecastProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class).ifPresent(builder::setNoSignificantWeather);
+    }
+
+    private CloudForecast toCloudForecast(final TAFCloudForecastProperties prop) {
         final CloudForecastImpl.Builder cloudForecast = CloudForecastImpl.builder();
         if (prop.contains(TAFCloudForecastProperties.Name.CLOUD_LAYER)) {
-            cloudForecast.setLayers((List<CloudLayer>) prop.get(TAFCloudForecastProperties.Name.CLOUD_LAYER, List.class).get());
+            cloudForecast.setLayers(prop.getList(TAFCloudForecastProperties.Name.CLOUD_LAYER, CloudLayer.class));
         }
-        if (prop.contains(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_CLOUD)) {
-            cloudForecast.setNoSignificantCloud(prop.get(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_CLOUD, Boolean.class).get());
-        } else {
-            cloudForecast.setNoSignificantCloud(false);
-        }
-        if (prop.contains(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY)) {
-            cloudForecast.setVerticalVisibility(prop.get(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY, NumericMeasure.class).get());
-        }
-        if (prop.contains(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY_MISSING)) {
-            cloudForecast.setVerticalVisibilityMissing(prop.get(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY_MISSING, Boolean.class).get());
-        }
+        cloudForecast.setNoSignificantCloud(prop.get(TAFCloudForecastProperties.Name.NO_SIGNIFICANT_CLOUD, Boolean.class).orElse(false));
+        prop.get(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY, NumericMeasure.class).ifPresent(cloudForecast::setVerticalVisibility);
+        prop.get(TAFCloudForecastProperties.Name.VERTICAL_VISIBILITY_MISSING, Boolean.class).ifPresent(cloudForecast::setVerticalVisibilityMissing);
         return cloudForecast.build();
     }
 

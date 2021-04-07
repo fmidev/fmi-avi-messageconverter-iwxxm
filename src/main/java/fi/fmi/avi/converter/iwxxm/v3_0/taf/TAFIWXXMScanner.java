@@ -19,7 +19,6 @@ import static fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFProperties.Name.VALID_TIME;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -183,23 +182,19 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
 
     private static void setTAFBaseForecastProperties(final TAFBaseForecastProperties props, final MeteorologicalAerodromeForecastType input,
             final List<ConversionIssue> issueList, final ReferredObjectRetrievalContext refCtx, final ConversionHints hints) {
-        if (input != null) {
-            if (input.getTemperature().size() > 0) {
-                final List<TAFAirTemperatureForecast> temperatureForecasts = new ArrayList<>();
-                for (final AerodromeAirTemperatureForecastPropertyType type : input.getTemperature()) {
-                    temperatureForecasts.add(setTemperatures(type, refCtx));
-                }
-
-                props.set(TEMPERATURES, temperatureForecasts);
-            }
-
-            final TAFForecastProperties forecatsProperties = new TAFForecastProperties();
-            setTAFForecastProperties(forecatsProperties, input, issueList, refCtx, hints);
-
-            props.set(TAFBaseForecastProperties.Name.FORECAST, forecatsProperties);
-        } else {
+        if (input == null) {
             props.set(MISSING_MESSAGE, true);
+            return;
         }
+        if (!input.getTemperature().isEmpty()) {
+            props.set(TEMPERATURES, input.getTemperature().stream()//
+                    .map(type -> setTemperatures(type, refCtx))//
+                    .collect(toImmutableList()));
+        }
+
+        final TAFForecastProperties forecatsProperties = new TAFForecastProperties();
+        setTAFForecastProperties(forecatsProperties, input, issueList, refCtx, hints);
+        props.set(TAFBaseForecastProperties.Name.FORECAST, forecatsProperties);
     }
 
     private static void setTAFChangeForecastProperties(final TAFChangeForecastProperties props, final MeteorologicalAerodromeForecastType input,
@@ -255,7 +250,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
                 withWeatherBuilderFor(weatherType, hints, value -> weatherList.add(value.build()), issueList::add);
             }
             if (!weatherList.isEmpty()) {
-                props.set(FORECAST_WEATHER, weatherList);
+                props.set(FORECAST_WEATHER, toUnmodifiableList(weatherList));
             }
         }
 
@@ -380,7 +375,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
 
             cloudLayers.add(cloudLayer.build());
         }
-        return cloudLayers.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(cloudLayers);
+        return toUnmodifiableList(cloudLayers);
     }
 
 }

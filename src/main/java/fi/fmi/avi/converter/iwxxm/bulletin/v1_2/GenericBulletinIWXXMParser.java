@@ -37,7 +37,7 @@ public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXX
 
     public static class FromDOM extends GenericBulletinIWXXMParser<Document> {
         @Override
-        protected Document parseAsDom(final Document input) throws ConversionException {
+        protected Document parseAsDom(final Document input) {
             return input;
         }
     }
