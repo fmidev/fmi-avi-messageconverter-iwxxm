@@ -442,23 +442,23 @@ public class TAFIWXXMScanner extends AbstractIWXXM21Scanner {
     private static void withTAFSurfaceWindBuilderFor(final AerodromeSurfaceWindForecastPropertyType windProp, final ReferredObjectRetrievalContext refCtx,
             final Consumer<SurfaceWindImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
-        final Optional<AerodromeSurfaceWindForecastType> windFct = resolveProperty(windProp, AerodromeSurfaceWindForecastType.class, refCtx);
-        if (windFct.isPresent()) {
+        final AerodromeSurfaceWindForecastType windFct = resolveProperty(windProp, AerodromeSurfaceWindForecastType.class, refCtx).orElse(null);
+        if (windFct == null) {
+            issue = new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                    "Could not find AerodromeSurfaceWindForecastType value within " + "AerodromeSurfaceWindForecastTypePropertyType or by reference");
+        } else {
             final SurfaceWindImpl.Builder windBuilder = SurfaceWindImpl.builder();
-            windBuilder.setMeanWindDirection(asNumericMeasure(windFct.get().getMeanWindDirection()));
-            windBuilder.setVariableDirection(windFct.get().isVariableWindDirection());
-            if (windFct.get().getMeanWindSpeed() != null) {
-                windBuilder.setMeanWindSpeed(asNumericMeasure(windFct.get().getMeanWindSpeed()).get());
+            windBuilder.setMeanWindDirection(asNumericMeasure(windFct.getMeanWindDirection()));
+            windBuilder.setVariableDirection(windFct.isVariableWindDirection());
+            if (windFct.getMeanWindSpeed() != null) {
+                asNumericMeasure(windFct.getMeanWindSpeed()).ifPresent(windBuilder::setMeanWindSpeed);
             } else {
                 issue = new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Mean wind speed missing from TAF surface wind forecast");
             }
-            windBuilder.setMeanWindSpeedOperator(asRelationalOperator(windFct.get().getMeanWindSpeedOperator()));
-            windBuilder.setWindGust(asNumericMeasure(windFct.get().getWindGustSpeed()));
-            windBuilder.setWindGustOperator(asRelationalOperator(windFct.get().getWindGustSpeedOperator()));
+            windBuilder.setMeanWindSpeedOperator(asRelationalOperator(windFct.getMeanWindSpeedOperator()));
+            windBuilder.setWindGust(asNumericMeasure(windFct.getWindGustSpeed()));
+            windBuilder.setWindGustOperator(asRelationalOperator(windFct.getWindGustSpeedOperator()));
             resultHandler.accept(windBuilder);
-        } else {
-            issue = new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "Could not find AerodromeSurfaceWindForecastType value within " + "AerodromeSurfaceWindForecastTypePropertyType or by reference");
         }
         if (issue != null) {
             issueHandler.accept(issue);
@@ -467,42 +467,43 @@ public class TAFIWXXMScanner extends AbstractIWXXM21Scanner {
 
     private static void withTAFAirTempForecastBuilderFor(final AerodromeAirTemperatureForecastPropertyType prop, final ReferredObjectRetrievalContext refCtx,
             final Consumer<TAFAirTemperatureForecastImpl.Builder> resultHandler, final Consumer<List<ConversionIssue>> issueHandler) {
-        final List<ConversionIssue> issues = new ArrayList<>();
-        final Optional<AerodromeAirTemperatureForecastType> tempFct = resolveProperty(prop, AerodromeAirTemperatureForecastType.class, refCtx);
-        if (tempFct.isPresent()) {
-            final TAFAirTemperatureForecastImpl.Builder builder = TAFAirTemperatureForecastImpl.builder();
-            if (tempFct.get().getMaximumAirTemperature() != null) {
-                builder.setMaxTemperature(asNumericMeasure(tempFct.get().getMaximumAirTemperature()).get());
-            } else {
-                issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Maximum temperature value missing from air temperature forecast"));
-            }
-            if (tempFct.get().getMaximumAirTemperatureTime() != null) {
-                final Optional<PartialOrCompleteTimeInstant> maxTempTime = getCompleteTimeInstant(tempFct.get().getMaximumAirTemperatureTime(), refCtx);
-                if (maxTempTime.isPresent()) {
-                    builder.setMaxTemperatureTime(maxTempTime.get());
-                } else {
-                    issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Invalid maximum temperature time in air temperature " + "forecast"));
-                }
-            } else {
-                issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Maximum temperature time missing from air temperature " + "forecast"));
-            }
-            if (tempFct.get().getMinimumAirTemperature() != null) {
-                builder.setMinTemperature(asNumericMeasure(tempFct.get().getMinimumAirTemperature()).get());
-            } else {
-                issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Minimum temperature value missing from air temperature forecast"));
-            }
-            if (tempFct.get().getMinimumAirTemperatureTime() != null) {
-                final Optional<PartialOrCompleteTimeInstant> minTempTime = getCompleteTimeInstant(tempFct.get().getMinimumAirTemperatureTime(), refCtx);
-                if (minTempTime.isPresent()) {
-                    builder.setMinTemperatureTime(minTempTime.get());
-                } else {
-                    issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Invalid minimum temperature time in air temperature " + "forecast"));
-                }
-            } else {
-                issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Minimum temperature time missing from air temperature " + "forecast"));
-            }
-            resultHandler.accept(builder);
+        final AerodromeAirTemperatureForecastType tempFct = resolveProperty(prop, AerodromeAirTemperatureForecastType.class, refCtx).orElse(null);
+        if (tempFct == null) {
+            return;
         }
+        final List<ConversionIssue> issues = new ArrayList<>();
+        final TAFAirTemperatureForecastImpl.Builder builder = TAFAirTemperatureForecastImpl.builder();
+        if (tempFct.getMaximumAirTemperature() == null) {
+            issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Maximum temperature value missing from air temperature forecast"));
+        } else {
+            asNumericMeasure(tempFct.getMaximumAirTemperature()).ifPresent(builder::setMaxTemperature);
+        }
+        if (tempFct.getMaximumAirTemperatureTime() != null) {
+            final Optional<PartialOrCompleteTimeInstant> maxTempTime = getCompleteTimeInstant(tempFct.getMaximumAirTemperatureTime(), refCtx);
+            if (maxTempTime.isPresent()) {
+                builder.setMaxTemperatureTime(maxTempTime.get());
+            } else {
+                issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Invalid maximum temperature time in air temperature " + "forecast"));
+            }
+        } else {
+            issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Maximum temperature time missing from air temperature " + "forecast"));
+        }
+        if (tempFct.getMinimumAirTemperature() != null) {
+            asNumericMeasure(tempFct.getMinimumAirTemperature()).ifPresent(builder::setMinTemperature);
+        } else {
+            issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Minimum temperature value missing from air temperature forecast"));
+        }
+        if (tempFct.getMinimumAirTemperatureTime() != null) {
+            final Optional<PartialOrCompleteTimeInstant> minTempTime = getCompleteTimeInstant(tempFct.getMinimumAirTemperatureTime(), refCtx);
+            if (minTempTime.isPresent()) {
+                builder.setMinTemperatureTime(minTempTime.get());
+            } else {
+                issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Invalid minimum temperature time in air temperature " + "forecast"));
+            }
+        } else {
+            issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Minimum temperature time missing from air temperature " + "forecast"));
+        }
+        resultHandler.accept(builder);
         if (!issues.isEmpty()) {
             issueHandler.accept(issues);
         }

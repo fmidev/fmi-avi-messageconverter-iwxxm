@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.v2_1;
 
 import java.math.BigInteger;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -88,6 +89,10 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
             nsCtx = new IWXXMNamespaceContext();
         }
         return nsCtx;
+    }
+
+    protected static <E> E getFirstOrNull(final List<E> list) {
+        return list == null || list.isEmpty() ? null : list.get(0);
     }
 
     @Override

@@ -4,7 +4,7 @@ import static fi.fmi.avi.model.AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NO
 
 import java.io.InputStream;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +39,7 @@ import fi.fmi.avi.converter.ConversionIssue.Type;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
 import fi.fmi.avi.model.Aerodrome;
@@ -125,7 +126,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                 .ifPresent(issueTime -> taf.setIssueTime(create(TimeInstantPropertyType.class, prop -> {
                     final TimeInstantType ti = create(TimeInstantType.class);
                     final TimePositionType tp = create(TimePositionType.class);
-                    tp.getValue().add(issueTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+                    tp.getValue().add(toIWXXMDateTime(issueTime));
                     ti.setTimePosition(tp);
                     ti.setId(issueTimeId);
                     prop.setTimeInstant(ti);
@@ -133,23 +134,19 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
 
         if (!input.isMissingMessage()) {
             if (input.getValidityTime().isPresent()) {
-                final Optional<PartialOrCompleteTimeInstant> start = input.getValidityTime().get().getStartTime();
-                final Optional<PartialOrCompleteTimeInstant> end = input.getValidityTime().get().getEndTime();
-                if (!start.isPresent() || !end.isPresent()) {
-                    result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Validity time for TAF is missing start or end"));
-                    return result;
-                }
-                if (!start.get().getCompleteTime().isPresent() || !end.get().getCompleteTime().isPresent()) {
-                    result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Validity time for TAF is not a fully qualified time period"));
+                final String validityStart = input.getValidityTime().<String> flatMap(AbstractIWXXMSerializer::startToIWXXMDateTime).orElse(null);
+                final String validityEnd = input.getValidityTime().<String> flatMap(AbstractIWXXMSerializer::endToIWXXMDateTime).orElse(null);
+                if (validityStart == null || validityEnd == null) {
+                    result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Validity time for TAF is missing complete start or end"));
                     return result;
                 }
                 taf.setValidTime(create(TimePeriodPropertyType.class, prop -> {
                     final TimePeriodType tp = create(TimePeriodType.class);
                     tp.setId(validTimeId);
                     final TimePositionType beginPos = create(TimePositionType.class);
-                    beginPos.getValue().add(start.get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+                    beginPos.getValue().add(validityStart);
                     final TimePositionType endPos = create(TimePositionType.class);
-                    endPos.getValue().add(end.get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+                    endPos.getValue().add(validityEnd);
                     tp.setBeginPosition(beginPos);
                     tp.setEndPosition(endPos);
                     prop.setTimePeriod(tp);
@@ -258,76 +255,72 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
             result.addIssue(new ConversionIssue(Type.SYNTAX, "TAF validity time is not complete"));
             return;
         }
-        if (fcts.isPresent()) {
-            for (final TAFChangeForecast fctInput : fcts.get()) {
-                final OMObservationType changeFct = create(OMObservationType.class);
-                changeFct.setId("chfct-" + UUID.randomUUID().toString());
-                changeFct.setType(create(ReferenceType.class, ref -> {
-                    ref.setHref(AviationCodeListUser.MET_AERODROME_FORECAST_TYPE);
-                    ref.setTitle("Aerodrome Forecast");
-                }));
-                final Optional<PartialOrCompleteTimeInstant> start = fctInput.getPeriodOfChange().getStartTime();
-                final Optional<PartialOrCompleteTimeInstant> end = fctInput.getPeriodOfChange().getEndTime();
-                if (start.isPresent() && start.get().getCompleteTime().isPresent() && end.isPresent() && end.get().getCompleteTime().isPresent()) {
-                    final ZonedDateTime startTime = start.get().getCompleteTime().get();
-                    final ZonedDateTime endTime = end.get().getCompleteTime().get();
-                    if (startTime.isBefore(tafValidityStart)) {
-                        result.addIssue(new ConversionIssue(Type.LOGICAL,
-                                "Change group start time '" + startTime.toString() + "' is before TAF validity start time " + tafValidityStart.format(
-                                        DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                    }
-                    if (endTime.isAfter(tafValidityEnd)) {
-                        result.addIssue(new ConversionIssue(Type.LOGICAL,
-                                "Change group end time '" + endTime.toString() + "' is after TAF validity end time " + tafValidityEnd.format(
-                                        DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                    }
-
-                    changeFct.setPhenomenonTime(create(TimeObjectPropertyType.class, toProp -> {
-                        final JAXBElement<?> wrapped = createAndWrap(TimePeriodType.class, period -> {
-                            period.setId("time-" + UUID.randomUUID().toString());
-                            period.setBeginPosition(
-                                    create(TimePositionType.class, tPos -> tPos.getValue().add(startTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                            period.setEndPosition(
-                                    create(TimePositionType.class, tPos -> tPos.getValue().add(endTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                        });
-                        toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
-                    }));
-
-                    changeFct.setResultTime(create(TimeInstantPropertyType.class, tiProp -> {
-                        tiProp.setHref("#" + issueTimeId);
-                        tiProp.setTitle("Issue time of the TAF");
-                    }));
-
-                    changeFct.setValidTime(create(TimePeriodPropertyType.class, tpProp -> {
-                        tpProp.setHref("#" + validTimeId);
-                        tpProp.setTitle("Valid time period of the TAF");
-                    }));
-
-                    changeFct.setProcedure(create(OMProcessPropertyType.class, procProp -> {
-                        procProp.setHref("#" + processId);
-                        procProp.setTitle("WMO 49-2 TAF");
-                    }));
-
-                    changeFct.setObservedProperty(create(ReferenceType.class, ref -> {
-                        ref.setHref(AviationCodeListUser.MET_AERODROME_FORECAST_PROPERTIES);
-                        ref.setTitle("TAF forecast properties");
-                    }));
-
-                    changeFct.setFeatureOfInterest(create(FeaturePropertyType.class, foiProp -> {
-                        foiProp.setHref("#" + foid);
-                        foiProp.setTitle("Same aerodrome as in baseForecast");
-                    }));
-
-                    this.updateForecastResult(source, fctInput, changeFct, result);
-
-                    target.getChangeForecast().add(create(OMObservationPropertyType.class, prop -> prop.setOMObservation(changeFct)));
-
-                } else {
-                    result.addIssue(new ConversionIssue(Type.MISSING_DATA,
-                            "Missing full validity start and/or end times in change forecast for '" + fctInput.getPeriodOfChange() + "'"));
+        for (final TAFChangeForecast fctInput : fcts.orElse(Collections.emptyList())) {
+            final OMObservationType changeFct = create(OMObservationType.class);
+            changeFct.setId("chfct-" + UUID.randomUUID().toString());
+            changeFct.setType(create(ReferenceType.class, ref -> {
+                ref.setHref(AviationCodeListUser.MET_AERODROME_FORECAST_TYPE);
+                ref.setTitle("Aerodrome Forecast");
+            }));
+            final ZonedDateTime startTime = fctInput.getPeriodOfChange().getStartTime()//
+                    .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)//
+                    .orElse(null);
+            final ZonedDateTime endTime = fctInput.getPeriodOfChange().getEndTime()//
+                    .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)//
+                    .orElse(null);
+            if (startTime == null || endTime == null) {
+                result.addIssue(new ConversionIssue(Type.MISSING_DATA,
+                        "Missing full validity start and/or end times in change forecast for '" + fctInput.getPeriodOfChange() + "'"));
+            } else {
+                if (startTime.isBefore(tafValidityStart)) {
+                    result.addIssue(new ConversionIssue(Type.LOGICAL,
+                            "Change group start time '" + startTime + "' is before TAF validity start time " + toIWXXMDateTime(tafValidityStart)));
+                }
+                if (endTime.isAfter(tafValidityEnd)) {
+                    result.addIssue(new ConversionIssue(Type.LOGICAL,
+                            "Change group end time '" + endTime + "' is after TAF validity end time " + toIWXXMDateTime(tafValidityEnd)));
                 }
 
+                changeFct.setPhenomenonTime(create(TimeObjectPropertyType.class, toProp -> {
+                    final JAXBElement<?> wrapped = createAndWrap(TimePeriodType.class, period -> {
+                        period.setId("time-" + UUID.randomUUID().toString());
+                        period.setBeginPosition(create(TimePositionType.class, tPos -> tPos.getValue().add(toIWXXMDateTime(startTime))));
+                        period.setEndPosition(create(TimePositionType.class, tPos -> tPos.getValue().add(toIWXXMDateTime(endTime))));
+                    });
+                    toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
+                }));
+
+                changeFct.setResultTime(create(TimeInstantPropertyType.class, tiProp -> {
+                    tiProp.setHref("#" + issueTimeId);
+                    tiProp.setTitle("Issue time of the TAF");
+                }));
+
+                changeFct.setValidTime(create(TimePeriodPropertyType.class, tpProp -> {
+                    tpProp.setHref("#" + validTimeId);
+                    tpProp.setTitle("Valid time period of the TAF");
+                }));
+
+                changeFct.setProcedure(create(OMProcessPropertyType.class, procProp -> {
+                    procProp.setHref("#" + processId);
+                    procProp.setTitle("WMO 49-2 TAF");
+                }));
+
+                changeFct.setObservedProperty(create(ReferenceType.class, ref -> {
+                    ref.setHref(AviationCodeListUser.MET_AERODROME_FORECAST_PROPERTIES);
+                    ref.setTitle("TAF forecast properties");
+                }));
+
+                changeFct.setFeatureOfInterest(create(FeaturePropertyType.class, foiProp -> {
+                    foiProp.setHref("#" + foid);
+                    foiProp.setTitle("Same aerodrome as in baseForecast");
+                }));
+
+                this.updateForecastResult(source, fctInput, changeFct, result);
+
+                target.getChangeForecast().add(create(OMObservationPropertyType.class, prop -> prop.setOMObservation(changeFct)));
+
             }
+
         }
     }
 
@@ -442,8 +435,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                 target.setMinimumAirTemperature(asMeasure(measure));
                 target.setMinimumAirTemperatureTime(create(TimeInstantPropertyType.class, prop -> prop.setTimeInstant(create(TimeInstantType.class, time -> {
                     time.setId("time-" + UUID.randomUUID().toString());
-                    time.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue()
-                            .add(source.getMinTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                    time.setTimePosition(create(TimePositionType.class, tPos -> toIWXXMDateTime(source.getMinTemperatureTime())//
+                            .ifPresent(tempTime -> tPos.getValue().add(tempTime))));
                 }))));
             }
 
@@ -454,8 +447,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                 target.setMaximumAirTemperature(asMeasure(measure));
                 target.setMaximumAirTemperatureTime(create(TimeInstantPropertyType.class, prop -> prop.setTimeInstant(create(TimeInstantType.class, time -> {
                     time.setId("time-" + UUID.randomUUID().toString());
-                    time.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue()
-                            .add(source.getMaxTemperatureTime().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                    time.setTimePosition(create(TimePositionType.class, tPos -> toIWXXMDateTime(source.getMaxTemperatureTime())//
+                            .ifPresent(tempTime -> tPos.getValue().add(tempTime))));
                 }))));
             }
 
@@ -479,18 +472,16 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                     result.addIssue(new ConversionIssue(Type.SYNTAX, "Previous report TAF validity time is not complete"));
                     return;
                 }
-                final Optional<PartialOrCompleteTimeInstant> from = validity.getStartTime();
-                final Optional<PartialOrCompleteTimeInstant> to = validity.getEndTime();
-                if (from.isPresent() && from.get().getCompleteTime().isPresent() && to.isPresent() && to.get().getCompleteTime().isPresent()) {
+                final String validityStart = startToIWXXMDateTime(validity).orElse(null);
+                final String validityEnd = endToIWXXMDateTime(validity).orElse(null);
+                if (validityStart == null || validityEnd == null) {
+                    result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Missing full validity time start and/or end of the referred (previous) report"));
+                } else {
                     target.setPreviousReportValidPeriod(create(TimePeriodPropertyType.class, prop -> prop.setTimePeriod(create(TimePeriodType.class, period -> {
                         period.setId("time-" + UUID.randomUUID().toString());
-                        period.setBeginPosition(create(TimePositionType.class,
-                                tPos -> tPos.getValue().add(from.get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
-                        period.setEndPosition(create(TimePositionType.class,
-                                tPos -> tPos.getValue().add(to.get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                        period.setBeginPosition(create(TimePositionType.class, tPos -> tPos.getValue().add(validityStart)));
+                        period.setEndPosition(create(TimePositionType.class, tPos -> tPos.getValue().add(validityEnd)));
                     }))));
-                } else {
-                    result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Missing full validity time start and/or end of the referred (previous) report"));
                 }
             } else {
                 result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Missing the referred (previous) report for report of type " + target.getStatus()));
@@ -514,24 +505,17 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                 target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
             }
             if (source.isTranslated()) {
-                if (source.getTranslatedBulletinID().isPresent()) {
-                    target.setTranslatedBulletinID(source.getTranslatedBulletinID().get());
-                }
-                if (source.getTranslatedBulletinReceptionTime().isPresent()) {
-                    target.setTranslatedBulletinReceptionTime(
-                            f.newXMLGregorianCalendar(source.getTranslatedBulletinReceptionTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (source.getTranslationCentreDesignator().isPresent()) {
-                    target.setTranslationCentreDesignator(source.getTranslationCentreDesignator().get());
-                }
-                if (source.getTranslationCentreName().isPresent()) {
-                    target.setTranslationCentreName(source.getTranslationCentreName().get());
-                }
-                if (source.getTranslationTime().isPresent()) {
-                    target.setTranslationTime(f.newXMLGregorianCalendar(source.getTranslationTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (results.getStatus() != Status.SUCCESS && source.getTranslatedTAC().isPresent()) {
-                    target.setTranslationFailedTAC(source.getTranslatedTAC().get());
+                source.getTranslatedBulletinID().ifPresent(target::setTranslatedBulletinID);
+                source.getTranslatedBulletinReceptionTime()//
+                        .map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time)))//
+                        .ifPresent(target::setTranslatedBulletinReceptionTime);
+                source.getTranslationCentreDesignator().ifPresent(target::setTranslationCentreDesignator);
+                source.getTranslationCentreName().ifPresent(target::setTranslationCentreName);
+                source.getTranslationTime()//
+                        .map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time)))//
+                        .ifPresent(target::setTranslationTime);
+                if (results.getStatus() != Status.SUCCESS) {
+                    source.getTranslatedTAC().ifPresent(target::setTranslationFailedTAC);
                 }
             }
         } catch (final DatatypeConfigurationException e) {

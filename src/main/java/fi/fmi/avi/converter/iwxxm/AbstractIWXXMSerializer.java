@@ -5,9 +5,11 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.xml.XMLConstants;
@@ -69,6 +71,7 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.v2_1.airmet.AIRMETIWXXMSerializer;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import fi.fmi.avi.model.CircleByCenterPoint;
@@ -76,6 +79,7 @@ import fi.fmi.avi.model.CoordinateReferenceSystem;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
+import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.PointGeometry;
 import fi.fmi.avi.model.PolygonGeometry;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
@@ -183,6 +187,22 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         CRSMappers.directPositionType().setCrsToType(type, crs);
     }
 
+    protected static String toIWXXMDateTime(final ZonedDateTime time) {
+        return time.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    protected static Optional<String> toIWXXMDateTime(final PartialOrCompleteTimeInstant instant) {
+        return instant.getCompleteTime().map(AIRMETIWXXMSerializer::toIWXXMDateTime);
+    }
+
+    protected static Optional<String> startToIWXXMDateTime(final PartialOrCompleteTimePeriod period) {
+        return period.getStartTime().flatMap(AbstractIWXXMSerializer::toIWXXMDateTime);
+    }
+
+    protected static Optional<String> endToIWXXMDateTime(final PartialOrCompleteTimePeriod period) {
+        return period.getEndTime().flatMap(AbstractIWXXMSerializer::toIWXXMDateTime);
+    }
+
     @SuppressWarnings("unchecked")
     protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
         final StringWriter sw = new StringWriter();
@@ -286,7 +306,9 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
     public void createTimeInstantProperty(final TAF input, final TimeInstantPropertyType prop, final String id) {
         final TimeInstantType ti = create(TimeInstantType.class);
         final TimePositionType tp = create(TimePositionType.class);
-        tp.getValue().add(input.getIssueTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        input.getIssueTime()//
+                .<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                .ifPresent(time -> tp.getValue().add(time));
         ti.setTimePosition(tp);
         ti.setId(id);
         prop.setTimeInstant(ti);
@@ -297,9 +319,13 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         final TimePeriodType tp = create(TimePeriodType.class);
         tp.setId(id);
         final TimePositionType beginPos = create(TimePositionType.class);
-        beginPos.getValue().add(start.getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        start.getCompleteTime()//
+                .map(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                .ifPresent(time -> beginPos.getValue().add(time));
         final TimePositionType endPos = create(TimePositionType.class);
-        endPos.getValue().add(end.getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        end.getCompleteTime()//
+                .map(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                .ifPresent(time -> endPos.getValue().add(time));
         tp.setBeginPosition(beginPos);
         tp.setEndPosition(endPos);
         prop.setTimePeriod(tp);

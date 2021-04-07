@@ -1,7 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import java.io.InputStream;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,6 +32,7 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
@@ -180,24 +180,17 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             });
 
             if (source.isTranslated()) {
-                if (source.getTranslatedBulletinID().isPresent()) {
-                    target.setTranslatedBulletinID(source.getTranslatedBulletinID().get());
-                }
-                if (source.getTranslatedBulletinReceptionTime().isPresent()) {
-                    target.setTranslatedBulletinReceptionTime(
-                            f.newXMLGregorianCalendar(source.getTranslatedBulletinReceptionTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (source.getTranslationCentreDesignator().isPresent()) {
-                    target.setTranslationCentreDesignator(source.getTranslationCentreDesignator().get());
-                }
-                if (source.getTranslationCentreName().isPresent()) {
-                    target.setTranslationCentreName(source.getTranslationCentreName().get());
-                }
-                if (source.getTranslationTime().isPresent()) {
-                    target.setTranslationTime(f.newXMLGregorianCalendar(source.getTranslationTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (results.getStatus() != ConversionResult.Status.SUCCESS && source.getTranslatedTAC().isPresent()) {
-                    target.setTranslationFailedTAC(source.getTranslatedTAC().get());
+                source.getTranslatedBulletinID().ifPresent(target::setTranslatedBulletinID);
+                source.getTranslatedBulletinReceptionTime()//
+                        .map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time)))//
+                        .ifPresent(target::setTranslatedBulletinReceptionTime);
+                source.getTranslationCentreDesignator().ifPresent(target::setTranslationCentreDesignator);
+                source.getTranslationCentreName().ifPresent(target::setTranslationCentreName);
+                source.getTranslationTime()//
+                        .map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time)))//
+                        .ifPresent(target::setTranslationTime);
+                if (results.getStatus() != ConversionResult.Status.SUCCESS) {
+                    source.getTranslatedTAC().ifPresent(target::setTranslationFailedTAC);
                 }
             }
         } catch (final DatatypeConfigurationException e) {
@@ -269,7 +262,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         final TimeInstantType timeInstantType = create(TimeInstantType.class);
         timeInstantType.setId(UUID_PREFIX + UUID.randomUUID().toString());
         final TimePositionType timePositionType = create(TimePositionType.class);
-        time.getCompleteTime().ifPresent(t -> timePositionType.getValue().add(t.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+        toIWXXMDateTime(time).ifPresent(t -> timePositionType.getValue().add(t));
         timeInstantType.setTimePosition(timePositionType);
         @SuppressWarnings({ "unchecked", "rawtypes" })
         final JAXBElement<AbstractTimeObjectType> jaxbTimeInstant = (JAXBElement) GML_OF.createTimeInstant(timeInstantType);
@@ -307,7 +300,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
     private void getIssueTime(final TimeInstantPropertyType prop, final PartialOrCompleteTimeInstant time) {
         final TimeInstantType ti = create(TimeInstantType.class);
         final TimePositionType tp = create(TimePositionType.class);
-        time.getCompleteTime().ifPresent(t -> tp.getValue().add(t.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+        toIWXXMDateTime(time).ifPresent(t -> tp.getValue().add(t));
         ti.setTimePosition(tp);
         ti.setId(UUID_PREFIX + UUID.randomUUID().toString());
         prop.setTimeInstant(ti);
@@ -360,9 +353,9 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
                 timePosition.setIndeterminatePosition(TimeIndeterminateValueType.BEFORE);
             }
             // TODO: 'after' not supported in model; temporarily omit
-            nextAdvisory.getTime()
-                    .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
-                    .ifPresent(t -> timePosition.getValue().add(t.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+            nextAdvisory.getTime()//
+                    .<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                    .ifPresent(t -> timePosition.getValue().add(t));
             timeInstant.setId(UUID_PREFIX + UUID.randomUUID().toString());
             timeInstant.setTimePosition(timePosition);
             prop.setTimeInstant(timeInstant);

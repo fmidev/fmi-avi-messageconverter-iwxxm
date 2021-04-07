@@ -313,7 +313,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
             final Consumer<List<String>> nilReasonHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         if (layer != null) {
             withNillableChild(layer, layer.getBase(), DistanceWithNilReasonType.class, new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "base"), refCtx,
-                    value -> resultHandler.accept(asNumericMeasure(value).get()), nilReasonHandler);
+                    value -> asNumericMeasure(value).ifPresent(resultHandler), nilReasonHandler);
         }
     }
 

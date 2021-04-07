@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -58,6 +59,7 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
@@ -71,6 +73,7 @@ import fi.fmi.avi.model.TacOrGeoGeometry;
 import fi.fmi.avi.model.VolcanoDescription;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
+import fi.fmi.avi.model.sigmet.VAInfo;
 import icao.iwxxm21.AeronauticalSignificantWeatherPhenomenonType;
 import icao.iwxxm21.AirspacePropertyType;
 import icao.iwxxm21.AngleWithNilReasonType;
@@ -108,18 +111,11 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, toProp -> {
                 final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period -> {
                     period.setId("time-" + UUID.randomUUID().toString());
-                    period.setTimePosition(create(TimePositionType.class, tPos -> {
-                        final Object o = tPos.getValue();
-                        tPos.getValue()
-                                .add(inputs.getForecastGeometries()
-                                        .get()
-                                        .get(0)
-                                        .getTime()
-                                        .get()
-                                        .getCompleteTime()
-                                        .get()
-                                        .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-                    }));
+                    period.setTimePosition(create(TimePositionType.class, tPos -> inputs.getForecastGeometries()//
+                            .map(AbstractIWXXM21Serializer::getFirstOrNull)//
+                            .flatMap(PhenomenonGeometry::getTime)//
+                            .<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                            .ifPresent(time -> tPos.getValue().add(time))));
                 });
                 toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
             }));
@@ -137,7 +133,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             omObs.setObservedProperty(create(ReferenceType.class, ref -> ref.setHref(AviationCodeListUser.CODELIST_SIGMET_POSITION_COLLECTION_ANALYSIS)));
 
             int cnt = 0;
-            for (final PhenomenonGeometry geometry : inputs.getForecastGeometries().get()) {
+            for (final PhenomenonGeometry geometry : inputs.getForecastGeometries().orElse(Collections.emptyList())) {
                 LOG.debug("About to setResult for FPA");
                 omObs.setResult(createFPAResult(geometry, designator, cnt, sigmetUUID));
                 cnt++;
@@ -252,19 +248,16 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
     private static String getTimePeriodId(final SIGMET input) {
         final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmm'Z'");
         final PartialOrCompleteTimePeriod valTime = input.getValidityPeriod();
-        return "sigmet-" + valTime.getStartTime().get().getCompleteTime().get().format(dtf) + "-" + valTime.getEndTime()
-                .get()
-                .getCompleteTime()
-                .get()
-                .format(dtf);
+        return "sigmet-" + valTime.getStartTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(time -> time.format(dtf)).orElse("")//
+                + "-" + valTime.getEndTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(time -> time.format(dtf)).orElse("");
     }
 
     protected static TimePeriodPropertyType getTimePeriodPropertyType(final SIGMET input, final String uuid) {
         return getATimePeriodPropertyType(input.getValidityPeriod(), uuid);
     }
 
-    protected static TimePeriodPropertyType getCancelledTimePeriodPropertyType(final SIGMET input, final String uuid) {
-        return getATimePeriodPropertyType(input.getCancelledReference().get().getValidityPeriod(), uuid);
+    protected static Optional<TimePeriodPropertyType> getCancelledTimePeriodPropertyType(final SIGMET input, final String uuid) {
+        return input.getCancelledReference().map(airmetReference -> getATimePeriodPropertyType(airmetReference.getValidityPeriod(), uuid));
     }
 
     protected static TimePeriodPropertyType getATimePeriodPropertyType(final PartialOrCompleteTimePeriod valTime, final String uuid) {
@@ -272,10 +265,10 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             final TimePeriodType tp = create(TimePeriodType.class);
             tp.setId("validt-" + uuid);
             final TimePositionType beginPos = create(TimePositionType.class);
-            beginPos.getValue().add(valTime.getStartTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            startToIWXXMDateTime(valTime).ifPresent(time -> beginPos.getValue().add(time));
             tp.setBeginPosition(beginPos);
             final TimePositionType endPos = create(TimePositionType.class);
-            endPos.getValue().add(valTime.getEndTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            endToIWXXMDateTime(valTime).ifPresent(time -> endPos.getValue().add(time));
             tp.setEndPosition(endPos);
             prop.setTimePeriod(tp);
         });
@@ -363,7 +356,8 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         }
 
         //Use current time as issueTime if missing
-        final String issueTime = input.getIssueTime().get().getCompleteTime().orElse(ZonedDateTime.now()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        final String issueTime = input.getIssueTime().<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                .orElseGet(() -> toIWXXMDateTime(ZonedDateTime.now()));
 
         if (input.getCancelledReference().isPresent()) {
             sigmet.setStatus(SIGMETReportStatusType.CANCELLATION);
@@ -408,33 +402,35 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
         if (sigmet.getStatus().equals(SIGMETReportStatusType.CANCELLATION)) {
             sigmet.setCancelledSequenceNumber(input.getCancelledReference().get().getSequenceNumber());
-            sigmet.setCancelledValidPeriod(getCancelledTimePeriodPropertyType(input, "cnl-tp-" + getTimePeriodId(input)));
+            getCancelledTimePeriodPropertyType(input, "cnl-tp-" + getTimePeriodId(input)).ifPresent(sigmet::setCancelledValidPeriod);
             sigmet.setPhenomenon(create(AeronauticalSignificantWeatherPhenomenonType.class,
                     phen -> phen.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE)));
 
             sigmet.setAnalysis(createCancelAnalysis(input, issueTime, sigmetUuid));
-            if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
-                if (input.getVAInfo().get().getVolcanicAshMovedToFIR().isPresent()) {
-                    final String designator = input.getVAInfo().get().getVolcanicAshMovedToFIR().get().getDesignator();
-                    final String airSpaceName = input.getVAInfo().get().getVolcanicAshMovedToFIR().get().getName();
-                    sigmet.setVolcanicAshMovedToFIR(create(AirspacePropertyType.class, apt -> {
-                        final AirspaceType airspace = create(AirspaceType.class);
-                        airspace.setValidTime(null);
-                        airspace.setId("movedto-fir-" + designator + "-" + UUID.randomUUID());
-                        airspace.getTimeSlice()
-                                .add(create(AirspaceTimeSlicePropertyType.class,
-                                        timeSliceProp -> timeSliceProp.setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, timeSlice -> {
-                                            timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
-                                            timeSlice.setInterpretation("SNAPSHOT");
-                                            timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue("FIR")));
-                                            timeSlice.setAirspaceName(create(TextNameType.class, name -> name.setValue(airSpaceName)));
-                                            timeSlice.setId("fir-" + designator + "-" + UUID.randomUUID() + "-ts");
-                                            timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, desig -> desig.setValue(designator)));
+            if (input.getSigmetPhenomenon().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+                input.getVAInfo()//
+                        .flatMap(VAInfo::getVolcanicAshMovedToFIR)//
+                        .ifPresent(volcanicAshMovedToFIR -> {
+                            final String designator = volcanicAshMovedToFIR.getDesignator();
+                            final String airSpaceName = volcanicAshMovedToFIR.getName();
+                            sigmet.setVolcanicAshMovedToFIR(create(AirspacePropertyType.class, apt -> {
+                                final AirspaceType airspace = create(AirspaceType.class);
+                                airspace.setValidTime(null);
+                                airspace.setId("movedto-fir-" + designator + "-" + UUID.randomUUID());
+                                airspace.getTimeSlice()
+                                        .add(create(AirspaceTimeSlicePropertyType.class,
+                                                timeSliceProp -> timeSliceProp.setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, timeSlice -> {
+                                                    timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
+                                                    timeSlice.setInterpretation("SNAPSHOT");
+                                                    timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue("FIR")));
+                                                    timeSlice.setAirspaceName(create(TextNameType.class, name -> name.setValue(airSpaceName)));
+                                                    timeSlice.setId("fir-" + designator + "-" + UUID.randomUUID() + "-ts");
+                                                    timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, desig -> desig.setValue(designator)));
 
-                                        }))));
-                        apt.setAirspace(airspace);
-                    }));
-                }
+                                                }))));
+                                apt.setAirspace(airspace);
+                            }));
+                        });
             }
         } else {
             final AeronauticalSignificantWeatherPhenomenonType phenType = create(AeronauticalSignificantWeatherPhenomenonType.class, ref -> {
@@ -453,7 +449,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             }
 
         }
-        if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+        if ((input.getSigmetPhenomenon()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA) && input.getVAInfo().isPresent()) {
             final VolcanoDescription volcano = input.getVAInfo().get().getVolcano();
             final icao.iwxxm21.ObjectFactory of = new icao.iwxxm21.ObjectFactory();
             ((VolcanicAshSIGMETType) sigmet).getRest().add(of.createVolcanicAshSIGMETTypeEruptingVolcano(create(VolcanoPropertyType.class, vpt -> {
@@ -515,7 +511,12 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             omObs.setType(create(ReferenceType.class, ref -> ref.setHref(AviationCodeListUser.CODELIST_SIGMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS)));
 
             //TODO Only if FCST or OBS time are given
-            if ((input.getAnalysisType() == SigmetAnalysisType.UNKNOWN) || !input.getAnalysisGeometries().get().get(0).getTime().isPresent()) {
+            final String analysisTime = input.getAnalysisGeometries()//
+                    .map(AbstractIWXXM21Serializer::getFirstOrNull)//
+                    .flatMap(PhenomenonGeometry::getTime)//
+                    .<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                    .orElse(null);
+            if (input.getAnalysisType() == SigmetAnalysisType.UNKNOWN || analysisTime == null) {
                 //set Phen time to nil with nilReason of "missing"
                 omObs.setPhenomenonTime(
                         create(TimeObjectPropertyType.class, toProp -> toProp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING)));
@@ -523,15 +524,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                 omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, toProp -> {
                     final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period -> {
                         period.setId("phent-" + sigmetUUID);
-                        period.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue()
-                                .add(input.getAnalysisGeometries()
-                                        .get()
-                                        .get(0)
-                                        .getTime()
-                                        .get()
-                                        .getCompleteTime()
-                                        .get()
-                                        .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                        period.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue().add(analysisTime)));
                     });
                     toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
                 }));
@@ -596,7 +589,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                         secct.setTimeIndicator(TimeIndicatorType.FORECAST);
                     }
                     final int cnt = 0;
-                    for (final PhenomenonGeometryWithHeight geometryWithHeight : input.getAnalysisGeometries().get()) {
+                    for (final PhenomenonGeometryWithHeight geometryWithHeight : input.getAnalysisGeometries().orElse(Collections.emptyList())) {
                         secct.getMember()
                                 .add(create(SIGMETEvolvingConditionPropertyType.class,
                                         secpt -> secpt.setSIGMETEvolvingCondition(create(SIGMETEvolvingConditionType.class, sect -> {
@@ -842,24 +835,17 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             });
 
             if (source.isTranslated()) {
-                if (source.getTranslatedBulletinID().isPresent()) {
-                    target.setTranslatedBulletinID(source.getTranslatedBulletinID().get());
-                }
-                if (source.getTranslatedBulletinReceptionTime().isPresent()) {
-                    target.setTranslatedBulletinReceptionTime(
-                            f.newXMLGregorianCalendar(source.getTranslatedBulletinReceptionTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (source.getTranslationCentreDesignator().isPresent()) {
-                    target.setTranslationCentreDesignator(source.getTranslationCentreDesignator().get());
-                }
-                if (source.getTranslationCentreName().isPresent()) {
-                    target.setTranslationCentreName(source.getTranslationCentreName().get());
-                }
-                if (source.getTranslationTime().isPresent()) {
-                    target.setTranslationTime(f.newXMLGregorianCalendar(source.getTranslationTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (results.getStatus() != Status.SUCCESS && source.getTranslatedTAC().isPresent()) {
-                    target.setTranslationFailedTAC(source.getTranslatedTAC().get());
+                source.getTranslatedBulletinID().ifPresent(target::setTranslatedBulletinID);
+                source.getTranslatedBulletinReceptionTime()//
+                        .map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time)))//
+                        .ifPresent(target::setTranslatedBulletinReceptionTime);
+                source.getTranslationCentreDesignator().ifPresent(target::setTranslationCentreDesignator);
+                source.getTranslationCentreName().ifPresent(target::setTranslationCentreName);
+                source.getTranslationTime()//
+                        .map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time)))//
+                        .ifPresent(target::setTranslationTime);
+                if (results.getStatus() != Status.SUCCESS) {
+                    source.getTranslatedTAC().ifPresent(target::setTranslationFailedTAC);
                 }
             }
         } catch (final DatatypeConfigurationException e) {

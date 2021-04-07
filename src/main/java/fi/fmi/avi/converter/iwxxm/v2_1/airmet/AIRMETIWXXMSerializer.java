@@ -3,7 +3,9 @@ package fi.fmi.avi.converter.iwxxm.v2_1.airmet;
 import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBElement;
@@ -53,11 +55,14 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.NumericMeasure;
+import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.PhenomenonGeometry;
 import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.TacOrGeoGeometry;
 import fi.fmi.avi.model.sigmet.AIRMET;
@@ -81,13 +86,12 @@ import icao.iwxxm21.WeatherCausingVisibilityReductionType;
 import wmo.metce2013.ProcessType;
 
 public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer<AIRMET, T> {
-
     protected static TimePeriodPropertyType getTimePeriodPropertyType(final AIRMET input, final String uuid) {
         return getATimePeriodPropertyType(input.getValidityPeriod(), uuid);
     }
 
-    protected static TimePeriodPropertyType getCancelledTimePeriodPropertyType(final AIRMET input, final String uuid) {
-        return getATimePeriodPropertyType(input.getCancelledReference().get().getValidityPeriod(), uuid);
+    protected static Optional<TimePeriodPropertyType> getCancelledTimePeriodPropertyType(final AIRMET input, final String uuid) {
+        return input.getCancelledReference().map(airmetReference -> getATimePeriodPropertyType(airmetReference.getValidityPeriod(), uuid));
     }
 
     protected static TimePeriodPropertyType getATimePeriodPropertyType(final PartialOrCompleteTimePeriod valTime, final String uuid) {
@@ -95,10 +99,10 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             final TimePeriodType tp = create(TimePeriodType.class);
             tp.setId("validt-" + uuid);
             final TimePositionType beginPos = create(TimePositionType.class);
-            beginPos.getValue().add(valTime.getStartTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            startToIWXXMDateTime(valTime).ifPresent(time -> beginPos.getValue().add(time));
             tp.setBeginPosition(beginPos);
             final TimePositionType endPos = create(TimePositionType.class);
-            endPos.getValue().add(valTime.getEndTime().get().getCompleteTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            endToIWXXMDateTime(valTime).ifPresent(time -> endPos.getValue().add(time));
             tp.setEndPosition(endPos);
             prop.setTimePeriod(tp);
         });
@@ -107,11 +111,8 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
     private static String getTimePeriodId(final AIRMET input) {
         final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmm'Z'");
         final PartialOrCompleteTimePeriod valTime = input.getValidityPeriod();
-        return "airmet-" + valTime.getStartTime().get().getCompleteTime().get().format(dtf) + "-" + valTime.getEndTime()
-                .get()
-                .getCompleteTime()
-                .get()
-                .format(dtf);
+        return "airmet-" + valTime.getStartTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(time -> time.format(dtf)).orElse("")//
+                + "-" + valTime.getEndTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(time -> time.format(dtf)).orElse("");
     }
 
     protected abstract T render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException;
@@ -151,7 +152,8 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         airmet.setId("as-" + UUID.randomUUID().toString());
 
         //Use current time as issueTime if missing
-        final String issueTime = input.getIssueTime().get().getCompleteTime().orElse(ZonedDateTime.now()).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        final String issueTime = input.getIssueTime().<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                .orElseGet(() -> toIWXXMDateTime(ZonedDateTime.now()));
 
         if (input.getCancelledReference().isPresent()) {
             airmet.setStatus(AIRMETReportStatusType.CANCELLATION);
@@ -192,7 +194,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
         if (airmet.getStatus().equals(AIRMETReportStatusType.CANCELLATION)) {
             airmet.setCancelledSequenceNumber(input.getCancelledReference().get().getSequenceNumber());
-            airmet.setCancelledValidPeriod(getCancelledTimePeriodPropertyType(input, "cnl-tp-" + getTimePeriodId(input)));
+            getCancelledTimePeriodPropertyType(input, "cnl-tp-" + getTimePeriodId(input)).ifPresent(airmet::setCancelledValidPeriod);
             airmet.setPhenomenon(create(AeronauticalAreaWeatherPhenomenonType.class,
                     phen -> phen.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE)));
 
@@ -238,7 +240,13 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             omObs.setType(create(ReferenceType.class, ref -> ref.setHref(AviationCodeListUser.CODELIST_AIRMET_EVOLVING_CONDITION_COLLECTION_ANALYSIS)));
 
             //TODO Only if FCST or OBS time are given
-            if ((input.getAnalysisType() == SigmetAnalysisType.UNKNOWN) || !input.getAnalysisGeometries().get().get(0).getTime().isPresent()) {
+
+            final String analysisTime = input.getAnalysisGeometries()//
+                    .map(AbstractIWXXM21Serializer::getFirstOrNull)//
+                    .flatMap(PhenomenonGeometry::getTime)//
+                    .<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                    .orElse(null);
+            if (input.getAnalysisType() == SigmetAnalysisType.UNKNOWN || analysisTime == null) {
                 //set Phen time to nil with nilReason of "missing"
                 omObs.setPhenomenonTime(
                         create(TimeObjectPropertyType.class, toProp -> toProp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING)));
@@ -246,15 +254,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                 omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, toProp -> {
                     final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period -> {
                         period.setId("phent-" + airmetUUID);
-                        period.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue()
-                                .add(input.getAnalysisGeometries()
-                                        .get()
-                                        .get(0)
-                                        .getTime()
-                                        .get()
-                                        .getCompleteTime()
-                                        .get()
-                                        .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))));
+                        period.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue().add(analysisTime)));
                     });
                     toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
                 }));
@@ -319,7 +319,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                         secct.setTimeIndicator(TimeIndicatorType.FORECAST);
                     }
                     final int cnt = 0;
-                    for (final PhenomenonGeometryWithHeight geometryWithHeight : input.getAnalysisGeometries().get()) {
+                    for (final PhenomenonGeometryWithHeight geometryWithHeight : input.getAnalysisGeometries().orElse(Collections.emptyList())) {
                         secct.getMember()
                                 .add(create(AIRMETEvolvingConditionPropertyType.class,
                                         secpt -> secpt.setAIRMETEvolvingCondition(create(AIRMETEvolvingConditionType.class, sect -> {
@@ -523,7 +523,8 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                     lt.setValue(input.getVisibility().get().getValue().intValue());
                                                     lt.setUom(input.getVisibility().get().getUom().toLowerCase(Locale.US));
                                                 }));
-                                                for (final AviationCodeListUser.WeatherCausingVisibilityReduction w : input.getObscuration().get()) {
+                                                for (final AviationCodeListUser.WeatherCausingVisibilityReduction w : input.getObscuration()
+                                                        .orElse(Collections.emptyList())) {
                                                     final WeatherCausingVisibilityReductionType wt = new WeatherCausingVisibilityReductionType();
                                                     wt.setHref(AviationCodeListUser.CODELIST_VALUE_WEATHERCAUSINGVISIBILITYREDUCTION + "/" + w.getText());
                                                     sect.getSurfaceVisibilityCause().add(wt);
@@ -622,21 +623,14 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                 if (source.getTranslatedBulletinID().isPresent()) {
                     target.setTranslatedBulletinID(source.getTranslatedBulletinID().get());
                 }
-                if (source.getTranslatedBulletinReceptionTime().isPresent()) {
-                    target.setTranslatedBulletinReceptionTime(
-                            f.newXMLGregorianCalendar(source.getTranslatedBulletinReceptionTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (source.getTranslationCentreDesignator().isPresent()) {
-                    target.setTranslationCentreDesignator(source.getTranslationCentreDesignator().get());
-                }
-                if (source.getTranslationCentreName().isPresent()) {
-                    target.setTranslationCentreName(source.getTranslationCentreName().get());
-                }
-                if (source.getTranslationTime().isPresent()) {
-                    target.setTranslationTime(f.newXMLGregorianCalendar(source.getTranslationTime().get().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                if (results.getStatus() != Status.SUCCESS && source.getTranslatedTAC().isPresent()) {
-                    target.setTranslationFailedTAC(source.getTranslatedTAC().get());
+                source.getTranslatedBulletinReceptionTime()
+                        .map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time)))
+                        .ifPresent(target::setTranslatedBulletinReceptionTime);
+                source.getTranslationCentreDesignator().ifPresent(target::setTranslationCentreDesignator);
+                source.getTranslationCentreName().ifPresent(target::setTranslationCentreName);
+                source.getTranslationTime().map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time))).ifPresent(target::setTranslationTime);
+                if (results.getStatus() != Status.SUCCESS) {
+                    source.getTranslatedTAC().ifPresent(target::setTranslationFailedTAC);
                 }
             }
         } catch (final DatatypeConfigurationException e) {
