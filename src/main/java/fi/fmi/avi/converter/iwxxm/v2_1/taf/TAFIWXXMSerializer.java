@@ -42,7 +42,6 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
-import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CloudForecast;
@@ -225,8 +224,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
                 ref.setTitle("TAF forecast properties");
             }));
 
-            final Aerodrome ad = source.getAerodrome();
-            this.updateSamplingFeature(ad, baseFct, foiId, aerodromeId, result);
+            this.updateSamplingFeature(source.getAerodrome(), baseFct, foiId, aerodromeId, result);
 
             this.updateForecastResult(source, baseForecastInput.get(), baseFct, result);
 

@@ -31,6 +31,7 @@ import aero.aixm511.AirportHeliportTimeSlicePropertyType;
 import aero.aixm511.AirportHeliportTimeSliceType;
 import aero.aixm511.AirportHeliportType;
 import aero.aixm511.CodeAirportHeliportDesignatorType;
+import aero.aixm511.CodeVerticalDatumType;
 import aero.aixm511.ElevatedPointPropertyType;
 import aero.aixm511.ElevatedPointType;
 import aero.aixm511.SurfaceType;
@@ -57,6 +58,9 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
 
     protected static Optional<Aerodrome> buildAerodrome(final AirportHeliportType airport, final IssueList retval,
             final ReferredObjectRetrievalContext refCtx) {
+        if (airport == null) {
+            return Optional.empty();
+        }
         final AerodromeImpl.Builder aerodromeBuilder = AerodromeImpl.builder();
         final List<AirportHeliportTimeSlicePropertyType> slices = airport.getTimeSlice();
         if (slices.isEmpty()) {
@@ -66,44 +70,39 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "More than one time slice (for aerodrome)"));
             return Optional.empty();
         } else {
-            final Optional<AirportHeliportTimeSliceType> slice = resolveProperty(slices.get(0), AirportHeliportTimeSliceType.class, refCtx);
-            if (slice.isPresent()) {
-                final CodeAirportHeliportDesignatorType designator = slice.get().getDesignator();
+            final AirportHeliportTimeSliceType slice = resolveProperty(slices.get(0), AirportHeliportTimeSliceType.class, refCtx).orElse(null);
+            if (slice != null) {
+                final CodeAirportHeliportDesignatorType designator = slice.getDesignator();
                 if (designator == null || designator.getValue() == null) {
                     retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No designator for " + "aerodrome"));
                 } else {
                     aerodromeBuilder.setDesignator(designator.getValue());
                 }
-                if (slice.get().getLocationIndicatorICAO() != null) {
-                    aerodromeBuilder.setLocationIndicatorICAO(slice.get().getLocationIndicatorICAO().getValue());
+                if (slice.getLocationIndicatorICAO() != null) {
+                    aerodromeBuilder.setLocationIndicatorICAO(slice.getLocationIndicatorICAO().getValue());
                 }
-                if (slice.get().getDesignatorIATA() != null) {
-                    aerodromeBuilder.setDesignatorIATA(slice.get().getDesignatorIATA().getValue());
+                if (slice.getDesignatorIATA() != null) {
+                    aerodromeBuilder.setDesignatorIATA(slice.getDesignatorIATA().getValue());
                 }
-                if (slice.get().getPortName() != null) {
-                    aerodromeBuilder.setName(slice.get().getPortName().getValue());
+                if (slice.getPortName() != null) {
+                    aerodromeBuilder.setName(slice.getPortName().getValue());
                 }
 
-                ValDistanceVerticalType elevation = slice.get().getFieldElevation();
-                final ElevatedPointPropertyType pointProp = slice.get().getARP();
+                final Optional<NumericMeasureImpl> fieldElevation = toNumericMeasure(slice.getFieldElevation(), "fieldElevation", retval);
+                aerodromeBuilder.setFieldElevationValue(fieldElevation.map(NumericMeasure::getValue))//
+                        .setFieldElevationUom(fieldElevation.map(NumericMeasure::getUom));
+                final ElevatedPointPropertyType pointProp = slice.getARP();
                 if (pointProp != null && pointProp.getNilReason() == null) {
-                    final Optional<ElevatedPointType> elPoint = resolveProperty(pointProp, ElevatedPointType.class, refCtx);
-                    if (elPoint.isPresent()) {
-                        final CoordinateReferenceSystemImpl.Builder crsBuilder = mergeToBuilder(elPoint.get(), CoordinateReferenceSystemImpl.builder());
+                    final ElevatedPointType elPoint = resolveProperty(pointProp, ElevatedPointType.class, refCtx).orElse(null);
+                    if (elPoint != null) {
+                        final CoordinateReferenceSystemImpl.Builder crsBuilder = mergeToBuilder(elPoint, CoordinateReferenceSystemImpl.builder());
                         final ElevatedPointImpl.Builder posBuilder = ElevatedPointImpl.builder();
                         boolean canBuildPos = true;
-                        //use ref point elevation as fallback for the aerodrome elevation
-                        if (elevation == null && elPoint.get().getElevation() != null) {
-                            elevation = elPoint.get().getElevation();
-                            if (elevation.getNilReason() == null) {
-                                posBuilder.setNullableElevationUom(elevation.getUom());
-                                if (elevation.getValue() != null) {
-                                    posBuilder.setElevationValue(Double.parseDouble(elevation.getValue()));
-                                }
-                            }
-                        }
-                        if (elPoint.get().getPos() != null) {
-                            final DirectPositionType dp = elPoint.get().getPos();
+                        final Optional<NumericMeasureImpl> elevation = toNumericMeasure(elPoint.getElevation(), "elevation", retval);
+                        posBuilder.setElevationValue(elevation.map(NumericMeasure::getValue))//
+                                .setElevationUom(elevation.map(NumericMeasure::getUom));
+                        if (elPoint.getPos() != null) {
+                            final DirectPositionType dp = elPoint.getPos();
                             try {
                                 posBuilder.setCrs(mergeToBuilder(dp, crsBuilder).build());
                             } catch (final IllegalStateException e) {
@@ -118,21 +117,18 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
                                 retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
                                         "No value for ARP elevated point position"));
                             }
-
-                            if (canBuildPos) {
-                                aerodromeBuilder.setReferencePoint(posBuilder.build());
-                            }
-
-                        } else if (elPoint.get().getCoordinates() != null) {
+                        } else if (elPoint.getCoordinates() != null) {
                             retval.add(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
                                     "Found elevated position defined using the deprecated GML CoordinatesType, skipping elevated position info"));
                         }
+                        final CodeVerticalDatumType verticalDatum = elPoint.getVerticalDatum();
+                        if (verticalDatum != null && verticalDatum.getNilReason() == null) {
+                            posBuilder.setNullableVerticalDatum(verticalDatum.getValue());
+                        }
+                        if (canBuildPos) {
+                            aerodromeBuilder.setReferencePoint(posBuilder.build());
+                        }
                     }
-                }
-
-                if (elevation != null && elevation.getNilReason() == null) {
-                    aerodromeBuilder.setFieldElevationValue(Double.parseDouble(elevation.getValue()));
-                    aerodromeBuilder.setNullableFieldElevationUom(elevation.getUom());
                 }
             }
         }
@@ -341,5 +337,26 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
 
     protected static <T> T nullToDefault(final T nullableValue, final T defaultValue) {
         return nullableValue == null ? defaultValue : nullableValue;
+    }
+
+    protected static Optional<NumericMeasureImpl> toNumericMeasure(final ValDistanceVerticalType valDistanceVerticalType, final String elementName,
+            final IssueList issueList) {
+        if (valDistanceVerticalType == null) {
+            return Optional.empty();
+        }
+        final String value = valDistanceVerticalType.getValue();
+        if (value == null) {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, elementName + " is missing value"));
+            return Optional.empty();
+        }
+        final String uom = valDistanceVerticalType.getUom();
+        if (uom == null) {
+            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, elementName + " is missing uom"));
+        }
+
+        return Optional.of(NumericMeasureImpl.builder()//
+                .setValue(Double.parseDouble(value))//
+                .setUom(nullToDefault(uom, ""))//
+                .build());
     }
 }

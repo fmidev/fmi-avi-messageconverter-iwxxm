@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -60,6 +62,7 @@ import aero.aixm511.AirportHeliportType;
 import aero.aixm511.CodeAirportHeliportDesignatorType;
 import aero.aixm511.CodeIATAType;
 import aero.aixm511.CodeICAOType;
+import aero.aixm511.CodeVerticalDatumType;
 import aero.aixm511.ElevatedPointPropertyType;
 import aero.aixm511.ElevatedPointType;
 import aero.aixm511.SurfacePropertyType;
@@ -76,6 +79,7 @@ import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import fi.fmi.avi.model.CircleByCenterPoint;
 import fi.fmi.avi.model.CoordinateReferenceSystem;
+import fi.fmi.avi.model.ElevatedPoint;
 import fi.fmi.avi.model.Geometry;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
@@ -196,11 +200,51 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
     }
 
     protected static Optional<String> startToIWXXMDateTime(final PartialOrCompleteTimePeriod period) {
-        return period.getStartTime().flatMap(AbstractIWXXMSerializer::toIWXXMDateTime);
+        //noinspection RedundantTypeArguments
+        return period.getStartTime().<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime);
     }
 
     protected static Optional<String> endToIWXXMDateTime(final PartialOrCompleteTimePeriod period) {
-        return period.getEndTime().flatMap(AbstractIWXXMSerializer::toIWXXMDateTime);
+        //noinspection RedundantTypeArguments
+        return period.getEndTime().<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime);
+    }
+
+    protected static Optional<ValDistanceVerticalType> elevationToValDistanceVertical(final ElevatedPoint elevatedPoint) {
+        return elevatedPoint == null
+                ? Optional.empty()
+                : valDistanceVertical(elevatedPoint.getElevationValue().orElse(Double.NaN), elevatedPoint.getElevationUom().orElse(""));
+    }
+
+    protected static Optional<ValDistanceVerticalType> toValDistanceVertical(final NumericMeasure numericMeasure) {
+        return numericMeasure == null ? Optional.empty() : valDistanceVertical(numericMeasure.getValue(), numericMeasure.getUom());
+    }
+
+    protected static Optional<ValDistanceVerticalType> valDistanceVertical(final Double value, final String uom) {
+        return valDistanceVertical(value == null ? Double.NaN : value, uom);
+    }
+
+    protected static Optional<ValDistanceVerticalType> valDistanceVertical(final double value, final String uom) {
+        if (Double.isNaN(value)) {
+            return Optional.empty();
+        }
+        final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
+        final DecimalFormat format = new DecimalFormat("", DecimalFormatSymbols.getInstance(Locale.US));
+        format.setMinimumIntegerDigits(1);
+        format.setMinimumFractionDigits(0);
+        format.setMaximumFractionDigits(4);
+        type.setValue(format.format(value));
+        if (uom != null && !uom.isEmpty()) {
+            type.setUom(uom.toUpperCase(Locale.US));
+        }
+        return Optional.of(type);
+    }
+
+    protected static ValDistanceVerticalType nilValDistanceVertical() {
+        final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
+        // TODO: how to set xsi:nil="true"?
+        type.setNilReason("unknown");
+        type.setUom("OTHER");
+        return type;
     }
 
     @SuppressWarnings("unchecked")
@@ -218,7 +262,8 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         }
     }
 
-    protected void setAerodromeData(final AirportHeliportType aerodrome, final Aerodrome input, final String aerodromeId) {
+    protected void setAerodromeData(final AirportHeliportType aerodrome, final Aerodrome input, final String aerodromeId, final String timeSliceIdPrefix,
+            final String elevatedPointIdPrefix) {
         if (input == null) {
             return;
         }
@@ -226,7 +271,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         aerodrome.getTimeSlice()
                 .add(create(AirportHeliportTimeSlicePropertyType.class,
                         prop -> prop.setAirportHeliportTimeSlice(create(AirportHeliportTimeSliceType.class, timeSlice -> {
-                            timeSlice.setId("aerodrome-" + UUID.randomUUID().toString());
+                            timeSlice.setId(timeSliceIdPrefix + UUID.randomUUID());
                             timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
                             timeSlice.setInterpretation("SNAPSHOT");
                             timeSlice.setDesignator(create(CodeAirportHeliportDesignatorType.class, designator -> designator.setValue(input.getDesignator())));
@@ -240,30 +285,22 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
                             input.getDesignatorIATA()
                                     .ifPresent(inputDesignator -> timeSlice.setDesignatorIATA(
                                             create(CodeIATAType.class, designator -> designator.setValue(inputDesignator))));
-                            input.getFieldElevationValue()
-                                    .ifPresent(inputElevation -> timeSlice.setFieldElevation(create(ValDistanceVerticalType.class, elevation -> {
-                                        elevation.setValue(String.format("%.00f", inputElevation));
-                                        if (input.getFieldElevationUom().isPresent()) {
-                                            elevation.setUom(input.getFieldElevationUom().get());
-                                        }
-                                    })));
+                            valDistanceVertical(input.getFieldElevationValue().orElse(Double.NaN), input.getFieldElevationUom().orElse(""))//
+                                    .ifPresent(timeSlice::setFieldElevation);
 
                             input.getReferencePoint()
                                     .ifPresent(inputPosition -> timeSlice.setARP(create(ElevatedPointPropertyType.class,
-                                            pointProp -> pointProp.setElevatedPoint(create(ElevatedPointType.class, point -> {
-                                                point.setId("point-" + UUID.randomUUID().toString());
+                                            elevatedPointProp -> elevatedPointProp.setElevatedPoint(create(ElevatedPointType.class, point -> {
+                                                point.setId(elevatedPointIdPrefix + UUID.randomUUID());
                                                 inputPosition.getCrs().ifPresent(crs -> setCrsToType(point, crs));
                                                 if (inputPosition.getCoordinates() != null) {
-                                                    point.setSrsDimension(BigInteger.valueOf(inputPosition.getCoordinates().size()));
                                                     point.setPos(
                                                             create(DirectPositionType.class, pos -> pos.getValue().addAll(inputPosition.getCoordinates())));
                                                 }
-                                                if (inputPosition.getElevationValue().isPresent() && inputPosition.getElevationUom().isPresent()) {
-                                                    point.setElevation(create(ValDistanceVerticalType.class, dist -> {
-                                                        inputPosition.getElevationValue().ifPresent(value -> dist.setValue(String.format("%.00f", value)));
-                                                        inputPosition.getElevationUom().ifPresent(uom -> dist.setUom(uom.toUpperCase(Locale.US)));
-                                                    }));
-                                                }
+                                                elevationToValDistanceVertical(inputPosition).ifPresent(point::setElevation);
+                                                inputPosition.getVerticalDatum()
+                                                        .ifPresent(verticalDatum -> point.setVerticalDatum(
+                                                                create(CodeVerticalDatumType.class, verticalCode -> verticalCode.setValue(verticalDatum))));
                                             })))));
                         }))));
     }

@@ -48,7 +48,6 @@ import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.CloudForecast;
-import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.SurfaceWind;
@@ -140,7 +139,7 @@ public class TAFIWXXMSerializerTest {
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/@axisLabels");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
-        assertEquals("Lat Long", expResult);
+        assertEquals("Lat Lon", expResult);
 
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/@srsName");
@@ -160,7 +159,7 @@ public class TAFIWXXMSerializerTest {
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/aixm:elevation");
         expResult = expr.evaluate(doc, XPathConstants.STRING);
-        assertEquals("12.0", expResult);
+        assertEquals("12", expResult);
 
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint/aixm:verticalDatum");
@@ -547,7 +546,7 @@ public class TAFIWXXMSerializerTest {
 
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint"
                 + "/aixm:elevation");
-        Assert.assertEquals("Airport elevation value does not match", "40.0", expr.evaluate(docElement));
+        Assert.assertEquals("Airport elevation value does not match", "40", expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint"
                 + "/aixm:elevation/@uom");
@@ -563,7 +562,7 @@ public class TAFIWXXMSerializerTest {
 
         expr = xpath.compile("/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint"
                 + "/@axisLabels");
-        Assert.assertEquals("Airport reference point srsName does not match", "Lat Long", expr.evaluate(docElement));
+        Assert.assertEquals("Airport reference point srsName does not match", "Lat Lon", expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm30:TAF/iwxxm30:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:ARP/aixm:ElevatedPoint" + "/gml:pos");
@@ -983,7 +982,7 @@ public class TAFIWXXMSerializerTest {
         final TAFImpl.Builder tafBuilder = TAFImpl.builder();
         tafBuilder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 15, 0, 0, 0, ZoneId.of("Z"))));
 
-        tafBuilder.setAerodrome(createAeroDrome());
+        tafBuilder.setAerodrome(createAerodrome());
 
         final PartialOrCompleteTimePeriod cancelPeriod = PartialOrCompleteTimePeriod.builder()
                 .setStartTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 0, 0, 0, 0, ZoneId.of("Z"))))
@@ -1009,7 +1008,7 @@ public class TAFIWXXMSerializerTest {
                 .setEndTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 18, 0, 0, 0, ZoneId.of("Z"))))
                 .build());
 
-        tafBuilder.setAerodrome(createAeroDrome());
+        tafBuilder.setAerodrome(createAerodrome());
         tafBuilder.setBaseForecast(createBaseForecast());
 
         final List<TAFChangeForecast> forecasts = new ArrayList<>();
@@ -1021,19 +1020,25 @@ public class TAFIWXXMSerializerTest {
 
         final CloudForecast f1 = CloudForecastImpl.builder()
                 .setLayers(Arrays.asList(CloudLayerImpl.builder()
-                        .setAmount(AviationCodeListUser.CloudAmount.SCT)
-                        .setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(1500d).build())
-                        .setCloudType(AviationCodeListUser.CloudType.CB)
-                        .build(), CloudLayerImpl.builder()
-                        .setAmount(AviationCodeListUser.CloudAmount.BKN)
-                        .setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(2000d).build())
-                        .build()))
+                                .setAmount(AviationCodeListUser.CloudAmount.SCT)
+                                .setBase(NumericMeasureImpl.of(1500.0, "[ft_i]"))
+                                .setCloudType(AviationCodeListUser.CloudType.CB)
+                                .build(),
+                        CloudLayerImpl.builder().setAmount(AviationCodeListUser.CloudAmount.BKN).setBase(NumericMeasureImpl.of(2000.0, "[ft_i]")).build()))
                 .build();
 
         //Weather
         final List<Weather> w1 = Collections.singletonList(WeatherImpl.builder().setCode("TSRA").build());
 
-        forecasts.add(createChangeForecast(t1, AviationCodeListUser.TAFChangeIndicator.BECOMING, f1, null, null, null, w1));
+        forecasts.add(TAFChangeForecastImpl.builder()//
+                .setPeriodOfChange(t1)//
+                .setChangeIndicator(AviationCodeListUser.TAFChangeIndicator.BECOMING)//
+                .setNullableCloud(f1)//
+                .setNullablePrevailingVisibility(null)//
+                .setNullablePrevailingVisibilityOperator(null)//
+                .setNullableSurfaceWind(null)//
+                .setNullableForecastWeather(w1)//
+                .build());
 
         final PartialOrCompleteTimePeriod t2 = PartialOrCompleteTimePeriod.builder()
                 .setStartTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 8, 0, 0, 0, ZoneId.of("Z"))))
@@ -1042,24 +1047,29 @@ public class TAFIWXXMSerializerTest {
 
         final CloudForecast f2 = CloudForecastImpl.builder()
                 .setLayers(Arrays.asList(CloudLayerImpl.builder()
-                        .setAmount(AviationCodeListUser.CloudAmount.SCT)
-                        .setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(1000d).build())
-                        .setCloudType(AviationCodeListUser.CloudType.CB)
-                        .build(), CloudLayerImpl.builder()
-                        .setAmount(AviationCodeListUser.CloudAmount.BKN)
-                        .setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(2000d).build())
-                        .build()))
+                                .setAmount(AviationCodeListUser.CloudAmount.SCT)
+                                .setBase(NumericMeasureImpl.of(1000.0, "[ft_i]"))
+                                .setCloudType(AviationCodeListUser.CloudType.CB)
+                                .build(),
+                        CloudLayerImpl.builder().setAmount(AviationCodeListUser.CloudAmount.BKN).setBase(NumericMeasureImpl.of(2000.0, "[ft_i]")).build()))
                 .build();
 
         final SurfaceWind w2 = SurfaceWindImpl.builder()
                 .setVariableDirection(false)
-                .setMeanWindDirection(NumericMeasureImpl.builder().setUom("deg").setValue(170d).build())
-                .setMeanWindSpeed(NumericMeasureImpl.builder().setUom("m/s").setValue(6d).build())
-                .setWindGust(NumericMeasureImpl.builder().setUom("m/s").setValue(12d).build())
+                .setMeanWindDirection(NumericMeasureImpl.of(170.0, "deg"))
+                .setMeanWindSpeed(NumericMeasureImpl.of(6.0, "m/s"))
+                .setWindGust(NumericMeasureImpl.of(12.0, "m/s"))
                 .build();
 
-        forecasts.add(createChangeForecast(t2, AviationCodeListUser.TAFChangeIndicator.TEMPORARY_FLUCTUATIONS, f2,
-                NumericMeasureImpl.builder().setUom("m").setValue(1000d).build(), null, w2, null));
+        forecasts.add(TAFChangeForecastImpl.builder()//
+                .setPeriodOfChange(t2)//
+                .setChangeIndicator(AviationCodeListUser.TAFChangeIndicator.TEMPORARY_FLUCTUATIONS)//
+                .setNullableCloud(f2)//
+                .setNullablePrevailingVisibility(NumericMeasureImpl.of(1000.0, "m"))//
+                .setNullablePrevailingVisibilityOperator(null)//
+                .setNullableSurfaceWind(w2)//
+                .setNullableForecastWeather(null)//
+                .build());
 
         final PartialOrCompleteTimePeriod t3 = PartialOrCompleteTimePeriod.builder()
                 .setStartTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.of(2012, 8, 16, 12, 30, 0, 0, ZoneId.of("Z"))))
@@ -1067,87 +1077,60 @@ public class TAFIWXXMSerializerTest {
                 .build();
 
         final CloudForecast f3 = CloudForecastImpl.builder()
-                .setLayers(Collections.singletonList(CloudLayerImpl.builder()
-                        .setAmount(AviationCodeListUser.CloudAmount.BKN)
-                        .setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(2000d).build())
-                        .build()))
+                .setLayers(Collections.singletonList(
+                        CloudLayerImpl.builder().setAmount(AviationCodeListUser.CloudAmount.BKN).setBase(NumericMeasureImpl.of(2000.0, "[ft_i]")).build()))
                 .build();
 
         final SurfaceWind w3 = SurfaceWindImpl.builder()
                 .setVariableDirection(false)
-                .setMeanWindDirection(NumericMeasureImpl.builder().setUom("deg").setValue(150d).build())
-                .setMeanWindSpeed(NumericMeasureImpl.builder().setUom("m/s").setValue(4d).build())
+                .setMeanWindDirection(NumericMeasureImpl.of(150.0, "deg"))
+                .setMeanWindSpeed(NumericMeasureImpl.of(4.0, "m/s"))
                 .build();
 
-        forecasts.add(
-                createChangeForecast(t3, AviationCodeListUser.TAFChangeIndicator.FROM, f3, NumericMeasureImpl.builder().setUom("m").setValue(1000d).build(), 0,
-                        w3, null));
+        forecasts.add(TAFChangeForecastImpl.builder()//
+                .setPeriodOfChange(t3)//
+                .setChangeIndicator(AviationCodeListUser.TAFChangeIndicator.FROM)//
+                .setNullableCloud(f3)//
+                .setNullablePrevailingVisibility(NumericMeasureImpl.of(1000.0, "m"))//
+                .setNullablePrevailingVisibilityOperator(AviationCodeListUser.RelationalOperator.fromInt(0))//
+                .setNullableSurfaceWind(w3)//
+                .setNullableForecastWeather(null)//
+                .build());
 
         tafBuilder.setChangeForecasts(forecasts);
 
         return tafBuilder.build();
     }
 
-    private Aerodrome createAeroDrome() {
-        final AerodromeImpl.Builder builder = AerodromeImpl.builder();
-        builder.setName("DONLON/INTERNATIONAL");
-        builder.setDesignator("YUDO");
-        builder.setLocationIndicatorICAO(Optional.of("YUDO"));
-
-        final ElevatedPointImpl.Builder point = ElevatedPointImpl.builder();
-        point.setCoordinates(Arrays.asList(12.34, -12.34));
-        point.setElevationUom("M");
-        point.setElevationValue(12);
-        point.setVerticalDatum(Optional.of("EGM_96"));
-        builder.setReferencePoint(point.build());
-        return builder.build();
+    private Aerodrome createAerodrome() {
+        return AerodromeImpl.builder()//
+                .setName("DONLON/INTERNATIONAL")//
+                .setDesignator("YUDO")//
+                .setLocationIndicatorICAO(Optional.of("YUDO"))//
+                .setReferencePoint(ElevatedPointImpl.builder()//
+                        .setCoordinates(Arrays.asList(12.34, -12.34))//
+                        .setElevationUom("M")//
+                        .setElevationValue(12)//
+                        .setVerticalDatum(Optional.of("EGM_96"))//
+                        .setCrs(CoordinateReferenceSystemImpl.wgs84())//
+                        .build())//
+                .build();
     }
 
     private TAFBaseForecast createBaseForecast() {
-        final TAFBaseForecastImpl.Builder builder = TAFBaseForecastImpl.builder();
-        builder.setPrevailingVisibility(NumericMeasureImpl.builder().setUom("m").setValue(9000d).build());
-
-        final SurfaceWindImpl.Builder wind = SurfaceWindImpl.builder();
-        wind.setVariableDirection(false);
-        wind.setMeanWindDirection(NumericMeasureImpl.builder().setUom("deg").setValue(130d).build());
-        wind.setMeanWindSpeed(NumericMeasureImpl.builder().setUom("m/s").setValue(5d).build());
-        builder.setSurfaceWind(wind.build());
-
-        final CloudLayerImpl.Builder cloud = CloudLayerImpl.builder();
-        cloud.setAmount(AviationCodeListUser.CloudAmount.BKN);
-        cloud.setBase(NumericMeasureImpl.builder().setUom("[ft_i]").setValue(2000d).build());
-        builder.setCloud(CloudForecastImpl.builder().setLayers(Collections.singletonList(cloud.build())).build());
-
-        return builder.build();
-    }
-
-    private TAFChangeForecast createChangeForecast(final PartialOrCompleteTimePeriod timePeriod, final AviationCodeListUser.TAFChangeIndicator indicator,
-            final CloudForecast forecast, final NumericMeasure prevailingVisibility, final Integer visbilityOperator, final SurfaceWind wind,
-            final List<Weather> weather) {
-        final TAFChangeForecastImpl.Builder builder = TAFChangeForecastImpl.builder();
-        if (timePeriod != null) {
-            builder.setPeriodOfChange(timePeriod);
-        }
-        if (indicator != null) {
-            builder.setChangeIndicator(indicator);
-        }
-        if (forecast != null) {
-            builder.setCloud(forecast);
-        }
-        if (prevailingVisibility != null) {
-            builder.setPrevailingVisibility(prevailingVisibility);
-        }
-        if (wind != null) {
-            builder.setSurfaceWind(wind);
-        }
-        if (visbilityOperator != null) {
-            builder.setPrevailingVisibilityOperator(AviationCodeListUser.RelationalOperator.fromInt(visbilityOperator));
-        }
-
-        if (weather != null && weather.size() > 0) {
-            builder.setForecastWeather(weather);
-        }
-
-        return builder.build();
+        return TAFBaseForecastImpl.builder()//
+                .setPrevailingVisibility(NumericMeasureImpl.of(9000.0, "m"))//
+                .setSurfaceWind(SurfaceWindImpl.builder()//
+                        .setVariableDirection(false)//
+                        .setMeanWindDirection(NumericMeasureImpl.of(130.0, "deg"))//
+                        .setMeanWindSpeed(NumericMeasureImpl.of(5.0, "m/s"))//
+                        .build())//
+                .setCloud(CloudForecastImpl.builder()//
+                        .setLayers(Collections.singletonList(CloudLayerImpl.builder()//
+                                .setAmount(AviationCodeListUser.CloudAmount.BKN)//
+                                .setBase(NumericMeasureImpl.of(2000.0, "[ft_i]"))//
+                                .build()))//
+                        .build())//
+                .build();
     }
 }

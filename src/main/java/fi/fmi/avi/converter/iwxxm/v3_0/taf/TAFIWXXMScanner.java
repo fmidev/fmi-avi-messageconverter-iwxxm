@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import aero.aixm511.AirportHeliportTimeSlicePropertyType;
-import aero.aixm511.AirportHeliportTimeSliceType;
-import aero.aixm511.ElevatedPointType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
@@ -37,10 +34,7 @@ import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.SurfaceWind;
 import fi.fmi.avi.model.Weather;
-import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.CloudLayerImpl;
-import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
-import fi.fmi.avi.model.immutable.ElevatedPointImpl;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.immutable.SurfaceWindImpl;
 import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
@@ -50,7 +44,6 @@ import icao.iwxxm30.AerodromeCloudForecastPropertyType;
 import icao.iwxxm30.AerodromeCloudForecastType;
 import icao.iwxxm30.AerodromeForecastWeatherType;
 import icao.iwxxm30.AerodromeSurfaceWindForecastType;
-import icao.iwxxm30.AirportHeliportPropertyType;
 import icao.iwxxm30.CloudLayerPropertyType;
 import icao.iwxxm30.MeteorologicalAerodromeForecastPropertyType;
 import icao.iwxxm30.MeteorologicalAerodromeForecastType;
@@ -88,38 +81,8 @@ public class TAFIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (input.getAerodrome() != null) {
-            final AirportHeliportPropertyType airportHeliportPropertyType = input.getAerodrome();
-
-            final AerodromeImpl.Builder aerodrome = AerodromeImpl.builder();
-            final List<AirportHeliportTimeSlicePropertyType> timeslices = airportHeliportPropertyType.getAirportHeliport().getTimeSlice();
-            for (final AirportHeliportTimeSlicePropertyType timeslice : timeslices) {
-                final AirportHeliportTimeSliceType airportHeliportTimeSlice = timeslice.getAirportHeliportTimeSlice();
-
-                aerodrome.setDesignator(airportHeliportTimeSlice.getDesignator().getValue());
-                if (airportHeliportTimeSlice.getDesignatorIATA() != null) {
-                    aerodrome.setDesignatorIATA(airportHeliportTimeSlice.getDesignatorIATA().getValue());
-                }
-                aerodrome.setName(airportHeliportTimeSlice.getPortName().getValue());
-                aerodrome.setLocationIndicatorICAO(airportHeliportTimeSlice.getLocationIndicatorICAO().getValue());
-
-                if (airportHeliportTimeSlice.getARP() != null) {
-                    final ElevatedPointType arp = airportHeliportTimeSlice.getARP().getElevatedPoint();
-
-                    final ElevatedPointImpl.Builder elevatedPoint = ElevatedPointImpl.builder();
-                    elevatedPoint.setCrs(CoordinateReferenceSystemImpl.builder()
-                            .setAxisLabels(arp.getAxisLabels())
-                            .setName(arp.getSrsName())
-                            .setDimension(arp.getSrsDimension().intValue())
-                            .build());
-                    elevatedPoint.setCoordinates(arp.getPos().getValue());
-                    elevatedPoint.setElevationUom(arp.getElevation().getUom());
-                    elevatedPoint.setElevationValue(Double.parseDouble(arp.getElevation().getValue()));
-                    elevatedPoint.setVerticalDatum(arp.getVerticalDatum().getValue());
-
-                    aerodrome.setReferencePoint(elevatedPoint.build());
-                }
-            }
-            properties.set(AERODROME, aerodrome.build());
+            buildAerodrome(input.getAerodrome().getAirportHeliport(), issueList, refCtx)//
+                    .ifPresent(aerodrome -> properties.set(AERODROME, aerodrome));
         }
 
         if (input.getBaseForecast() != null) {

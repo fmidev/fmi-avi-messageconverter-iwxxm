@@ -1,5 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -112,7 +113,8 @@ public class TAFIWXXMParserTest extends DOMParsingTestBase {
         final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConversionIssues().isEmpty());
-        assertTrue(result.getConvertedMessage().get().getAerodrome().getFieldElevationValue().isPresent());
+        assertFalse(result.getConvertedMessage().get().getAerodrome().getFieldElevationValue().isPresent());
+        assertTrue(result.getConvertedMessage().get().getAerodrome().getReferencePoint().get().getElevationValue().isPresent());
     }
 
     @Test

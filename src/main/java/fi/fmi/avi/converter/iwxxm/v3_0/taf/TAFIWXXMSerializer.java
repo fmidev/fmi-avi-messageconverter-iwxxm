@@ -3,9 +3,7 @@ package fi.fmi.avi.converter.iwxxm.v3_0.taf;
 import static fi.fmi.avi.model.AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE;
 
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,7 +12,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
 import net.opengis.gml32.AngleType;
-import net.opengis.gml32.DirectPositionType;
 import net.opengis.gml32.LengthType;
 import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.TimeInstantPropertyType;
@@ -22,20 +19,10 @@ import net.opengis.gml32.TimeInstantType;
 import net.opengis.gml32.TimePeriodPropertyType;
 import net.opengis.gml32.TimePeriodType;
 import net.opengis.gml32.TimePositionType;
-import net.opengis.gml32.TimePrimitivePropertyType;
 
 import org.w3c.dom.Document;
 
-import aero.aixm511.AirportHeliportTimeSlicePropertyType;
-import aero.aixm511.AirportHeliportTimeSliceType;
 import aero.aixm511.AirportHeliportType;
-import aero.aixm511.CodeAirportHeliportDesignatorType;
-import aero.aixm511.CodeICAOType;
-import aero.aixm511.CodeVerticalDatumType;
-import aero.aixm511.ElevatedPointPropertyType;
-import aero.aixm511.ElevatedPointType;
-import aero.aixm511.TextNameType;
-import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -44,7 +31,6 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
-import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
@@ -128,7 +114,10 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             taf.setValidPeriod(create(TimePeriodPropertyType.class, prop -> createTimePeriodPropertyType(prop, start, end, validTimeId)));
         }
 
-        this.updateAerodrome(input.getAerodrome(), taf, aerodromeId);
+        taf.setAerodrome(create(AirportHeliportPropertyType.class, prop -> prop.setAirportHeliport(create(AirportHeliportType.class, type -> {
+            setAerodromeData(type, input.getAerodrome(), aerodromeId, "uuid.", "uuid.");
+            prop.setAirportHeliport(type);
+        }))));
 
         this.updateBaseForecast(input, taf, validTimeId, result);
 
@@ -163,55 +152,6 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             if (cancelTime.getEndTime().isPresent()) {
                 type.setEndPosition(create(TimePositionType.class, end -> endToIWXXMDateTime(cancelTime).ifPresent(time -> end.getValue().add(time))));
             }
-        }))));
-    }
-
-    private void updateAerodrome(final Aerodrome aerodrome, final TAFType target, final String aerodromeId) {
-        target.setAerodrome(create(AirportHeliportPropertyType.class, prop -> prop.setAirportHeliport(create(AirportHeliportType.class, type -> {
-            type.setId(aerodromeId);
-            final AirportHeliportTimeSliceType timeSlice = create(AirportHeliportTimeSliceType.class);
-            timeSlice.setId("uuid." + UUID.randomUUID());
-
-            timeSlice.setInterpretation("SNAPSHOT");
-            timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
-
-            timeSlice.setDesignator(create(CodeAirportHeliportDesignatorType.class, code -> code.setValue(aerodrome.getDesignator())));
-
-            aerodrome.getName().ifPresent(value -> {
-                final TextNameType name = new TextNameType();
-                name.setValue(value);
-                timeSlice.setPortName(name);
-            });
-            aerodrome.getLocationIndicatorICAO().ifPresent(value -> {
-                final CodeICAOType code = new CodeICAOType();
-                code.setValue(value);
-                timeSlice.setLocationIndicatorICAO(code);
-            });
-            aerodrome.getReferencePoint().ifPresent(sourcePoint -> timeSlice.setARP(create(ElevatedPointPropertyType.class, elevatedPointProp -> {
-                final ElevatedPointType targetPoint = create(ElevatedPointType.class);
-                targetPoint.setId("uuid." + UUID.randomUUID());
-
-                if (sourcePoint.getElevationValue().isPresent() && sourcePoint.getElevationUom().isPresent()) {
-                    targetPoint.setElevation(create(ValDistanceVerticalType.class, verticalType -> {
-                        verticalType.setUom(sourcePoint.getElevationUom().get());
-                        verticalType.setValue(sourcePoint.getElevationValue().get().toString());
-                    }));
-                }
-
-                targetPoint.setPos(create(DirectPositionType.class, pos -> pos.getValue().addAll(sourcePoint.getCoordinates())));
-
-                sourcePoint.getVerticalDatum()
-                        .ifPresent(verticalDatum -> targetPoint.setVerticalDatum(
-                                create(CodeVerticalDatumType.class, verticalCode -> verticalCode.setValue(verticalDatum))));
-
-                targetPoint.setSrsDimension(BigInteger.valueOf(2));
-                targetPoint.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
-
-                targetPoint.getAxisLabels().addAll(Arrays.asList("Lat", "Long"));
-                elevatedPointProp.setElevatedPoint(targetPoint);
-            })));
-            type.getTimeSlice().add(create(AirportHeliportTimeSlicePropertyType.class, sliceProp -> sliceProp.setAirportHeliportTimeSlice(timeSlice)));
-            prop.setAirportHeliport(type);
         }))));
     }
 

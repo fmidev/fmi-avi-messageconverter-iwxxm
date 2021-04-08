@@ -128,7 +128,7 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
 
                     samsFeature.getSampledFeature().add(create(FeaturePropertyType.class, samProp -> {
                         final AirportHeliportType aerodrome = create(AirportHeliportType.class);
-                        this.setAerodromeData(aerodrome, input, aerodromeId);
+                        this.setAerodromeData(aerodrome, input, aerodromeId, "aerodrome-", "point-");
                         samProp.setAbstractFeature(wrap(aerodrome, AirportHeliportType.class));
                     }));
 

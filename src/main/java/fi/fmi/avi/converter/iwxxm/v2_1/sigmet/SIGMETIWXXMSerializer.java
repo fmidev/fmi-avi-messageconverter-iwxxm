@@ -52,7 +52,6 @@ import aero.aixm511.TextNameType;
 import aero.aixm511.UnitTimeSlicePropertyType;
 import aero.aixm511.UnitTimeSliceType;
 import aero.aixm511.UnitType;
-import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -640,10 +639,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                     avpt -> avpt.setAirspaceVolume(create(AirspaceVolumeType.class, avt -> {
                                                         avt.setId("as-" + cnt + "-" + sigmetUUID);
                                                         geometryWithHeight.getUpperLimit().ifPresent(l -> {
-                                                            avt.setUpperLimit(create(ValDistanceVerticalType.class, vdvt -> {
-                                                                vdvt.setUom(l.getUom());
-                                                                vdvt.setValue(l.getValue().toString());
-                                                            }));
+                                                            toValDistanceVertical(l).ifPresent(avt::setUpperLimit);
                                                             avt.setUpperLimitReference(create(CodeVerticalReferenceType.class, cvrt -> {
                                                                 if (l.getValue() == 0.) {
                                                                     cvrt.setValue("SFC");
@@ -653,10 +649,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                             }));
                                                         });
                                                         geometryWithHeight.getLowerLimit().ifPresent(l -> {
-                                                            avt.setLowerLimit(create(ValDistanceVerticalType.class, vdvt -> {
-                                                                vdvt.setUom(l.getUom());
-                                                                vdvt.setValue(l.getValue().toString());
-                                                            }));
+                                                            toValDistanceVertical(l).ifPresent(avt::setLowerLimit);
                                                             avt.setLowerLimitReference(create(CodeVerticalReferenceType.class, cvrt -> {
                                                                 if (l.getValue() == 0.) {
                                                                     cvrt.setValue("SFC");
