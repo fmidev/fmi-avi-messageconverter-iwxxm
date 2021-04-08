@@ -21,7 +21,6 @@ import aero.aixm511.SurfaceType;
 import aero.aixm511.UnitTimeSlicePropertyType;
 import aero.aixm511.UnitTimeSliceType;
 import aero.aixm511.UnitType;
-import aero.aixm511.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
@@ -30,7 +29,6 @@ import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Scanner;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.swx.AdvisoryNumber;
 import fi.fmi.avi.model.swx.NextAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
@@ -303,20 +301,20 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         if (regionType.getGeographicLocation() != null && regionType.getGeographicLocation().getNilReason().isEmpty()) {
-            final Optional<AirspaceVolumeType> volume = resolveProperty(regionType.getGeographicLocation(), AirspaceVolumeType.class, refCtx);
-            if (volume.isPresent()) {
-                final AirspaceVolumeImpl.Builder airspaceVolume = AirspaceVolumeImpl.builder();
-                final Optional<SurfaceType> surface = resolveProperty(volume.get().getHorizontalProjection(), SurfaceType.class, refCtx);
-                surface.ifPresent(s -> airspaceVolume.setHorizontalProjection(getSurfaceGeometry(s, issueList, refCtx)));
-                airspaceVolume.setNullableUpperLimit(toNumericMeasure(volume.get().getUpperLimit(), "upperLimit", issueList));
-                if (volume.get().getUpperLimitReference() != null) {
-                    airspaceVolume.setNullableUpperLimitReference(volume.get().getUpperLimitReference().getValue());
+            final AirspaceVolumeType volume = resolveProperty(regionType.getGeographicLocation(), AirspaceVolumeType.class, refCtx).orElse(null);
+            if (volume != null) {
+                final AirspaceVolumeImpl.Builder airspaceVolumeBuilder = AirspaceVolumeImpl.builder();
+                resolveProperty(volume.getHorizontalProjection(), SurfaceType.class, refCtx)//
+                        .ifPresent(s -> airspaceVolumeBuilder.setHorizontalProjection(getSurfaceGeometry(s, issueList, refCtx)));
+                airspaceVolumeBuilder.setUpperLimit(toNumericMeasure(volume.getUpperLimit(), "upperLimit", issueList));
+                if (volume.getUpperLimitReference() != null) {
+                    airspaceVolumeBuilder.setNullableUpperLimitReference(volume.getUpperLimitReference().getValue());
                 }
-                airspaceVolume.setNullableLowerLimit(toNumericMeasure(volume.get().getLowerLimit(), "lowerLimit", issueList));
-                if (volume.get().getLowerLimitReference() != null) {
-                    airspaceVolume.setNullableLowerLimitReference(volume.get().getLowerLimitReference().getValue());
+                airspaceVolumeBuilder.setLowerLimit(toNumericMeasure(volume.getLowerLimit(), "lowerLimit", issueList));
+                if (volume.getLowerLimitReference() != null) {
+                    airspaceVolumeBuilder.setNullableLowerLimitReference(volume.getLowerLimitReference().getValue());
                 }
-                properties.set(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, airspaceVolume.build());
+                properties.set(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, airspaceVolumeBuilder.build());
             }
         }
 
@@ -327,27 +325,6 @@ public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
         }
 
         return properties;
-    }
-
-    private static NumericMeasureImpl toNumericMeasure(final ValDistanceVerticalType valDistanceVerticalType, final String elementName,
-            final IssueList issueList) {
-        if (valDistanceVerticalType == null) {
-            return null;
-        }
-        final String value = valDistanceVerticalType.getValue();
-        if (value == null) {
-            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, elementName + " is missing value"));
-            return null;
-        }
-        final String uom = valDistanceVerticalType.getUom();
-        if (uom == null) {
-            issueList.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, elementName + " is missing uom"));
-        }
-
-        return NumericMeasureImpl.builder()//
-                .setValue(Double.parseDouble(value))//
-                .setUom(nullToDefault(uom, ""))//
-                .build();
     }
 
 }

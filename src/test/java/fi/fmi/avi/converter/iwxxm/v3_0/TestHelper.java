@@ -51,6 +51,8 @@ public class TestHelper {
                         && !COORDINATE_FORMATTING_DIFFERENCE_PATTERN.matcher(difference.toString()).find())//
                 .map(difference -> difference.getDescription() + "\n" + difference + "\n")//
                 .collect(Collectors.joining("------------------------------------------------\n"));
-        assertEquals("", diffMessage);
+        if (!diffMessage.isEmpty()) {
+            assertEquals(diffMessage, input, actual);
+        }
     }
 }
