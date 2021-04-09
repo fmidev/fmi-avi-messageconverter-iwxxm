@@ -17,6 +17,7 @@ import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.AngleType;
 import net.opengis.gml32.FeaturePropertyType;
 import net.opengis.gml32.LengthType;
+import net.opengis.gml32.MeasureType;
 import net.opengis.gml32.ReferenceType;
 import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.StringOrRefType;
@@ -430,7 +431,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
             if (!source.getMinTemperatureTime().getCompleteTime().isPresent()) {
                 result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Time of the base forecast  minimum temperature is not complete"));
             } else {
-                target.setMinimumAirTemperature(asMeasure(measure));
+                target.setMinimumAirTemperature(asMeasure(measure, MeasureType.class));
                 target.setMinimumAirTemperatureTime(create(TimeInstantPropertyType.class, prop -> prop.setTimeInstant(create(TimeInstantType.class, time -> {
                     time.setId("time-" + UUID.randomUUID().toString());
                     time.setTimePosition(create(TimePositionType.class, tPos -> toIWXXMDateTime(source.getMinTemperatureTime())//
@@ -442,7 +443,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
             if (!source.getMaxTemperatureTime().getCompleteTime().isPresent()) {
                 result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Time of the base forecast  maximum temperature is not complete"));
             } else {
-                target.setMaximumAirTemperature(asMeasure(measure));
+                target.setMaximumAirTemperature(asMeasure(measure, MeasureType.class));
                 target.setMaximumAirTemperatureTime(create(TimeInstantPropertyType.class, prop -> prop.setTimeInstant(create(TimeInstantType.class, time -> {
                     time.setId("time-" + UUID.randomUUID().toString());
                     time.setTimePosition(create(TimePositionType.class, tPos -> toIWXXMDateTime(source.getMaxTemperatureTime())//

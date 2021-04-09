@@ -29,7 +29,6 @@ import javax.xml.transform.dom.DOMSource;
 
 import net.opengis.gml32.AbstractGeometryType;
 import net.opengis.gml32.AbstractRingPropertyType;
-import net.opengis.gml32.AngleType;
 import net.opengis.gml32.CircleByCenterPointType;
 import net.opengis.gml32.CurvePropertyType;
 import net.opengis.gml32.CurveSegmentArrayPropertyType;
@@ -41,7 +40,6 @@ import net.opengis.gml32.LinearRingType;
 import net.opengis.gml32.MeasureType;
 import net.opengis.gml32.PolygonPatchType;
 import net.opengis.gml32.RingType;
-import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.SurfacePatchArrayPropertyType;
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
@@ -88,9 +86,6 @@ import fi.fmi.avi.model.PointGeometry;
 import fi.fmi.avi.model.PolygonGeometry;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.taf.TAF;
-import icao.iwxxm21.AngleWithNilReasonType;
-import icao.iwxxm21.DistanceWithNilReasonType;
-import icao.iwxxm21.LengthWithNilReasonType;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM.
@@ -152,35 +147,11 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         return retval;
     }
 
-    protected static MeasureType asMeasure(final NumericMeasure source) {
-        return asMeasure(source, MeasureType.class);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected static <S extends MeasureType> S asMeasure(final NumericMeasure source, final Class<S> clz) {
-        final S retval;
-        if (source != null) {
-            if (SpeedType.class.isAssignableFrom(clz)) {
-                retval = (S) create(SpeedType.class);
-            } else if (AngleWithNilReasonType.class.isAssignableFrom(clz)) {
-                retval = (S) create(AngleWithNilReasonType.class);
-            } else if (AngleType.class.isAssignableFrom(clz)) {
-                retval = (S) create(AngleType.class);
-            } else if (DistanceWithNilReasonType.class.isAssignableFrom(clz)) {
-                retval = (S) create(DistanceWithNilReasonType.class);
-            } else if (LengthWithNilReasonType.class.isAssignableFrom(clz)) {
-                retval = (S) create(LengthWithNilReasonType.class);
-            } else if (LengthType.class.isAssignableFrom(clz)) {
-                retval = (S) create(LengthType.class);
-            } else {
-                retval = (S) create(MeasureType.class);
-            }
-            retval.setValue(source.getValue());
-            retval.setUom(source.getUom());
-        } else {
-            throw new IllegalArgumentException("NumericMeasure is null");
-        }
-        return retval;
+    protected static <T extends MeasureType> T asMeasure(final NumericMeasure input, final Class<T> measureType) {
+        return create(measureType, measure -> {
+            measure.setValue(input.getValue());
+            measure.setUom(input.getUom());
+        });
     }
 
     protected static void setCrsToType(final AbstractGeometryType type, final CoordinateReferenceSystem crs) {

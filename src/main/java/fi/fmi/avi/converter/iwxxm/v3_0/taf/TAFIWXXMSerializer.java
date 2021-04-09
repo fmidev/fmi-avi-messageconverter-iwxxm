@@ -13,6 +13,7 @@ import javax.xml.datatype.DatatypeFactory;
 
 import net.opengis.gml32.AngleType;
 import net.opengis.gml32.LengthType;
+import net.opengis.gml32.MeasureType;
 import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
@@ -273,7 +274,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             if (!source.getMinTemperatureTime().getCompleteTime().isPresent()) {
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Time of the base forecast  minimum temperature is not complete"));
             } else {
-                target.setMinimumAirTemperature(asMeasure(measure));
+                target.setMinimumAirTemperature(asMeasure(measure, MeasureType.class));
                 target.setMinimumAirTemperatureTime(create(TimeInstantPropertyType.class, prop -> prop.setTimeInstant(create(TimeInstantType.class, time -> {
                     time.setId("uuid." + UUID.randomUUID().toString());
                     time.setTimePosition(create(TimePositionType.class, tPos -> source.getMinTemperatureTime().getCompleteTime()//
@@ -286,7 +287,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             if (!source.getMaxTemperatureTime().getCompleteTime().isPresent()) {
                 result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Time of the base forecast  maximum temperature is not complete"));
             } else {
-                target.setMaximumAirTemperature(asMeasure(measure));
+                target.setMaximumAirTemperature(asMeasure(measure, MeasureType.class));
                 target.setMaximumAirTemperatureTime(create(TimeInstantPropertyType.class, prop -> prop.setTimeInstant(create(TimeInstantType.class, time -> {
                     time.setId("uuid." + UUID.randomUUID().toString());
                     time.setTimePosition(create(TimePositionType.class, tPos -> source.getMaxTemperatureTime().getCompleteTime()//
@@ -313,10 +314,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         }
         target.setId("uuid." + UUID.randomUUID().toString());
         source.getVerticalVisibility()//
-                .map(measure -> new ObjectFactory().createAerodromeCloudTypeVerticalVisibility(create(LengthWithNilReasonType.class, vv -> {
-                    vv.setValue(measure.getValue());
-                    vv.setUom(measure.getUom());
-                })))//
+                .map(measure -> new ObjectFactory().createAerodromeCloudTypeVerticalVisibility(asMeasure(measure, LengthWithNilReasonType.class)))//
                 .ifPresent(target::setVerticalVisibility);
         for (final CloudLayer layer : source.getLayers().orElse(Collections.emptyList())) {
             target.getLayer()
@@ -330,10 +328,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
             return;
         }
         source.getBase()//
-                .map(sourceBase -> create(DistanceWithNilReasonType.class, targetBase -> {
-                    targetBase.setUom(sourceBase.getUom());
-                    targetBase.setValue(sourceBase.getValue());
-                }))//
+                .map(sourceBase -> asMeasure(sourceBase, DistanceWithNilReasonType.class))//
                 .ifPresent(target::setBase);
         source.getAmount()//
                 .map(amount -> create(CloudAmountReportedAtAerodromeType.class,
@@ -363,10 +358,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
         baseFct.setPhenomenonTime(create(TimePeriodPropertyType.class, prop -> prop.setHref("#" + validTimeId)));
 
         baseForecastInput.getPrevailingVisibility()//
-                .map(prevailingVisibility -> create(DistanceWithNilReasonType.class, prop -> {
-                    prop.setUom(prevailingVisibility.getUom());
-                    prop.setValue(prevailingVisibility.getValue());
-                }))//
+                .map(prevailingVisibility -> asMeasure(prevailingVisibility, DistanceWithNilReasonType.class))//
                 .ifPresent(baseFct::setPrevailingVisibility);
 
         if (baseForecastInput.getSurfaceWind().isPresent()) {
@@ -376,23 +368,14 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM30Serializer<TA
 
                 surfaceWindType.setVariableWindDirection(surfaceWind.isVariableDirection());
                 surfaceWind.getMeanWindDirection()//
-                        .map(direction -> create(AngleWithNilReasonType.class, value -> {
-                            value.setUom(direction.getUom());
-                            value.setValue(direction.getValue());
-                        }))//
+                        .map(direction -> asMeasure(direction, AngleWithNilReasonType.class))//
                         .ifPresent(surfaceWindType::setMeanWindDirection);
-                surfaceWindType.setMeanWindSpeed(create(VelocityWithNilReasonType.class, speed -> {
-                    speed.setUom(surfaceWind.getMeanWindSpeed().getUom());
-                    speed.setValue(surfaceWind.getMeanWindSpeed().getValue());
-                }));
+                surfaceWindType.setMeanWindSpeed(asMeasure(surfaceWind.getMeanWindSpeed(), VelocityWithNilReasonType.class));
                 surfaceWind.getMeanWindSpeedOperator()//
                         .map(operator -> RelationalOperatorType.valueOf(operator.name()))//
                         .ifPresent(surfaceWindType::setMeanWindSpeedOperator);
                 surfaceWind.getWindGust()//
-                        .map(value -> create(VelocityWithNilReasonType.class, gustSpeed -> {
-                            gustSpeed.setUom(value.getUom());
-                            gustSpeed.setValue(value.getValue());
-                        }))//
+                        .map(value -> asMeasure(value, VelocityWithNilReasonType.class))//
                         .ifPresent(surfaceWindType::setWindGustSpeed);
                 surfaceWind.getWindGustOperator()//
                         .map(operator -> RelationalOperatorType.valueOf(operator.name()))//

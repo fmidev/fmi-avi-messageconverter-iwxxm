@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.v2_1;
 
 import java.math.BigInteger;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,7 +35,6 @@ import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.CloudLayer;
 import fi.fmi.avi.model.ElevatedPoint;
-import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import icao.iwxxm21.AerodromeCloudForecastType;
@@ -165,44 +165,34 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
     protected void updateForecastClouds(final CloudForecast source, final AerodromeCloudForecastType target, final ConversionResult<?> result) {
         if (source != null) {
             target.setId("cfct-" + UUID.randomUUID().toString());
-            final Optional<NumericMeasure> measure = source.getVerticalVisibility();
-            if (measure.isPresent()) {
+            source.getVerticalVisibility().ifPresent(measure -> {
+                final LengthWithNilReasonType vvValue = asMeasure(measure, LengthWithNilReasonType.class);
                 final QName eName = new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "verticalVisibility");
-                final LengthWithNilReasonType vvValue = create(LengthWithNilReasonType.class, vv -> {
-                    vv.setValue(measure.get().getValue());
-                    vv.setUom(measure.get().getUom());
-                });
                 target.setVerticalVisibility(new JAXBElement<>(eName, LengthWithNilReasonType.class, vvValue));
-            }
-            if (source.getLayers().isPresent()) {
-                for (final CloudLayer layer : source.getLayers().get()) {
-                    target.getLayer()
-                            .add(create(AerodromeCloudForecastType.Layer.class,
-                                    l -> l.setCloudLayer(create(CloudLayerType.class, cl -> this.setForecastCloudLayerData(cl, layer)))));
-                }
+            });
+            for (final CloudLayer layer : source.getLayers().orElse(Collections.emptyList())) {
+                target.getLayer()
+                        .add(create(AerodromeCloudForecastType.Layer.class,
+                                l -> l.setCloudLayer(create(CloudLayerType.class, cl -> this.setForecastCloudLayerData(cl, layer)))));
             }
         }
     }
 
     protected void setForecastCloudLayerData(final CloudLayerType target, final CloudLayer source) {
         if (source != null) {
-            if (source.getBase().isPresent()) {
-                target.setBase(asMeasure(source.getBase().get(), DistanceWithNilReasonType.class));
-            }
-            final Optional<AviationCodeListUser.CloudAmount> amount = source.getAmount();
-            amount.ifPresent(cloudAmount -> target.setAmount(create(CloudAmountReportedAtAerodromeType.class, amt -> {
+            source.getBase().ifPresent(numericMeasure -> target.setBase(asMeasure(numericMeasure, DistanceWithNilReasonType.class)));
+            source.getAmount().ifPresent(cloudAmount -> target.setAmount(create(CloudAmountReportedAtAerodromeType.class, amt -> {
                 amt.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME + cloudAmount.getCode());
                 amt.setTitle(cloudAmount.name() + ", from codelist " + AviationCodeListUser.CODELIST_CLOUD_AMOUNT_REPORTED_AT_AERODROME);
             })));
-            final Optional<AviationCodeListUser.CloudType> type = source.getCloudType();
-            if (type.isPresent()) {
+            source.getCloudType().ifPresent(value -> {
                 final QName eName = new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "cloudType");
                 final SigConvectiveCloudTypeType cloudType = create(SigConvectiveCloudTypeType.class, convCloud -> {
-                    convCloud.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + type.get().getCode());
-                    convCloud.setTitle(type.get().name() + ", from codelist " + AviationCodeListUser.CODELIST_SIGNIFICANT_CONVECTIVE_CLOUD_TYPE);
+                    convCloud.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE + value.getCode());
+                    convCloud.setTitle(value.name() + ", from codelist " + AviationCodeListUser.CODELIST_SIGNIFICANT_CONVECTIVE_CLOUD_TYPE);
                 });
                 target.setCloudType(new JAXBElement<>(eName, SigConvectiveCloudTypeType.class, cloudType));
-            }
+            });
         }
     }
 }
