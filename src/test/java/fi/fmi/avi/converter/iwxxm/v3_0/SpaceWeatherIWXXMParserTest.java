@@ -1,5 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
+import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.printIssues;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +29,7 @@ import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.DOMParsingTestBase;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.CircleByCenterPoint;
@@ -44,7 +46,7 @@ import fi.fmi.avi.model.swx.SpaceWeatherRegion;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
+public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
 
@@ -81,12 +83,12 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_A2_3() throws Exception {
-        final String input = TestHelper.getXMLString("spacewx-A2-3.xml");
+        final String input = readResourceToString("spacewx-A2-3.xml");
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
 
-        TestHelper.printIssues(result.getConversionIssues());
+        printIssues(result.getConversionIssues());
         assertTrue(result.getConvertedMessage().isPresent());
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
@@ -117,14 +119,14 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_remark_parsing() throws Exception {
-        final String input = TestHelper.getXMLString("spacewx-A2-4.xml");
+        final String input = readResourceToString("spacewx-A2-4.xml");
         final List<String> expected = Arrays.asList("RADIATION", "LVL", "EXCEEDED", "100", "PCT", "OF", "BACKGROUND", "LVL", "AT", "FL350", "AND", "ABV.",
                 "THE", "CURRENT", "EVENT", "HAS", "PEAKED", "AND", "LVL", "SLW", "RTN", "TO", "BACKGROUND", "LVL.", "SEE", "WWW.SPACEWEATHERPROVIDER.WEB");
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
 
-        TestHelper.printIssues(result.getConversionIssues());
+        printIssues(result.getConversionIssues());
         assertTrue(result.getConvertedMessage().isPresent());
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
@@ -135,11 +137,11 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_A2_4() throws Exception {
-        final String input = TestHelper.getXMLString("spacewx-A2-4.xml");
+        final String input = readResourceToString("spacewx-A2-4.xml");
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
-        TestHelper.printIssues(result.getConversionIssues());
+        printIssues(result.getConversionIssues());
         assertTrue(result.getConvertedMessage().isPresent());
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
@@ -189,11 +191,11 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_A2_5() throws Exception {
-        final String input = TestHelper.getXMLString("spacewx-A2-5.xml");
+        final String input = readResourceToString("spacewx-A2-5.xml");
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
-        TestHelper.printIssues(result.getConversionIssues());
+        printIssues(result.getConversionIssues());
         assertTrue(result.getConvertedMessage().isPresent());
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
@@ -226,11 +228,11 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_daylight_side_with_nil_location() throws Exception {
-        final String input = TestHelper.getXMLString("spacewx-daylight-side-nil-location.xml");
+        final String input = readResourceToString("spacewx-daylight-side-nil-location.xml");
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
-        TestHelper.printIssues(result.getConversionIssues());
+        printIssues(result.getConversionIssues());
         assertTrue(result.getConvertedMessage().isPresent());
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
@@ -253,7 +255,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_illegal_nextAdvisory_indeterminatePosition() throws IOException {
-        final String input = TestHelper.getXMLString("spacewx-A2-4.xml");
+        final String input = readResourceToString("spacewx-A2-4.xml");
         for (final String illegalIndeterminatePosition : Arrays.asList("now", "unknown")) {
             final String illegalInput = input.replace("indeterminatePosition=\"before\"", "indeterminatePosition=\"" + illegalIndeterminatePosition + "\"");
             final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(illegalInput, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,

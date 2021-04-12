@@ -111,6 +111,10 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
         return getNSContext();
     }
 
+    protected void setAerodromeData(final AirportHeliportType aerodrome, final Aerodrome input, final String aerodromeId) {
+        setAerodromeData(aerodrome, input, aerodromeId, "aerodrome-", "point-");
+    }
+
     @SuppressWarnings("unchecked")
     protected void updateSamplingFeature(final Aerodrome input, final OMObservationType target, final String foiId, final String aerodromeId,
             final ConversionResult<?> result) {
@@ -128,7 +132,7 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
 
                     samsFeature.getSampledFeature().add(create(FeaturePropertyType.class, samProp -> {
                         final AirportHeliportType aerodrome = create(AirportHeliportType.class);
-                        this.setAerodromeData(aerodrome, input, aerodromeId, "aerodrome-", "point-");
+                        this.setAerodromeData(aerodrome, input, aerodromeId);
                         samProp.setAbstractFeature(wrap(aerodrome, AirportHeliportType.class));
                     }));
 

@@ -50,10 +50,10 @@
   <iwxxm:baseForecast>
     <iwxxm:MeteorologicalAerodromeForecast gml:id="uuid.13048235-8f8a-4587-a6be-e8ce99f4525c" cloudAndVisibilityOK="false">
       <iwxxm:phenomenonTime xlink:href="#uuid.ed5d465f-51fb-4ecc-834a-2ee26bb1196f"/>
-      <iwxxm:prevailingVisibility uom="m">9000</iwxxm:prevailingVisibility>
+      <iwxxm:prevailingVisibility uom="m">9000.0</iwxxm:prevailingVisibility>
       <iwxxm:surfaceWind>
         <iwxxm:AerodromeSurfaceWindForecast variableWindDirection="false">
-          <iwxxm:meanWindDirection uom="deg">130</iwxxm:meanWindDirection>
+          <iwxxm:meanWindDirection uom="deg">130.0</iwxxm:meanWindDirection>
           <iwxxm:meanWindSpeed uom="m/s">5.0</iwxxm:meanWindSpeed>
         </iwxxm:AerodromeSurfaceWindForecast>
       </iwxxm:surfaceWind>
@@ -62,7 +62,7 @@
           <iwxxm:layer>
             <iwxxm:CloudLayer>
               <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN"/>
-              <iwxxm:base uom="[ft_i]">2000</iwxxm:base>
+              <iwxxm:base uom="[ft_i]">2000.0</iwxxm:base>
             </iwxxm:CloudLayer>
           </iwxxm:layer>
         </iwxxm:AerodromeCloudForecast>
@@ -83,14 +83,14 @@
           <iwxxm:layer>
             <iwxxm:CloudLayer>
               <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT"/>
-              <iwxxm:base uom="[ft_i]">1500</iwxxm:base>
+              <iwxxm:base uom="[ft_i]">1500.0</iwxxm:base>
               <iwxxm:cloudType xlink:href="http://codes.wmo.int/49-2/SigConvectiveCloudType/CB"/>
             </iwxxm:CloudLayer>
           </iwxxm:layer>
           <iwxxm:layer>
             <iwxxm:CloudLayer>
               <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN"/>
-              <iwxxm:base uom="[ft_i]">2000</iwxxm:base>
+              <iwxxm:base uom="[ft_i]">2000.0</iwxxm:base>
             </iwxxm:CloudLayer>
           </iwxxm:layer>
         </iwxxm:AerodromeCloudForecast>
@@ -106,12 +106,12 @@
           <gml:endPosition>2012-08-16T12:00:00Z</gml:endPosition>
         </gml:TimePeriod>
       </iwxxm:phenomenonTime>
-      <iwxxm:prevailingVisibility uom="m">1000</iwxxm:prevailingVisibility>
+      <iwxxm:prevailingVisibility uom="m">1000.0</iwxxm:prevailingVisibility>
       <iwxxm:surfaceWind>
         <iwxxm:AerodromeSurfaceWindForecast variableWindDirection="false">
-          <iwxxm:meanWindDirection uom="deg">170</iwxxm:meanWindDirection>
-          <iwxxm:meanWindSpeed uom="m/s">6</iwxxm:meanWindSpeed>
-          <iwxxm:windGustSpeed uom="m/s">12</iwxxm:windGustSpeed>
+          <iwxxm:meanWindDirection uom="deg">170.0</iwxxm:meanWindDirection>
+          <iwxxm:meanWindSpeed uom="m/s">6.0</iwxxm:meanWindSpeed>
+          <iwxxm:windGustSpeed uom="m/s">12.0</iwxxm:windGustSpeed>
         </iwxxm:AerodromeSurfaceWindForecast>
       </iwxxm:surfaceWind>
       <iwxxm:weather xlink:href="http://codes.wmo.int/306/4678/TSRA"/>
@@ -120,14 +120,14 @@
           <iwxxm:layer>
             <iwxxm:CloudLayer>
               <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT"/>
-              <iwxxm:base uom="[ft_i]">1000</iwxxm:base>
+              <iwxxm:base uom="[ft_i]">1000.0</iwxxm:base>
               <iwxxm:cloudType xlink:href="http://codes.wmo.int/49-2/SigConvectiveCloudType/CB"/>
             </iwxxm:CloudLayer>
           </iwxxm:layer>
           <iwxxm:layer>
             <iwxxm:CloudLayer>
               <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN"/>
-              <iwxxm:base uom="[ft_i]">2000</iwxxm:base>
+              <iwxxm:base uom="[ft_i]">2000.0</iwxxm:base>
             </iwxxm:CloudLayer>
           </iwxxm:layer>
         </iwxxm:AerodromeCloudForecast>
@@ -143,12 +143,12 @@
           <gml:endPosition>2012-08-16T18:00:00Z</gml:endPosition>
         </gml:TimePeriod>
       </iwxxm:phenomenonTime>
-      <iwxxm:prevailingVisibility uom="m">10000</iwxxm:prevailingVisibility>
+      <iwxxm:prevailingVisibility uom="m">10000.0</iwxxm:prevailingVisibility>
       <iwxxm:prevailingVisibilityOperator>ABOVE</iwxxm:prevailingVisibilityOperator>
       <iwxxm:surfaceWind>
         <iwxxm:AerodromeSurfaceWindForecast variableWindDirection="false">
-          <iwxxm:meanWindDirection uom="deg">150</iwxxm:meanWindDirection>
-          <iwxxm:meanWindSpeed uom="m/s">4</iwxxm:meanWindSpeed>
+          <iwxxm:meanWindDirection uom="deg">150.0</iwxxm:meanWindDirection>
+          <iwxxm:meanWindSpeed uom="m/s">4.0</iwxxm:meanWindSpeed>
         </iwxxm:AerodromeSurfaceWindForecast>
       </iwxxm:surfaceWind>
       <iwxxm:cloud>
@@ -156,7 +156,7 @@
           <iwxxm:layer>
             <iwxxm:CloudLayer>
               <iwxxm:amount xlink:href="http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN"/>
-              <iwxxm:base uom="[ft_i]">2000</iwxxm:base>
+              <iwxxm:base uom="[ft_i]">2000.0</iwxxm:base>
             </iwxxm:CloudLayer>
           </iwxxm:layer>
         </iwxxm:AerodromeCloudForecast>

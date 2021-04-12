@@ -33,6 +33,7 @@ import net.opengis.om20.TimeObjectPropertyType;
 
 import org.w3c.dom.Document;
 
+import aero.aixm511.AirportHeliportType;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -44,7 +45,7 @@ import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationWeatherMessage;
+import fi.fmi.avi.model.AviationWeatherMessage.ReportStatus;
 import fi.fmi.avi.model.CloudForecast;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
@@ -82,6 +83,10 @@ import wmo.metce2013.ProcessType;
  */
 public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TAF, T> {
 
+    private static AviationCodeListUser.TAFStatus getTafStatus(final TAF input) {
+        return AviationCodeListUser.TAFStatus.fromReportStatus(input.getReportStatus(), input.isCancelMessage(), input.isMissingMessage());
+    }
+
     protected abstract T render(TAFType taf, ConversionHints hints) throws ConversionException;
 
     protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
@@ -118,8 +123,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         final String processId = "process-" + UUID.randomUUID().toString();
         final String aerodromeId = "ad-" + UUID.randomUUID().toString();
 
-        final AviationWeatherMessage.ReportStatus status = input.getReportStatus();
-        taf.setStatus(TAFReportStatusType.valueOf(status.name()));
+        taf.setStatus(TAFReportStatusType.valueOf(getTafStatus(input).name()));
 
         input.getIssueTime()//
                 .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)//
@@ -157,14 +161,12 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         }
         this.updateBaseForecast(input, taf, issueTimeId, validTimeId, foiId, processId, aerodromeId, result);
 
-        if (AviationWeatherMessage.ReportStatus.CORRECTION == status || AviationWeatherMessage.ReportStatus.AMENDMENT == status || input.isCancelMessage()) {
+        if (input.getReportStatus() != ReportStatus.NORMAL) {
             this.updatePreviousReportReferences(input, taf, aerodromeId, result);
-        } else {
+        } else if (input.getReferredReportValidPeriod().isPresent()) {
             //TAF: previousReportValidPeriod must not be present unless this cancels, corrects or amends a previous report
-            if (input.getReferredReportValidPeriod().isPresent()) {
-                result.addIssue(new ConversionIssue(Type.LOGICAL,
-                        "TAF contains reference to the previous report even if its type is not amendment, cancellation or correction"));
-            }
+            result.addIssue(new ConversionIssue(Type.LOGICAL,
+                    "TAF contains reference to the previous report even if its type is not amendment, cancellation or correction"));
         }
         try {
             this.updateMessageMetadata(input, result, taf);
@@ -455,37 +457,41 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
     }
 
     protected void updatePreviousReportReferences(final TAF source, final TAFType target, final String aerodromeId, final ConversionResult<?> result) {
-        if (TAFReportStatusType.CANCELLATION == target.getStatus() || TAFReportStatusType.CORRECTION == target.getStatus()
-                || TAFReportStatusType.AMENDMENT == target.getStatus()) {
-            final Optional<PartialOrCompleteTimePeriod> referredReportValidPeriod = source.getReferredReportValidPeriod();
-            if (referredReportValidPeriod.isPresent()) {
-                target.setPreviousReportAerodrome(create(AirportHeliportPropertyType.class, prop -> {
-                    if (source.getBaseForecast().isPresent()) {
-                        prop.setHref("#" + aerodromeId);
-                        prop.setTitle("Same aerodrome as the in the base forecast");
-                    }
-                }));
+        if (target.getStatus() != TAFReportStatusType.CANCELLATION && target.getStatus() != TAFReportStatusType.CORRECTION
+                && target.getStatus() != TAFReportStatusType.AMENDMENT) {
+            return;
+        }
 
-                final PartialOrCompleteTimePeriod validity = referredReportValidPeriod.get();
-                if (!validity.isComplete()) {
-                    result.addIssue(new ConversionIssue(Type.SYNTAX, "Previous report TAF validity time is not complete"));
-                    return;
-                }
-                final String validityStart = startToIWXXMDateTime(validity).orElse(null);
-                final String validityEnd = endToIWXXMDateTime(validity).orElse(null);
-                if (validityStart == null || validityEnd == null) {
-                    result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Missing full validity time start and/or end of the referred (previous) report"));
-                } else {
-                    target.setPreviousReportValidPeriod(create(TimePeriodPropertyType.class, prop -> prop.setTimePeriod(create(TimePeriodType.class, period -> {
-                        period.setId("time-" + UUID.randomUUID().toString());
-                        period.setBeginPosition(create(TimePositionType.class, tPos -> tPos.getValue().add(validityStart)));
-                        period.setEndPosition(create(TimePositionType.class, tPos -> tPos.getValue().add(validityEnd)));
-                    }))));
-                }
+        final PartialOrCompleteTimePeriod referredReportValidPeriod = source.getReferredReportValidPeriod().orElse(null);
+        if (referredReportValidPeriod == null) {
+            result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Missing the referred (previous) report for report of type " + target.getStatus()));
+        } else {
+            if (!referredReportValidPeriod.isComplete()) {
+                result.addIssue(new ConversionIssue(Type.SYNTAX, "Previous report TAF validity time is not complete"));
+                return;
+            }
+            final String validityStart = startToIWXXMDateTime(referredReportValidPeriod).orElse(null);
+            final String validityEnd = endToIWXXMDateTime(referredReportValidPeriod).orElse(null);
+            if (validityStart == null || validityEnd == null) {
+                result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Missing full validity time start and/or end of the referred (previous) report"));
             } else {
-                result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Missing the referred (previous) report for report of type " + target.getStatus()));
+                target.setPreviousReportValidPeriod(create(TimePeriodPropertyType.class, prop -> prop.setTimePeriod(create(TimePeriodType.class, period -> {
+                    period.setId("time-" + UUID.randomUUID().toString());
+                    period.setBeginPosition(create(TimePositionType.class, tPos -> tPos.getValue().add(validityStart)));
+                    period.setEndPosition(create(TimePositionType.class, tPos -> tPos.getValue().add(validityEnd)));
+                }))));
             }
         }
+
+        target.setPreviousReportAerodrome(create(AirportHeliportPropertyType.class, airportHeliportProperty -> {
+            if (source.getBaseForecast().isPresent()) {
+                airportHeliportProperty.setHref("#" + aerodromeId);
+                airportHeliportProperty.setTitle("Same aerodrome as the in the base forecast");
+            } else {
+                airportHeliportProperty.setAirportHeliport(
+                        create(AirportHeliportType.class, airportHeliport -> setAerodromeData(airportHeliport, source.getAerodrome(), aerodromeId)));
+            }
+        }));
     }
 
     protected void updateMessageMetadata(final TAF source, final ConversionResult<?> results, final TAFType target) throws ConversionException {
