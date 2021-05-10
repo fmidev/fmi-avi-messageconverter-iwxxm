@@ -184,7 +184,7 @@ public class TAFIWXXMScanner extends AbstractIWXXM21Scanner {
             final Optional<NumericMeasure> visibility = asNumericMeasure(baseRecord.get().getPrevailingVisibility());
             if (visibility.isPresent()) {
                 baseProps.set(TAFForecastRecordProperties.Name.PREVAILING_VISIBILITY, visibility.get());
-            } else {
+            } else if (!visibility.isPresent() && !baseRecord.get().isCloudAndVisibilityOK()) {
                 retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Missing visibility in base forecast"));
             }
 
