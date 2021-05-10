@@ -154,7 +154,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         if (!temps.isEmpty()) {
             builder.setTemperatures(temps);
         }
-        source.get(TAFForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class);
+        source.get(TAFForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class).ifPresent(builder::setCeilingAndVisibilityOk);
         return builder.build();
     }
 
@@ -179,7 +179,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
                 builder.setForecastWeather(weather);
             }
             recordProps.get().get(TAFForecastRecordProperties.Name.CLOUD, CloudForecast.class).ifPresent(builder::setCloud);
-            source.get(TAFForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class);
+            recordProps.get().get(TAFForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class).ifPresent(builder::setCeilingAndVisibilityOk);
         }
         return builder.build();
     }
