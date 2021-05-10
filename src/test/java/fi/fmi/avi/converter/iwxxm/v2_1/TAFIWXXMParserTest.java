@@ -126,4 +126,22 @@ public class TAFIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().get().getAerodrome().getFieldElevationValue().isPresent());
     }
 
+    @Test
+    public void testCAVOKTrue() throws Exception {
+        final InputStream is = TAFIWXXMParserTest.class.getResourceAsStream("taf-cavok.xml");
+        Objects.requireNonNull(is);
+        final String input = IOUtils.toString(is, "UTF-8");
+        is.close();
+        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
+
+        TAF taf = result.getConvertedMessage().get();
+
+        assertTrue(taf.getBaseForecast().isPresent());
+        assertTrue(taf.getBaseForecast().get().isCeilingAndVisibilityOk());
+
+        assertTrue(taf.getChangeForecasts().isPresent());
+        assertTrue(taf.getChangeForecasts().get().get(1).isCeilingAndVisibilityOk());
+    }
+
 }
