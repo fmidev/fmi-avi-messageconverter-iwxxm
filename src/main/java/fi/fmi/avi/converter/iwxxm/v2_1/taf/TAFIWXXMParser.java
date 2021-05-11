@@ -40,8 +40,7 @@ import icao.iwxxm21.TAFType;
 /**
  * Common functionality for conversions related to reading IWXXM TAFs.
  *
- * @param <T>
- *         the type of the raw input message
+ * @param <T> the type of the raw input message
  */
 public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
 
@@ -188,13 +187,9 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         /**
          * Returns the TAF input message as A DOM Document.
          *
-         * @param input
-         *         the XML Document input as a String
-         *
+         * @param input the XML Document input as a String
          * @return the input parsed as DOM
-         *
-         * @throws ConversionException
-         *         if an exception occurs while converting input to DOM
+         * @throws ConversionException if an exception occurs while converting input to DOM
          */
         @Override
         protected Document parseAsDom(final String input) throws ConversionException {
@@ -206,9 +201,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         /**
          * Returns the TAF input message as A DOM Document.
          *
-         * @param input
-         *         the XML Document input as a String
-         *
+         * @param input the XML Document input as a String
          * @return the input parsed as DOM
          */
         @Override
