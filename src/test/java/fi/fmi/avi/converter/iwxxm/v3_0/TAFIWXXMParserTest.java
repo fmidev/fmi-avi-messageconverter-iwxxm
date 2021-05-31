@@ -273,6 +273,23 @@ public class TAFIWXXMParserTest {
 
     }
 
+    @Test
+    public void CAVOKTrueTest() throws IOException {
+        final String input = getInput("taf-cavok.xml");
+
+        final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
+
+        assertSuccess(result);
+        assertTrue(result.getConvertedMessage().isPresent());
+        TAF taf = result.getConvertedMessage().get();
+
+        assertTrue(taf.getBaseForecast().isPresent());
+        assertTrue(taf.getBaseForecast().get().isCeilingAndVisibilityOk());
+
+        assertTrue(taf.getChangeForecasts().isPresent());
+        assertTrue(taf.getChangeForecasts().get().get(0).isCeilingAndVisibilityOk());
+    }
+
     private String getInput(final String fileName) throws IOException {
         try (InputStream is = this.getClass().getResourceAsStream(fileName)) {
             Objects.requireNonNull(is);
