@@ -204,6 +204,7 @@ public class IWXXMTestConfiguration {
         // Generic bulletin messages:
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMDOMParser);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMStringParser);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_DOM_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMDOMParser);
         return p;
     }
 
