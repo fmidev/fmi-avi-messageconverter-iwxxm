@@ -103,7 +103,7 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
         }
 
         expr = xpath.compile("@isCancelReport");
-        final boolean isCancelMessage  = (expr.evaluate(featureElement) != null && expr.evaluate(featureElement).toLowerCase().equals("true")) ? true : false;
+        final boolean isCancelMessage  = (expr.evaluate(featureElement) != null && expr.evaluate(featureElement).toLowerCase().equals("true"));
         if(isCancelMessage) {
             collectValidTime(featureElement, "./iwxxm30:cancelledReportValidPeriod", xpath, builder);
         } else {
@@ -147,7 +147,7 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
     }
 
     private static void parseAerodromeInfo(final Element featureElement, final XPathExpression timeSliceExpretion, final XPath xpath,
-            final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues, String status) throws XPathExpressionException {
+            final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues, final String status) throws XPathExpressionException {
         final NodeList nodes = (NodeList) timeSliceExpretion.evaluate(featureElement, XPathConstants.NODESET);
         if (nodes.getLength() == 1) {
             builder.setTargetAerodrome(parseAerodromeInfo((Element) nodes.item(0), xpath, issues));
