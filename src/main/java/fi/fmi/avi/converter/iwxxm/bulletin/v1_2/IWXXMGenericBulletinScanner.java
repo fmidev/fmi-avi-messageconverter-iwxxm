@@ -27,6 +27,7 @@ import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.model.Aerodrome;
+import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
@@ -82,13 +83,40 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
                     "./iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/" + "aixm:AirportHeliport");
         }
         if (expr != null) {
-            final NodeList nodes = (NodeList) expr.evaluate(featureElement, XPathConstants.NODESET);
-            if (nodes.getLength() == 1) {
-                builder.setTargetAerodrome(parseAerodromeInfo((Element) nodes.item(0), xpath, retval));
-            } else {
-                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info not available for TAF of status " + status);
-            }
+            parseAerodromeInfo(featureElement, expr, xpath, builder, retval, status);
         }
+
+        return retval;
+    }
+
+    private static IssueList collectTAF30Message(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
+            throws XPathExpressionException {
+        final IssueList retval = new IssueList();
+        //Issue time:
+        final String timeStr;
+        XPathExpression expr = xpath.compile("./iwxxm30:issueTime/gml:TimeInstant/gml:timePosition");
+        timeStr = expr.evaluate(featureElement);
+        if (!timeStr.isEmpty()) {
+            builder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+        } else {
+            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM TAF");
+        }
+
+        expr = xpath.compile("@isCancelReport");
+        final boolean isCancelMessage  = (expr.evaluate(featureElement) != null && expr.evaluate(featureElement).toLowerCase().equals("true")) ? true : false;
+        if(isCancelMessage) {
+            collectValidTime(featureElement, "./iwxxm30:cancelledReportValidPeriod", xpath, builder);
+        } else {
+            collectValidTime(featureElement, "./iwxxm30:validPeriod", xpath, builder);
+        }
+
+        expr = xpath.compile("@reportStatus");
+        final String status = expr.evaluate(featureElement);
+        builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(status));
+
+        //target aerodrome
+        expr = xpath.compile("./iwxxm30:aerodrome/aixm:AirportHeliport");
+        parseAerodromeInfo(featureElement, expr, xpath, builder, retval, status);
 
         return retval;
     }
@@ -116,6 +144,16 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
             retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Unable to parse valid time for TAF", ex);
         }
         return retval;
+    }
+
+    private static void parseAerodromeInfo(final Element featureElement, final XPathExpression timeSliceExpretion, final XPath xpath,
+            final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues, String status) throws XPathExpressionException {
+        final NodeList nodes = (NodeList) timeSliceExpretion.evaluate(featureElement, XPathConstants.NODESET);
+        if (nodes.getLength() == 1) {
+            builder.setTargetAerodrome(parseAerodromeInfo((Element) nodes.item(0), xpath, issues));
+        } else {
+            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info not available for TAF of status " + status);
+        }
     }
 
     private static Optional<Aerodrome> parseAerodromeInfo(final Element airportHeliport, final XPath xpath, final IssueList issues)
@@ -196,7 +234,11 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
             switch (messageType) {
                 case "TAF":
                     builder.setMessageType(MessageType.TAF);
-                    retval.addIssue(collectTAFMessage(featureElement, xpath, builder));
+                    if(featureElement.getNamespaceURI().equals("http://icao.int/iwxxm/3.0")) {
+                        retval.addIssue(collectTAF30Message(featureElement, xpath, builder));
+                    } else {
+                        retval.addIssue(collectTAFMessage(featureElement, xpath, builder));
+                    }
                     break;
 
                 case "METAR":
