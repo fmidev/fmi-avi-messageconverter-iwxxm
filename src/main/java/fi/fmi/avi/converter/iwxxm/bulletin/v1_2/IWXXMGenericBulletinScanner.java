@@ -84,7 +84,8 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
         if (expr != null) {
             final NodeList nodes = (NodeList) expr.evaluate(featureElement, XPathConstants.NODESET);
             if (nodes.getLength() == 1) {
-                builder.setTargetAerodrome(parseAerodromeInfo((Element) nodes.item(0), xpath, retval));
+                builder.putLocationIndicators(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME,
+                        parseAerodromeInfo((Element) nodes.item(0), xpath, retval).get().getDesignator());
             } else {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info not available for TAF of status " + status);
             }
