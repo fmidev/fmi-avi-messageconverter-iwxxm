@@ -103,8 +103,8 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
         }
 
         expr = xpath.compile("@isCancelReport");
-        final boolean isCancelMessage  = (expr.evaluate(featureElement) != null && expr.evaluate(featureElement).toLowerCase().equals("true"));
-        if(isCancelMessage) {
+        final boolean isCancelMessage = (expr.evaluate(featureElement) != null && expr.evaluate(featureElement).toLowerCase().equals("true"));
+        if (isCancelMessage) {
             collectValidTime(featureElement, "./iwxxm30:cancelledReportValidPeriod", xpath, builder);
         } else {
             collectValidTime(featureElement, "./iwxxm30:validPeriod", xpath, builder);
@@ -154,7 +154,12 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
             final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues, final String status) throws XPathExpressionException {
         final NodeList nodes = (NodeList) timeSliceExpretion.evaluate(featureElement, XPathConstants.NODESET);
         if (nodes.getLength() == 1) {
-            builder.setTargetAerodrome(parseAerodromeInfo((Element) nodes.item(0), xpath, issues));
+            Optional<Aerodrome> aerodrome = parseAerodromeInfo((Element) nodes.item(0), xpath, issues);
+            if (aerodrome.isPresent()) {
+                builder.putLocationIndicators(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, aerodrome.get().getDesignator());
+            } else {
+                issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info could not be parsed for TAF of status " + status);
+            }
         } else {
             issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info not available for TAF of status " + status);
         }
@@ -238,7 +243,7 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
             switch (messageType) {
                 case "TAF":
                     builder.setMessageType(MessageType.TAF);
-                    if(featureElement.getNamespaceURI().equals("http://icao.int/iwxxm/3.0")) {
+                    if (featureElement.getNamespaceURI().equals("http://icao.int/iwxxm/3.0")) {
                         retval.addIssue(collectTAF30Message(featureElement, xpath, builder));
                     } else {
                         retval.addIssue(collectTAFMessage(featureElement, xpath, builder));
