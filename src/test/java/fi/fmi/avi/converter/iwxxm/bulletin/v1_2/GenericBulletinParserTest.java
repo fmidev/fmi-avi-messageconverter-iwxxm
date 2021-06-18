@@ -87,11 +87,8 @@ public class GenericBulletinParserTest {
         assertEquals("2012-08-16T18:00Z", message.getValidityTime().get().getEndTime().get().getCompleteTime().get().toString());
 
         //check aerodrome
-        Aerodrome aerodrome = message.getTargetAerodrome().get();
-        assertEquals("YUDO", aerodrome.getDesignator());
-        assertEquals("DONLON/INTERNATIONAL", aerodrome.getName().get());
-        assertEquals("YUDO", aerodrome.getLocationIndicatorICAO().get());
-        assertEquals("DON", aerodrome.getDesignatorIATA().get());
+        assertEquals(message.getLocationIndicators().get(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME), "YUDO");
+
         //check status
         assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, message.getReportStatus());
         assertTrue(message.getMessageType().isPresent());
@@ -111,10 +108,7 @@ public class GenericBulletinParserTest {
         assertEquals("2012-08-16T00:00Z", message.getValidityTime().get().getStartTime().get().getCompleteTime().get().toString());
         assertEquals("2012-08-16T18:00Z", message.getValidityTime().get().getEndTime().get().getCompleteTime().get().toString());
 
-        Aerodrome aerodrome = message.getTargetAerodrome().get();
-        assertEquals("YUDO", aerodrome.getDesignator());
-        assertEquals("DONLON/INTERNATIONAL", aerodrome.getName().get());
-        assertEquals("YUDO", aerodrome.getLocationIndicatorICAO().get());
+        assertEquals(message.getLocationIndicators().get(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME), "YUDO");
 
         assertEquals(AviationWeatherMessage.ReportStatus.AMENDMENT, message.getReportStatus());
     }
