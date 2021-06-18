@@ -112,7 +112,11 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
 
         expr = xpath.compile("@reportStatus");
         final String status = expr.evaluate(featureElement);
-        builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(status));
+        try {
+            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(status));
+        } catch (IllegalArgumentException e) {
+            retval.add(ConversionIssue.Severity.ERROR, "The report status could not be parsed");
+        }
 
         //target aerodrome
         expr = xpath.compile("./iwxxm30:aerodrome/aixm:AirportHeliport");
