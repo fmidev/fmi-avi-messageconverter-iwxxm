@@ -86,6 +86,9 @@ public class GenericBulletinParserTest {
         assertEquals("2012-08-16T00:00Z", message.getValidityTime().get().getStartTime().get().getCompleteTime().get().toString());
         assertEquals("2012-08-16T18:00Z", message.getValidityTime().get().getEndTime().get().getCompleteTime().get().toString());
 
+        assertTrue(message.getIssueTime().isPresent());
+        assertEquals("2012-08-15T18:00Z", message.getIssueTime().get().getCompleteTime().get().toString());
+
         //check aerodrome
         assertEquals(message.getLocationIndicators().get(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME), "YUDO");
 
@@ -107,6 +110,9 @@ public class GenericBulletinParserTest {
         GenericAviationWeatherMessage message = result.getConvertedMessage().get().getMessages().get(0);
         assertEquals("2012-08-16T00:00Z", message.getValidityTime().get().getStartTime().get().getCompleteTime().get().toString());
         assertEquals("2012-08-16T18:00Z", message.getValidityTime().get().getEndTime().get().getCompleteTime().get().toString());
+
+        assertTrue(message.getIssueTime().isPresent());
+        assertEquals("2012-08-16T15:00Z", message.getIssueTime().get().getCompleteTime().get().toString());
 
         assertEquals(message.getLocationIndicators().get(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME), "YUDO");
 
