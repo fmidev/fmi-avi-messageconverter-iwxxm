@@ -202,9 +202,8 @@ public class IWXXMTestConfiguration {
         p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_BULLETIN_POJO, spaceWeatherBulletinIWXXMDOMParser);
 
         // Generic bulletin messages:
-        p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMDOMParser);
-        p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMStringParser);
-        p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_DOM_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMDOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMDOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_STRING_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMStringParser);
         return p;
     }
 

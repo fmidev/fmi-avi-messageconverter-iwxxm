@@ -59,7 +59,7 @@ public class GenericBulletinParserTest {
     @Test
     public void testParserWithTAF() throws Exception {
         final Document input = this.getBulletinDocument("taf-bulletin.xml");
-        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input, IWXXMConverter.IWXXM21_DOM_TO_GENERIC_BULLETIN_POJO,
+        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO,
                 ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
     }
@@ -67,7 +67,7 @@ public class GenericBulletinParserTest {
     @Test
     public void testParserWithSIGMET() throws Exception {
         final Document input = this.getBulletinDocument("sigmet-bulletin.xml");
-        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input, IWXXMConverter.IWXXM21_DOM_TO_GENERIC_BULLETIN_POJO,
+        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO,
                 ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
     }
@@ -75,7 +75,7 @@ public class GenericBulletinParserTest {
     @Test
     public void testParserWithIWXXM30() throws Exception {
         final Document input = this.getBulletinDocument("iwxxm-30-bulletin.xml");
-        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input, IWXXMConverter.IWXXM30_DOM_TO_GENERIC_BULLETIN_POJO,
+        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO,
                 ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
 
@@ -98,7 +98,7 @@ public class GenericBulletinParserTest {
     @Test
     public void testParserWithIWXXM30Cancellation() throws Exception {
         final Document input = this.getBulletinDocument("iwxxm-30-cancellation-bulletin.xml");
-        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input, IWXXMConverter.IWXXM30_DOM_TO_GENERIC_BULLETIN_POJO,
+        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO,
                 ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
 
