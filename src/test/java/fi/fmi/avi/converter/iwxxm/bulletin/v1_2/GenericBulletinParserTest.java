@@ -25,6 +25,7 @@ import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
+import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
 /**
@@ -93,6 +94,10 @@ public class GenericBulletinParserTest {
         assertEquals("DON", aerodrome.getDesignatorIATA().get());
         //check status
         assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, message.getReportStatus());
+        assertTrue(message.getMessageType().isPresent());
+        assertEquals(MessageType.TAF, message.getMessageType().get());
+        assertEquals(GenericAviationWeatherMessage.Format.IWXXM, message.getMessageFormat());
+
     }
 
     @Test
