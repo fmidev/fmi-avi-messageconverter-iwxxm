@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Import;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.ConversionSpecification;
+import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
@@ -21,7 +22,7 @@ import icao.iwxxm21.TAFType;
  */
 @Configuration
 @Import({ IWXXMTAFConverter.class, IWXXMMETARSPECIConverter.class, IWXXMSIGMETAIRMETConverter.class, IWXXMSpaceWeatherConverter.class,
-        IWXXMGenericBulletinConverter.class })
+        IWXXMGenericBulletinConverter.class, IWXXMGenericAviationWeatherMessageConverter.class })
 public class IWXXMConverter {
 
     // *******************
@@ -265,5 +266,21 @@ public class IWXXMConverter {
      */
     public static final ConversionSpecification<String, GenericMeteorologicalBulletin> IWXXM21_STRING_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
             String.class, GenericMeteorologicalBulletin.class, "XML/WMO COLLECT 1.2", null);
+
+    // *******************
+    //  Generic aviation message pojo
+    // *******************
+
+    /**
+     * Pre-configured spec for
+     */
+    public static final ConversionSpecification<String, GenericAviationWeatherMessage> IWXXM_STRING_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO = new ConversionSpecification<>(
+            String.class, GenericAviationWeatherMessage.class, "XML/WMO COLLECT 1.2", null);
+
+    /**
+     *
+     */
+    public static final ConversionSpecification<Document, GenericAviationWeatherMessage> IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO = new ConversionSpecification<>(
+            Document.class, GenericAviationWeatherMessage.class, "XML/WMO COLLECT 1.2", null);
 
 }

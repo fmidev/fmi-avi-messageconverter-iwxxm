@@ -16,7 +16,7 @@ import fi.fmi.avi.model.bulletin.immutable.GenericMeteorologicalBulletinImpl;
 
 public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXXMParser<T, GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
 
-    private final MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> scanner = new IWXXMGenericBulletinScanner();
+    private final MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> scanner = new GenericAviationMessageScanner();
 
     @Override
     protected GenericMeteorologicalBulletin buildBulletin(final BulletinProperties properties, final ZonedDateTime timestamp,

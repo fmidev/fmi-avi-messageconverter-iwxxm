@@ -11,19 +11,16 @@ import java.util.Set;
 
 import org.w3c.dom.Document;
 
-import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.BulletinProperties;
 import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 
-public abstract class AbstractBulletinIWXXMParser<T, U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends IWXXMConverterBase
-        implements AviMessageSpecificConverter<T, S> {
+public abstract class AbstractBulletinIWXXMParser<T, U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends AbstractIWXXMParser<T, S> {
 
     @Override
     public ConversionResult<S> convertMessage(final T input, final ConversionHints hints) {
@@ -93,5 +90,5 @@ public abstract class AbstractBulletinIWXXMParser<T, U extends AviationWeatherMe
 
     protected abstract MeteorologicalBulletinIWXXMScanner<U, S> getScanner();
 
-    protected abstract Document parseAsDom(T input) throws ConversionException;
+    //protected abstract Document parseAsDom(T input) throws ConversionException;
 }
