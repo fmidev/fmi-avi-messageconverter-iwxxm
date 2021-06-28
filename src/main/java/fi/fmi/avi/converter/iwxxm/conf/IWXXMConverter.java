@@ -258,13 +258,13 @@ public class IWXXMConverter {
     /**
      * Pre-configured spec for WMO COLLECT 1.2 XML DOM document to {@link GenericMeteorologicalBulletin}
      */
-    public static final ConversionSpecification<Document, GenericMeteorologicalBulletin> IWXXM21_DOM_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
+    public static final ConversionSpecification<Document, GenericMeteorologicalBulletin> WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
             Document.class, GenericMeteorologicalBulletin.class, "XML/WMO COLLECT 1.2", null);
 
     /**
      * Pre-configured spec for WMO COLLECT 1.2 XML document String to {@link GenericMeteorologicalBulletin}
      */
-    public static final ConversionSpecification<String, GenericMeteorologicalBulletin> IWXXM21_STRING_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
+    public static final ConversionSpecification<String, GenericMeteorologicalBulletin> WMO_COLLECT_STRING_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
             String.class, GenericMeteorologicalBulletin.class, "XML/WMO COLLECT 1.2", null);
 
     // *******************
