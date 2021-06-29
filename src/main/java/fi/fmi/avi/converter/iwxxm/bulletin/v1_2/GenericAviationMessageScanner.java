@@ -3,7 +3,6 @@ package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 import java.io.StringWriter;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
 
 import javax.xml.transform.OutputKeys;
@@ -26,6 +25,7 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessage;
@@ -33,12 +33,10 @@ import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
-import fi.fmi.avi.model.bulletin.BulletinHeading;
-import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
-public class GenericAviationMessageScanner extends MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
+public class GenericAviationMessageScanner extends AbstractIWXXMScanner {
 
     private static IssueList collectSIGMETMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {
@@ -230,7 +228,6 @@ public class GenericAviationMessageScanner extends MeteorologicalBulletinIWXXMSc
         }
     }
 
-    @Override
     protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
         final ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
         final XPathFactory factory = XPathFactory.newInstance();
@@ -241,7 +238,7 @@ public class GenericAviationMessageScanner extends MeteorologicalBulletinIWXXMSc
         builder.setTranslated(true);
 
         try {
-            final String messageType = getMessageType(featureElement, hints, retval.getConversionIssues());
+            final String messageType = featureElement.getLocalName();
             switch (messageType) {
                 case "TAF":
                     builder.setMessageType(MessageType.TAF);
@@ -310,24 +307,6 @@ public class GenericAviationMessageScanner extends MeteorologicalBulletinIWXXMSc
                     "Error in parsing content as a GenericAviationWeatherMessage", xpee));
         }
         return retval;
-    }
-
-    private String getMessageType(Element element, ConversionHints hints, List<ConversionIssue> issues) {
-        String messageType = element.getLocalName();
-
-        if (messageType == null || messageType.isEmpty()) {
-            messageType = hints != null ? (String) hints.get(ConversionHints.KEY_MESSAGE_TYPE) : null;
-            if (messageType == null || messageType.isEmpty()) {
-                BulletinHeading heading = (BulletinHeading) hints.get(ConversionHints.KEY_BULLETING_HEADING);
-                messageType = heading.getExpectedContainedMessageType().map(MessageType::toString).orElse(null);
-                if (messageType == null || messageType.isEmpty()) {
-                    issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Message type could not be determined."));
-                }
-            }
-
-        }
-
-        return messageType;
     }
 
 }
