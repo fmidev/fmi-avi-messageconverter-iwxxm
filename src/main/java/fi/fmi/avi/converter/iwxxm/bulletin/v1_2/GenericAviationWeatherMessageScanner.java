@@ -36,7 +36,7 @@ import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
-public class GenericAviationMessageScanner extends AbstractIWXXMScanner {
+public class GenericAviationWeatherMessageScanner extends AbstractIWXXMScanner {
 
     private static IssueList collectSIGMETMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {

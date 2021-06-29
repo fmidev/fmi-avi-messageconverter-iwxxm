@@ -11,6 +11,6 @@ public class GenericBulletinIWXXMScanner extends MeteorologicalBulletinIWXXMScan
 
     @Override
     protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
-        return new GenericAviationMessageScanner().createAviationWeatherMessage(featureElement, hints);
+        return new GenericAviationWeatherMessageScanner().createAviationWeatherMessage(featureElement, hints);
     }
 }

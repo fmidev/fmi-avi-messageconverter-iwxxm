@@ -17,7 +17,7 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         try {
             final Document doc = parseAsDom(input);
 
-            retval = new GenericAviationMessageScanner().createAviationWeatherMessage(doc.getDocumentElement(), hints);
+            retval = new GenericAviationWeatherMessageScanner().createAviationWeatherMessage(doc.getDocumentElement(), hints);
 
         } catch (Exception ce) {
             retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Error in parsing input", ce));
