@@ -53,7 +53,7 @@ public class GenericBulletinParserTest {
     @Test
     public void testScanner() throws Exception {
         final BulletinProperties properties = new BulletinProperties();
-        final GenericBulletinIWXXMScanner scanner = new GenericBulletinIWXXMScanner();
+        final IWXXMGenericBulletinScanner scanner = new IWXXMGenericBulletinScanner();
         scanner.collectBulletinProperties(this.getBulletinDocument("taf-bulletin.xml"), properties, ConversionHints.EMPTY);
         assertTrue(properties.contains(BulletinProperties.Name.HEADING));
         assertTrue(properties.contains(BulletinProperties.Name.MESSAGE));
