@@ -89,6 +89,4 @@ public abstract class AbstractBulletinIWXXMParser<T, U extends AviationWeatherMe
             final ConversionHints hints);
 
     protected abstract MeteorologicalBulletinIWXXMScanner<U, S> getScanner();
-
-    //protected abstract Document parseAsDom(T input) throws ConversionException;
 }

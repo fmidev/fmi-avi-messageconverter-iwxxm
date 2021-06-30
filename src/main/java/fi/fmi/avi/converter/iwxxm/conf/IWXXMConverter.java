@@ -272,13 +272,13 @@ public class IWXXMConverter {
     // *******************
 
     /**
-     * Pre-configured spec for
+     * Pre-configured spec for converting IWXXM string to {@link GenericAviationWeatherMessage}
      */
     public static final ConversionSpecification<String, GenericAviationWeatherMessage> IWXXM_STRING_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO = new ConversionSpecification<>(
             String.class, GenericAviationWeatherMessage.class, "XML/WMO COLLECT 1.2", null);
 
     /**
-     *
+     * Pre-configured spec for converting IWXXM document to {@link GenericAviationWeatherMessage}
      */
     public static final ConversionSpecification<Document, GenericAviationWeatherMessage> IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO = new ConversionSpecification<>(
             Document.class, GenericAviationWeatherMessage.class, "XML/WMO COLLECT 1.2", null);
