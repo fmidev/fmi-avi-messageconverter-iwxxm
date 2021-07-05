@@ -3,7 +3,6 @@ package fi.fmi.avi.converter.iwxxm.conf;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
@@ -14,7 +13,7 @@ import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
 @Configuration
-public class IWXXMGenericBulletinConverter {
+public class IWXXMGenericAviationWeatherMessageConverter {
 
     @Bean
     public GenericAviationWeatherMessageScanner scanner() {

@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.generic;
+package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
 import org.w3c.dom.Document;
 

@@ -22,7 +22,7 @@ import icao.iwxxm21.TAFType;
  */
 @Configuration
 @Import({ IWXXMTAFConverter.class, IWXXMMETARSPECIConverter.class, IWXXMSIGMETAIRMETConverter.class, IWXXMSpaceWeatherConverter.class,
-        IWXXMGenericBulletinConverter.class, IWXXMGenericAviationWeatherMessageConverter.class })
+        IWXXMGenericAviationWeatherMessageConverter.class })
 public class IWXXMConverter {
 
     // *******************
