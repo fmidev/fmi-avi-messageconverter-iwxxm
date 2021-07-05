@@ -252,7 +252,7 @@ public class IWXXMConverter {
             Document.class, SpaceWeatherBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX", null);
 
     // *******************
-    //  Generic bulletins
+    //  Generic aviation messages
     // *******************
 
     /**
@@ -267,20 +267,16 @@ public class IWXXMConverter {
     public static final ConversionSpecification<String, GenericMeteorologicalBulletin> WMO_COLLECT_STRING_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
             String.class, GenericMeteorologicalBulletin.class, "XML/WMO COLLECT 1.2", null);
 
-    // *******************
-    //  Generic aviation message pojo
-    // *******************
-
     /**
      * Pre-configured spec for converting IWXXM string to {@link GenericAviationWeatherMessage}
      */
     public static final ConversionSpecification<String, GenericAviationWeatherMessage> IWXXM_STRING_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO = new ConversionSpecification<>(
-            String.class, GenericAviationWeatherMessage.class, "XML/WMO COLLECT 1.2", null);
+            String.class, GenericAviationWeatherMessage.class, "XML/IWXXM", null);
 
     /**
      * Pre-configured spec for converting IWXXM document to {@link GenericAviationWeatherMessage}
      */
     public static final ConversionSpecification<Document, GenericAviationWeatherMessage> IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO = new ConversionSpecification<>(
-            Document.class, GenericAviationWeatherMessage.class, "XML/WMO COLLECT 1.2", null);
+            Document.class, GenericAviationWeatherMessage.class, "XML/IWXXM", null);
 
 }
