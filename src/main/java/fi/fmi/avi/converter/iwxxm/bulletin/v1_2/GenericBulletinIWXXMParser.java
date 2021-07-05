@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
+package fi.fmi.avi.converter.iwxxm.generic;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -9,6 +9,8 @@ import org.w3c.dom.Document;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.BulletinProperties;
+import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
@@ -16,7 +18,11 @@ import fi.fmi.avi.model.bulletin.immutable.GenericMeteorologicalBulletinImpl;
 
 public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXXMParser<T, GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
 
-    private final MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> scanner = new IWXXMGenericBulletinScanner();
+    private final MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> scanner;
+
+    protected GenericBulletinIWXXMParser(GenericAviationWeatherMessageScanner genericAviationWeatherMessageScanner) {
+        scanner = new IWXXMGenericBulletinScanner(genericAviationWeatherMessageScanner);
+    }
 
     @Override
     protected GenericMeteorologicalBulletin buildBulletin(final BulletinProperties properties, final ZonedDateTime timestamp,
@@ -36,6 +42,10 @@ public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXX
     }
 
     public static class FromDOM extends GenericBulletinIWXXMParser<Document> {
+        public FromDOM(final GenericAviationWeatherMessageScanner genericAviationWeatherMessageScanner) {
+            super(genericAviationWeatherMessageScanner);
+        }
+
         @Override
         protected Document parseAsDom(final Document input) {
             return input;
@@ -43,6 +53,10 @@ public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXX
     }
 
     public static class FromString extends GenericBulletinIWXXMParser<java.lang.String> {
+        public FromString(final GenericAviationWeatherMessageScanner genericAviationWeatherMessageScanner) {
+            super(genericAviationWeatherMessageScanner);
+        }
+
         @Override
         protected Document parseAsDom(final java.lang.String input) throws ConversionException {
             return parseStringToDOM(input);

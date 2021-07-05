@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
+package fi.fmi.avi.converter.iwxxm.generic;
 
 import org.w3c.dom.Document;
 
@@ -13,13 +13,19 @@ import fi.fmi.avi.model.GenericAviationWeatherMessage;
 
 public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWXXMParser<T, GenericAviationWeatherMessage> {
 
+    final GenericAviationWeatherMessageScanner scanner;
+
+    public GenericAviationWeatherMessageParser(GenericAviationWeatherMessageScanner scanner) {
+        this.scanner = scanner;
+    }
+
     @Override
     public ConversionResult<GenericAviationWeatherMessage> convertMessage(final T input, final ConversionHints hints) {
         ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
         try {
             final Document doc = parseAsDom(input);
 
-            retval = new GenericAviationWeatherMessageScanner().createAviationWeatherMessage(doc.getDocumentElement(), hints);
+            retval = scanner.createAviationWeatherMessage(doc.getDocumentElement(), hints);
 
         } catch (Exception ce) {
             retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Error in parsing input", ce));
@@ -40,6 +46,10 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class FromString extends GenericAviationWeatherMessageParser<String> {
+        public FromString(GenericAviationWeatherMessageScanner scanner) {
+            super(scanner);
+        }
+
         @Override
         protected Document parseAsDom(final String input) throws ConversionException {
             return parseStringToDOM(input);
@@ -47,6 +57,10 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class FromDOM extends GenericAviationWeatherMessageParser<Document> {
+        public FromDOM(GenericAviationWeatherMessageScanner scanner) {
+            super(scanner);
+        }
+
         @Override
         protected Document parseAsDom(final Document input) {
             return input;
