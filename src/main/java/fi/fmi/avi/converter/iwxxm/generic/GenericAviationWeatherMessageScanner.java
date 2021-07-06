@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
+package fi.fmi.avi.converter.iwxxm.generic;
 
 import java.io.StringWriter;
 import java.time.ZonedDateTime;

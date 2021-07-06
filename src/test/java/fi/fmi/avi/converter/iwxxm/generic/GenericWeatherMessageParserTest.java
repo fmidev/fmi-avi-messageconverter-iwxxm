@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
+package fi.fmi.avi.converter.iwxxm.generic;
 
 import java.io.InputStream;
 import java.time.ZonedDateTime;
@@ -27,9 +27,6 @@ import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.bulletin.BulletinHeading;
-import fi.fmi.avi.model.bulletin.DataTypeDesignatorT2;
-import fi.fmi.avi.model.bulletin.immutable.BulletinHeadingImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
