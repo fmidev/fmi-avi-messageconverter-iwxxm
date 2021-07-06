@@ -29,6 +29,7 @@ import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
+import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -69,6 +70,11 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         assertEquals(GenericAviationWeatherMessage.Format.IWXXM, message.getMessageFormat());
         assertEquals("2017-07-30T11:30Z",
                 message.getIssueTime().map(PartialOrCompleteTimeInstant::getCompleteTime).map(Optional::get).map(ZonedDateTime::toString).orElse(null));
+
+        assertEquals("2017-07-30T12:00Z",
+                message.getValidityTime().map(PartialOrCompleteTimePeriod::getStartTime).map(Optional::get).map(PartialOrCompleteTimeInstant::getCompleteTime).map(Optional::get).map(ZonedDateTime::toString).orElse(null));
+        assertEquals("2017-07-31T12:00Z",
+                message.getValidityTime().map(PartialOrCompleteTimePeriod::getEndTime).map(Optional::get).map(PartialOrCompleteTimeInstant::getCompleteTime).map(Optional::get).map(ZonedDateTime::toString).orElse(null));
 
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
                 GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "EETN");
