@@ -5,6 +5,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.xml.XMLConstants;
@@ -93,7 +95,9 @@ public class GenericBulletinParserTest {
                 message.getIssueTime().map(PartialOrCompleteTimeInstant::getCompleteTime).map(Optional::get).map(ZonedDateTime::toString).orElse(null));
 
         //check aerodrome
-        assertEquals("YUDO", message.getLocationIndicators().get(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME));
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
+                GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "YUDO");
+        assertEquals(expectedIndiactors, message.getLocationIndicators());
 
         //check status
         assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, message.getReportStatus());
@@ -117,7 +121,9 @@ public class GenericBulletinParserTest {
         assertEquals("2012-08-16T15:00Z",
                 message.getIssueTime().map(PartialOrCompleteTimeInstant::getCompleteTime).map(Optional::get).map(ZonedDateTime::toString).orElse(null));
 
-        assertEquals("YUDO", message.getLocationIndicators().get(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME));
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
+                GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "YUDO");
+        assertEquals(expectedIndiactors, message.getLocationIndicators());
 
         assertEquals(AviationWeatherMessage.ReportStatus.AMENDMENT, message.getReportStatus());
         assertEquals(MessageType.TAF, message.getMessageType().get());

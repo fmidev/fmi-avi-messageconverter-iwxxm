@@ -2,6 +2,8 @@ package fi.fmi.avi.converter.iwxxm.generic;
 
 import java.io.InputStream;
 import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.xml.XMLConstants;
@@ -68,7 +70,10 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         assertEquals("2017-07-30T11:30Z",
                 message.getIssueTime().map(PartialOrCompleteTimeInstant::getCompleteTime).map(Optional::get).map(ZonedDateTime::toString).orElse(null));
 
-        assertEquals("EETN", message.getLocationIndicators().get(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME));
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
+                GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "EETN");
+
+        assertEquals(expectedIndiactors, message.getLocationIndicators());
 
         XMLUnit.setIgnoreWhitespace(true);
         assertXMLEqual(input, message.getOriginalMessage());
@@ -96,7 +101,9 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         assertEquals("2017-07-30T11:30Z",
                 message.getIssueTime().map(PartialOrCompleteTimeInstant::getCompleteTime).map(Optional::get).map(ZonedDateTime::toString).orElse(null));
 
-        assertEquals("EETN", message.getLocationIndicators().get(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME));
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
+                GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "EETN");
+        assertEquals(expectedIndiactors, message.getLocationIndicators());
 
         XMLUnit.setIgnoreWhitespace(true);
         assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
