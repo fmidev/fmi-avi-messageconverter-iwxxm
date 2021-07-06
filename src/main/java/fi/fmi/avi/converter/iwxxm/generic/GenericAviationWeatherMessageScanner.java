@@ -72,7 +72,7 @@ public class GenericAviationWeatherMessageScanner extends AbstractIWXXMScanner {
 
         if (!"MISSING".equals(status)) {
             //validity time
-            retval.addAll(collectValidTime(featureElement, "./gml:validTime[1]", xpath, builder));
+            retval.addAll(collectValidTime(featureElement, "./iwxxm:validTime[1]", xpath, builder));
         }
 
         //target aerodrome
