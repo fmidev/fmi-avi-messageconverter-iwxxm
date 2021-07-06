@@ -3,6 +3,7 @@ package fi.fmi.avi.converter.iwxxm.generic;
 import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -135,6 +136,13 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         assertEquals(GenericAviationWeatherMessage.Format.IWXXM, message.getMessageFormat());
         assertEquals("2012-08-25T16:00Z",
                 message.getIssueTime().map(PartialOrCompleteTimeInstant::getCompleteTime).map(Optional::get).map(ZonedDateTime::toString).orElse(null));
+
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = new HashMap<>();
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "wmo-YUDO");
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUDO");
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUDO");
+
+        assertEquals(expectedIndiactors, message.getLocationIndicators());
 
         XMLUnit.setIgnoreWhitespace(true);
         assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
