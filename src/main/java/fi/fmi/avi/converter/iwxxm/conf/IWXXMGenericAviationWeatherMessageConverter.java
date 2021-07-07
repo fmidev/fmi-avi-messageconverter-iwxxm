@@ -16,31 +16,31 @@ import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 public class IWXXMGenericAviationWeatherMessageConverter {
 
     @Bean
-    public GenericAviationWeatherMessageScanner scanner() {
+    public GenericAviationWeatherMessageScanner genericAviationWeatherMessageIWXXMScanner() {
         return new GenericAviationWeatherMessageScanner();
     }
 
     // Parsers:
     @Bean
-    public AviMessageSpecificConverter<Document, GenericMeteorologicalBulletin> genericBulletinIWXXMDOMParser(GenericAviationWeatherMessageScanner scanner) {
-        return new GenericBulletinIWXXMParser.FromDOM(scanner);
+    public AviMessageSpecificConverter<Document, GenericMeteorologicalBulletin> genericBulletinIWXXMDOMParser(GenericAviationWeatherMessageScanner genericAviationWeatherMessageIWXXMScanner) {
+        return new GenericBulletinIWXXMParser.FromDOM(genericAviationWeatherMessageIWXXMScanner);
     }
 
     @Bean
-    public AviMessageSpecificConverter<String, GenericMeteorologicalBulletin> genericBulletinIWXXMStringParser(GenericAviationWeatherMessageScanner scanner) {
-        return new GenericBulletinIWXXMParser.FromString(scanner);
+    public AviMessageSpecificConverter<String, GenericMeteorologicalBulletin> genericBulletinIWXXMStringParser(GenericAviationWeatherMessageScanner genericAviationWeatherMessageIWXXMScanner) {
+        return new GenericBulletinIWXXMParser.FromString(genericAviationWeatherMessageIWXXMScanner);
     }
 
     @Bean
     @Qualifier("genericAviationWeatherMessageIWXXMDOMParser")
-    public AviMessageSpecificConverter<Document, GenericAviationWeatherMessage> genericAviationWeatherMessageIWXXMDOMParser(GenericAviationWeatherMessageScanner scanner) {
-        return new GenericAviationWeatherMessageParser.FromDOM(scanner);
+    public AviMessageSpecificConverter<Document, GenericAviationWeatherMessage> genericAviationWeatherMessageIWXXMDOMParser(GenericAviationWeatherMessageScanner genericAviationWeatherMessageIWXXMScanner) {
+        return new GenericAviationWeatherMessageParser.FromDOM(genericAviationWeatherMessageIWXXMScanner);
     }
 
     @Bean
     @Qualifier("genericAviationWeatherMessageIWXXMStringParser")
-    public AviMessageSpecificConverter<String, GenericAviationWeatherMessage> genericAviationWeatherMessageIWXXMStringParser(GenericAviationWeatherMessageScanner scanner) {
-        return new GenericAviationWeatherMessageParser.FromString(scanner);
+    public AviMessageSpecificConverter<String, GenericAviationWeatherMessage> genericAviationWeatherMessageIWXXMStringParser(GenericAviationWeatherMessageScanner genericAviationWeatherMessageIWXXMScanner) {
+        return new GenericAviationWeatherMessageParser.FromString(genericAviationWeatherMessageIWXXMScanner);
     }
 
     // Serializers:
