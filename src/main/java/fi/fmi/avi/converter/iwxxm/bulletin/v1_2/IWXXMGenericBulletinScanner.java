@@ -3,6 +3,8 @@ package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 import java.io.StringWriter;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.xml.transform.OutputKeys;
@@ -52,6 +54,36 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
 
         retval.addAll(collectValidTime(featureElement, "./iwxxm:validPeriod[1]", xpath, builder));
         return retval;
+    }
+
+    private static Map<GenericAviationWeatherMessage.LocationIndicatorType, String> collectSIGMETLocationIndicators(XPathExpression expr, XPath xpath,
+            Element featureElement) throws XPathExpressionException{
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> indicators = new HashMap<>();
+
+
+        expr = xpath.compile("./iwxxm:originatingMeteorologicalWatchOffice/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
+        String watchOffice = expr.evaluate(featureElement);
+        if (watchOffice != null && !watchOffice.isEmpty()) {
+            indicators.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, watchOffice);
+        }
+
+
+
+        expr = xpath.compile("./iwxxm:issuingAirTrafficServicesUnit/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
+        String serviceUnit = expr.evaluate(featureElement);
+        if (serviceUnit != null && !serviceUnit.isEmpty()) {
+            indicators.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, serviceUnit);
+        }
+
+        //add region
+        expr = xpath.compile("./iwxxm:issuingAirTrafficServicesUnit/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
+        String serviceregion = expr.evaluate(featureElement);
+        if (serviceUnit != null && !serviceUnit.isEmpty()) {
+            indicators.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, serviceregion);
+        }
+
+
+        return indicators;
     }
 
     private static IssueList collectTAFMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
