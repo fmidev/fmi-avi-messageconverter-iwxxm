@@ -92,7 +92,7 @@ public class GenericBulletinParserTest {
         assertEquals("2012-08-16T18:00Z", message.getValidityTime().get().getEndTime().get().getCompleteTime().get().toString());
 
         assertEquals("2012-08-15T18:00Z",
-                message.getIssueTime().map(PartialOrCompleteTimeInstant::getCompleteTime).map(Optional::get).map(ZonedDateTime::toString).orElse(null));
+                message.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
 
         //check aerodrome
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
@@ -119,7 +119,7 @@ public class GenericBulletinParserTest {
         assertEquals("2012-08-16T18:00Z", message.getValidityTime().get().getEndTime().get().getCompleteTime().get().toString());
 
         assertEquals("2012-08-16T15:00Z",
-                message.getIssueTime().map(PartialOrCompleteTimeInstant::getCompleteTime).map(Optional::get).map(ZonedDateTime::toString).orElse(null));
+                message.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
 
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
                 GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "YUDO");
