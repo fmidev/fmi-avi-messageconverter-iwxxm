@@ -28,6 +28,7 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
+import fi.fmi.avi.converter.iwxxm.IWXXMSchemaResourceResolver;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
@@ -52,7 +53,10 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
             retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM SIGMET");
         }
 
+        builder.putAllLocationIndicators(collectSIGMETLocationIndicators(expr, xpath, featureElement));
+
         retval.addAll(collectValidTime(featureElement, "./iwxxm:validPeriod[1]", xpath, builder));
+
         return retval;
     }
 
@@ -60,8 +64,15 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
             Element featureElement) throws XPathExpressionException{
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> indicators = new HashMap<>();
 
+        String iwxxm;
+        if(featureElement.getNamespaceURI().equals("http://icao.int/iwxxm/3.0")) {
+            iwxxm = "iwxxm30";
+        } else {
+            iwxxm = "iwxxm";
+        }
 
-        expr = xpath.compile("./iwxxm:originatingMeteorologicalWatchOffice/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
+
+        expr = xpath.compile("./" + iwxxm + ":originatingMeteorologicalWatchOffice/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
         String watchOffice = expr.evaluate(featureElement);
         if (watchOffice != null && !watchOffice.isEmpty()) {
             indicators.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, watchOffice);
@@ -69,19 +80,26 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
 
 
 
-        expr = xpath.compile("./iwxxm:issuingAirTrafficServicesUnit/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
+        expr = xpath.compile("./" + iwxxm + ":issuingAirTrafficServicesUnit/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
         String serviceUnit = expr.evaluate(featureElement);
         if (serviceUnit != null && !serviceUnit.isEmpty()) {
             indicators.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, serviceUnit);
         }
 
         //add region
-        expr = xpath.compile("./iwxxm:issuingAirTrafficServicesUnit/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
+        if(featureElement.getNamespaceURI().equals("http://icao.int/iwxxm/3.0")) {
+            expr = xpath.compile(
+                    "./" + iwxxm + ":issuingAirTrafficServicesRegion/aixm:Airspace/aixm:timeSlice/aixm:AirspaceTimeSlice/aixm:designator");
+        } else {
+            expr = xpath.compile(
+                    "./" + iwxxm + ":analysis/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm:Airspace/aixm"
+                            + ":timeSlice/aixm:AirspaceTimeSlice/aixm:designator");
+        }
+
         String serviceregion = expr.evaluate(featureElement);
         if (serviceUnit != null && !serviceUnit.isEmpty()) {
             indicators.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, serviceregion);
         }
-
 
         return indicators;
     }
