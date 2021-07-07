@@ -9,6 +9,7 @@ import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageParser;
 import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageScanner;
 import fi.fmi.avi.converter.iwxxm.generic.GenericBulletinIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.generic.IWXXMGenericBulletinScanner;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
@@ -20,15 +21,20 @@ public class IWXXMGenericAviationWeatherMessageConverter {
         return new GenericAviationWeatherMessageScanner();
     }
 
+    @Bean
+    public IWXXMGenericBulletinScanner iwxxmGenericBulletinScanner(GenericAviationWeatherMessageScanner genericAviationWeatherMessageIWXXMScanner) {
+        return new IWXXMGenericBulletinScanner(genericAviationWeatherMessageIWXXMScanner);
+    }
+
     // Parsers:
     @Bean
-    public AviMessageSpecificConverter<Document, GenericMeteorologicalBulletin> genericBulletinIWXXMDOMParser(GenericAviationWeatherMessageScanner genericAviationWeatherMessageIWXXMScanner) {
-        return new GenericBulletinIWXXMParser.FromDOM(genericAviationWeatherMessageIWXXMScanner);
+    public AviMessageSpecificConverter<Document, GenericMeteorologicalBulletin> genericBulletinIWXXMDOMParser(IWXXMGenericBulletinScanner iwxxmGenericBulletinScanner) {
+        return new GenericBulletinIWXXMParser.FromDOM(iwxxmGenericBulletinScanner);
     }
 
     @Bean
-    public AviMessageSpecificConverter<String, GenericMeteorologicalBulletin> genericBulletinIWXXMStringParser(GenericAviationWeatherMessageScanner genericAviationWeatherMessageIWXXMScanner) {
-        return new GenericBulletinIWXXMParser.FromString(genericAviationWeatherMessageIWXXMScanner);
+    public AviMessageSpecificConverter<String, GenericMeteorologicalBulletin> genericBulletinIWXXMStringParser(IWXXMGenericBulletinScanner iwxxmGenericBulletinScanner) {
+        return new GenericBulletinIWXXMParser.FromString(iwxxmGenericBulletinScanner);
     }
 
     @Bean

@@ -20,8 +20,8 @@ public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXX
 
     private final MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> scanner;
 
-    protected GenericBulletinIWXXMParser(GenericAviationWeatherMessageScanner genericAviationWeatherMessageScanner) {
-        scanner = new IWXXMGenericBulletinScanner(genericAviationWeatherMessageScanner);
+    protected GenericBulletinIWXXMParser(IWXXMGenericBulletinScanner iwxxmGenericBulletinScanner) {
+        scanner = iwxxmGenericBulletinScanner;
     }
 
     @Override
@@ -42,8 +42,8 @@ public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXX
     }
 
     public static class FromDOM extends GenericBulletinIWXXMParser<Document> {
-        public FromDOM(final GenericAviationWeatherMessageScanner genericAviationWeatherMessageScanner) {
-            super(genericAviationWeatherMessageScanner);
+        public FromDOM(final IWXXMGenericBulletinScanner iwxxmGenericBulletinScanner) {
+            super(iwxxmGenericBulletinScanner);
         }
 
         @Override
@@ -53,8 +53,8 @@ public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXX
     }
 
     public static class FromString extends GenericBulletinIWXXMParser<java.lang.String> {
-        public FromString(final GenericAviationWeatherMessageScanner genericAviationWeatherMessageScanner) {
-            super(genericAviationWeatherMessageScanner);
+        public FromString(final IWXXMGenericBulletinScanner iwxxmGenericBulletinScanner) {
+            super(iwxxmGenericBulletinScanner);
         }
 
         @Override
