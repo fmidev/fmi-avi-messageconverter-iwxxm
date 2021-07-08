@@ -137,15 +137,13 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         assertEquals("2012-08-25T16:00Z",
                 message.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
 
-        /*
-        //Uncomment this section once SIGMET location indicator parsing is added
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = new HashMap<>();
         expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUCC");
-        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUDO");
-        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUCC");
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUCC");
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUDO");
 
         assertEquals(expectedIndiactors, message.getLocationIndicators());
-        */
+
 
         XMLUnit.setIgnoreWhitespace(true);
         assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
