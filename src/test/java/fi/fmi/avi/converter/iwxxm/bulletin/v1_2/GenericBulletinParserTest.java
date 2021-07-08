@@ -86,7 +86,7 @@ public class GenericBulletinParserTest {
         assertEquals("2012-08-25T16:00Z",
                 msg.getValidityTime().flatMap(PartialOrCompleteTimePeriod::getStartTime).flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
 
-        assertEquals("2012-08-25T16:00Z",
+        assertEquals("2012-08-25T22:00Z",
                 msg.getValidityTime().flatMap(PartialOrCompleteTimePeriod::getEndTime).flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
 
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expecteMap = new HashMap<>();
