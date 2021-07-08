@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
+package fi.fmi.avi.converter.iwxxm.generic;
 
 import java.io.StringWriter;
 import java.time.ZonedDateTime;
@@ -27,6 +27,7 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessage;
@@ -34,11 +35,10 @@ import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
-import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
-public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
+public class GenericAviationWeatherMessageScanner extends AbstractIWXXMScanner {
 
     private static IssueList collectSIGMETMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {
@@ -141,7 +141,7 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
 
         if (!"MISSING".equals(status)) {
             //validity time
-            retval.addAll(collectValidTime(featureElement, "./gml:validTime[1]", xpath, builder));
+            retval.addAll(collectValidTime(featureElement, "./iwxxm:validTime[1]", xpath, builder));
         }
 
         //target aerodrome
@@ -297,7 +297,6 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
         }
     }
 
-    @Override
     protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
         final ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
         final XPathFactory factory = XPathFactory.newInstance();
@@ -381,4 +380,5 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
         }
         return retval;
     }
+
 }
