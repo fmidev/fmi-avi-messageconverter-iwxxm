@@ -5,8 +5,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
+import javax.print.attribute.HashDocAttributeSet;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -28,6 +31,7 @@ import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
+import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
 /**
@@ -73,6 +77,52 @@ public class GenericBulletinParserTest {
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+
+        GenericAviationWeatherMessage msg = result.getConvertedMessage().get().getMessages().get(0);
+
+        assertEquals("2012-08-25T16:00Z",
+                msg.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
+
+        assertEquals("2012-08-25T16:00Z",
+                msg.getValidityTime().flatMap(PartialOrCompleteTimePeriod::getStartTime).flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
+
+        assertEquals("2012-08-25T16:00Z",
+                msg.getValidityTime().flatMap(PartialOrCompleteTimePeriod::getEndTime).flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
+
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expecteMap = new HashMap<>();
+        expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUDO");
+        expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUCC");
+        expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUCC");
+
+        assertEquals(expecteMap, msg.getLocationIndicators());
+
+    }
+
+    @Test
+    public void testParserWithSIGMET30() throws Exception {
+        final Document input = this.getBulletinDocument("sigmet-30-bulletin.xml");
+        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
+                IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+
+        GenericAviationWeatherMessage msg = result.getConvertedMessage().get().getMessages().get(0);
+
+        assertEquals("2012-08-10T12:00Z",
+                msg.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
+
+        assertEquals("2012-08-10T12:00Z",
+                msg.getValidityTime().flatMap(PartialOrCompleteTimePeriod::getStartTime).flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
+
+        assertEquals("2012-08-10T16:00Z",
+                msg.getValidityTime().flatMap(PartialOrCompleteTimePeriod::getEndTime).flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
+
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expecteMap = new HashMap<>();
+        expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUSO");
+        expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUDD");
+        expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUDD");
+
+        assertEquals(expecteMap, msg.getLocationIndicators());
+
     }
 
     @Test
