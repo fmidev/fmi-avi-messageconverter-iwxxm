@@ -139,7 +139,7 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
 
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = new HashMap<>();
         expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUCC");
-        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUCC");
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUSO");
         expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUDO");
 
         assertEquals(expectedIndiactors, message.getLocationIndicators());

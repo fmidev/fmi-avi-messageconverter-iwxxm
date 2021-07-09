@@ -54,7 +54,7 @@
               <gml:validTime/>
               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
               <aixm:type>OTHER:FIR_UIR</aixm:type>
-              <aixm:designator>YUDD</aixm:designator>
+              <aixm:designator>YUDO</aixm:designator>
               <aixm:name>SHANLON FIR/UIR</aixm:name>
             </aixm:AirspaceTimeSlice>
           </aixm:timeSlice>

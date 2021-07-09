@@ -94,7 +94,7 @@ public class GenericBulletinParserTest {
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expecteMap = new HashMap<>();
         expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUDO");
         expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUCC");
-        expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUCC");
+        expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUSO");
 
         assertEquals(expecteMap, msg.getLocationIndicators());
 
@@ -120,7 +120,7 @@ public class GenericBulletinParserTest {
 
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expecteMap = new HashMap<>();
         expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUSO");
-        expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUDD");
+        expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUDO");
         expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUDD");
 
         assertEquals(expecteMap, msg.getLocationIndicators());

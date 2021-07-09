@@ -25,7 +25,7 @@
               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
               <aixm:name>YUCC FIC</aixm:name>
               <aixm:type>FIC</aixm:type>
-              <aixm:designator>YUCC</aixm:designator>
+              <aixm:designator>YUSO</aixm:designator>
             </aixm:UnitTimeSlice>
           </aixm:timeSlice>
         </aixm:Unit>
