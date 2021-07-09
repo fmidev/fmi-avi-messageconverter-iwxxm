@@ -4,7 +4,7 @@ import java.io.StringWriter;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -22,8 +22,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import net.sf.saxon.ma.trie.ImmutableMap;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -36,6 +34,7 @@ import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
+import fi.fmi.avi.model.GenericAviationWeatherMessage.LocationIndicatorType;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -44,23 +43,28 @@ import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public class GenericAviationWeatherMessageScanner extends AbstractIWXXMScanner {
 
-    private static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> SIGMET_30_LOCATION_INDICATOR_EXPRESSIONS;
-    private static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> SIGMET_21_LOCATION_INDICATOR_EXPRESSIONS;
-    static {
-        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expressions30 = new HashMap<>();
-        expressions30.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "./iwxxm30:originatingMeteorologicalWatchOffice/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
-        expressions30.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "./iwxxm30:issuingAirTrafficServicesUnit/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
-        expressions30.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "./iwxxm30:issuingAirTrafficServicesRegion/aixm:Airspace/aixm:timeSlice/aixm:AirspaceTimeSlice/aixm:designator");
-        SIGMET_30_LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(expressions30);
+    private static final Map<LocationIndicatorType, String> SIGMET_30_LOCATION_INDICATOR_EXPRESSIONS;
+    private static final Map<LocationIndicatorType, String> SIGMET_21_LOCATION_INDICATOR_EXPRESSIONS;
 
-        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expressions21 = new HashMap<>();
-        expressions21.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "./iwxxm"
-                + ":originatingMeteorologicalWatchOffice/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
-        expressions21.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "./iwxxm:issuingAirTrafficServicesUnit/aixm"
-                + ":Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
-        expressions21.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "./iwxxm:analysis/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm:Airspace/aixm"
-                + ":timeSlice/aixm:AirspaceTimeSlice/aixm:designator");
-        SIGMET_21_LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(expressions21);
+    static {
+        final Map<LocationIndicatorType, String> sigmet30LocationIndicatorExpressions = new EnumMap<>(LocationIndicatorType.class);
+        sigmet30LocationIndicatorExpressions.put(LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE,
+                "./iwxxm30:originatingMeteorologicalWatchOffice/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
+        sigmet30LocationIndicatorExpressions.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT,
+                "./iwxxm30:issuingAirTrafficServicesUnit/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
+        sigmet30LocationIndicatorExpressions.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION,
+                "./iwxxm30:issuingAirTrafficServicesRegion/aixm:Airspace/aixm:timeSlice/aixm:AirspaceTimeSlice/aixm:designator");
+        SIGMET_30_LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(sigmet30LocationIndicatorExpressions);
+
+        final Map<LocationIndicatorType, String> sigmet21LocationIndicatorExpressions = new EnumMap<>(LocationIndicatorType.class);
+        sigmet21LocationIndicatorExpressions.put(LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE,
+                "./iwxxm" + ":originatingMeteorologicalWatchOffice/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
+        sigmet21LocationIndicatorExpressions.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT,
+                "./iwxxm:issuingAirTrafficServicesUnit/aixm" + ":Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
+        sigmet21LocationIndicatorExpressions.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION,
+                "./iwxxm:analysis/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm:Airspace/aixm"
+                        + ":timeSlice/aixm:AirspaceTimeSlice/aixm:designator");
+        SIGMET_21_LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(sigmet21LocationIndicatorExpressions);
     }
 
     private static IssueList collectSIGMETMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
@@ -102,8 +106,8 @@ public class GenericAviationWeatherMessageScanner extends AbstractIWXXMScanner {
     }
 
     private static void collectLocationIndicators(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder,
-            final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> xpathExpressions, final IssueList issues) throws XPathExpressionException {
-        for (final Map.Entry<GenericAviationWeatherMessage.LocationIndicatorType, String> entry : xpathExpressions.entrySet()) {
+            final Map<LocationIndicatorType, String> xpathExpressions, final IssueList issues) throws XPathExpressionException {
+        for (final Map.Entry<LocationIndicatorType, String> entry : xpathExpressions.entrySet()) {
             final String locationIndicator = xpath.compile(entry.getValue()).evaluate(featureElement);
             if (locationIndicator == null || locationIndicator.isEmpty()) {
                 issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
@@ -216,7 +220,7 @@ public class GenericAviationWeatherMessageScanner extends AbstractIWXXMScanner {
         if (nodes.getLength() == 1) {
             Optional<Aerodrome> aerodrome = parseAerodromeInfo((Element) nodes.item(0), xpath, issues);
             if (aerodrome.isPresent()) {
-                builder.putLocationIndicators(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, aerodrome.get().getDesignator());
+                builder.putLocationIndicators(LocationIndicatorType.AERODROME, aerodrome.get().getDesignator());
             } else {
                 issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info could not be parsed for TAF of status " + status);
             }
