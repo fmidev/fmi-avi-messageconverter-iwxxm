@@ -9,15 +9,15 @@ import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
 public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
-    final GenericAviationWeatherMessageScanner scanner;
+    final GenericAviationWeatherMessageParser messageParser;
 
-    public IWXXMGenericBulletinScanner(GenericAviationWeatherMessageScanner scanner) {
-        this.scanner = scanner;
+    public IWXXMGenericBulletinScanner(final GenericAviationWeatherMessageParser messageParser) {
+        this.messageParser = messageParser;
     }
 
 
     @Override
     protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
-        return scanner.createAviationWeatherMessage(featureElement, hints);
+        return messageParser.createAviationWeatherMessage(featureElement, hints);
     }
 }
