@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
-import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageParser;
 import fi.fmi.avi.converter.iwxxm.GenericAviationWeatherMessageScanner;
+import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageParser;
 import fi.fmi.avi.converter.iwxxm.generic.GenericBulletinIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.generic.IWXXMGenericBulletinScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.sigmet.GenericSIGMETIWXXMScanner;

@@ -23,13 +23,13 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.GenericAviationWeatherMessageScanner;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
-import fi.fmi.avi.converter.iwxxm.GenericAviationWeatherMessageScanner;
 
 public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWXXMParser<T, GenericAviationWeatherMessage> {
 
@@ -88,17 +88,19 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
                 builder.setOriginalMessage(sw.toString());
             } catch (final TransformerException e) {
                 retval.addIssue(
-                        new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Unable to write the message content as " + "string", e));
+                        new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Unable to write the message content as " + "string",
+                                e));
             }
             retval.setConvertedMessage(builder.build());
-        }  catch (final XPathExpressionException xpee) {
+        } catch (final XPathExpressionException xpee) {
             retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER,
                     "Error in parsing content as a GenericAviationWeatherMessage", xpee));
         }
         return retval;
     }
 
-    private void setMessageType(final Element featureElement, final GenericAviationWeatherMessageImpl.Builder builder, ConversionResult<GenericAviationWeatherMessage> retval) {
+    private void setMessageType(final Element featureElement, final GenericAviationWeatherMessageImpl.Builder builder,
+            ConversionResult<GenericAviationWeatherMessage> retval) {
         final String messageType = featureElement.getLocalName();
         switch (messageType) {
             case "TAF":

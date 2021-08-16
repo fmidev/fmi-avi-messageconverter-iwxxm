@@ -8,9 +8,7 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
-import javax.print.attribute.HashDocAttributeSet;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,6 +22,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
@@ -46,21 +45,24 @@ public class GenericBulletinParserTest {
     @Autowired
     private AviMessageConverter converter;
 
+    @Autowired
+    private IWXXMGenericBulletinScanner iwxxmGenericBulletinScanner;
+
     private Document getBulletinDocument(final String filename) throws Exception {
         final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setNamespaceAware(true);
         documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        try (InputStream inputStream = GenericBulletinParserTest.class.getResourceAsStream(filename)) {
+        try (final InputStream inputStream = GenericBulletinParserTest.class.getResourceAsStream(filename)) {
             return documentBuilder.parse(inputStream);
         }
     }
 
-    @Test
+    //TODO:FIX
+   @Test
     public void testScanner() throws Exception {
         final BulletinProperties properties = new BulletinProperties();
-        final IWXXMGenericBulletinScanner scanner = new IWXXMGenericBulletinScanner(new GenericAviationWeatherMessageScanner());
-        scanner.collectBulletinProperties(this.getBulletinDocument("taf-bulletin.xml"), properties, ConversionHints.EMPTY);
+        iwxxmGenericBulletinScanner.collectBulletinProperties(this.getBulletinDocument("taf-bulletin.xml"), properties, ConversionHints.EMPTY);
         assertTrue(properties.contains(BulletinProperties.Name.HEADING));
         assertTrue(properties.contains(BulletinProperties.Name.MESSAGE));
     }
@@ -80,7 +82,7 @@ public class GenericBulletinParserTest {
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
 
-        GenericAviationWeatherMessage msg = result.getConvertedMessage().get().getMessages().get(0);
+        final GenericAviationWeatherMessage msg = result.getConvertedMessage().get().getMessages().get(0);
 
         assertEquals("2012-08-25T16:00Z",
                 msg.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
@@ -91,7 +93,7 @@ public class GenericBulletinParserTest {
         assertEquals("2012-08-25T22:00Z",
                 msg.getValidityTime().flatMap(PartialOrCompleteTimePeriod::getEndTime).flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
 
-        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expecteMap = new HashMap<>();
+        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expecteMap = new HashMap<>();
         expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUDO");
         expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUCC");
         expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUSO");
@@ -107,7 +109,7 @@ public class GenericBulletinParserTest {
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
 
-        GenericAviationWeatherMessage msg = result.getConvertedMessage().get().getMessages().get(0);
+        final GenericAviationWeatherMessage msg = result.getConvertedMessage().get().getMessages().get(0);
 
         assertEquals("2012-08-10T12:00Z",
                 msg.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
@@ -118,7 +120,7 @@ public class GenericBulletinParserTest {
         assertEquals("2012-08-10T16:00Z",
                 msg.getValidityTime().flatMap(PartialOrCompleteTimePeriod::getEndTime).flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
 
-        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expecteMap = new HashMap<>();
+        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expecteMap = new HashMap<>();
         expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUSO");
         expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUDO");
         expecteMap.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUDD");
@@ -134,7 +136,7 @@ public class GenericBulletinParserTest {
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
 
-        GenericAviationWeatherMessage message = result.getConvertedMessage().get().getMessages().get(0);
+        final GenericAviationWeatherMessage message = result.getConvertedMessage().get().getMessages().get(0);
 
         //check validtime
         assertEquals("2012-08-16T00:00Z", message.getValidityTime().get().getStartTime().get().getCompleteTime().get().toString());
@@ -144,7 +146,7 @@ public class GenericBulletinParserTest {
                 message.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
 
         //check aerodrome
-        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
+        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
                 GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "YUDO");
         assertEquals(expectedIndiactors, message.getLocationIndicators());
 
@@ -163,14 +165,14 @@ public class GenericBulletinParserTest {
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
 
-        GenericAviationWeatherMessage message = result.getConvertedMessage().get().getMessages().get(0);
+        final GenericAviationWeatherMessage message = result.getConvertedMessage().get().getMessages().get(0);
         assertEquals("2012-08-16T00:00Z", message.getValidityTime().get().getStartTime().get().getCompleteTime().get().toString());
         assertEquals("2012-08-16T18:00Z", message.getValidityTime().get().getEndTime().get().getCompleteTime().get().toString());
 
         assertEquals("2012-08-16T15:00Z",
                 message.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
 
-        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
+        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
                 GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "YUDO");
         assertEquals(expectedIndiactors, message.getLocationIndicators());
 
