@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.v3_0.generic;
+package fi.fmi.avi.converter.iwxxm.v3_0.sigmet;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,6 +12,7 @@ import org.w3c.dom.Element;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractGenericAviationWeatherMessageScanner;
+import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
@@ -19,6 +20,7 @@ public class GenericSIGMETIWXXMScanner extends AbstractGenericAviationWeatherMes
 
     public IssueList collectMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {
+        builder.setMessageType(MessageType.SIGMET);
         final IssueList retval = new IssueList();
         //Issue time:
         XPathExpression expr = xpath.compile("./iwxxm30:issueTime/gml:TimeInstant/gml:timePosition");
