@@ -90,7 +90,7 @@ public class IWXXMGenericAviationWeatherMessageConverter {
         return new GenericAviationWeatherMessageParser.FromString(genericAviationWeatherMessageScannerMap.getMap());
     }
 
-    private class GenericAviationWeatherMessageScannerMap {
+    private static class GenericAviationWeatherMessageScannerMap {
         private Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> map;
         public GenericAviationWeatherMessageScannerMap(Map scannerMap) {
             this.map = scannerMap;
