@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -27,16 +28,26 @@ import fi.fmi.avi.converter.iwxxm.GenericAviationWeatherMessageScanner;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
+import fi.fmi.avi.converter.iwxxm.v2_1.sigmet.GenericSIGMETIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.v2_1.taf.GenericTAFIWXXMScanner;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWXXMParser<T, GenericAviationWeatherMessage> {
 
-    private final Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners;
+    private static Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners;
 
-    public GenericAviationWeatherMessageParser(Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
-        this.scanners = scanners;
+    static {
+        scanners = new HashMap<>();
+        scanners.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/2.1", "TropicalCycloneSIGMET"), new GenericSIGMETIWXXMScanner());
+        scanners.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/3.0", "TropicalCycloneSIGMET"), new fi.fmi.avi.converter.iwxxm.v3_0.sigmet.GenericSIGMETIWXXMScanner());
+        scanners.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/2.1", "VolcanicAshSIGMET"), new GenericSIGMETIWXXMScanner());
+        scanners.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/3.0", "VolcanicAshSIGMET"), new fi.fmi.avi.converter.iwxxm.v3_0.sigmet.GenericSIGMETIWXXMScanner());
+        scanners.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/2.1", "SIGMET"), new GenericSIGMETIWXXMScanner());
+        scanners.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/3.0", "SIGMET"), new fi.fmi.avi.converter.iwxxm.v3_0.sigmet.GenericSIGMETIWXXMScanner());
+        scanners.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/2.1", "TAF"), new GenericTAFIWXXMScanner());
+        scanners.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/3.0", "TAF"), new fi.fmi.avi.converter.iwxxm.v3_0.taf.GenericTAFIWXXMScanner());
     }
 
     @Override
@@ -61,11 +72,9 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         xpath.setNamespaceContext(new IWXXMNamespaceContext());
         final GenericAviationWeatherMessageImpl.Builder builder = GenericAviationWeatherMessageImpl.builder();
         builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
-        builder.setTranslated(true);
+        builder.setTranslated(false);
 
-        ScannerKey scannerKey = new ScannerKey(featureElement.getNamespaceURI(), featureElement.getLocalName());
-
-        GenericAviationWeatherMessageScanner scanner = scanners.get(scannerKey);
+        GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getNamespaceURI(), featureElement.getLocalName()));
         try {
             if (scanner != null) {
                 retval.addIssue(scanner.collectMessage(featureElement, xpath, builder));
@@ -151,10 +160,6 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class FromString extends GenericAviationWeatherMessageParser<String> {
-        public FromString(Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
-            super(scanners);
-        }
-
         @Override
         protected Document parseAsDom(final String input) throws ConversionException {
             return parseStringToDOM(input);
@@ -162,10 +167,6 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class FromDOM extends GenericAviationWeatherMessageParser<Document> {
-        public FromDOM(Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
-            super(scanners);
-        }
-
         @Override
         protected Document parseAsDom(final Document input) {
             return input;
