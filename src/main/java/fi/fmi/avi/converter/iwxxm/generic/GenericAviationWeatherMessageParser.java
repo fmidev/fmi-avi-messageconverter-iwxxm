@@ -36,7 +36,7 @@ import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWXXMParser<T, GenericAviationWeatherMessage> {
 
-    private static Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners;
+    private static final Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners;
 
     static {
         scanners = new HashMap<>();
