@@ -29,7 +29,6 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
     protected static IssueList collectValidTime(final Element featureElement, final String selector, final XPath xpath,
             final GenericAviationWeatherMessageImpl.Builder builder) {
         final IssueList retval = new IssueList();
-        //validity time
         try {
             ZonedDateTime startTime = null, endTime = null;
             final XPathExpression expr = xpath.compile(selector);
@@ -73,7 +72,6 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         XPathExpression expr = xpath.compile("./gml:TimePeriod/gml:beginPosition");
         String timeStr = expr.evaluate(timeElement);
         if (timeStr.isEmpty()) {
-            //validity time, begin/TimeInstant variant:
             expr = xpath.compile("./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition");
             timeStr = expr.evaluate(timeElement);
         }
@@ -88,7 +86,6 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         XPathExpression expr = xpath.compile("./gml:TimePeriod/gml:endPosition");
         String timeStr = expr.evaluate(timeElement);
         if (timeStr.isEmpty()) {
-            //validity time, begin/TimeInstant variant:
             expr = xpath.compile("./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition");
             timeStr = expr.evaluate(timeElement);
         }
