@@ -65,10 +65,11 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
 
         GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getNamespaceURI(), featureElement.getLocalName()));
         try {
-            if (scanner != null) {
-                retval.addIssue(scanner.collectMessage(featureElement, xpath, builder));
+            if (scanner == null) {
+                retval.addIssue(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
+                        "Unknown message type '" + featureElement.getLocalName() + "', unable to parse as generic message"));
             } else {
-                setMessageType(featureElement, builder, retval);
+                retval.addIssue(scanner.collectMessage(featureElement, xpath, builder));
             }
 
             try {
@@ -95,46 +96,6 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
                     "Error in parsing content as a GenericAviationWeatherMessage", xpee));
         }
         return retval;
-    }
-
-    private void setMessageType(final Element featureElement, final GenericAviationWeatherMessageImpl.Builder builder,
-            ConversionResult<GenericAviationWeatherMessage> retval) {
-        final String messageType = featureElement.getLocalName();
-        switch (messageType) {
-            case "TAF":
-                builder.setMessageType(MessageType.TAF);
-                break;
-
-            case "METAR":
-                builder.setMessageType(MessageType.METAR);
-                break;
-
-            case "SPECI":
-                builder.setMessageType(MessageType.SPECI);
-                break;
-
-            case "SIGMET":
-            case "TropicalCycloneSIGMET":
-            case "VolcanicAshSIGMET":
-                builder.setMessageType(MessageType.SIGMET);
-                break;
-
-            case "AIRMET":
-                builder.setMessageType(MessageType.AIRMET);
-                break;
-
-            case "TropicalCycloneAdvisory":
-                builder.setMessageType(MessageType.TROPICAL_CYCLONE_ADVISORY);
-                break;
-
-            case "VolcanicAshAdvisory":
-                builder.setMessageType(MessageType.VOLCANIC_ASH_ADVISORY);
-                break;
-
-            default:
-                retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                        "Unknown message type '" + messageType + "', unable to parse as " + "generic bulletin"));
-        }
     }
 
     @Override
