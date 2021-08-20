@@ -24,7 +24,6 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
-import fi.fmi.avi.converter.iwxxm.GenericAviationWeatherMessageScanner;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;

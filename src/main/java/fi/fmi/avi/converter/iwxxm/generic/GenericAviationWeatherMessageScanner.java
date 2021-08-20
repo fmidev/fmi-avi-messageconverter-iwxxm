@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm;
+package fi.fmi.avi.converter.iwxxm.generic;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;

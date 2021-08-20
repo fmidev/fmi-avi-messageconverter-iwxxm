@@ -2,8 +2,6 @@ package fi.fmi.avi.converter.iwxxm;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -18,6 +16,7 @@ import org.w3c.dom.NodeList;
 
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageScanner;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
@@ -25,7 +24,7 @@ import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
-public abstract class AbstractGenericAviationWeatherMessageScanner implements GenericAviationWeatherMessageScanner{
+public abstract class AbstractGenericAviationWeatherMessageScanner implements GenericAviationWeatherMessageScanner {
 
     protected static IssueList collectValidTime(final Element featureElement, final String selector, final XPath xpath,
             final GenericAviationWeatherMessageImpl.Builder builder) {
