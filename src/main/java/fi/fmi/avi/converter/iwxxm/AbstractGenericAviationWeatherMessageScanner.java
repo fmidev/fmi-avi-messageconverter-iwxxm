@@ -69,30 +69,25 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
     }
 
     protected static ZonedDateTime parseStartTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
-        XPathExpression expr = xpath.compile("./gml:TimePeriod/gml:beginPosition");
+        return parseTimeInstant(timeElement, xpath, "./gml:TimePeriod/gml:beginPosition", "./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition");
+    }
+
+    protected static ZonedDateTime parseEndTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
+        return parseTimeInstant(timeElement, xpath, "./gml:TimePeriod/gml:endPosition", "./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition");
+    }
+
+    private static ZonedDateTime parseTimeInstant(final Element timeElement, final XPath xpath, String checkTimePositionExpression,
+            String timePositionExpression) throws XPathExpressionException {
+        XPathExpression expr = xpath.compile(checkTimePositionExpression);
         String timeStr = expr.evaluate(timeElement);
         if (timeStr.isEmpty()) {
-            expr = xpath.compile("./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition");
+            expr = xpath.compile(timePositionExpression);
             timeStr = expr.evaluate(timeElement);
         }
         if (!timeStr.isEmpty()) {
             return ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         } else {
             throw new IllegalArgumentException("No valid time begin found from element " + timeElement.getTagName());
-        }
-    }
-
-    protected static ZonedDateTime parseEndTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
-        XPathExpression expr = xpath.compile("./gml:TimePeriod/gml:endPosition");
-        String timeStr = expr.evaluate(timeElement);
-        if (timeStr.isEmpty()) {
-            expr = xpath.compile("./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition");
-            timeStr = expr.evaluate(timeElement);
-        }
-        if (!timeStr.isEmpty()) {
-            return ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-        } else {
-            throw new IllegalArgumentException("No valid time end found from element " + timeElement.getTagName());
         }
     }
 
