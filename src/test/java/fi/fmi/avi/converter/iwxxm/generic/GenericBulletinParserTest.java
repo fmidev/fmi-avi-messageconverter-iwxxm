@@ -58,7 +58,6 @@ public class GenericBulletinParserTest {
         }
     }
 
-    //TODO:FIX
    @Test
     public void testScanner() throws Exception {
         final BulletinProperties properties = new BulletinProperties();
