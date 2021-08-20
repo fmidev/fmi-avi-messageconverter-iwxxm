@@ -1,5 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.conf;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.w3c.dom.Document;
@@ -14,7 +15,7 @@ import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 public class IWXXMGenericAviationWeatherMessageConverter {
 
     @Bean
-    public IWXXMGenericBulletinScanner iwxxmGenericBulletinScanner(final GenericAviationWeatherMessageParser<Document> messageParser) {
+    public IWXXMGenericBulletinScanner iwxxmGenericBulletinScanner(@Qualifier("genericAviationWeatherMessageIWXXMDOMParser") final GenericAviationWeatherMessageParser<Document> messageParser) {
         return new IWXXMGenericBulletinScanner(messageParser);
     }
 
@@ -30,6 +31,7 @@ public class IWXXMGenericAviationWeatherMessageConverter {
     }
 
     @Bean
+    @Qualifier("genericAviationWeatherMessageIWXXMDOMParser")
     public GenericAviationWeatherMessageParser<Document> genericAviationWeatherMessageIWXXMDOMParser() {
         return new GenericAviationWeatherMessageParser.FromDOM();
     }
