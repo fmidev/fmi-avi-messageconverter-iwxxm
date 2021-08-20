@@ -9,9 +9,9 @@ import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
 public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
-    final GenericAviationWeatherMessageParser messageParser;
+    final GenericAviationWeatherMessageParser<?> messageParser;
 
-    public IWXXMGenericBulletinScanner(final GenericAviationWeatherMessageParser messageParser) {
+    public IWXXMGenericBulletinScanner(final GenericAviationWeatherMessageParser<?> messageParser) {
         this.messageParser = messageParser;
     }
 
