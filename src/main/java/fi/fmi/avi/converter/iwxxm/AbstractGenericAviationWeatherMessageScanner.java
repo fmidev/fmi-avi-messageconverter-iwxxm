@@ -51,52 +51,22 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         return retval;
     }
 
-    protected static void parseAerodromeInfo(final Element featureElement, final XPathExpression timeSliceExpretion, final XPath xpath,
+    protected static void parseAerodromeDesignator(final Element featureElement, final XPathExpression timeSliceExpretion, final XPath xpath,
             final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues, final String status) throws XPathExpressionException {
         final NodeList nodes = (NodeList) timeSliceExpretion.evaluate(featureElement, XPathConstants.NODESET);
         if (nodes.getLength() == 1) {
-            Optional<Aerodrome> aerodrome = parseAerodromeInfo((Element) nodes.item(0), xpath, issues);
-            if (aerodrome.isPresent()) {
-                builder.putLocationIndicators(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, aerodrome.get().getDesignator());
+            XPathExpression expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:designator");
+            final String designator = expr.evaluate(nodes.item(0));
+
+            if (designator == null || designator.isEmpty()) {
+                issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No aerodrome designator in AirportHeliportTimeSlice");
             } else {
-                issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info could not be parsed for TAF of status " + status);
+                builder.putLocationIndicators(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, designator);
             }
+
         } else {
             issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info not available for TAF of status " + status);
         }
-    }
-
-    protected static Optional<Aerodrome> parseAerodromeInfo(final Element airportHeliport, final XPath xpath, final IssueList issues)
-            throws XPathExpressionException {
-        Optional<Aerodrome> retval = Optional.empty();
-        XPathExpression expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:designator");
-        final String designator = expr.evaluate(airportHeliport);
-
-        if (designator.isEmpty()) {
-            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No aerodrome designator in AirportHeliportTimeSlice");
-            return retval;
-        }
-
-        expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:locationIndicatorICAO");
-        final String locationIndicatorICAO = expr.evaluate(airportHeliport);
-
-        expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:designatorIATA");
-        final String designatorIATA = expr.evaluate(airportHeliport);
-
-        expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:name");
-        final String name = expr.evaluate(airportHeliport);
-
-        //NOTE: the ARP field elevation of the Aerodrome info is intentionally not parsed here, it's currently not needed in the use cases,
-        // and would require more than a few lines of code.
-
-        retval = Optional.of(AerodromeImpl.builder()//
-                .setDesignator(designator)//
-                .setLocationIndicatorICAO(Optional.ofNullable(locationIndicatorICAO))//
-                .setName(Optional.ofNullable(name))//
-                .setDesignatorIATA(Optional.ofNullable(designatorIATA))//
-                .build());
-
-        return retval;
     }
 
     protected static ZonedDateTime parseStartTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {

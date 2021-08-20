@@ -48,7 +48,7 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
                     "./iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/" + "aixm:AirportHeliport");
         }
         if (expr != null) {
-            parseAerodromeInfo(featureElement, expr, xpath, builder, retval, status);
+            parseAerodromeDesignator(featureElement, expr, xpath, builder, retval, status);
         }
 
         return retval;

@@ -34,7 +34,7 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         }
 
         expr = xpath.compile("@isCancelReport");
-        final boolean isCancelMessage = (expr.evaluate(featureElement) != null && expr.evaluate(featureElement).toLowerCase().equals("true"));
+        final boolean isCancelMessage = (expr.evaluate(featureElement) != null && expr.evaluate(featureElement).equalsIgnoreCase("true"));
         if (isCancelMessage) {
             collectValidTime(featureElement, "./iwxxm30:cancelledReportValidPeriod", xpath, builder);
         } else {
@@ -51,7 +51,7 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
 
         //target aerodrome
         expr = xpath.compile("./iwxxm30:aerodrome/aixm:AirportHeliport");
-        parseAerodromeInfo(featureElement, expr, xpath, builder, retval, status);
+        parseAerodromeDesignator(featureElement, expr, xpath, builder, retval, status);
 
         return retval;
     }
