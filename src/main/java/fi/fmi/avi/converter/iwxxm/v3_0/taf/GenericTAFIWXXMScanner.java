@@ -1,10 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.taf;
 
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
@@ -14,7 +10,6 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.AbstractGenericAviationWeatherMessageScanner;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
-import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessageScanner {
