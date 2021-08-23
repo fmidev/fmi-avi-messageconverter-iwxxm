@@ -24,18 +24,10 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         builder.setMessageType(MessageType.TAF);
         final IssueList retval = new IssueList();
         //Issue time:
-        final String timeStr;
-        XPathExpression expr = xpath.compile("./iwxxm30:issueTime/gml:TimeInstant/gml:timePosition");
-        timeStr = expr.evaluate(featureElement);
-        if (!timeStr.isEmpty()) {
-            builder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-        } else {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM TAF");
-        }
+        collectIssueTime(xpath, "./iwxxm30:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
-        expr = xpath.compile("@isCancelReport");
-        final boolean isCancelMessage = (expr.evaluate(featureElement) != null && expr.evaluate(featureElement).equalsIgnoreCase("true"));
-        if (isCancelMessage) {
+        final String isCancelMessage = evaluateString(xpath, "@isCancelReport", featureElement);
+        if (isCancelMessage != null && isCancelMessage.equalsIgnoreCase("true")) {
             collectValidTime(featureElement, "./iwxxm30:cancelledReportValidPeriod", xpath, builder);
         } else {
             collectValidTime(featureElement, "./iwxxm30:validPeriod", xpath, builder);

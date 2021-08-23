@@ -41,13 +41,7 @@ public class GenericSIGMETIWXXMScanner extends AbstractGenericAviationWeatherMes
         builder.setMessageType(MessageType.SIGMET);
         final IssueList retval = new IssueList();
         //Issue time:
-        XPathExpression expr = xpath.compile("./iwxxm:analysis/om:OM_Observation/om:resultTime/gml:TimeInstant/gml:timePosition");
-        final String timeStr = expr.evaluate(featureElement);
-        if (!timeStr.isEmpty()) {
-            builder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-        } else {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM SIGMET");
-        }
+        collectIssueTime(xpath,"./iwxxm:analysis/om:OM_Observation/om:resultTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
         collectLocationIndicators(featureElement, xpath, builder, SIGMET_21_LOCATION_INDICATOR_EXPRESSIONS, retval);
 

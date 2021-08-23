@@ -15,6 +15,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import fi.fmi.avi.converter.ConversionIssue;
+import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageScanner;
 import fi.fmi.avi.model.Aerodrome;
@@ -97,6 +98,16 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
             } else {
                 builder.putLocationIndicators(entry.getKey(), locationIndicator);
             }
+        }
+    }
+
+    protected static void collectIssueTime(XPath xpath, String expression, Element element, GenericAviationWeatherMessageImpl.Builder builder,
+            IssueList issues) throws XPathExpressionException{
+        final String timeStr = evaluateString(xpath, expression, element);
+        if (!timeStr.isEmpty()) {
+            builder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+        } else {
+            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM message"));
         }
     }
 
