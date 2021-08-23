@@ -41,8 +41,7 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
             collectValidTime(featureElement, "./iwxxm30:validPeriod", xpath, builder);
         }
 
-        expr = xpath.compile("@reportStatus");
-        final String status = expr.evaluate(featureElement);
+        final String status = evaluateString(xpath, "@reportStatus", featureElement);
         try {
             builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(status));
         } catch (IllegalArgumentException e) {
@@ -50,8 +49,7 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         }
 
         //target aerodrome
-        expr = xpath.compile("./iwxxm30:aerodrome/aixm:AirportHeliport");
-        parseAerodromeDesignator(featureElement, expr, xpath, builder, retval, status);
+        parseAerodromeDesignator(featureElement, "./iwxxm30:aerodrome/aixm:AirportHeliport", xpath, builder, retval, status);
 
         return retval;
     }

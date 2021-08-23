@@ -31,8 +31,7 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         final IssueList retval = new IssueList();
         try {
             ZonedDateTime startTime = null, endTime = null;
-            final XPathExpression expr = xpath.compile(selector);
-            final NodeList results = (NodeList) expr.evaluate(featureElement, XPathConstants.NODESET);
+            final NodeList results = evaluateNodeSet(xpath, selector, featureElement);
             if (results.getLength() == 1) {
                 final Element validTimeElement = (Element) results.item(0);
                 startTime = parseStartTime(validTimeElement, xpath);
@@ -50,12 +49,11 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         return retval;
     }
 
-    protected static void parseAerodromeDesignator(final Element featureElement, final XPathExpression timeSliceExpretion, final XPath xpath,
+    protected static void parseAerodromeDesignator(final Element featureElement, final String timeSliceExpression, final XPath xpath,
             final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues, final String status) throws XPathExpressionException {
-        final NodeList nodes = (NodeList) timeSliceExpretion.evaluate(featureElement, XPathConstants.NODESET);
+        final NodeList nodes = evaluateNodeSet(xpath, timeSliceExpression, featureElement);
         if (nodes.getLength() == 1) {
-            XPathExpression expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:designator");
-            final String designator = expr.evaluate(nodes.item(0));
+            final String designator = evaluateString(xpath, "./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:designator", (Element) nodes.item(0));
 
             if (designator == null || designator.isEmpty()) {
                 issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No aerodrome designator in AirportHeliportTimeSlice");
@@ -78,11 +76,9 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
 
     private static ZonedDateTime parseTimeInstant(final Element timeElement, final XPath xpath, String checkTimePositionExpression,
             String timePositionExpression) throws XPathExpressionException {
-        XPathExpression expr = xpath.compile(checkTimePositionExpression);
-        String timeStr = expr.evaluate(timeElement);
+        String timeStr = evaluateString(xpath, checkTimePositionExpression, timeElement);
         if (timeStr.isEmpty()) {
-            expr = xpath.compile(timePositionExpression);
-            timeStr = expr.evaluate(timeElement);
+            timeStr = evaluateString(xpath, timePositionExpression, timeElement);
         }
         if (!timeStr.isEmpty()) {
             return ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
@@ -104,4 +100,11 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         }
     }
 
+    protected static String evaluateString(final XPath xpath, final String expression, final Element element) throws XPathExpressionException {
+        return xpath.compile(expression).evaluate(element);
+    }
+
+    protected static NodeList evaluateNodeSet(final XPath xpath, final String expression, final Element element) throws XPathExpressionException {
+        return (NodeList) xpath.compile(expression).evaluate(element, XPathConstants.NODESET);
+    }
 }

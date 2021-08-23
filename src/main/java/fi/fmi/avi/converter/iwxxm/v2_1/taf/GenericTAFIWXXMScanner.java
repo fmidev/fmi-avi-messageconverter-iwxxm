@@ -32,8 +32,7 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
             retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM TAF");
         }
 
-        expr = xpath.compile("@status");
-        final String status = expr.evaluate(featureElement);
+        final String status = evaluateString(xpath, "@status", featureElement);
 
         if (!"MISSING".equals(status)) {
             //validity time
@@ -42,14 +41,11 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
 
         //target aerodrome
         if ("CANCELLATION".equals(status)) {
-            expr = xpath.compile("./iwxxm:previousReportAerodrome/aixm:AirportHeliport");
+            parseAerodromeDesignator(featureElement, "./iwxxm:previousReportAerodrome/aixm:AirportHeliport", xpath, builder, retval, status);
         } else {
-            expr = xpath.compile(
-                    "./iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/" + "aixm:AirportHeliport");
+            parseAerodromeDesignator(featureElement, "./iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm:AirportHeliport", xpath, builder, retval, status);
         }
-        if (expr != null) {
-            parseAerodromeDesignator(featureElement, expr, xpath, builder, retval, status);
-        }
+
 
         return retval;
     }
