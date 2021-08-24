@@ -1,5 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.taf;
 
+import java.util.Optional;
+
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 
@@ -21,22 +23,22 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         //Issue time:
         collectIssueTime(xpath, "./iwxxm30:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
-        final String isCancelMessage = evaluateString(xpath, "@isCancelReport", featureElement);
-        if (isCancelMessage != null && isCancelMessage.equalsIgnoreCase("true")) {
+        final Optional<String> isCancelMessage = evaluateString(featureElement, xpath, "@isCancelReport");
+        if (isCancelMessage.isPresent() && isCancelMessage.get().equalsIgnoreCase("true")) {
             collectValidTime(featureElement, "./iwxxm30:cancelledReportValidPeriod", xpath, builder);
         } else {
             collectValidTime(featureElement, "./iwxxm30:validPeriod", xpath, builder);
         }
 
-        final String status = evaluateString(xpath, "@reportStatus", featureElement);
+        final Optional<String> status = evaluateString(featureElement, xpath, "@reportStatus");
         try {
-            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(status));
+            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(status.get()));
         } catch (IllegalArgumentException e) {
             retval.add(ConversionIssue.Severity.ERROR, "The report status could not be parsed");
         }
 
         //target aerodrome
-        parseAerodromeDesignator(featureElement, "./iwxxm30:aerodrome/aixm:AirportHeliport", xpath, builder, retval, status);
+        parseAerodromeDesignator(featureElement, "./iwxxm30:aerodrome/aixm:AirportHeliport", xpath, builder, retval, status.get());
 
         return retval;
     }

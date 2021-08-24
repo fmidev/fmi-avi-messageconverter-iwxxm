@@ -4,6 +4,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -27,7 +29,7 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         final IssueList retval = new IssueList();
         try {
             ZonedDateTime startTime = null, endTime = null;
-            final NodeList results = evaluateNodeSet(xpath, selector, featureElement);
+            final NodeList results = evaluateNodeSet(featureElement, xpath, selector);
             if (results.getLength() == 1) {
                 final Element validTimeElement = (Element) results.item(0);
                 startTime = parseStartTime(validTimeElement, xpath);
@@ -47,14 +49,15 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
 
     protected static void parseAerodromeDesignator(final Element featureElement, final String timeSliceExpression, final XPath xpath,
             final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues, final String status) throws XPathExpressionException {
-        final NodeList nodes = evaluateNodeSet(xpath, timeSliceExpression, featureElement);
+        final NodeList nodes = evaluateNodeSet(featureElement, xpath, timeSliceExpression);
         if (nodes.getLength() == 1) {
-            final String designator = evaluateString(xpath, "./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:designator", (Element) nodes.item(0));
+            final Optional<String> designator = evaluateString((Element) nodes.item(0), xpath,
+                    "./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm" + ":designator");
 
-            if (designator == null || designator.isEmpty()) {
-                issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No aerodrome designator in AirportHeliportTimeSlice");
+            if (designator.isPresent()) {
+                builder.putLocationIndicators(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, designator.get());
             } else {
-                builder.putLocationIndicators(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, designator);
+                issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No aerodrome designator in AirportHeliportTimeSlice");
             }
 
         } else {
@@ -63,24 +66,19 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
     }
 
     protected static ZonedDateTime parseStartTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
-        return parseTimeInstant(timeElement, xpath, "./gml:TimePeriod/gml:beginPosition", "./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition");
+        return parseTimeInstant(timeElement, xpath, "./gml:TimePeriod/gml:beginPosition");
     }
 
     protected static ZonedDateTime parseEndTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
-        return parseTimeInstant(timeElement, xpath, "./gml:TimePeriod/gml:endPosition", "./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition");
+        return parseTimeInstant(timeElement, xpath, "./gml:TimePeriod/gml:endPosition");
     }
 
-    private static ZonedDateTime parseTimeInstant(final Element timeElement, final XPath xpath, String checkTimePositionExpression,
-            String timePositionExpression) throws XPathExpressionException {
-        String timeStr = evaluateString(xpath, checkTimePositionExpression, timeElement);
-        if (timeStr.isEmpty()) {
-            timeStr = evaluateString(xpath, timePositionExpression, timeElement);
+    private static ZonedDateTime parseTimeInstant(final Element timeElement, final XPath xpath, String TimePositionExpression) throws XPathExpressionException {
+        Optional<ZonedDateTime> time = evaluateFirstSuccessfulZonedDateTime(timeElement, xpath, TimePositionExpression);
+        if (time.isPresent()) {
+            return time.get();
         }
-        if (!timeStr.isEmpty()) {
-            return ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-        } else {
-            throw new IllegalArgumentException("No valid time begin found from element " + timeElement.getTagName());
-        }
+        throw new IllegalArgumentException("No valid time begin found from element " + timeElement.getTagName());
     }
 
     protected static void collectLocationIndicators(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder,
@@ -98,19 +96,41 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
 
     protected static void collectIssueTime(XPath xpath, String expression, Element element, GenericAviationWeatherMessageImpl.Builder builder, IssueList issues)
             throws XPathExpressionException {
-        final String timeStr = evaluateString(xpath, expression, element);
-        if (!timeStr.isEmpty()) {
-            builder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+        Optional<ZonedDateTime> time = evaluateFirstSuccessfulZonedDateTime(element, xpath, expression);
+        if (time.isPresent()) {
+            builder.setIssueTime(PartialOrCompleteTimeInstant.of(time.get()));
         } else {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM message"));
         }
     }
 
-    protected static String evaluateString(final XPath xpath, final String expression, final Element element) throws XPathExpressionException {
-        return xpath.compile(expression).evaluate(element);
+    protected static Optional<String> evaluateString(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
+        return evaluateFirstSuccessful(element, xpath, str -> str.isEmpty() ? null : str, expression);
     }
 
-    protected static NodeList evaluateNodeSet(final XPath xpath, final String expression, final Element element) throws XPathExpressionException {
+    protected static Optional<ZonedDateTime> evaluateFirstSuccessfulZonedDateTime(final Element element, final XPath xPath, final String... expressions)
+            throws XPathExpressionException {
+        return evaluateFirstSuccessful(element, xPath, str -> str.isEmpty() ? null : ZonedDateTime.parse(str, DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                expressions);
+    }
+
+    protected static <T> Optional<T> evaluateFirstSuccessful(final Element element, final XPath xPath, final Function<String, T> finisher,
+            final String... expressions) throws XPathExpressionException {
+        for (final String expression : expressions) {
+            final Optional<T> result = evaluate(element, xPath, expression, finisher);
+            if (result.isPresent()) {
+                return result;
+            }
+        }
+        return Optional.empty();
+    }
+
+    protected static <T> Optional<T> evaluate(final Element element, final XPath xPath, final String expression, final Function<String, T> finisher)
+            throws XPathExpressionException {
+        return Optional.ofNullable(xPath.compile(expression).evaluate(element)).map(finisher);
+    }
+
+    protected static NodeList evaluateNodeSet(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
         return (NodeList) xpath.compile(expression).evaluate(element, XPathConstants.NODESET);
     }
 }
