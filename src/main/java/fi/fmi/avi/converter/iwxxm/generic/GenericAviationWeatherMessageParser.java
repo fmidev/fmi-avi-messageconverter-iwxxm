@@ -1,10 +1,13 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
 import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
@@ -28,7 +31,6 @@ import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
-import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWXXMParser<T, GenericAviationWeatherMessage> {
@@ -120,10 +122,33 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         }
     }
 
+    public static class FromElement extends GenericAviationWeatherMessageParser<Element> {
+        public FromElement(Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
+            super(scanners);
+        }
+
+        protected Document parseAsDom(final Element input) throws ConversionException {
+            final Document retval;
+            final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setNamespaceAware(true);
+            try {
+                documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
+                final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                Document doc = documentBuilder.newDocument();
+                doc.appendChild(doc.importNode(input, true));
+                retval = doc;
+            } catch (final RuntimeException | ParserConfigurationException e) {
+                throw new ConversionException("Error in parsing input to an XML document", e);
+            }
+            return retval;
+        }
+    }
+
     public static class FromDOM extends GenericAviationWeatherMessageParser<Document> {
         public FromDOM(Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
             super(scanners);
         }
+
         @Override
         protected Document parseAsDom(final Document input) {
             return input;
