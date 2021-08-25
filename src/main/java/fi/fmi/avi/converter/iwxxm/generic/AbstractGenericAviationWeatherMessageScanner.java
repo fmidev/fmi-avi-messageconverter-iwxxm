@@ -105,7 +105,7 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
     }
 
     protected static Optional<String> evaluateString(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
-        return evaluateFirstSuccessful(element, xpath, str -> str.isEmpty() ? null : str, expression);
+        return evaluate(element, xpath, expression, str -> str.isEmpty() ? null : str);
     }
 
     protected static Optional<ZonedDateTime> evaluateFirstSuccessfulZonedDateTime(final Element element, final XPath xPath, final String... expressions)
