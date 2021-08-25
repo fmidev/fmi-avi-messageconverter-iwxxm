@@ -32,7 +32,7 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
 
         final Optional<String> status = evaluateString(featureElement, xpath, "@reportStatus");
         try {
-            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(status.get()));
+            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(status.orElse("")));
         } catch (IllegalArgumentException e) {
             retval.add(ConversionIssue.Severity.ERROR, "The report status could not be parsed");
         }

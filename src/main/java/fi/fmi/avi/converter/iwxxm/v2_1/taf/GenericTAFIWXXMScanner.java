@@ -23,13 +23,13 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
 
         final Optional<String> status = evaluateString(featureElement, xpath, "@status");
 
-        if (!"MISSING".equals(status.get())) {
+        if (!"MISSING".equals(status.orElse(""))) {
             //validity time
             retval.addAll(collectValidTime(featureElement, "./iwxxm:validTime[1]", xpath, builder));
         }
 
         //target aerodrome
-        if ("CANCELLATION".equals(status.get())) {
+        if ("CANCELLATION".equals(status.orElse(""))) {
             parseAerodromeDesignator(featureElement, "./iwxxm:previousReportAerodrome/aixm:AirportHeliport", xpath, builder, retval, status.get());
         } else {
             parseAerodromeDesignator(featureElement,
