@@ -16,7 +16,6 @@ import org.w3c.dom.NodeList;
 
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageScanner;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -28,17 +27,18 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
             final GenericAviationWeatherMessageImpl.Builder builder) {
         final IssueList retval = new IssueList();
         try {
-            ZonedDateTime startTime = null, endTime = null;
             final NodeList results = evaluateNodeSet(featureElement, xpath, selector);
             if (results.getLength() == 1) {
                 final Element validTimeElement = (Element) results.item(0);
-                startTime = parseStartTime(validTimeElement, xpath);
-                endTime = parseEndTime(validTimeElement, xpath);
-            }
-            if (startTime != null && endTime != null) {
-                builder.setValidityTime(PartialOrCompleteTimePeriod.builder()//
-                        .setStartTime(PartialOrCompleteTimeInstant.of(startTime))//
-                        .setEndTime(PartialOrCompleteTimeInstant.of(endTime))//
+                final ZonedDateTime startTime = evaluateFirstSuccessfulZonedDateTime(validTimeElement, xpath, "./gml:TimePeriod/gml:beginPosition",
+                        "./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition")
+                        .orElseThrow(() -> new IllegalArgumentException("No valid time start found from element " + validTimeElement.getTagName()));
+                final ZonedDateTime endTime = evaluateFirstSuccessfulZonedDateTime(validTimeElement, xpath, "./gml:TimePeriod/gml:endPosition",
+                        "./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition")
+                        .orElseThrow(() -> new IllegalArgumentException("No valid time end found from element " + validTimeElement.getTagName()));
+                builder.setValidityTime(PartialOrCompleteTimePeriod.builder()
+                        .setStartTime(PartialOrCompleteTimeInstant.of(startTime))
+                        .setEndTime(PartialOrCompleteTimeInstant.of(endTime))
                         .build());
             }
         } catch (final Exception ex) {
@@ -63,22 +63,6 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         } else {
             issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info not available for TAF of status " + status);
         }
-    }
-
-    protected static ZonedDateTime parseStartTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
-        return parseTimeInstant(timeElement, xpath, "./gml:TimePeriod/gml:beginPosition");
-    }
-
-    protected static ZonedDateTime parseEndTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
-        return parseTimeInstant(timeElement, xpath, "./gml:TimePeriod/gml:endPosition");
-    }
-
-    private static ZonedDateTime parseTimeInstant(final Element timeElement, final XPath xpath, String TimePositionExpression) throws XPathExpressionException {
-        Optional<ZonedDateTime> time = evaluateFirstSuccessfulZonedDateTime(timeElement, xpath, TimePositionExpression);
-        if (time.isPresent()) {
-            return time.get();
-        }
-        throw new IllegalArgumentException("No valid time begin found from element " + timeElement.getTagName());
     }
 
     protected static void collectLocationIndicators(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder,
