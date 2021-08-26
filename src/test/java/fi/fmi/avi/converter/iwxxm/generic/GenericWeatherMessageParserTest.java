@@ -153,7 +153,6 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
     }
 
-    //TODO: add assertions
     @Test
     public void metar21DOMTest() throws Exception {
         String fileName = "iwxxm-21-metar.xml";
@@ -165,8 +164,11 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
                 IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
 
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertEquals(ConversionResult.Status.WITH_ERRORS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
+
+        assertEquals(1, result.getConversionIssues().size());
+        assertTrue(result.getConversionIssues().get(0).getMessage().equals("The report status could not be parsed"));
 
         GenericAviationWeatherMessage message = result.getConvertedMessage().get();
 
@@ -187,7 +189,6 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
 
     }
 
-    //TODO: add assertions
     @Test
     public void metar30DOMTest() throws Exception {
         String fileName = "iwxxm-30-metar.xml";
