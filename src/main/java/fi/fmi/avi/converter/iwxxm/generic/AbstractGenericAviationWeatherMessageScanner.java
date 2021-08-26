@@ -90,7 +90,7 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
 
     protected static void collectTranslationStatus(Element featureElement, XPath xpath,
             GenericAviationWeatherMessageImpl.Builder builder) throws  XPathExpressionException {
-        evaluateString(featureElement, xpath, "@translatedBulletinID").map(str -> builder.setTranslated(str != null && !str.isEmpty()));
+        builder.setTranslated(evaluateString(featureElement, xpath, "@translatedBulletinID").isPresent());
     }
 
     protected static Optional<String> evaluateString(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
