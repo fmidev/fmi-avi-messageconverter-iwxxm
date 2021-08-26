@@ -20,18 +20,17 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
             throws XPathExpressionException {
         builder.setMessageType(MessageType.TAF);
         final IssueList retval = new IssueList();
-        collectTranslationStatus(featureElement, xpath, builder);
         //Issue time:
         collectIssueTime(xpath, "./iwxxm30:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
-        final Optional<String> isCancelMessage = evaluateString(featureElement, xpath, "@isCancelReport");
+        final Optional<String> isCancelMessage = evaluateNonEmptyString(featureElement, xpath, "@isCancelReport");
         if (isCancelMessage.isPresent() && isCancelMessage.get().equalsIgnoreCase("true")) {
             collectValidTime(featureElement, "./iwxxm30:cancelledReportValidPeriod", xpath, builder);
         } else {
             collectValidTime(featureElement, "./iwxxm30:validPeriod", xpath, builder);
         }
 
-        final Optional<String> status = evaluateString(featureElement, xpath, "@reportStatus");
+        final Optional<String> status = evaluateNonEmptyString(featureElement, xpath, "@reportStatus");
         try {
             builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(status.orElse("")));
         } catch (IllegalArgumentException e) {

@@ -51,7 +51,7 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
             final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues, final String status) throws XPathExpressionException {
         final NodeList nodes = evaluateNodeSet(featureElement, xpath, timeSliceExpression);
         if (nodes.getLength() == 1) {
-            final Optional<String> designator = evaluateString((Element) nodes.item(0), xpath,
+            final Optional<String> designator = evaluateNonEmptyString((Element) nodes.item(0), xpath,
                     "./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm" + ":designator");
 
             if (designator.isPresent()) {
@@ -88,12 +88,7 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         }
     }
 
-    protected static void collectTranslationStatus(Element featureElement, XPath xpath,
-            GenericAviationWeatherMessageImpl.Builder builder) throws  XPathExpressionException {
-        builder.setTranslated(evaluateString(featureElement, xpath, "@translatedBulletinID").isPresent());
-    }
-
-    protected static Optional<String> evaluateString(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
+    protected static Optional<String> evaluateNonEmptyString(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
         return evaluate(element, xpath, expression, str -> str.isEmpty() ? null : str);
     }
 

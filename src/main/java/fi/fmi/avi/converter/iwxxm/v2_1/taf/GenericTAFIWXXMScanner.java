@@ -19,11 +19,10 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         builder.setMessageType(MessageType.TAF);
         final IssueList retval = new IssueList();
 
-        collectTranslationStatus(featureElement, xpath, builder);
         //Issue time:
         collectIssueTime(xpath, "./iwxxm:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
-        final Optional<String> status = evaluateString(featureElement, xpath, "@status");
+        final Optional<String> status = evaluateNonEmptyString(featureElement, xpath, "@status");
 
         if (!"MISSING".equals(status.orElse(""))) {
             //validity time

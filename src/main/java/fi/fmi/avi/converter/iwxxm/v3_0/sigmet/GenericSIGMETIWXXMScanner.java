@@ -34,7 +34,6 @@ public class GenericSIGMETIWXXMScanner extends AbstractGenericAviationWeatherMes
             throws XPathExpressionException {
         builder.setMessageType(MessageType.SIGMET);
         final IssueList retval = new IssueList();
-        collectTranslationStatus(featureElement, xpath, builder);
         //Issue time:
         collectIssueTime(xpath, "./iwxxm30:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
