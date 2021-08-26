@@ -88,6 +88,11 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         }
     }
 
+    protected static void collectTranslationStatus(Element featureElement, XPath xpath,
+            GenericAviationWeatherMessageImpl.Builder builder) throws  XPathExpressionException {
+        evaluateString(featureElement, xpath, "@translatedBulletinID").map(str -> builder.setTranslated(str != null && !str.isEmpty()));
+    }
+
     protected static Optional<String> evaluateString(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
         return evaluate(element, xpath, expression, str -> str.isEmpty() ? null : str);
     }
