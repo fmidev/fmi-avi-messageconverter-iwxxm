@@ -7,10 +7,8 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
 
-import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
-import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
@@ -30,15 +28,11 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
             collectValidTime(featureElement, "./iwxxm30:validPeriod", xpath, builder);
         }
 
-        final Optional<String> status = evaluateString(featureElement, xpath, "@reportStatus");
-        try {
-            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(status.orElse("")));
-        } catch (IllegalArgumentException e) {
-            retval.add(ConversionIssue.Severity.ERROR, "The report status could not be parsed");
-        }
+        //final Optional<String> status = evaluateString(featureElement, xpath, "@reportStatus");
+        parseReportStatus(featureElement, xpath, "@reportStatus", builder, retval);
 
         //target aerodrome
-        parseAerodromeDesignator(featureElement, "./iwxxm30:aerodrome/aixm:AirportHeliport", xpath, builder, retval, status.get());
+        parseAerodromeDesignator(featureElement, "./iwxxm30:aerodrome/aixm:AirportHeliport", xpath, builder, retval);
 
         return retval;
     }
