@@ -16,6 +16,7 @@ import org.w3c.dom.NodeList;
 
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -31,11 +32,11 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
             if (results.getLength() == 1) {
                 final Element validTimeElement = (Element) results.item(0);
                 final ZonedDateTime startTime = evaluateFirstSuccessfulZonedDateTime(validTimeElement, xpath, "./gml:TimePeriod/gml:beginPosition",
-                        "./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition")
-                        .orElseThrow(() -> new IllegalArgumentException("No valid time start found from element " + validTimeElement.getTagName()));
+                        "./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition").orElseThrow(
+                        () -> new IllegalArgumentException("No valid time start found from element " + validTimeElement.getTagName()));
                 final ZonedDateTime endTime = evaluateFirstSuccessfulZonedDateTime(validTimeElement, xpath, "./gml:TimePeriod/gml:endPosition",
-                        "./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition")
-                        .orElseThrow(() -> new IllegalArgumentException("No valid time end found from element " + validTimeElement.getTagName()));
+                        "./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition").orElseThrow(
+                        () -> new IllegalArgumentException("No valid time end found from element " + validTimeElement.getTagName()));
                 builder.setValidityTime(PartialOrCompleteTimePeriod.builder()
                         .setStartTime(PartialOrCompleteTimeInstant.of(startTime))
                         .setEndTime(PartialOrCompleteTimeInstant.of(endTime))
@@ -48,7 +49,7 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
     }
 
     protected static void parseAerodromeDesignator(final Element featureElement, final String timeSliceExpression, final XPath xpath,
-            final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues, final String status) throws XPathExpressionException {
+            final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues) throws XPathExpressionException {
         final NodeList nodes = evaluateNodeSet(featureElement, xpath, timeSliceExpression);
         if (nodes.getLength() == 1) {
             final Optional<String> designator = evaluateString((Element) nodes.item(0), xpath,
@@ -61,7 +62,8 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
             }
 
         } else {
-            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info not available for TAF of status " + status);
+            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                    "Aerodrome info not available for TAF of status " + builder.getReportStatus());
         }
     }
 
@@ -85,6 +87,15 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
             builder.setIssueTime(PartialOrCompleteTimeInstant.of(time.get()));
         } else {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM message"));
+        }
+    }
+
+    protected static void parseReportStatus(final Element element, final XPath xpath, final String expression,
+            final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues) throws XPathExpressionException {
+        try {
+            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(evaluateString(element, xpath, expression).orElse("")));
+        } catch (IllegalArgumentException e) {
+            issues.add(ConversionIssue.Severity.ERROR, "The report status could not be parsed");
         }
     }
 
