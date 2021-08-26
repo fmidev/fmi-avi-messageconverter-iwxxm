@@ -18,6 +18,8 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
             throws XPathExpressionException {
         builder.setMessageType(MessageType.TAF);
         final IssueList retval = new IssueList();
+
+        collectTranslationStatus(featureElement, xpath, builder);
         //Issue time:
         collectIssueTime(xpath, "./iwxxm:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
