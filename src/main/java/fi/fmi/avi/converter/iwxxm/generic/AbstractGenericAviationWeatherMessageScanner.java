@@ -16,7 +16,6 @@ import org.w3c.dom.NodeList;
 
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -90,16 +89,8 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         }
     }
 
-    protected static void parseReportStatus(final Element element, final XPath xpath, final String expression,
-            final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues) throws XPathExpressionException {
-        try {
-            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(evaluateNonEmptyString(element, xpath, expression).orElse("")));
-        } catch (IllegalArgumentException e) {
-            issues.add(ConversionIssue.Severity.ERROR, "The report status could not be parsed");
-        }
-    }
-
-    protected static Optional<String> evaluateNonEmptyString(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
+    protected static Optional<String> evaluateNonEmptyString(final Element element, final XPath xpath, final String expression)
+            throws XPathExpressionException {
         return evaluate(element, xpath, expression, str -> str.isEmpty() ? null : str);
     }
 

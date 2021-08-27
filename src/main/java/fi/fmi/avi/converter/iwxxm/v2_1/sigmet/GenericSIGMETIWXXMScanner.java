@@ -36,7 +36,6 @@ public class GenericSIGMETIWXXMScanner extends AbstractGenericAviationWeatherMes
         builder.setMessageType(MessageType.SIGMET);
         final IssueList retval = new IssueList();
 
-        parseReportStatus(featureElement, xpath, "@status", builder, retval);
         //Issue time:
         collectIssueTime(xpath, "./iwxxm:analysis/om:OM_Observation/om:resultTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 

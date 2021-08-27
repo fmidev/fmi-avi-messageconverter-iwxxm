@@ -28,9 +28,6 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
             collectValidTime(featureElement, "./iwxxm30:validPeriod", xpath, builder);
         }
 
-        //final Optional<String> status = evaluateString(featureElement, xpath, "@reportStatus");
-        parseReportStatus(featureElement, xpath, "@reportStatus", builder, retval);
-
         //target aerodrome
         parseAerodromeDesignator(featureElement, "./iwxxm30:aerodrome/aixm:AirportHeliport", xpath, builder, retval);
 

@@ -30,6 +30,7 @@ import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
+import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
@@ -39,6 +40,29 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
 
     public GenericAviationWeatherMessageParser(Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
         this.scanners = scanners;
+    }
+
+    protected static ConversionIssue collectReportStatus(final Element element, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
+            throws XPathExpressionException {
+        String expression;
+        if (element.getNamespaceURI().equals("http://icao.int/iwxxm/2.1")) {
+            expression = "@status";
+        } else if (element.getNamespaceURI().equals("http://icao.int/iwxxm/3.0")) {
+            expression = "@reportStatus";
+        } else {
+            return new ConversionIssue(ConversionIssue.Severity.ERROR, "Could not determine IWXXM version, so report status could not be parsed");
+        }
+        try {
+            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(xpath.compile(expression).evaluate(element)));
+        } catch (IllegalArgumentException e) {
+            return new ConversionIssue(ConversionIssue.Severity.ERROR, "The report status could not be parsed");
+        }
+        return null;
+    }
+
+    protected static void collectTranslationStatus(Element featureElement, XPath xpath, GenericAviationWeatherMessageImpl.Builder builder)
+            throws XPathExpressionException {
+        builder.setTranslated(!xpath.compile("@translatedBulletinID").evaluate(featureElement).isEmpty());
     }
 
     @Override
@@ -66,13 +90,14 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
 
         GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getNamespaceURI(), featureElement.getLocalName()));
         try {
+            collectTranslationStatus(featureElement, xpath, builder);
+            retval.addIssue(collectReportStatus(featureElement, xpath, builder));
             if (scanner == null) {
                 retval.addIssue(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
                         "Unknown message type '" + featureElement.getLocalName() + "', unable to parse as generic message"));
             } else {
                 retval.addIssue(scanner.collectMessage(featureElement, xpath, builder));
             }
-            collectTranslationStatus(featureElement, xpath, builder);
             try {
                 final StringWriter sw = new StringWriter();
                 final Result output = new StreamResult(sw);
@@ -97,11 +122,6 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
                     "Error in parsing content as a GenericAviationWeatherMessage", xpee));
         }
         return retval;
-    }
-
-    protected static void collectTranslationStatus(Element featureElement, XPath xpath,
-            GenericAviationWeatherMessageImpl.Builder builder) throws  XPathExpressionException {
-        builder.setTranslated(!xpath.compile("@translatedBulletinID").evaluate(featureElement).isEmpty());
     }
 
     @Override

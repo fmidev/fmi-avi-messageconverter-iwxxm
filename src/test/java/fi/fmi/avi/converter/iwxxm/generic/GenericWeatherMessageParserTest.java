@@ -5,7 +5,6 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -75,10 +74,16 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         assertEquals("2017-07-30T11:30Z",
                 message.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
 
-        assertEquals("2017-07-30T12:00Z",
-                message.getValidityTime().flatMap(PartialOrCompleteTimePeriod::getStartTime).flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
-        assertEquals("2017-07-31T12:00Z",
-                message.getValidityTime().flatMap(PartialOrCompleteTimePeriod::getEndTime).flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
+        assertEquals("2017-07-30T12:00Z", message.getValidityTime()
+                .flatMap(PartialOrCompleteTimePeriod::getStartTime)
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
+                .map(ZonedDateTime::toString)
+                .orElse(null));
+        assertEquals("2017-07-31T12:00Z", message.getValidityTime()
+                .flatMap(PartialOrCompleteTimePeriod::getEndTime)
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
+                .map(ZonedDateTime::toString)
+                .orElse(null));
 
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
                 GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "EETN");
@@ -159,7 +164,6 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
 
         assertEquals(expectedIndiactors, message.getLocationIndicators());
 
-
         XMLUnit.setIgnoreWhitespace(true);
         assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
     }
@@ -175,11 +179,8 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
                 IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
 
-        assertEquals(ConversionResult.Status.WITH_ERRORS, result.getStatus());
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
-
-        assertEquals(1, result.getConversionIssues().size());
-        assertTrue(result.getConversionIssues().get(0).getMessage().equals("The report status could not be parsed"));
 
         GenericAviationWeatherMessage message = result.getConvertedMessage().get();
 
@@ -193,7 +194,6 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = new HashMap<>();
         expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "YUDO");
         assertEquals(expectedIndiactors, message.getLocationIndicators());
-
 
         XMLUnit.setIgnoreWhitespace(true);
         assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
@@ -226,7 +226,6 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = new HashMap<>();
         expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "YUDO");
         assertEquals(expectedIndiactors, message.getLocationIndicators());
-
 
         XMLUnit.setIgnoreWhitespace(true);
         assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());

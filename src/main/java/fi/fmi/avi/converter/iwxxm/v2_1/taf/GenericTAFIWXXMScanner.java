@@ -20,8 +20,6 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         //Issue time:
         collectIssueTime(xpath, "./iwxxm:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
-        parseReportStatus(featureElement, xpath, "@status", builder, retval);
-
         if (!"MISSING".equals(builder.getReportStatus())) {
             //validity time
             retval.addAll(collectValidTime(featureElement, "./iwxxm:validTime[1]", xpath, builder));
