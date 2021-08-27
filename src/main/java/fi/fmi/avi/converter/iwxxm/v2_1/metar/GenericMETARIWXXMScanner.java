@@ -34,7 +34,6 @@ public class GenericMETARIWXXMScanner extends AbstractGenericAviationWeatherMess
         builder.setMessageType(MessageType.METAR);
         final IssueList retval = new IssueList();
         //Issue time:
-        //TODO: set translation after request is merged
         collectIssueTime(xpath, "./iwxxm:observation/om:OM_Observation/om:phenomenonTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
         collectLocationIndicators(featureElement, xpath, builder, METAR_21_LOCATION_INDICATOR_EXPRESSIONS, retval);
