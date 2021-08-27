@@ -63,7 +63,6 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         xpath.setNamespaceContext(new IWXXMNamespaceContext());
         final GenericAviationWeatherMessageImpl.Builder builder = GenericAviationWeatherMessageImpl.builder();
         builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
-        builder.setTranslated(false);
 
         GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getNamespaceURI(), featureElement.getLocalName()));
         try {
@@ -73,7 +72,7 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
             } else {
                 retval.addIssue(scanner.collectMessage(featureElement, xpath, builder));
             }
-
+            collectTranslationStatus(featureElement, xpath, builder);
             try {
                 final StringWriter sw = new StringWriter();
                 final Result output = new StreamResult(sw);
@@ -98,6 +97,11 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
                     "Error in parsing content as a GenericAviationWeatherMessage", xpee));
         }
         return retval;
+    }
+
+    protected static void collectTranslationStatus(Element featureElement, XPath xpath,
+            GenericAviationWeatherMessageImpl.Builder builder) throws  XPathExpressionException {
+        builder.setTranslated(!xpath.compile("@translatedBulletinID").evaluate(featureElement).isEmpty());
     }
 
     @Override

@@ -69,6 +69,7 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         GenericAviationWeatherMessage message = result.getConvertedMessage().get();
 
         assertEquals(MessageType.TAF.toString(), message.getMessageType().map(MessageType::toString).orElse(null));
+        assertEquals(true, message.isTranslated());
         assertEquals(GenericAviationWeatherMessage.Format.IWXXM, message.getMessageFormat());
         assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, message.getReportStatus());
         assertEquals("2017-07-30T11:30Z",
@@ -106,6 +107,7 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         GenericAviationWeatherMessage message = result.getConvertedMessage().get();
 
         assertEquals(MessageType.TAF.toString(), message.getMessageType().map(MessageType::toString).orElse(null));
+        assertEquals(true, message.isTranslated());
         assertEquals(GenericAviationWeatherMessage.Format.IWXXM, message.getMessageFormat());
         assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, message.getReportStatus());
         assertEquals("2017-07-30T11:30Z",
@@ -121,7 +123,15 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
 
     @Test
     public void sigmetDOMTest() throws Exception {
-        String fileName = "sigmet.xml";
+        assertSigmetXml("sigmet.xml");
+    }
+
+    @Test
+    public void sigmetWithEmptyBulletinIdTest() throws Exception {
+        assertSigmetXml("sigmet-with-empty-translationid.xml");
+    }
+
+    private void assertSigmetXml(String fileName) throws Exception {
         Document input = readDocument(GenericWeatherMessageParserTest.class, fileName);
 
         ConversionHints hints = new ConversionHints();
@@ -136,6 +146,7 @@ public class GenericWeatherMessageParserTest extends XMLTestCase implements IWXX
         GenericAviationWeatherMessage message = result.getConvertedMessage().get();
 
         assertEquals(MessageType.SIGMET.toString(), message.getMessageType().map(MessageType::toString).orElse(null));
+        assertEquals(false, message.isTranslated());
         assertEquals(GenericAviationWeatherMessage.Format.IWXXM, message.getMessageFormat());
         assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, message.getReportStatus());
         assertEquals("2012-08-25T16:00Z",

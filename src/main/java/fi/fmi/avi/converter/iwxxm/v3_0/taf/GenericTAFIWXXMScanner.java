@@ -21,7 +21,7 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         //Issue time:
         collectIssueTime(xpath, "./iwxxm30:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
-        final Optional<String> isCancelMessage = evaluateString(featureElement, xpath, "@isCancelReport");
+        final Optional<String> isCancelMessage = evaluateNonEmptyString(featureElement, xpath, "@isCancelReport");
         if (isCancelMessage.isPresent() && isCancelMessage.get().equalsIgnoreCase("true")) {
             collectValidTime(featureElement, "./iwxxm30:cancelledReportValidPeriod", xpath, builder);
         } else {
