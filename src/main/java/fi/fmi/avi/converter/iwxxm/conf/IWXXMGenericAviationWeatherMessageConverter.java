@@ -16,6 +16,7 @@ import fi.fmi.avi.converter.iwxxm.generic.GenericBulletinIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.generic.IWXXMGenericBulletinScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.sigmet.GenericSIGMETIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.taf.GenericTAFIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.v3_0.swx.GenericSpaceWeatherAdvisoryIWXXMScanner;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
 @Configuration
@@ -75,6 +76,8 @@ public class IWXXMGenericAviationWeatherMessageConverter {
         scannersMap.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/2.1", "TAF"), new GenericTAFIWXXMScanner());
         scannersMap.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/3.0", "TAF"),
                 new fi.fmi.avi.converter.iwxxm.v3_0.taf.GenericTAFIWXXMScanner());
+        scannersMap.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/3.0", "SpaceWeatherAdvisory"),
+                new GenericSpaceWeatherAdvisoryIWXXMScanner());
 
         return scannersMap;
     }
