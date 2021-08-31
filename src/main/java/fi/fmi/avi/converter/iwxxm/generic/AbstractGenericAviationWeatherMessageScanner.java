@@ -136,7 +136,7 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
             Optional<String> reportStatus = evaluateNonEmptyString(element, xpath, "@status");
 
             if(reportStatus.get().equals("cancel")) {
-                builder.is
+
             } else if(reportStatus.get().equals("missing")) {
 
             }
