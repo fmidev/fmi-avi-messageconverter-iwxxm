@@ -26,22 +26,21 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
+import fi.fmi.avi.converter.iwxxm.IWXXMSchemaResourceResolver;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
-public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWXXMParser<T, GenericAviationWeatherMessage> {
+public abstract class GenericAviationWeatherMessageParser<T> extends IWXXM30GenericAviationWeatherMessageParser<T> {
 
     private final Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners;
 
     public GenericAviationWeatherMessageParser(Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
         this.scanners = scanners;
     }
-
+/*
     protected static ConversionIssue collectReportStatus(final Element element, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {
         String expression;
@@ -58,7 +57,7 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
             return new ConversionIssue(ConversionIssue.Severity.ERROR, "The report status could not be parsed");
         }
         return null;
-    }
+    }*/
 
     protected static void collectTranslationStatus(Element featureElement, XPath xpath, GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {
@@ -91,7 +90,9 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getNamespaceURI(), featureElement.getLocalName()));
         try {
             collectTranslationStatus(featureElement, xpath, builder);
-            retval.addIssue(collectReportStatus(featureElement, xpath, builder));
+            if (featureElement.getNamespaceURI().equals(IWXXMSchemaResourceResolver.NamespaceLocation.IWXXM30.getNamespaceURI())) {
+                retval.addIssue(collectReportStatus(featureElement, xpath, builder));
+            }
             if (scanner == null) {
                 retval.addIssue(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
                         "Unknown message type '" + featureElement.getLocalName() + "', unable to parse as generic message"));

@@ -33,6 +33,7 @@ public class GenericMETARIWXXMScanner extends AbstractGenericAviationWeatherMess
             throws XPathExpressionException {
         builder.setMessageType(MessageType.METAR);
         final IssueList retval = new IssueList();
+        collectIWXXM21METARSPECIStatus(featureElement, xpath, builder);
         //Issue time:
         collectIssueTime(xpath, "./iwxxm:observation/om:OM_Observation/om:phenomenonTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 

@@ -17,6 +17,8 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         builder.setMessageType(MessageType.TAF);
         final IssueList retval = new IssueList();
 
+        collectIWXXM21TAFStatus(featureElement, xpath, builder);
+
         //Issue time:
         collectIssueTime(xpath, "./iwxxm:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 

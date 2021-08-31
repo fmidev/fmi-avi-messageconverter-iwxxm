@@ -16,6 +16,8 @@ import org.w3c.dom.NodeList;
 
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -118,5 +120,32 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
 
     protected static NodeList evaluateNodeSet(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
         return (NodeList) xpath.compile(expression).evaluate(element, XPathConstants.NODESET);
+    }
+
+    protected static ConversionIssue collectIWXXM21METARSPECIStatus(Element element, XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder) throws XPathExpressionException {
+        try {
+            builder.setReportStatus(AviationCodeListUser.MetarStatus.valueOf(xpath.compile("@status").evaluate(element)).getReportStatus());
+        } catch (IllegalArgumentException e) {
+            return new ConversionIssue(ConversionIssue.Severity.ERROR, "status could not be parsed");
+        }
+        return null;
+    }
+
+    protected static ConversionIssue collectIWXXM21TAFStatus(Element element, XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder) throws XPathExpressionException {
+        try {
+            Optional<String> reportStatus = evaluateNonEmptyString(element, xpath, "@status");
+
+            if(reportStatus.get().equals("cancel")) {
+                builder.is
+            } else if(reportStatus.get().equals("missing")) {
+
+            }
+
+
+            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(xpath.compile("@status").evaluate(element)));
+        } catch (IllegalArgumentException e) {
+            return new ConversionIssue(ConversionIssue.Severity.ERROR, "The report status could not be parsed");
+        }
+        return null;
     }
 }
