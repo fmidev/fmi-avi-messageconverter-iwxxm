@@ -37,8 +37,13 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
 
     private final Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners;
 
-    public GenericAviationWeatherMessageParser(Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
+    public GenericAviationWeatherMessageParser(final Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
         this.scanners = scanners;
+    }
+
+    protected static void collectTranslationStatus(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
+            throws XPathExpressionException {
+        builder.setTranslated(!xpath.compile("@translatedBulletinID").evaluate(featureElement).isEmpty());
     }
 
     @Override
@@ -49,7 +54,7 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
 
             retval = createAviationWeatherMessage(doc.getDocumentElement(), hints);
 
-        } catch (Exception ce) {
+        } catch (final Exception ce) {
             retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Error in parsing input", ce));
         }
 
@@ -63,8 +68,9 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         xpath.setNamespaceContext(new IWXXMNamespaceContext());
         final GenericAviationWeatherMessageImpl.Builder builder = GenericAviationWeatherMessageImpl.builder();
         builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
+        builder.setNullableXMLNamespace(featureElement.getNamespaceURI());
 
-        GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getNamespaceURI(), featureElement.getLocalName()));
+        final GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getNamespaceURI(), featureElement.getLocalName()));
         try {
             if (scanner == null) {
                 retval.addIssue(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
@@ -99,11 +105,6 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         return retval;
     }
 
-    protected static void collectTranslationStatus(Element featureElement, XPath xpath,
-            GenericAviationWeatherMessageImpl.Builder builder) throws  XPathExpressionException {
-        builder.setTranslated(!xpath.compile("@translatedBulletinID").evaluate(featureElement).isEmpty());
-    }
-
     @Override
     protected GenericAviationWeatherMessage createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx,
             final ConversionResult<GenericAviationWeatherMessage> result, final ConversionHints hints) {
@@ -116,7 +117,7 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class FromString extends GenericAviationWeatherMessageParser<String> {
-        public FromString(Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
+        public FromString(final Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
             super(scanners);
         }
 
@@ -127,10 +128,11 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class FromElement extends GenericAviationWeatherMessageParser<Element> {
-        public FromElement(Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
+        public FromElement(final Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
             super(scanners);
         }
 
+        @Override
         protected Document parseAsDom(final Element input) throws ConversionException {
             final Document retval;
             final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -138,7 +140,7 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
             try {
                 documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
                 final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-                Document doc = documentBuilder.newDocument();
+                final Document doc = documentBuilder.newDocument();
                 doc.appendChild(doc.importNode(input, true));
                 retval = doc;
             } catch (final RuntimeException | ParserConfigurationException e) {
@@ -149,7 +151,7 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class FromDOM extends GenericAviationWeatherMessageParser<Document> {
-        public FromDOM(Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
+        public FromDOM(final Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
             super(scanners);
         }
 
@@ -160,10 +162,10 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class ScannerKey {
-        private String namespaceURI;
-        private String documentElementName;
+        private final String namespaceURI;
+        private final String documentElementName;
 
-        public ScannerKey(String namespaceURI, String documentElementName) {
+        public ScannerKey(final String namespaceURI, final String documentElementName) {
             this.namespaceURI = namespaceURI;
             this.documentElementName = documentElementName;
         }
