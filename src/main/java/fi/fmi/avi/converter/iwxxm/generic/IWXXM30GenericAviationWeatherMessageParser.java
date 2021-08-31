@@ -13,8 +13,8 @@ import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public abstract class IWXXM30GenericAviationWeatherMessageParser<T> extends AbstractIWXXMParser<T, GenericAviationWeatherMessage> {
 
-    protected static ConversionIssue collectReportStatus(final Element element, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder) throws
-            XPathExpressionException {
+    protected static ConversionIssue collectReportStatus(final Element element, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
+            throws XPathExpressionException {
         try {
             builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(xpath.compile("@reportStatus").evaluate(element)));
         } catch (IllegalArgumentException e) {

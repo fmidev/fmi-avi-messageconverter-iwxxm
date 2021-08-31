@@ -40,24 +40,6 @@ public abstract class GenericAviationWeatherMessageParser<T> extends IWXXM30Gene
     public GenericAviationWeatherMessageParser(Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
         this.scanners = scanners;
     }
-/*
-    protected static ConversionIssue collectReportStatus(final Element element, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
-            throws XPathExpressionException {
-        String expression;
-        if (element.getNamespaceURI().equals("http://icao.int/iwxxm/2.1")) {
-            expression = "@status";
-        } else if (element.getNamespaceURI().equals("http://icao.int/iwxxm/3.0")) {
-            expression = "@reportStatus";
-        } else {
-            return new ConversionIssue(ConversionIssue.Severity.ERROR, "Could not determine IWXXM version, so report status could not be parsed");
-        }
-        try {
-            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(xpath.compile(expression).evaluate(element)));
-        } catch (IllegalArgumentException e) {
-            return new ConversionIssue(ConversionIssue.Severity.ERROR, "The report status could not be parsed");
-        }
-        return null;
-    }*/
 
     protected static void collectTranslationStatus(Element featureElement, XPath xpath, GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {

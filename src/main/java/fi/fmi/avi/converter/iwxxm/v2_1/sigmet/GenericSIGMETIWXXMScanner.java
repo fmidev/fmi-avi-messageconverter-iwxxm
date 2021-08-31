@@ -11,6 +11,7 @@ import org.w3c.dom.Element;
 
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
+import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
@@ -35,7 +36,8 @@ public class GenericSIGMETIWXXMScanner extends AbstractGenericAviationWeatherMes
             throws XPathExpressionException {
         builder.setMessageType(MessageType.SIGMET);
         final IssueList retval = new IssueList();
-        collectIWXXM21TAFStatus(featureElement, xpath, builder);
+        collectIWXXM21TAFStatus(featureElement, xpath, retval).ifPresent(
+                str -> builder.setReportStatus(AviationCodeListUser.TAFStatus.valueOf(str).getReportStatus()));
         //Issue time:
         collectIssueTime(xpath, "./iwxxm:analysis/om:OM_Observation/om:resultTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 

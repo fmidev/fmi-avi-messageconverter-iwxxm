@@ -17,7 +17,6 @@ import org.w3c.dom.NodeList;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -122,7 +121,9 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         return (NodeList) xpath.compile(expression).evaluate(element, XPathConstants.NODESET);
     }
 
-    protected static ConversionIssue collectIWXXM21METARSPECIStatus(Element element, XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder) throws XPathExpressionException {
+    protected static ConversionIssue collectIWXXM21METARSPECIStatus(final Element element, final XPath xpath,
+            final GenericAviationWeatherMessageImpl.Builder builder)
+            throws XPathExpressionException {
         try {
             builder.setReportStatus(AviationCodeListUser.MetarStatus.valueOf(xpath.compile("@status").evaluate(element)).getReportStatus());
         } catch (IllegalArgumentException e) {
@@ -131,21 +132,14 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         return null;
     }
 
-    protected static ConversionIssue collectIWXXM21TAFStatus(Element element, XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder) throws XPathExpressionException {
+    protected static Optional<String> collectIWXXM21TAFStatus(final Element element, final XPath xpath, final IssueList issues)
+            throws XPathExpressionException {
+        Optional<String> status = Optional.empty();
         try {
-            Optional<String> reportStatus = evaluateNonEmptyString(element, xpath, "@status");
-
-            if(reportStatus.get().equals("cancel")) {
-
-            } else if(reportStatus.get().equals("missing")) {
-
-            }
-
-
-            builder.setReportStatus(AviationWeatherMessage.ReportStatus.valueOf(xpath.compile("@status").evaluate(element)));
+            status = evaluateNonEmptyString(element, xpath, "@status");
         } catch (IllegalArgumentException e) {
-            return new ConversionIssue(ConversionIssue.Severity.ERROR, "The report status could not be parsed");
+            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, "The report status could not be parsed"));
         }
-        return null;
+        return status;
     }
 }

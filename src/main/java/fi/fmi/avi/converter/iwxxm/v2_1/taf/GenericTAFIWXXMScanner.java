@@ -1,5 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v2_1.taf;
 
+import java.util.Optional;
+
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 
@@ -7,6 +9,7 @@ import org.w3c.dom.Element;
 
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
+import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
@@ -17,18 +20,18 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         builder.setMessageType(MessageType.TAF);
         final IssueList retval = new IssueList();
 
-        collectIWXXM21TAFStatus(featureElement, xpath, builder);
-
+        Optional<String> status = collectIWXXM21TAFStatus(featureElement, xpath, retval);
+        status.ifPresent(str -> builder.setReportStatus(AviationCodeListUser.TAFStatus.valueOf(str).getReportStatus()));
         //Issue time:
         collectIssueTime(xpath, "./iwxxm:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
-        if (!"MISSING".equals(builder.getReportStatus())) {
+        if (status.isPresent() && !"MISSING".equals(status.get())) {
             //validity time
             retval.addAll(collectValidTime(featureElement, "./iwxxm:validTime[1]", xpath, builder));
         }
 
         //target aerodrome
-        if ("CANCELLATION".equals(builder.getReportStatus())) {
+        if (status.isPresent() && "CANCELLATION".equals(status.get())) {
             parseAerodromeDesignator(featureElement, "./iwxxm:previousReportAerodrome/aixm:AirportHeliport", xpath, builder, retval);
         } else {
             parseAerodromeDesignator(featureElement,
