@@ -10,20 +10,20 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Element;
 
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
+import fi.fmi.avi.converter.iwxxm.generic.AbstractIWXXM30GenericAviationWeatherMessageScanner;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
-public class GenericMETARIWXXMScanner extends AbstractGenericAviationWeatherMessageScanner {
+public class GenericMETARIWXXMScanner extends AbstractIWXXM30GenericAviationWeatherMessageScanner {
     protected static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> METAR_30_LOCATION_INDICATOR_EXPRESSIONS;
 
     static {
-        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> sigmet21LocationIndicatorExpressions = new EnumMap<>(
+        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> metar30LocationIndicatorExpressions = new EnumMap<>(
                 GenericAviationWeatherMessage.LocationIndicatorType.class);
-        sigmet21LocationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME,
+        metar30LocationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME,
                 "./iwxxm30:aerodrome/aixm:AirportHeliport/aixm" + ":timeSlice/aixm:AirportHeliportTimeSlice/aixm:designator");
-        METAR_30_LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(sigmet21LocationIndicatorExpressions);
+        METAR_30_LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(metar30LocationIndicatorExpressions);
     }
 
     @Override
@@ -31,8 +31,9 @@ public class GenericMETARIWXXMScanner extends AbstractGenericAviationWeatherMess
             throws XPathExpressionException {
         builder.setMessageType(MessageType.METAR);
         final IssueList retval = new IssueList();
+        collectReportStatus(featureElement, xpath, builder).ifPresent(issue -> retval.add(issue));
         //Issue time:
-        collectIssueTime(xpath, "./iwxxm30:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
+        collectIssueTime(featureElement, xpath, builder, retval);
 
         collectLocationIndicators(featureElement, xpath, builder, METAR_30_LOCATION_INDICATOR_EXPRESSIONS, retval);
 

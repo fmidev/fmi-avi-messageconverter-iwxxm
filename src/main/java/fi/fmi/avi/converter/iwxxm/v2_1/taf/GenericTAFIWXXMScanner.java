@@ -7,6 +7,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
 
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
 import fi.fmi.avi.model.AviationCodeListUser;
@@ -20,18 +21,24 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         builder.setMessageType(MessageType.TAF);
         final IssueList retval = new IssueList();
 
-        Optional<String> status = collectIWXXM21TAFStatus(featureElement, xpath, retval);
-        status.ifPresent(str -> builder.setReportStatus(AviationCodeListUser.TAFStatus.valueOf(str).getReportStatus()));
-        //Issue time:
         collectIssueTime(xpath, "./iwxxm:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
-        if (status.isPresent() && !"MISSING".equals(status.get())) {
-            //validity time
-            retval.addAll(collectValidTime(featureElement, "./iwxxm:validTime[1]", xpath, builder));
+        Optional<AviationCodeListUser.TAFStatus> status = evaluateEnumeration(featureElement, xpath, "@status", AviationCodeListUser.TAFStatus.class);
+
+        if(status.isPresent()) {
+            builder.setReportStatus(status.get().getReportStatus());
+        } else {
+            retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, "status could not be parsed"));
         }
 
+        status.ifPresent(tafStatus -> {
+            if(AviationCodeListUser.TAFStatus.MISSING != tafStatus) {
+                retval.addAll(collectValidTime(featureElement, "./iwxxm:validTime[1]", xpath, builder));
+            }
+        });
+
         //target aerodrome
-        if (status.isPresent() && "CANCELLATION".equals(status.get())) {
+        if (status.isPresent() && status.get() == AviationCodeListUser.TAFStatus.CANCELLATION) {
             parseAerodromeDesignator(featureElement, "./iwxxm:previousReportAerodrome/aixm:AirportHeliport", xpath, builder, retval);
         } else {
             parseAerodromeDesignator(featureElement,

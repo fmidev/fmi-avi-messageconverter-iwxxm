@@ -121,25 +121,13 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         return (NodeList) xpath.compile(expression).evaluate(element, XPathConstants.NODESET);
     }
 
-    protected static ConversionIssue collectIWXXM21METARSPECIStatus(final Element element, final XPath xpath,
-            final GenericAviationWeatherMessageImpl.Builder builder)
-            throws XPathExpressionException {
-        try {
-            builder.setReportStatus(AviationCodeListUser.MetarStatus.valueOf(xpath.compile("@status").evaluate(element)).getReportStatus());
-        } catch (IllegalArgumentException e) {
-            return new ConversionIssue(ConversionIssue.Severity.ERROR, "status could not be parsed");
-        }
-        return null;
-    }
-
-    protected static Optional<String> collectIWXXM21TAFStatus(final Element element, final XPath xpath, final IssueList issues)
-            throws XPathExpressionException {
-        Optional<String> status = Optional.empty();
-        try {
-            status = evaluateNonEmptyString(element, xpath, "@status");
-        } catch (IllegalArgumentException e) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, "The report status could not be parsed"));
-        }
-        return status;
+    protected static <T extends Enum<T>> Optional<T> evaluateEnumeration(Element element, XPath xpath, String expression, Class<T> enumType) throws XPathExpressionException{
+        return evaluate(element, xpath, expression, str -> {
+            try {
+                return Enum.valueOf(enumType, str);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        });
     }
 }
