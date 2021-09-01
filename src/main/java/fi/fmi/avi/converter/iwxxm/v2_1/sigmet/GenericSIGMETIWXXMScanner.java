@@ -3,14 +3,17 @@ package fi.fmi.avi.converter.iwxxm.v2_1.sigmet;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
 
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
+import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
@@ -36,6 +39,15 @@ public class GenericSIGMETIWXXMScanner extends AbstractGenericAviationWeatherMes
         builder.setMessageType(MessageType.SIGMET);
         final IssueList retval = new IssueList();
 
+        Optional<AviationCodeListUser.SigmetAirmetReportStatus> status = evaluateEnumeration(featureElement, xpath, "@status",
+                AviationCodeListUser.SigmetAirmetReportStatus.class);
+        if(status.isPresent()) {
+            builder.setReportStatus(status.get().getReportStatus());
+        } else {
+            retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, "The report status could not be parsed"));
+        }
+
+        //Issue time:
         collectIssueTime(xpath, "./iwxxm:analysis/om:OM_Observation/om:resultTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
         collectLocationIndicators(featureElement, xpath, builder, SIGMET_21_LOCATION_INDICATOR_EXPRESSIONS, retval);

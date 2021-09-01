@@ -16,6 +16,7 @@ import org.w3c.dom.NodeList;
 
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -31,11 +32,11 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
             if (results.getLength() == 1) {
                 final Element validTimeElement = (Element) results.item(0);
                 final ZonedDateTime startTime = evaluateFirstSuccessfulZonedDateTime(validTimeElement, xpath, "./gml:TimePeriod/gml:beginPosition",
-                        "./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition")
-                        .orElseThrow(() -> new IllegalArgumentException("No valid time start found from element " + validTimeElement.getTagName()));
+                        "./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition").orElseThrow(
+                        () -> new IllegalArgumentException("No valid time start found from element " + validTimeElement.getTagName()));
                 final ZonedDateTime endTime = evaluateFirstSuccessfulZonedDateTime(validTimeElement, xpath, "./gml:TimePeriod/gml:endPosition",
-                        "./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition")
-                        .orElseThrow(() -> new IllegalArgumentException("No valid time end found from element " + validTimeElement.getTagName()));
+                        "./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition").orElseThrow(
+                        () -> new IllegalArgumentException("No valid time end found from element " + validTimeElement.getTagName()));
                 builder.setValidityTime(PartialOrCompleteTimePeriod.builder()
                         .setStartTime(PartialOrCompleteTimeInstant.of(startTime))
                         .setEndTime(PartialOrCompleteTimeInstant.of(endTime))
@@ -48,7 +49,7 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
     }
 
     protected static void parseAerodromeDesignator(final Element featureElement, final String timeSliceExpression, final XPath xpath,
-            final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues, final String status) throws XPathExpressionException {
+            final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues) throws XPathExpressionException {
         final NodeList nodes = evaluateNodeSet(featureElement, xpath, timeSliceExpression);
         if (nodes.getLength() == 1) {
             final Optional<String> designator = evaluateNonEmptyString((Element) nodes.item(0), xpath,
@@ -61,7 +62,8 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
             }
 
         } else {
-            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info not available for TAF of status " + status);
+            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                    "Aerodrome info not available for TAF of status " + builder.getReportStatus());
         }
     }
 
@@ -88,7 +90,8 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         }
     }
 
-    protected static Optional<String> evaluateNonEmptyString(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
+    protected static Optional<String> evaluateNonEmptyString(final Element element, final XPath xpath, final String expression)
+            throws XPathExpressionException {
         return evaluate(element, xpath, expression, str -> str.isEmpty() ? null : str);
     }
 
@@ -116,5 +119,15 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
 
     protected static NodeList evaluateNodeSet(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
         return (NodeList) xpath.compile(expression).evaluate(element, XPathConstants.NODESET);
+    }
+
+    protected static <T extends Enum<T>> Optional<T> evaluateEnumeration(Element element, XPath xpath, String expression, Class<T> enumType) throws XPathExpressionException{
+        return evaluate(element, xpath, expression, str -> {
+            try {
+                return Enum.valueOf(enumType, str);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        });
     }
 }
