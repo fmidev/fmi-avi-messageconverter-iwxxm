@@ -7,8 +7,10 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
 
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
+import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
@@ -19,23 +21,29 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         builder.setMessageType(MessageType.TAF);
         final IssueList retval = new IssueList();
 
-        //Issue time:
         collectIssueTime(xpath, "./iwxxm:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
-        final Optional<String> status = evaluateNonEmptyString(featureElement, xpath, "@status");
+        Optional<AviationCodeListUser.TAFStatus> status = evaluateEnumeration(featureElement, xpath, "@status", AviationCodeListUser.TAFStatus.class);
 
-        if (!"MISSING".equals(status.orElse(""))) {
-            //validity time
-            retval.addAll(collectValidTime(featureElement, "./iwxxm:validTime[1]", xpath, builder));
+        if(status.isPresent()) {
+            builder.setReportStatus(status.get().getReportStatus());
+        } else {
+            retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, "status could not be parsed"));
         }
 
+        status.ifPresent(tafStatus -> {
+            if(AviationCodeListUser.TAFStatus.MISSING != tafStatus) {
+                retval.addAll(collectValidTime(featureElement, "./iwxxm:validTime[1]", xpath, builder));
+            }
+        });
+
         //target aerodrome
-        if ("CANCELLATION".equals(status.orElse(""))) {
-            parseAerodromeDesignator(featureElement, "./iwxxm:previousReportAerodrome/aixm:AirportHeliport", xpath, builder, retval, status.get());
+        if (status.isPresent() && status.get() == AviationCodeListUser.TAFStatus.CANCELLATION) {
+            parseAerodromeDesignator(featureElement, "./iwxxm:previousReportAerodrome/aixm:AirportHeliport", xpath, builder, retval);
         } else {
             parseAerodromeDesignator(featureElement,
                     "./iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm:AirportHeliport", xpath,
-                    builder, retval, status.get());
+                    builder, retval);
         }
 
         return retval;
