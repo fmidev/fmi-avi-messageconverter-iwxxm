@@ -38,8 +38,6 @@ public class GenericSPECIIWXXMScanner extends AbstractIWXXM30GenericAviationWeat
 
         collectLocationIndicators(featureElement, xpath, builder, SPECI_30_LOCATION_INDICATOR_EXPRESSIONS, retval);
 
-        retval.addAll(collectValidTime(featureElement, "./iwxxm:validPeriod[1]", xpath, builder));
-
         return retval;
     }
 }
