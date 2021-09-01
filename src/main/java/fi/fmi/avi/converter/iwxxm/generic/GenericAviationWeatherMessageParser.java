@@ -1,5 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.StringWriter;
 import java.util.Map;
 import java.util.Objects;
@@ -28,7 +30,6 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
-import fi.fmi.avi.converter.iwxxm.IWXXMSchemaResourceResolver;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
@@ -38,13 +39,14 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
 
     private final Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners;
 
-    public GenericAviationWeatherMessageParser(final Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
-        this.scanners = scanners;
+    protected GenericAviationWeatherMessageParser(final Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
+        this.scanners = requireNonNull(scanners, "scanners");
     }
 
     protected static void collectTranslationStatus(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {
-        builder.setTranslated(!xpath.compile("@translatedBulletinID").evaluate(featureElement).isEmpty());
+        final String translatedBulletinID = xpath.compile("@translatedBulletinID").evaluate(featureElement);
+        builder.setTranslated(translatedBulletinID != null && !translatedBulletinID.isEmpty());
     }
 
     @Override

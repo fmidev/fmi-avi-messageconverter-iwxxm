@@ -18,7 +18,6 @@ public class GenericMETARIWXXMScanner extends AbstractIWXXM21METARSPECIScanner {
         builder.setMessageType(MessageType.METAR);
         final IssueList retval = new IssueList();
         collectStatus(featureElement, xpath, builder, retval);
-        //Issue time:
         collectIssueTime(xpath, featureElement, builder, retval);
         collectLocationIndicators(featureElement, xpath, builder, retval);
 
