@@ -9,7 +9,7 @@
   gml:id="uuid.dea6234c-f57f-4ccf-be7a-bb00a0265af2"
   permissibleUsage="NON-OPERATIONAL"
   permissibleUsageReason="TEST"
-  reportStatus="NORMAL">
+  reportStatus="AMENDMENT">
 
   <iwxxm:issueTime>
     <gml:TimeInstant gml:id="uuid.161d2ad1-e945-4213-84a7-8f9c2c57540f">

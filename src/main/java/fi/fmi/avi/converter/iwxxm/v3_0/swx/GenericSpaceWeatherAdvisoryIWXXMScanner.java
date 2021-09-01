@@ -10,12 +10,12 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Element;
 
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
+import fi.fmi.avi.converter.iwxxm.generic.AbstractIWXXM30GenericAviationWeatherMessageScanner;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
-public class GenericSpaceWeatherAdvisoryIWXXMScanner extends AbstractGenericAviationWeatherMessageScanner {
+public class GenericSpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30GenericAviationWeatherMessageScanner {
     protected static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> SWX_30_LOCATION_INDICATOR_EXPRESSIONS;
 
     static {
@@ -32,8 +32,8 @@ public class GenericSpaceWeatherAdvisoryIWXXMScanner extends AbstractGenericAvia
             throws XPathExpressionException {
         builder.setMessageType(MessageType.SPACE_WEATHER_ADVISORY);
         final IssueList retval = new IssueList();
-
-        collectIssueTime(xpath, "./iwxxm30:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
+        collectReportStatus(featureElement, xpath, builder).ifPresent(issue -> retval.add(issue));
+        collectIssueTime(featureElement, xpath, builder, retval);
 
         collectLocationIndicators(featureElement, xpath, builder, SWX_30_LOCATION_INDICATOR_EXPRESSIONS, retval);
 

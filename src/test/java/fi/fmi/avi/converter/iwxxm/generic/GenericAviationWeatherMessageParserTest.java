@@ -328,6 +328,7 @@ public class GenericAviationWeatherMessageParserTest extends XMLTestCase impleme
 
         assertEquals(MessageType.SPACE_WEATHER_ADVISORY.toString(), message.getMessageType().map(MessageType::toString).orElse(null));
         assertEquals(false, message.isTranslated());
+        assertEquals(AviationWeatherMessage.ReportStatus.AMENDMENT, message.getReportStatus());
         assertEquals(GenericAviationWeatherMessage.Format.IWXXM, message.getMessageFormat());
         assertEquals("2016-11-08T01:00Z",
                 message.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
