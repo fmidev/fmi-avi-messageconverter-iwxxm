@@ -11,11 +11,12 @@ import org.w3c.dom.Element;
 
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
+import fi.fmi.avi.converter.iwxxm.generic.AbstractIWXXM21METARSPECIScanner;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
-public class GenericSPECIIWXXMScanner extends AbstractGenericAviationWeatherMessageScanner {
+public class GenericSPECIIWXXMScanner extends AbstractIWXXM21METARSPECIScanner {
     protected static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> SPECI_21_LOCATION_INDICATOR_EXPRESSIONS;
 
     static {
@@ -33,11 +34,11 @@ public class GenericSPECIIWXXMScanner extends AbstractGenericAviationWeatherMess
         builder.setMessageType(MessageType.SPECI);
         final IssueList retval = new IssueList();
 
-        collectIssueTime(xpath, "./iwxxm:observation/om:OM_Observation/om:phenomenonTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
+        collectStatus(featureElement, xpath, builder, retval);
 
-        collectLocationIndicators(featureElement, xpath, builder, SPECI_21_LOCATION_INDICATOR_EXPRESSIONS, retval);
+        collectIssueTime(xpath, featureElement, builder, retval);
 
-        retval.addAll(collectValidTime(featureElement, "./iwxxm:validPeriod[1]", xpath, builder));
+        collectLocationIndicators(featureElement, xpath, builder, retval);
 
         return retval;
     }
