@@ -313,7 +313,7 @@ public class GenericAviationWeatherMessageParserTest extends XMLTestCase impleme
     @Test
     public void speci21DOMMessageTest() throws Exception {
         String fileName = "speci-A3-2-21.xml";
-        Document input = readDocument(GenericWeatherMessageParserTest.class, fileName);
+        Document input = readDocument(GenericAviationWeatherMessageParserTest.class, fileName);
 
         ConversionHints hints = new ConversionHints();
         hints.put(ConversionHints.KEY_MESSAGE_TYPE, "SPECI");
@@ -344,7 +344,7 @@ public class GenericAviationWeatherMessageParserTest extends XMLTestCase impleme
     @Test
     public void speci30DOMMessageTest() throws Exception {
         String fileName = "speci-A3-2-30.xml";
-        Document input = readDocument(GenericWeatherMessageParserTest.class, fileName);
+        Document input = readDocument(GenericAviationWeatherMessageParserTest.class, fileName);
 
         ConversionHints hints = new ConversionHints();
         hints.put(ConversionHints.KEY_MESSAGE_TYPE, "SPECI");

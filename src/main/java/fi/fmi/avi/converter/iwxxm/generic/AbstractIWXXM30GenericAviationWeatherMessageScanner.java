@@ -31,5 +31,4 @@ public abstract class AbstractIWXXM30GenericAviationWeatherMessageScanner extend
     protected static void collectIssueTime(final Element element, final XPath xpath, GenericAviationWeatherMessageImpl.Builder builder, IssueList issues) throws XPathExpressionException {
         collectIssueTime(xpath, "./iwxxm30:issueTime/gml:TimeInstant/gml:timePosition", element, builder, issues);
     }
-
 }
