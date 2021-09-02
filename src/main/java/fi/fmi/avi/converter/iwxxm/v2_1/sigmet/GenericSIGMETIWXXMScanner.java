@@ -3,7 +3,6 @@ package fi.fmi.avi.converter.iwxxm.v2_1.sigmet;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
@@ -19,39 +18,37 @@ import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public class GenericSIGMETIWXXMScanner extends AbstractGenericAviationWeatherMessageScanner {
-    protected static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> SIGMET_21_LOCATION_INDICATOR_EXPRESSIONS;
+    private static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> LOCATION_INDICATOR_EXPRESSIONS;
 
     static {
-        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> sigmet21LocationIndicatorExpressions = new EnumMap<>(
+        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> locationIndicatorExpressions = new EnumMap<>(
                 GenericAviationWeatherMessage.LocationIndicatorType.class);
-        sigmet21LocationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE,
+        locationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE,
                 "./iwxxm" + ":originatingMeteorologicalWatchOffice/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
-        sigmet21LocationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT,
+        locationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT,
                 "./iwxxm:issuingAirTrafficServicesUnit/aixm" + ":Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:designator");
-        sigmet21LocationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION,
+        locationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION,
                 "./iwxxm:analysis/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm:Airspace/aixm"
                         + ":timeSlice/aixm:AirspaceTimeSlice/aixm:designator");
-        SIGMET_21_LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(sigmet21LocationIndicatorExpressions);
+        LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(locationIndicatorExpressions);
     }
 
+    @Override
     public IssueList collectMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {
         builder.setMessageType(MessageType.SIGMET);
         final IssueList retval = new IssueList();
 
-        Optional<AviationCodeListUser.SigmetAirmetReportStatus> status = evaluateEnumeration(featureElement, xpath, "@status",
-                AviationCodeListUser.SigmetAirmetReportStatus.class);
-        if(status.isPresent()) {
-            builder.setReportStatus(status.get().getReportStatus());
-        } else {
+        final AviationCodeListUser.SigmetAirmetReportStatus status = evaluateEnumeration(featureElement, xpath, "@status",
+                AviationCodeListUser.SigmetAirmetReportStatus.class).orElse(null);
+        if (status == null) {
             retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, "The report status could not be parsed"));
+        } else {
+            builder.setReportStatus(status.getReportStatus());
         }
 
-        //Issue time:
         collectIssueTime(xpath, "./iwxxm:analysis/om:OM_Observation/om:resultTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
-
-        collectLocationIndicators(featureElement, xpath, builder, SIGMET_21_LOCATION_INDICATOR_EXPRESSIONS, retval);
-
+        collectLocationIndicators(featureElement, xpath, builder, LOCATION_INDICATOR_EXPRESSIONS, retval);
         retval.addAll(collectValidTime(featureElement, "./iwxxm:validPeriod[1]", xpath, builder));
 
         return retval;

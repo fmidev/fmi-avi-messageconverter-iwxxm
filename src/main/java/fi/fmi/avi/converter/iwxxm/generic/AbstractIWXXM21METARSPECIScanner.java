@@ -3,7 +3,6 @@ package fi.fmi.avi.converter.iwxxm.generic;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
@@ -18,32 +17,34 @@ import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public abstract class AbstractIWXXM21METARSPECIScanner extends AbstractGenericAviationWeatherMessageScanner {
 
-    protected static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> METAR_SPECI_LOCATION_INDICATOR_EXPRESSIONS;
+    protected static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> LOCATION_INDICATOR_EXPRESSIONS;
 
     static {
-        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> metarSpeciLocationIndicatorExpressions = new EnumMap<>(
+        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> locationIndicatorExpressions = new EnumMap<>(
                 GenericAviationWeatherMessage.LocationIndicatorType.class);
-        metarSpeciLocationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "iwxxm:observation/om:OM_Observation/om"
+        locationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "iwxxm:observation/om:OM_Observation/om"
                 + ":featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm"
                 + ":designator");
-        METAR_SPECI_LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(metarSpeciLocationIndicatorExpressions);
+        LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(locationIndicatorExpressions);
     }
 
-    protected void collectStatus(Element element, XPath xpath, GenericAviationWeatherMessageImpl.Builder builder, IssueList issues)
+    protected void collectStatus(final Element element, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues)
             throws XPathExpressionException {
-        Optional<AviationCodeListUser.MetarStatus> status = evaluateEnumeration(element, xpath, "@status", AviationCodeListUser.MetarStatus.class);
-        if (status.isPresent()) {
-            builder.setReportStatus(status.get().getReportStatus());
-        } else {
+        final AviationCodeListUser.MetarStatus status = evaluateEnumeration(element, xpath, "@status", AviationCodeListUser.MetarStatus.class).orElse(null);
+        if (status == null) {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, "status could not be parsed"));
+        } else {
+            builder.setReportStatus(status.getReportStatus());
         }
     }
-    protected void collectIssueTime(XPath xpath, Element element, GenericAviationWeatherMessageImpl.Builder builder, IssueList issues) throws  XPathExpressionException {
+
+    protected void collectIssueTime(final XPath xpath, final Element element, final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues)
+            throws XPathExpressionException {
         collectIssueTime(xpath, "./iwxxm:observation/om:OM_Observation/om:phenomenonTime/gml:TimeInstant/gml:timePosition", element, builder, issues);
     }
 
-    protected void collectLocationIndicators(Element element, XPath xpath, GenericAviationWeatherMessageImpl.Builder builder, IssueList issues) throws XPathExpressionException {
-        collectLocationIndicators(element, xpath, builder, METAR_SPECI_LOCATION_INDICATOR_EXPRESSIONS, issues);
+    protected void collectLocationIndicators(final Element element, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder,
+            final IssueList issues) throws XPathExpressionException {
+        collectLocationIndicators(element, xpath, builder, LOCATION_INDICATOR_EXPRESSIONS, issues);
     }
-
 }
