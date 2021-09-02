@@ -47,4 +47,14 @@ public abstract class AbstractIWXXM21METARSPECIScanner extends AbstractGenericAv
             final IssueList issues) throws XPathExpressionException {
         collectLocationIndicators(element, xpath, builder, LOCATION_INDICATOR_EXPRESSIONS, issues);
     }
+
+    protected IssueList collectCommonProperties(Element element, XPath xpath, GenericAviationWeatherMessageImpl.Builder builder) throws XPathExpressionException {
+        final IssueList retval = new IssueList();
+
+        collectStatus(element, xpath, builder, retval);
+        collectIssueTime(xpath, element, builder, retval);
+        collectLocationIndicators(element, xpath, builder, retval);
+
+        return retval;
+    }
 }

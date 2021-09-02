@@ -16,12 +16,7 @@ public class GenericMETARIWXXMScanner extends AbstractIWXXM21METARSPECIScanner {
     public IssueList collectMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {
         builder.setMessageType(MessageType.METAR);
-        final IssueList retval = new IssueList();
-        collectStatus(featureElement, xpath, builder, retval);
-        collectIssueTime(xpath, featureElement, builder, retval);
-        collectLocationIndicators(featureElement, xpath, builder, retval);
-
-        return retval;
+        return collectCommonProperties(featureElement, xpath, builder);
     }
 
 }
