@@ -16,14 +16,14 @@ import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public class GenericMETARIWXXMScanner extends AbstractIWXXM30GenericAviationWeatherMessageScanner {
-    protected static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> METAR_30_LOCATION_INDICATOR_EXPRESSIONS;
+    private static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> LOCATION_INDICATOR_EXPRESSIONS;
 
     static {
-        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> metar30LocationIndicatorExpressions = new EnumMap<>(
+        final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> locationIndicatorExpressions = new EnumMap<>(
                 GenericAviationWeatherMessage.LocationIndicatorType.class);
-        metar30LocationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME,
+        locationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME,
                 "./iwxxm30:aerodrome/aixm:AirportHeliport/aixm" + ":timeSlice/aixm:AirportHeliportTimeSlice/aixm:designator");
-        METAR_30_LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(metar30LocationIndicatorExpressions);
+        LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(locationIndicatorExpressions);
     }
 
     @Override
@@ -31,12 +31,9 @@ public class GenericMETARIWXXMScanner extends AbstractIWXXM30GenericAviationWeat
             throws XPathExpressionException {
         builder.setMessageType(MessageType.METAR);
         final IssueList retval = new IssueList();
-        collectReportStatus(featureElement, xpath, builder).ifPresent(issue -> retval.add(issue));
-        //Issue time:
+        collectReportStatus(featureElement, xpath, builder).ifPresent(retval::add);
         collectIssueTime(featureElement, xpath, builder, retval);
-
-        collectLocationIndicators(featureElement, xpath, builder, METAR_30_LOCATION_INDICATOR_EXPRESSIONS, retval);
-
+        collectLocationIndicators(featureElement, xpath, builder, LOCATION_INDICATOR_EXPRESSIONS, retval);
         return retval;
     }
 }

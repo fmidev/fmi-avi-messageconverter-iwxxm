@@ -16,7 +16,6 @@ import org.w3c.dom.NodeList;
 
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -80,9 +79,9 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         }
     }
 
-    protected static void collectIssueTime(XPath xpath, String expression, Element element, GenericAviationWeatherMessageImpl.Builder builder, IssueList issues)
-            throws XPathExpressionException {
-        Optional<ZonedDateTime> time = evaluateFirstSuccessfulZonedDateTime(element, xpath, expression);
+    protected static void collectIssueTime(final XPath xpath, final String expression, final Element element,
+            final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues) throws XPathExpressionException {
+        final Optional<ZonedDateTime> time = evaluateZonedDateTime(element, xpath, expression);
         if (time.isPresent()) {
             builder.setIssueTime(PartialOrCompleteTimeInstant.of(time.get()));
         } else {
@@ -93,6 +92,23 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
     protected static Optional<String> evaluateNonEmptyString(final Element element, final XPath xpath, final String expression)
             throws XPathExpressionException {
         return evaluate(element, xpath, expression, str -> str.isEmpty() ? null : str);
+    }
+
+    protected static Optional<Boolean> evaluateBoolean(final Element element, final XPath xpath, final String expression) throws XPathExpressionException {
+        return evaluate(element, xpath, expression, str -> {
+            if ("true".equalsIgnoreCase(str) || "1".equals(str)) {
+                return Boolean.TRUE;
+            } else if ("false".equalsIgnoreCase(str) || "0".equals(str)) {
+                return Boolean.FALSE;
+            } else {
+                return null;
+            }
+        });
+    }
+
+    protected static Optional<ZonedDateTime> evaluateZonedDateTime(final Element element, final XPath xPath, final String expression)
+            throws XPathExpressionException {
+        return evaluate(element, xPath, expression, str -> str.isEmpty() ? null : ZonedDateTime.parse(str, DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     }
 
     protected static Optional<ZonedDateTime> evaluateFirstSuccessfulZonedDateTime(final Element element, final XPath xPath, final String... expressions)
@@ -121,11 +137,12 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         return (NodeList) xpath.compile(expression).evaluate(element, XPathConstants.NODESET);
     }
 
-    protected static <T extends Enum<T>> Optional<T> evaluateEnumeration(Element element, XPath xpath, String expression, Class<T> enumType) throws XPathExpressionException{
+    protected static <T extends Enum<T>> Optional<T> evaluateEnumeration(final Element element, final XPath xpath, final String expression,
+            final Class<T> enumType) throws XPathExpressionException {
         return evaluate(element, xpath, expression, str -> {
             try {
                 return Enum.valueOf(enumType, str);
-            } catch (IllegalArgumentException e) {
+            } catch (final IllegalArgumentException e) {
                 return null;
             }
         });

@@ -1,7 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.v2_1.taf;
 
-import java.util.Optional;
-
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 
@@ -16,6 +14,7 @@ import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessageScanner {
 
+    @Override
     public IssueList collectMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
             throws XPathExpressionException {
         builder.setMessageType(MessageType.TAF);
@@ -23,22 +22,19 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
 
         collectIssueTime(xpath, "./iwxxm:issueTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
 
-        Optional<AviationCodeListUser.TAFStatus> status = evaluateEnumeration(featureElement, xpath, "@status", AviationCodeListUser.TAFStatus.class);
+        final AviationCodeListUser.TAFStatus status = evaluateEnumeration(featureElement, xpath, "@status", AviationCodeListUser.TAFStatus.class).orElse(null);
 
-        if(status.isPresent()) {
-            builder.setReportStatus(status.get().getReportStatus());
-        } else {
+        if (status == null) {
             retval.add(new ConversionIssue(ConversionIssue.Severity.ERROR, "status could not be parsed"));
+        } else {
+            builder.setReportStatus(status.getReportStatus());
         }
 
-        status.ifPresent(tafStatus -> {
-            if(AviationCodeListUser.TAFStatus.MISSING != tafStatus) {
-                retval.addAll(collectValidTime(featureElement, "./iwxxm:validTime[1]", xpath, builder));
-            }
-        });
+        if (status != AviationCodeListUser.TAFStatus.MISSING) {
+            retval.addAll(collectValidTime(featureElement, "./iwxxm:validTime[1]", xpath, builder));
+        }
 
-        //target aerodrome
-        if (status.isPresent() && status.get() == AviationCodeListUser.TAFStatus.CANCELLATION) {
+        if (status == AviationCodeListUser.TAFStatus.CANCELLATION) {
             parseAerodromeDesignator(featureElement, "./iwxxm:previousReportAerodrome/aixm:AirportHeliport", xpath, builder, retval);
         } else {
             parseAerodromeDesignator(featureElement,
