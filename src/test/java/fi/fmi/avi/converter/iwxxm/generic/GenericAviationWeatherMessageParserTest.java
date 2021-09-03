@@ -311,16 +311,76 @@ public class GenericAviationWeatherMessageParserTest extends XMLTestCase impleme
     }
 
     @Test
+    public void speci21DOMMessageTest() throws Exception {
+        String fileName = "speci-A3-2-21.xml";
+        Document input = readDocument(GenericAviationWeatherMessageParserTest.class, fileName);
+
+        ConversionHints hints = new ConversionHints();
+        hints.put(ConversionHints.KEY_MESSAGE_TYPE, "SPECI");
+
+        ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
+                IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertTrue(result.getConvertedMessage().isPresent());
+
+        GenericAviationWeatherMessage message = result.getConvertedMessage().get();
+
+        assertEquals(MessageType.SPECI.toString(), message.getMessageType().map(MessageType::toString).orElse(null));
+        assertEquals(false, message.isTranslated());
+        assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, message.getReportStatus());
+        assertEquals(GenericAviationWeatherMessage.Format.IWXXM, message.getMessageFormat());
+        assertEquals("2012-08-15T11:15Z",
+                message.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
+
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
+                GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "YUDO");
+        assertEquals(expectedIndiactors, message.getLocationIndicators());
+
+        XMLUnit.setIgnoreWhitespace(true);
+        assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
+    }
+
+    @Test
+    public void speci30DOMMessageTest() throws Exception {
+        String fileName = "speci-A3-2-30.xml";
+        Document input = readDocument(GenericAviationWeatherMessageParserTest.class, fileName);
+
+        ConversionHints hints = new ConversionHints();
+        hints.put(ConversionHints.KEY_MESSAGE_TYPE, "SPECI");
+
+        ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
+                IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertTrue(result.getConvertedMessage().isPresent());
+
+        GenericAviationWeatherMessage message = result.getConvertedMessage().get();
+
+        assertEquals(MessageType.SPECI.toString(), message.getMessageType().map(MessageType::toString).orElse(null));
+        assertEquals(false, message.isTranslated());
+        assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, message.getReportStatus());
+        assertEquals(GenericAviationWeatherMessage.Format.IWXXM, message.getMessageFormat());
+        assertEquals("2012-08-15T11:15Z",
+                message.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
+
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = Collections.singletonMap(
+                GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "YUDO");
+        assertEquals(expectedIndiactors, message.getLocationIndicators());
+
+        XMLUnit.setIgnoreWhitespace(true);
+        assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
+    }
+
+    @Test
     public void airmet21DOMTest() throws Exception {
         String fileName = "iwxxm-21-airmet.xml";
         Document input = readDocument(GenericAviationWeatherMessageParserTest.class, fileName);
 
         ConversionHints hints = new ConversionHints();
         hints.put(ConversionHints.KEY_MESSAGE_TYPE, "AIRMET");
-
         ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
                 IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
-
         assertTrue(result.getConvertedMessage().isPresent());
         assertTrue(result.getConversionIssues().isEmpty());
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
@@ -351,7 +411,6 @@ public class GenericAviationWeatherMessageParserTest extends XMLTestCase impleme
         assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
     }
 
-    @Test
     public void airmet30MDOMTest() throws Exception {
         String fileName = "iwxxm-30-airmet.xml";
         Document input = readDocument(GenericAviationWeatherMessageParserTest.class, fileName);

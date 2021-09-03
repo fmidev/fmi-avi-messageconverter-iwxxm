@@ -6,7 +6,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Element;
 
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.generic.AbstractIWXXM30GenericAviationWeatherMessageScanner;
+import fi.fmi.avi.converter.iwxxm.v3_0.generic.AbstractIWXXM30GenericAviationWeatherMessageScanner;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
