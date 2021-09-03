@@ -16,7 +16,7 @@ import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public class GenericSpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30GenericAviationWeatherMessageScanner {
-    protected static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> SWX_30_LOCATION_INDICATOR_EXPRESSIONS;
+    private static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> LOCATION_INDICATOR_EXPRESSIONS;
 
     static {
         final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> speci30LocationIndicatorExpressions = new EnumMap<>(
@@ -24,7 +24,7 @@ public class GenericSpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Gene
         speci30LocationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_CENTRE,
                 "iwxxm30:issuingSpaceWeatherCentre/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice/aixm:name");
 
-        SWX_30_LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(speci30LocationIndicatorExpressions);
+        LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(speci30LocationIndicatorExpressions);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class GenericSpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Gene
         collectReportStatus(featureElement, xpath, builder).ifPresent(issue -> retval.add(issue));
         collectIssueTime(featureElement, xpath, builder, retval);
 
-        collectLocationIndicators(featureElement, xpath, builder, SWX_30_LOCATION_INDICATOR_EXPRESSIONS, retval);
+        collectLocationIndicators(featureElement, xpath, builder, LOCATION_INDICATOR_EXPRESSIONS, retval);
 
         retval.addAll(collectValidTime(featureElement, "./iwxxm:validPeriod[1]", xpath, builder));
 
