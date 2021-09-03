@@ -1,7 +1,8 @@
-package fi.fmi.avi.converter.iwxxm.generic;
+package fi.fmi.avi.converter.iwxxm.v2_1.metar;
 
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.xpath.XPath;
@@ -11,21 +12,45 @@ import org.w3c.dom.Element;
 
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
+import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
-public abstract class AbstractIWXXM21METARSPECIScanner extends AbstractGenericAviationWeatherMessageScanner {
-
-    protected static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> LOCATION_INDICATOR_EXPRESSIONS;
+public class GenericMETARSPECIIWXXMScanner extends AbstractGenericAviationWeatherMessageScanner {
+    private static final Map<String, MessageType> MESSAGE_TYPES_BY_ELEMENT_NAME;
+    private static final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> LOCATION_INDICATOR_EXPRESSIONS;
 
     static {
+        final Map<String, MessageType> messageTypesByElementName = new HashMap<>();
+        messageTypesByElementName.put("METAR", MessageType.METAR);
+        messageTypesByElementName.put("SPECI", MessageType.SPECI);
+        MESSAGE_TYPES_BY_ELEMENT_NAME = Collections.unmodifiableMap(messageTypesByElementName);
+
         final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> locationIndicatorExpressions = new EnumMap<>(
                 GenericAviationWeatherMessage.LocationIndicatorType.class);
-        locationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME, "iwxxm:observation/om:OM_Observation/om"
-                + ":featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm"
-                + ":designator");
+        locationIndicatorExpressions.put(GenericAviationWeatherMessage.LocationIndicatorType.AERODROME,
+                "iwxxm:observation/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:designator");
         LOCATION_INDICATOR_EXPRESSIONS = Collections.unmodifiableMap(locationIndicatorExpressions);
+    }
+
+    @Override
+    public IssueList collectMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
+            throws XPathExpressionException {
+        final IssueList retval = new IssueList();
+        final MessageType messageType = MESSAGE_TYPES_BY_ELEMENT_NAME.get(featureElement.getLocalName());
+        if (messageType == null) {
+            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Document element is not METAR or SPECI");
+        } else {
+            builder.setMessageType(messageType);
+        }
+
+        collectStatus(featureElement, xpath, builder, retval);
+        collectIssueTime(xpath, featureElement, builder, retval);
+        collectLocationIndicators(featureElement, xpath, builder, retval);
+
+        return retval;
     }
 
     protected void collectStatus(final Element element, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder, final IssueList issues)
@@ -46,15 +71,5 @@ public abstract class AbstractIWXXM21METARSPECIScanner extends AbstractGenericAv
     protected void collectLocationIndicators(final Element element, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder,
             final IssueList issues) throws XPathExpressionException {
         collectLocationIndicators(element, xpath, builder, LOCATION_INDICATOR_EXPRESSIONS, issues);
-    }
-
-    protected IssueList collectCommonProperties(Element element, XPath xpath, GenericAviationWeatherMessageImpl.Builder builder) throws XPathExpressionException {
-        final IssueList retval = new IssueList();
-
-        collectStatus(element, xpath, builder, retval);
-        collectIssueTime(xpath, element, builder, retval);
-        collectLocationIndicators(element, xpath, builder, retval);
-
-        return retval;
     }
 }
