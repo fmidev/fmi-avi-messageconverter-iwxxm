@@ -78,7 +78,7 @@ public class IWXXMGenericAviationWeatherMessageConverter {
         scannersMap.put(new GenericAviationWeatherMessageParser.ScannerKey(iwxxm_2_1_NamespaceURI, "TAF"), new GenericTAFIWXXMScanner());
         scannersMap.put(new GenericAviationWeatherMessageParser.ScannerKey(iwxxm_3_0_NamespaceURI, "TAF"),
                 new fi.fmi.avi.converter.iwxxm.v3_0.taf.GenericTAFIWXXMScanner());
-        scannersMap.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/3.0", "SpaceWeatherAdvisory"),
+        scannersMap.put(new GenericAviationWeatherMessageParser.ScannerKey(iwxxm_3_0_NamespaceURI, "SpaceWeatherAdvisory"),
                 new GenericSpaceWeatherAdvisoryIWXXMScanner());
         final GenericMETARSPECIIWXXMScanner genericMETARSPECIIWXXM21Scanner = new GenericMETARSPECIIWXXMScanner();
         final fi.fmi.avi.converter.iwxxm.v3_0.metar.GenericMETARSPECIIWXXMScanner genericMETARSPECIIWXXM30Scanner = new fi.fmi.avi.converter.iwxxm.v3_0.metar.GenericMETARSPECIIWXXMScanner();
