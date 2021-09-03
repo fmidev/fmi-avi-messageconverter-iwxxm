@@ -14,6 +14,7 @@ import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageParser;
 import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageScanner;
 import fi.fmi.avi.converter.iwxxm.generic.GenericBulletinIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.generic.IWXXMGenericBulletinScanner;
+import fi.fmi.avi.converter.iwxxm.v2_1.airmet.GenericAIRMETIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.metar.GenericMETARIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.sigmet.GenericSIGMETIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.taf.GenericTAFIWXXMScanner;
@@ -79,6 +80,9 @@ public class IWXXMGenericAviationWeatherMessageConverter {
         scannersMap.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/2.1", "METAR"), new GenericMETARIWXXMScanner());
         scannersMap.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/3.0", "METAR"),
                 new fi.fmi.avi.converter.iwxxm.v3_0.metar.GenericMETARIWXXMScanner());
+        scannersMap.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/2.1", "AIRMET"), new GenericAIRMETIWXXMScanner());
+        scannersMap.put(new GenericAviationWeatherMessageParser.ScannerKey("http://icao.int/iwxxm/3.0", "AIRMET"),
+                new fi.fmi.avi.converter.iwxxm.v3_0.airmet.GenericAIRMETIWXXMScanner());
 
         return scannersMap;
     }

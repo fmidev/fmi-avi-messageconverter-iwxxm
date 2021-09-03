@@ -309,4 +309,89 @@ public class GenericAviationWeatherMessageParserTest extends XMLTestCase impleme
         XMLUnit.setIgnoreWhitespace(true);
         assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
     }
+
+    @Test
+    public void airmet21DOMTest() throws Exception {
+        String fileName = "iwxxm-21-airmet.xml";
+        Document input = readDocument(GenericAviationWeatherMessageParserTest.class, fileName);
+
+        ConversionHints hints = new ConversionHints();
+        hints.put(ConversionHints.KEY_MESSAGE_TYPE, "AIRMET");
+
+        ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
+                IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
+
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertTrue(result.getConversionIssues().isEmpty());
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+
+        GenericAviationWeatherMessage message = result.getConvertedMessage().get();
+
+        assertEquals(GenericAviationWeatherMessage.Format.IWXXM, message.getMessageFormat());
+        assertEquals(MessageType.AIRMET.toString(), message.getMessageType().map(MessageType::toString).orElse(null));
+        assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, message.getReportStatus());
+
+        assertEquals("2014-05-15T15:20Z", message.getValidityTime()
+                .flatMap(PartialOrCompleteTimePeriod::getStartTime)
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
+                .map(ZonedDateTime::toString)
+                .orElse(null));
+        assertEquals("2014-05-15T18:00Z", message.getValidityTime()
+                .flatMap(PartialOrCompleteTimePeriod::getEndTime)
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
+                .map(ZonedDateTime::toString)
+                .orElse(null));
+
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = new HashMap<>();
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUCC");
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUDD");
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUDD");
+        assertEquals(expectedIndiactors, message.getLocationIndicators());
+        XMLUnit.setIgnoreWhitespace(true);
+        assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
+    }
+
+    @Test
+    public void airmet30MDOMTest() throws Exception {
+        String fileName = "iwxxm-30-airmet.xml";
+        Document input = readDocument(GenericAviationWeatherMessageParserTest.class, fileName);
+
+        ConversionHints hints = new ConversionHints();
+        hints.put(ConversionHints.KEY_MESSAGE_TYPE, "AIRMET");
+
+        ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
+                IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
+
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertTrue(result.getConversionIssues().isEmpty());
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+
+        GenericAviationWeatherMessage message = result.getConvertedMessage().get();
+
+        assertEquals(GenericAviationWeatherMessage.Format.IWXXM, message.getMessageFormat());
+        assertEquals(MessageType.AIRMET.toString(), message.getMessageType().map(MessageType::toString).orElse(null));
+        assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, message.getReportStatus());
+
+        assertEquals("2014-05-15T15:20Z",
+                message.getIssueTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(ZonedDateTime::toString).orElse(null));
+
+        assertEquals("2014-05-15T15:20Z", message.getValidityTime()
+                .flatMap(PartialOrCompleteTimePeriod::getStartTime)
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
+                .map(ZonedDateTime::toString)
+                .orElse(null));
+        assertEquals("2014-05-15T18:00Z", message.getValidityTime()
+                .flatMap(PartialOrCompleteTimePeriod::getEndTime)
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
+                .map(ZonedDateTime::toString)
+                .orElse(null));
+
+        Map<GenericAviationWeatherMessage.LocationIndicatorType, String> expectedIndiactors = new HashMap<>();
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUCC");
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUDD");
+        expectedIndiactors.put(GenericAviationWeatherMessage.LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUDD");
+        assertEquals(expectedIndiactors, message.getLocationIndicators());
+        XMLUnit.setIgnoreWhitespace(true);
+        assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
+    }
 }
