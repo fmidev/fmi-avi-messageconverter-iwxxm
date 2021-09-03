@@ -46,7 +46,8 @@ public class GenericSIGMETAIRMETIWXXMScanner extends AbstractIWXXM30GenericAviat
         final IssueList retval = new IssueList();
         final MessageType messageType = MESSAGE_TYPES_BY_ELEMENT_NAME.get(featureElement.getLocalName());
         if (messageType == null) {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Document element is not METAR or SPECI");
+            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                    "Document element is not one of SIGMET, VolcanicAshSIGMET, TropicalCycloneSIGMET or AIRMET");
         } else {
             builder.setMessageType(messageType);
         }

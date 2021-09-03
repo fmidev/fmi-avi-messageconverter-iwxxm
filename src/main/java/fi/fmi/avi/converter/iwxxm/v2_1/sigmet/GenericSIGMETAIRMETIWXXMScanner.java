@@ -48,7 +48,8 @@ public class GenericSIGMETAIRMETIWXXMScanner extends AbstractGenericAviationWeat
         final IssueList retval = new IssueList();
         final MessageType messageType = MESSAGE_TYPES_BY_ELEMENT_NAME.get(featureElement.getLocalName());
         if (messageType == null) {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Document element is not METAR or SPECI");
+            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                    "Document element is not one of SIGMET, VolcanicAshSIGMET, TropicalCycloneSIGMET or AIRMET");
         } else {
             builder.setMessageType(messageType);
         }
@@ -64,7 +65,7 @@ public class GenericSIGMETAIRMETIWXXMScanner extends AbstractGenericAviationWeat
         collectLocationIndicators(featureElement, xpath, builder, LOCATION_INDICATOR_EXPRESSIONS, retval);
         retval.addAll(collectValidTime(featureElement, "./iwxxm:validPeriod[1]", xpath, builder));
 
-        if(builder.getMessageType().isPresent() && builder.getMessageType().get() == MessageType.SIGMET) {
+        if (builder.getMessageType().isPresent() && builder.getMessageType().get() == MessageType.SIGMET) {
             collectIssueTime(xpath, "./iwxxm:analysis/om:OM_Observation/om:resultTime/gml:TimeInstant/gml:timePosition", featureElement, builder, retval);
         }
 
