@@ -1,0 +1,28 @@
+image: maven:3.6.3-openjdk-8
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  paths:
+    - .m2/repository/
+    - target/
+    
+build:
+  stage: build
+  script:
+    - "mvn compile -P fmidev -s ./ci_settings.xml  --batch-mode"
+
+test:
+  stage: test
+  script:
+    - "mvn test -P fmidev -s ./ci_settings.xml  --batch-mode"    
+    
+deploy:
+  stage: deploy
+  script:
+    - "mvn versions:set -DnewVersion=4.0.4.KNMI-${CI_COMMIT_BRANCH}-SNAPSHOT"
+    - "mvn deploy  -P fmidev -s ci_settings.xml  --batch-mode"
+  only:
+    - master
+    - branches
