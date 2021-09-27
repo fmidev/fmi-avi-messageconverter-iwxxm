@@ -1,4 +1,4 @@
-FROM maven:3.6.3-openjdk-8
+FROM maven:3.6.3-openjdk-11
 
 WORKDIR /fmi-avi-messageconverter-iwxxm
 COPY pom.xml .

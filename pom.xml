@@ -156,9 +156,14 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
-        <configuration>
+        <!-- <configuration>
           <release>11</release>
-        </configuration>
+        </configuration> -->
+        <configuration>  
+          <source>1.8</source>
+          <target>1.8</target>
+        <verbose>true</verbose>
+    </configuration>
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
