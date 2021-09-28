@@ -17,6 +17,8 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
+import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.BulletinProperties;
+import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 

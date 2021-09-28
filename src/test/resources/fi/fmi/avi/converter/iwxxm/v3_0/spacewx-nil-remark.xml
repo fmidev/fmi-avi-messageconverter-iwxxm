@@ -22,9 +22,8 @@
         <aixm:UnitTimeSlice gml:id="uuid.64f29fac-154b-4484-a49d-7c8816e4840c">
           <gml:validTime />
           <aixm:interpretation>SNAPSHOT</aixm:interpretation>
-          <aixm:name>DONLON WEATHER FORECAST CENTER</aixm:name>
+          <aixm:name>DONLON</aixm:name>
           <aixm:type>OTHER:SWXC</aixm:type>
-          <aixm:designator>DONLON</aixm:designator>
         </aixm:UnitTimeSlice>
       </aixm:timeSlice>
     </aixm:Unit>
@@ -55,7 +54,7 @@
                     <gml:PolygonPatch>
                       <gml:exterior>
                         <gml:LinearRing>
-                          <gml:posList>-180 90 -180 60 180 60 180 90 -180 90</gml:posList>
+                          <gml:posList>-180.0 90.0 -180.0 60.0 180.0 60.0 180.0 90.0 -180.0 90.0</gml:posList>
                         </gml:LinearRing>
                       </gml:exterior>
                     </gml:PolygonPatch>
@@ -78,7 +77,7 @@
                     <gml:PolygonPatch>
                       <gml:exterior>
                         <gml:LinearRing>
-                          <gml:posList>-180 -90 -180 -60 180 -60 180 -90 -180 -90</gml:posList>
+                          <gml:posList>-180.0 -90.0 -180.0 -60.0 180.0 -60.0 180.0 -90.0 -180.0 -90.0</gml:posList>
                         </gml:LinearRing>
                       </gml:exterior>
                     </gml:PolygonPatch>

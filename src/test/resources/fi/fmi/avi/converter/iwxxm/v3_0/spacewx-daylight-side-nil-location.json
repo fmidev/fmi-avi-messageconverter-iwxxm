@@ -3,8 +3,8 @@
     "completeTime": "2016-11-08T01:00:00Z"
   },
   "issuingCenter": {
-    "designator": "SWXC",
-    "name": "ACFJ"
+    "name": "ACFJ",
+    "type": "OTHER:SWXC"
   },
   "advisoryNumber": {
     "year": 2016,

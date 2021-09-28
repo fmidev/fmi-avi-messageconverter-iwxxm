@@ -1,7 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,7 +57,7 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
         final List<ConversionIssue> issues = SpaceWeatherAdvisoryIWXXMScanner.collectSpaceWeatherAdvisoryProperties(input, refCtx, properties, hints);
         result.addIssue(issues);
 
-        if (result.getConversionIssues().size() > 0) {
+        if (!result.getConversionIssues().isEmpty()) {
             return null;
         }
 
@@ -66,98 +65,74 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
                 SpaceWeatherAnalysisProperties.class);
 
         //ANALYSES
-        final List<SpaceWeatherAdvisoryAnalysis> analyses = new ArrayList<>();
-        for (final SpaceWeatherAnalysisProperties analysisProperties : analysisPropertiesList) {
-            final SpaceWeatherAdvisoryAnalysisImpl.Builder spaceWeatherAnalysis = SpaceWeatherAdvisoryAnalysisImpl.builder();
-
-            final Optional<PartialOrCompleteTimeInstant> analysisTime = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TIME,
-                    PartialOrCompleteTimeInstant.class);
-            analysisTime.ifPresent(spaceWeatherAnalysis::setTime);
-
-            final List<SpaceWeatherRegionProperties> regionPropertiesList = analysisProperties.getList(SpaceWeatherAnalysisProperties.Name.REGION,
-                    SpaceWeatherRegionProperties.class);
-
-            //REGIONS
-            final List<SpaceWeatherRegion> weatherRegions = new ArrayList<>();
-            for (final SpaceWeatherRegionProperties regionProperties : regionPropertiesList) {
-                final SpaceWeatherRegionImpl.Builder spaceWeatherRegion = SpaceWeatherRegionImpl.builder();
-
-                final Optional<AirspaceVolume> airspaceVolume = regionProperties.get(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, AirspaceVolume.class);
-                airspaceVolume.ifPresent(spaceWeatherRegion::setAirSpaceVolume);
-
-                final Optional<SpaceWeatherRegion.SpaceWeatherLocation> locationIndicator = regionProperties.get(
-                        SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR, SpaceWeatherRegion.SpaceWeatherLocation.class);
-                locationIndicator.ifPresent(spaceWeatherRegion::setLocationIndicator);
-
-                if (spaceWeatherRegion.getAirSpaceVolume().isPresent() || spaceWeatherRegion.getLocationIndicator().isPresent()) {
-                    weatherRegions.add(spaceWeatherRegion.build());
-                }
-            }
-
-            //Set region
-            spaceWeatherAnalysis.addAllRegions(weatherRegions);
-            final Optional<SpaceWeatherAdvisoryAnalysis.Type> type = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TYPE,
-                    SpaceWeatherAdvisoryAnalysis.Type.class);
-            type.ifPresent(spaceWeatherAnalysis::setAnalysisType);
-
-            final Optional<Boolean> noInformation = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.NO_INFORMATION_AVAILABLE, Boolean.class);
-            if (noInformation.isPresent()) {
-                spaceWeatherAnalysis.setNilPhenomenonReason(SpaceWeatherAdvisoryAnalysis.NilPhenomenonReason.NO_INFORMATION_AVAILABLE);
-            }
-
-            final Optional<Boolean> notExpected = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.NO_PHENOMENON_EXPECTED, Boolean.class);
-            if (notExpected.isPresent()) {
-                spaceWeatherAnalysis.setNilPhenomenonReason(SpaceWeatherAdvisoryAnalysis.NilPhenomenonReason.NO_PHENOMENON_EXPECTED);
-            }
-
-            analyses.add(spaceWeatherAnalysis.build());
-        }
+        final List<SpaceWeatherAdvisoryAnalysis> analyses = analysisPropertiesList.stream()//
+                .map(this::toSpaceWeatherAdvisoryAnalysis)//
+                .collect(toImmutableList());
 
         //ADVISORY
-        final SpaceWeatherAdvisoryImpl.Builder spaceWeatherAdvisory = SpaceWeatherAdvisoryImpl.builder();
+        final SpaceWeatherAdvisoryImpl.Builder builder = SpaceWeatherAdvisoryImpl.builder();
 
-        spaceWeatherAdvisory.addAllAnalyses(analyses);
+        builder.addAllAnalyses(analyses);
 
-        final Optional<PartialOrCompleteTimeInstant> issueTime = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUE_TIME,
-                PartialOrCompleteTimeInstant.class);
-        issueTime.ifPresent(spaceWeatherAdvisory::setIssueTime);
-        final Optional<IssuingCenter> issuer = properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER, IssuingCenter.class);
-        issuer.ifPresent(spaceWeatherAdvisory::setIssuingCenter);
+        properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUE_TIME, PartialOrCompleteTimeInstant.class).ifPresent(builder::setIssueTime);
+        properties.get(SpaceWeatherAdvisoryProperties.Name.ISSUING_CENTER, IssuingCenter.class).ifPresent(builder::setIssuingCenter);
 
-        final Optional<AdvisoryNumber> advisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.ADVISORY_NUMBER, AdvisoryNumber.class);
-        advisoryNumber.ifPresent(spaceWeatherAdvisory::setAdvisoryNumber);
+        properties.get(SpaceWeatherAdvisoryProperties.Name.ADVISORY_NUMBER, AdvisoryNumber.class).ifPresent(builder::setAdvisoryNumber);
+        properties.get(SpaceWeatherAdvisoryProperties.Name.REPLACE_ADVISORY_NUMBER, AdvisoryNumber.class).ifPresent(builder::setReplaceAdvisoryNumber);
 
-        final Optional<AdvisoryNumber> replaceAdvisoryNumber = properties.get(SpaceWeatherAdvisoryProperties.Name.REPLACE_ADVISORY_NUMBER,
-                AdvisoryNumber.class);
-        replaceAdvisoryNumber.ifPresent(spaceWeatherAdvisory::setReplaceAdvisoryNumber);
-        final List<SpaceWeatherPhenomenon> phenomena = properties.getList(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, SpaceWeatherPhenomenon.class);
-        spaceWeatherAdvisory.addAllPhenomena(phenomena);
+        builder.addAllPhenomena(properties.getList(SpaceWeatherAdvisoryProperties.Name.PHENOMENA, SpaceWeatherPhenomenon.class));
 
-        final Optional<List> remarks = properties.get(SpaceWeatherAdvisoryProperties.Name.REMARKS, List.class);
-        remarks.ifPresent(spaceWeatherAdvisory::setRemarks);
+        if (properties.contains(SpaceWeatherAdvisoryProperties.Name.REMARKS)) {
+            builder.setRemarks(properties.getList(SpaceWeatherAdvisoryProperties.Name.REMARKS, String.class));
+        }
 
-        final Optional<NextAdvisory> nextAdvisory = properties.get(SpaceWeatherAdvisoryProperties.Name.NEXT_ADVISORY, NextAdvisory.class);
-        nextAdvisory.ifPresent(spaceWeatherAdvisory::setNextAdvisory);
+        properties.get(SpaceWeatherAdvisoryProperties.Name.NEXT_ADVISORY, NextAdvisory.class).ifPresent(builder::setNextAdvisory);
 
-        properties.get(SpaceWeatherAdvisoryProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent((metaProps) -> {
-            metaProps.get(GenericReportProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.class)
-                    .ifPresent(spaceWeatherAdvisory::setReportStatus);
-            metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class)
-                    .ifPresent(spaceWeatherAdvisory::setPermissibleUsage);
+        properties.get(SpaceWeatherAdvisoryProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent(metaProps -> {
+            metaProps.get(GenericReportProperties.Name.REPORT_STATUS, AviationWeatherMessage.ReportStatus.class).ifPresent(builder::setReportStatus);
+            metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class).ifPresent(builder::setPermissibleUsage);
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_REASON, AviationCodeListUser.PermissibleUsageReason.class)
-                    .ifPresent(spaceWeatherAdvisory::setPermissibleUsageReason);
-            metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_SUPPLEMENTARY, String.class)
-                    .ifPresent(spaceWeatherAdvisory::setPermissibleUsageSupplementary);
-            metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_ID, String.class).ifPresent(spaceWeatherAdvisory::setTranslatedBulletinID);
+                    .ifPresent(builder::setPermissibleUsageReason);
+            metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_SUPPLEMENTARY, String.class).ifPresent(builder::setPermissibleUsageSupplementary);
+            metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_ID, String.class).ifPresent(builder::setTranslatedBulletinID);
             metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_RECEPTION_TIME, ZonedDateTime.class)
-                    .ifPresent(spaceWeatherAdvisory::setTranslatedBulletinReceptionTime);
-            metaProps.get(GenericReportProperties.Name.TRANSLATION_CENTRE_DESIGNATOR, String.class)
-                    .ifPresent(spaceWeatherAdvisory::setTranslationCentreDesignator);
-            metaProps.get(GenericReportProperties.Name.TRANSLATION_CENTRE_NAME, String.class).ifPresent(spaceWeatherAdvisory::setTranslationCentreName);
-            metaProps.get(GenericReportProperties.Name.TRANSLATION_TIME, ZonedDateTime.class).ifPresent(spaceWeatherAdvisory::setTranslationTime);
-            metaProps.get(GenericReportProperties.Name.TRANSLATION_FAILED_TAC, String.class).ifPresent(spaceWeatherAdvisory::setTranslatedTAC); //!!!
+                    .ifPresent(builder::setTranslatedBulletinReceptionTime);
+            metaProps.get(GenericReportProperties.Name.TRANSLATION_CENTRE_DESIGNATOR, String.class).ifPresent(builder::setTranslationCentreDesignator);
+            metaProps.get(GenericReportProperties.Name.TRANSLATION_CENTRE_NAME, String.class).ifPresent(builder::setTranslationCentreName);
+            metaProps.get(GenericReportProperties.Name.TRANSLATION_TIME, ZonedDateTime.class).ifPresent(builder::setTranslationTime);
+            metaProps.get(GenericReportProperties.Name.TRANSLATION_FAILED_TAC, String.class).ifPresent(builder::setTranslatedTAC); //!!!
         });
-        return spaceWeatherAdvisory.build();
+        return builder.build();
+    }
+
+    private SpaceWeatherAdvisoryAnalysisImpl toSpaceWeatherAdvisoryAnalysis(final SpaceWeatherAnalysisProperties analysisProperties) {
+        final SpaceWeatherAdvisoryAnalysisImpl.Builder builder = SpaceWeatherAdvisoryAnalysisImpl.builder();
+
+        analysisProperties.get(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TIME, PartialOrCompleteTimeInstant.class).ifPresent(builder::setTime);
+
+        builder.addAllRegions(analysisProperties.getList(SpaceWeatherAnalysisProperties.Name.REGION, SpaceWeatherRegionProperties.class).stream()//
+                .map(regionProperties -> {
+                    final SpaceWeatherRegionImpl.Builder regionBuilder = SpaceWeatherRegionImpl.builder();
+                    regionProperties.get(SpaceWeatherRegionProperties.Name.AIRSPACE_VOLUME, AirspaceVolume.class).ifPresent(regionBuilder::setAirSpaceVolume);
+                    regionProperties.get(SpaceWeatherRegionProperties.Name.LOCATION_INDICATOR, SpaceWeatherRegion.SpaceWeatherLocation.class)
+                            .ifPresent(regionBuilder::setLocationIndicator);
+                    return regionBuilder;
+                })//
+                .filter(regionBuilder -> regionBuilder.getAirSpaceVolume().isPresent() || regionBuilder.getLocationIndicator().isPresent())//
+                .map(SpaceWeatherRegionImpl.Builder::build));
+        analysisProperties.get(SpaceWeatherAnalysisProperties.Name.ANALYSIS_TYPE, SpaceWeatherAdvisoryAnalysis.Type.class).ifPresent(builder::setAnalysisType);
+
+        final Optional<Boolean> noInformation = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.NO_INFORMATION_AVAILABLE, Boolean.class);
+        if (noInformation.isPresent()) {
+            builder.setNilPhenomenonReason(SpaceWeatherAdvisoryAnalysis.NilPhenomenonReason.NO_INFORMATION_AVAILABLE);
+        }
+
+        final Optional<Boolean> notExpected = analysisProperties.get(SpaceWeatherAnalysisProperties.Name.NO_PHENOMENON_EXPECTED, Boolean.class);
+        if (notExpected.isPresent()) {
+            builder.setNilPhenomenonReason(SpaceWeatherAdvisoryAnalysis.NilPhenomenonReason.NO_PHENOMENON_EXPECTED);
+        }
+
+        return builder.build();
     }
 
     public static class FromDOM extends SpaceWeatherIWXXMParser<Document> {

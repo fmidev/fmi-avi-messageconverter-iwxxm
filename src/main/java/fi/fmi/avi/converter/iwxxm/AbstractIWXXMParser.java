@@ -19,7 +19,6 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 
-
 /**
  * Created by rinne on 25/07/2018.
  */
@@ -65,23 +64,23 @@ public abstract class AbstractIWXXMParser<T, S extends AviationWeatherMessageOrC
      * @return the conversion result
      */
     @Override
-    public ConversionResult<S> convertMessage(T input, ConversionHints hints) {
-        ConversionResult<S> result = new ConversionResult<>();
-        Object source;
-        ReferredObjectRetrievalContext refCtx;
+    public ConversionResult<S> convertMessage(final T input, final ConversionHints hints) {
+        final ConversionResult<S> result = new ConversionResult<>();
+        final Object source;
+        final ReferredObjectRetrievalContext refCtx;
 
         try {
-            Document dom = parseAsDom(input);
+            final Document dom = parseAsDom(input);
             final XMLSchemaInfo schemaInfo = getSchemaInfo();
-            Binder<Node> binder = getJAXBContext().createBinder();
+            final Binder<Node> binder = getJAXBContext().createBinder();
 
             //XML Schema validation upon JAXB unmarshal:
             binder.setSchema(schemaInfo.getSchema());
-            IWXXMValidationEventHandler collector = new IWXXMValidationEventHandler();
+            final IWXXMValidationEventHandler collector = new IWXXMValidationEventHandler();
             binder.setEventHandler(collector);
             source = binder.unmarshal(dom);
 
-            List<ValidationEvent> events = collector.getEvents();
+            final List<ValidationEvent> events = collector.getEvents();
             if (events.isEmpty()) {
                 //Reset binder event handler after validation:
                 binder.setEventHandler(null);
@@ -92,18 +91,18 @@ public abstract class AbstractIWXXMParser<T, S extends AviationWeatherMessageOrC
                 result.addIssue(validateAgainstIWXXMSchematron(dom, schemaInfo, hints));
                 try {
                     result.setConvertedMessage(createPOJO(source, refCtx, result, hints));
-                } catch (IllegalStateException ise) {
-                    result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "All mandatory information for "
-                            + "constructing a message object was not available", ise));
+                } catch (final IllegalStateException ise) {
+                    result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                            "All mandatory information for " + "constructing a message object was not available", ise));
                 }
             } else {
-                for (ValidationEvent evt : collector.getEvents()) {
+                for (final ValidationEvent evt : collector.getEvents()) {
                     result.addIssue(
                             new ConversionIssue(ConversionIssue.Type.SYNTAX, "XML Schema validation issue: " + evt.getMessage(), evt.getLinkedException()));
                 }
             }
 
-        } catch (ConversionException ce) {
+        } catch (final ConversionException ce) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.SYNTAX, "Unable to parse input as an XML document", ce));
             return result;
         } catch (JAXBException | SAXException e) {
@@ -114,11 +113,9 @@ public abstract class AbstractIWXXMParser<T, S extends AviationWeatherMessageOrC
 
     }
 
-
-
     private static class IWXXMValidationEventHandler implements ValidationEventHandler {
 
-        private List<ValidationEvent> events = new ArrayList<>();
+        private final List<ValidationEvent> events = new ArrayList<>();
 
         @Override
         public boolean handleEvent(final ValidationEvent event) {

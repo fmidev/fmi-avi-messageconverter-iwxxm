@@ -1,5 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -40,32 +41,32 @@ import wmo.metce2013.ProcessType;
 public class METARScannerTest extends DOMParsingTestBase {
 
     private List<ConversionIssue> withCollectedPropertiesFrom(final String fileName, final Consumer<METARProperties> resultHandler) throws Exception {
-        Document doc = readDocument(METARScannerTest.class, fileName);
-        JAXBContext ctx = IWXXMConverterBase.getJAXBContext();
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
+        final Document doc = readDocument(METARScannerTest.class, fileName);
+        final JAXBContext ctx = IWXXMConverterBase.getJAXBContext();
+        final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
         schemaFactory.setResourceResolver(resolver);
         //Secure processing does not allow "file" protocol loading for schemas:
         schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
-        Schema iwxxmSchema = schemaFactory.newSchema(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
+        final Schema iwxxmSchema = schemaFactory.newSchema(ReportType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
 
-        Binder<Node> binder = ctx.createBinder();
+        final Binder<Node> binder = ctx.createBinder();
 
         //XML Schema validation upon JAXB unmarshal:
         binder.setSchema(iwxxmSchema);
 
-        METARType source = binder.unmarshal(doc, METARType.class).getValue();
+        final METARType source = binder.unmarshal(doc, METARType.class).getValue();
 
-        ReferredObjectRetrievalContext refCtx = new ReferredObjectRetrievalContext(doc, binder);
-        METARProperties metarProperties = new METARProperties();
-        List<ConversionIssue> issues = METARIWXXMScanner.collectMETARProperties(source, refCtx, metarProperties, ConversionHints.EMPTY);
+        final ReferredObjectRetrievalContext refCtx = new ReferredObjectRetrievalContext(doc, binder);
+        final METARProperties metarProperties = new METARProperties();
+        final List<ConversionIssue> issues = METARIWXXMScanner.collectMETARProperties(source, refCtx, metarProperties, ConversionHints.EMPTY);
         resultHandler.accept(metarProperties);
         return issues;
     }
 
     @Test
     public void testPropertiesSetForMETAR_A3() throws Exception {
-        List<ConversionIssue> issues = withCollectedPropertiesFrom("metar-A3-1.xml", (props) -> {
+        final List<ConversionIssue> issues = withCollectedPropertiesFrom("metar-A3-1.xml", props -> {
             assertTrue(props.get(METARProperties.Name.STATUS, AviationCodeListUser.MetarStatus.class).isPresent());
             assertTrue(props.get(METARProperties.Name.SPECI, Boolean.class).isPresent());
             assertTrue(props.get(METARProperties.Name.AUTOMATED, Boolean.class).isPresent());
@@ -75,7 +76,7 @@ public class METARScannerTest extends DOMParsingTestBase {
             assertFalse(props.getList(METARProperties.Name.TREND_FORECAST, OMObservationProperties.class).isEmpty());
             assertTrue(props.get(METARProperties.Name.REPORT_METADATA, GenericReportProperties.class).isPresent());
 
-            OMObservationProperties obs = props.get(METARProperties.Name.OBSERVATION, OMObservationProperties.class).get();
+            final OMObservationProperties obs = props.get(METARProperties.Name.OBSERVATION, OMObservationProperties.class).get();
             assertTrue(obs.get(OMObservationProperties.Name.TYPE, String.class).isPresent());
             assertTrue(obs.get(OMObservationProperties.Name.PHENOMENON_TIME, PartialOrCompleteTimeInstant.class).isPresent());
             assertTrue(obs.get(OMObservationProperties.Name.RESULT_TIME, PartialOrCompleteTimeInstant.class).isPresent());
@@ -86,9 +87,9 @@ public class METARScannerTest extends DOMParsingTestBase {
             assertTrue(obs.get(OMObservationProperties.Name.SAMPLING_POINT, ElevatedPoint.class).isPresent());
             assertTrue(obs.get(OMObservationProperties.Name.RESULT, ObservationRecordProperties.class).isPresent());
 
-            List<OMObservationProperties> trends = props.getList(METARProperties.Name.TREND_FORECAST, OMObservationProperties.class);
-            assertTrue(trends.size() == 2);
-            for (OMObservationProperties trend : trends) {
+            final List<OMObservationProperties> trends = props.getList(METARProperties.Name.TREND_FORECAST, OMObservationProperties.class);
+            assertEquals(2, trends.size());
+            for (final OMObservationProperties trend : trends) {
                 assertTrue(trend.get(OMObservationProperties.Name.TYPE, String.class).isPresent());
                 assertTrue(trend.get(OMObservationProperties.Name.PHENOMENON_TIME, PartialOrCompleteTime.class).isPresent());
                 assertTrue(trend.get(OMObservationProperties.Name.RESULT_TIME, PartialOrCompleteTimeInstant.class).isPresent());
@@ -100,7 +101,7 @@ public class METARScannerTest extends DOMParsingTestBase {
                 assertTrue(trend.get(OMObservationProperties.Name.RESULT, TrendForecastRecordProperties.class).isPresent());
             }
 
-            GenericReportProperties meta = props.get(METARProperties.Name.REPORT_METADATA, GenericReportProperties.class).get();
+            final GenericReportProperties meta = props.get(METARProperties.Name.REPORT_METADATA, GenericReportProperties.class).get();
             assertTrue(meta.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class).isPresent());
             assertFalse(meta.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_SUPPLEMENTARY, String.class).isPresent());
             assertFalse(meta.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_ID, String.class).isPresent());

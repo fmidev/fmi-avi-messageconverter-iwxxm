@@ -1,18 +1,17 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
+import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.printIssues;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -29,9 +27,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.DOMParsingTestBase;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.CircleByCenterPoint;
@@ -48,7 +46,7 @@ import fi.fmi.avi.model.swx.SpaceWeatherRegion;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
+public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
 
@@ -74,6 +72,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
                 .map(method -> {
                     try {
                         final Optional<?> optional = (Optional<?>) method.invoke(region);
+                        //noinspection OptionalAssignedToNull
                         return optional == null ? Optional.empty() : optional;
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new AssertionError("Unable to invoke " + method + ": " + e.getMessage());
@@ -82,16 +81,9 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
                 .noneMatch(Optional::isPresent);
     }
 
-    private String getInput(final String fileName) throws IOException {
-        try (InputStream is = SpaceWeatherIWXXMParserTest.class.getResourceAsStream(fileName)) {
-            Objects.requireNonNull(is);
-            return IOUtils.toString(is, "UTF-8");
-        }
-    }
-
     @Test
     public void testParser_A2_3() throws Exception {
-        final String input = getInput("spacewx-A2-3.xml");
+        final String input = readResourceToString("spacewx-A2-3.xml");
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
@@ -100,8 +92,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
-        assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
+        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
@@ -128,7 +119,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_remark_parsing() throws Exception {
-        final String input = getInput("spacewx-A2-4.xml");
+        final String input = readResourceToString("spacewx-A2-4.xml");
         final List<String> expected = Arrays.asList("RADIATION", "LVL", "EXCEEDED", "100", "PCT", "OF", "BACKGROUND", "LVL", "AT", "FL350", "AND", "ABV.",
                 "THE", "CURRENT", "EVENT", "HAS", "PEAKED", "AND", "LVL", "SLW", "RTN", "TO", "BACKGROUND", "LVL.", "SEE", "WWW.SPACEWEATHERPROVIDER.WEB");
 
@@ -146,7 +137,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_A2_4() throws Exception {
-        final String input = getInput("spacewx-A2-4.xml");
+        final String input = readResourceToString("spacewx-A2-4.xml");
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
@@ -154,8 +145,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
-        assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
+        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
@@ -197,12 +187,11 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
         final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
         OBJECT_MAPPER.registerModule(new Jdk8Module()).registerModule(new JavaTimeModule());
-        System.out.println(OBJECT_MAPPER.writeValueAsString(swx));
     }
 
     @Test
     public void testParser_A2_5() throws Exception {
-        final String input = getInput("spacewx-A2-5.xml");
+        final String input = readResourceToString("spacewx-A2-5.xml");
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
@@ -210,8 +199,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
         assertTrue(result.getConvertedMessage().isPresent());
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
-        assertEquals("DONLON WEATHER FORECAST CENTER", swx.getIssuingCenter().getName().get());
-        assertEquals("DONLON", swx.getIssuingCenter().getDesignator().get());
+        assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
@@ -240,7 +228,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_daylight_side_with_nil_location() throws Exception {
-        final String input = getInput("spacewx-daylight-side-nil-location.xml");
+        final String input = readResourceToString("spacewx-daylight-side-nil-location.xml");
 
         final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
@@ -249,7 +237,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
         final SpaceWeatherAdvisory swx = result.getConvertedMessage().get();
         assertEquals("ACFJ", swx.getIssuingCenter().getName().get());
-        assertEquals("SWXC", swx.getIssuingCenter().getDesignator().get());
+        assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
         assertEquals(2, swx.getAdvisoryNumber().getSerialNumber());
         assertEquals(ZonedDateTime.parse("2016-11-08T01:00Z"), swx.getIssueTime().get().getCompleteTime().get());
@@ -267,7 +255,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
 
     @Test
     public void testParser_illegal_nextAdvisory_indeterminatePosition() throws IOException {
-        final String input = getInput("spacewx-A2-4.xml");
+        final String input = readResourceToString("spacewx-A2-4.xml");
         for (final String illegalIndeterminatePosition : Arrays.asList("now", "unknown")) {
             final String illegalInput = input.replace("indeterminatePosition=\"before\"", "indeterminatePosition=\"" + illegalIndeterminatePosition + "\"");
             final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(illegalInput, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
@@ -277,15 +265,6 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase {
             assertTrue(String.format("Expected message containing <%s>, but was: <%s>", illegalIndeterminatePosition, errorMessage),
                     errorMessage.contains(illegalIndeterminatePosition.toUpperCase(Locale.US)));
         }
-    }
-
-    private void printIssues(final List<ConversionIssue> issues) {
-        if (issues.size() > 0) {
-            for (final ConversionIssue issue : issues) {
-                System.out.println(issue.getMessage());
-            }
-        }
-        assertTrue("No issues should have been found", issues.isEmpty());
     }
 
 }

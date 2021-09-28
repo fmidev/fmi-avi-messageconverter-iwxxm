@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin;
+package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
 import java.util.List;
 
@@ -34,6 +34,23 @@ public class MeteorologicalBulletinIWXXMScanner<S extends AviationWeatherMessage
 
     private AviMessageSpecificConverter<Document, S> contentMessageConverter;
 
+    private static IssueList collectHeading(final String bulletinIdentifier, final BulletinProperties properties) {
+        final IssueList retval = new IssueList();
+        try {
+            final GTSExchangeFileInfo info = GTSExchangeFileInfo.Builder.from(bulletinIdentifier).build();
+            properties.set(BulletinProperties.Name.HEADING, info.getHeading());
+            info.getTimeStampYear().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_YEAR, value));
+            info.getTimeStampMonth().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_MONTH, value));
+            info.getTimeStampDay().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_DAY, value));
+            info.getTimeStampHour().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_HOUR, value));
+            info.getTimeStampMinute().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_MINUTE, value));
+            info.getTimeStampSecond().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_SECOND, value));
+        } catch (final Exception e) {
+            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Could not parse bulletin heading info from the bulletinIdentifier", e);
+        }
+        return retval;
+    }
+
     public void setMessageConverter(final AviMessageSpecificConverter<Document, S> converter) {
         this.contentMessageConverter = converter;
     }
@@ -46,7 +63,7 @@ public class MeteorologicalBulletinIWXXMScanner<S extends AviationWeatherMessage
         try {
             XPathExpression expr = xpath.compile("/collect:MeteorologicalBulletin/collect:bulletinIdentifier");
             final String bulletinIdentifier = expr.evaluate(input.getDocumentElement());
-            if ("" .equals(bulletinIdentifier)) {
+            if (bulletinIdentifier.isEmpty()) {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No or empty bulletinIdentifier in MeteorologicalBulletin");
                 return retval;
             }
@@ -72,6 +89,9 @@ public class MeteorologicalBulletinIWXXMScanner<S extends AviationWeatherMessage
     }
 
     protected ConversionResult<S> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
+        if (this.contentMessageConverter == null) {
+            throw new IllegalStateException("messageConverter is not set");
+        }
         ConversionResult<S> retval = new ConversionResult<>();
         try {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -101,23 +121,6 @@ public class MeteorologicalBulletinIWXXMScanner<S extends AviationWeatherMessage
         } catch (final ParserConfigurationException e) {
             retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER,
                     "Error in creating DOM document for the contained" + " message", e));
-        }
-        return retval;
-    }
-
-    private static IssueList collectHeading(final String bulletinIdentifier, final BulletinProperties properties) {
-        final IssueList retval = new IssueList();
-        try {
-            final GTSExchangeFileInfo info = GTSExchangeFileInfo.Builder.from(bulletinIdentifier).build();
-            properties.set(BulletinProperties.Name.HEADING, info.getHeading());
-            info.getTimeStampYear().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_YEAR, value));
-            info.getTimeStampMonth().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_MONTH, value));
-            info.getTimeStampDay().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_DAY, value));
-            info.getTimeStampHour().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_HOUR, value));
-            info.getTimeStampMinute().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_MINUTE, value));
-            info.getTimeStampSecond().ifPresent((value) -> properties.set(BulletinProperties.Name.TIMESTAMP_SECOND, value));
-        } catch (final Exception e) {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Could not parse bulletin heading info from the bulletinIdentifier", e);
         }
         return retval;
     }

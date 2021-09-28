@@ -1,5 +1,5 @@
 {
-  "status": "NORMAL",
+  "reportStatus": "NORMAL",
   "issuingAirTrafficServicesUnit": {
     "name": "AMSTERDAM",
     "type": "FIR",
@@ -27,37 +27,28 @@
     "name": "AMSTERDAM",
     "type": "FIR"
   },
-  "movingSpeed": {
-    "value": 0.0,
-    "uom": "[kn_i]"
-  },
+
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "EXERCISE",
   "airmetPhenomenon": "MOD_ICE",
-  "analysisType": "OBSERVATION",
+
   "analysisGeometries": [
     {
+      "movingSpeed": {
+        "value": 0.0,
+        "uom": "[kn_i]"
+      },
+      "intensityChange": "NO_CHANGE",
+      "analysisType": "OBSERVATION",
       "geometry": {
         "geoGeometry": {
           "type": "Polygon",
           "crs": {
             "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
             "dimension": 2,
-            "axisLabels": [
-              "Lat",
-              "Lon"
-            ]
+            "axisLabels": ["Lat", "Lon"]
           },
-          "exteriorRingPositions": [
-            5.0,
-            52.0,
-            6.0,
-            53.0,
-            4.0,
-            54.0,
-            5.0,
-            52.0
-          ]
+          "exteriorRingPositions": [5.0, 52.0, 6.0, 53.0, 4.0, 54.0, 5.0, 52.0]
         }
       },
       "time": {
@@ -73,6 +64,5 @@
         "uom": "FL"
       }
     }
-  ],
-  "intensityChange": "NO_CHANGE"
+  ]
 }

@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
-import fi.fmi.avi.converter.iwxxm.bulletin.generic.GenericBulletinIWXXMParser;
+import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.GenericBulletinIWXXMParser;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
 @Configuration

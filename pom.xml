@@ -9,12 +9,12 @@
   <description>Aviation weather message conversions - IWXXM module</description>
   <groupId>fi.fmi.avi.converter</groupId>
   <artifactId>fmi-avi-messageconverter-iwxxm</artifactId>
-  <version>2.0.4</version>
+  <version>3.0.0</version>
   <scm>
     <connection>scm:git:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm.git</connection>
     <developerConnection>scm:git:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm.git</developerConnection>
     <url>https://github.com/fmidev/fmi-avi-messageconverter-iwxxm</url>
-    <tag>fmi-avi-messageconverter-iwxxm-2.0.4</tag>
+    <tag>fmi-avi-messageconverter-iwxxm-3.0.0</tag>
   </scm>
   <repositories>
     <repository>
@@ -61,6 +61,7 @@
       <groupId>fi.fmi.avi.converter</groupId>
       <artifactId>fmi-avi-messageconverter</artifactId>
       <version>6.0.10.KNMI-add-sigmet-tac-2-SNAPSHOT</version>
+      <!-- <version>5.0.0</version> -->
     </dependency>
     <dependency>
       <groupId>fi.fmi.xmlmodel</groupId>

@@ -35,10 +35,24 @@ public class IWXXMConverter {
             "TAF, XML/IWXXM 2.1");
 
     /**
+     * Pre-configured spec for {@link TAF} to IWXXM 3.0 XML format TAF document String.
+     * This spec ignores the patch version number, generally referring to the latest supported patch version.
+     */
+    public static final ConversionSpecification<TAF, String> TAF_POJO_TO_IWXXM30_STRING = new ConversionSpecification<>(TAF.class, String.class, null,
+            "TAF, XML/IWXXM 3.0");
+
+    /**
      * Pre-configured spec for {@link TAF} to IWXXM 2.1 XML format TAF document DOM Node.
      */
-    public static final ConversionSpecification<TAF, Document> TAF_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(TAF.class, Document.class,
-            null, "TAF, XML/IWXXM 2.1");
+    public static final ConversionSpecification<TAF, Document> TAF_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(TAF.class, Document.class, null,
+            "TAF, XML/IWXXM 2.1");
+
+    /**
+     * Pre-configured spec for {@link TAF} to IWXXM 3.0 XML format TAF document DOM Node.
+     * This spec ignores the patch version number, generally referring to the latest supported patch version.
+     */
+    public static final ConversionSpecification<TAF, Document> TAF_POJO_TO_IWXXM30_DOM = new ConversionSpecification<>(TAF.class, Document.class, null,
+            "TAF, XML/IWXXM 3.0");
 
     /**
      * Pre-configured spec for {@link TAF} to IWXXM 2.1 XML format TAFType JAXB class.
@@ -52,10 +66,22 @@ public class IWXXMConverter {
             "TAF, XML/IWXXM 2.1", null);
 
     /**
+     * Pre-configured spec for IWXXM 3.0 XML format TAF document String to {@link TAF}.
+     */
+    public static final ConversionSpecification<String, TAF> IWXXM30_STRING_TO_TAF_POJO = new ConversionSpecification<>(String.class, TAF.class,
+            "TAF, XML/IWXXM 3.0", null);
+
+    /**
      * Pre-configured spec for IWXXM 2.1 XML format TAF document DOM Node to {@link TAF}.
      */
     public static final ConversionSpecification<Document, TAF> IWXXM21_DOM_TO_TAF_POJO = new ConversionSpecification<>(Document.class, TAF.class,
             "TAF, XML/IWXXM 2.1", null);
+
+    /**
+     * Pre-configured spec for IWXXM 3.0 XML format TAF document DOM Node to {@link TAF}.
+     */
+    public static final ConversionSpecification<Document, TAF> IWXXM30_DOM_TO_TAF_POJO = new ConversionSpecification<>(Document.class, TAF.class,
+            "TAF, XML/IWXXM 3.0", null);
 
     /**
      * Pre-configured spec for {@link TAFBulletin} to WMO COLLECT 1.2 XML String containing IWXXM 2.1 TAFs.
@@ -64,10 +90,22 @@ public class IWXXMConverter {
             String.class, null, "XML/WMO COLLECT 1.2 + IWXXM 2.1 TAF");
 
     /**
+     * Pre-configured spec for {@link TAFBulletin} to WMO COLLECT 1.2 XML String containing IWXXM 3.0 TAFs.
+     */
+    public static final ConversionSpecification<TAFBulletin, String> TAF_BULLETIN_POJO_TO_WMO_COLLECT_IWXXM30_STRING = new ConversionSpecification<>(
+            TAFBulletin.class, String.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 TAF");
+
+    /**
      * Pre-configured spec for {@link TAFBulletin} to WMO COLLECT 1.2 XML DOM document containing IWXXM 2.1 TAFs.
      */
     public static final ConversionSpecification<TAFBulletin, Document> TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM = new ConversionSpecification<>(TAFBulletin.class,
             Document.class, null, "XML/WMO COLLECT 1.2 + IWXXM 2.1 TAF");
+
+    /**
+     * Pre-configured spec for {@link TAFBulletin} to WMO COLLECT 1.2 XML DOM document containing IWXXM 3.0 TAFs.
+     */
+    public static final ConversionSpecification<TAFBulletin, Document> TAF_BULLETIN_POJO_TO_WMO_COLLECT_IWXXM30_DOM = new ConversionSpecification<>(
+            TAFBulletin.class, Document.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 TAF");
 
     /**
      * Pre-configured spec for WMO COLLECT 1.2 XML String containing IWXXM 2.1 TAFs to {@link TAFBulletin}.
@@ -76,10 +114,22 @@ public class IWXXMConverter {
             TAFBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 2.1 TAF", null);
 
     /**
+     * Pre-configured spec for WMO COLLECT 1.2 XML String containing IWXXM 3.0 TAFs to {@link TAFBulletin}.
+     */
+    public static final ConversionSpecification<String, TAFBulletin> WMO_COLLECT_IWXXM30_STRING_TO_TAF_BULLETIN_POJO = new ConversionSpecification<>(
+            String.class, TAFBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 TAF", null);
+
+    /**
      * Pre-configured spec for WMO COLLECT 1.2 XML DOM document containing IWXXM 2.1 TAFs to {@link TAFBulletin}.
      */
     public static final ConversionSpecification<Document, TAFBulletin> WMO_COLLECT_DOM_TO_TAF_BULLETIN_POJO = new ConversionSpecification<>(Document.class,
             TAFBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 2.1 TAF", null);
+
+    /**
+     * Pre-configured spec for WMO COLLECT 1.2 XML DOM document containing IWXXM 3.0 TAFs to {@link TAFBulletin}.
+     */
+    public static final ConversionSpecification<Document, TAFBulletin> WMO_COLLECT_IWXXM30_DOM_TO_TAF_BULLETIN_POJO = new ConversionSpecification<>(
+            Document.class, TAFBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 TAF", null);
 
     // *******************
     //  METAR & SPECI
@@ -128,14 +178,14 @@ public class IWXXMConverter {
     /**
      * Pre-configured spec for {@link SIGMET} to IWXXM 2.1 XML format SIGMET document String.
      */
-    public static final ConversionSpecification<SIGMET, String> SIGMET_POJO_TO_IWXXM21_STRING = new ConversionSpecification<>(SIGMET.class, String.class,
-            null, "SIGMET, XML/IWXXM 2.1");
+    public static final ConversionSpecification<SIGMET, String> SIGMET_POJO_TO_IWXXM21_STRING = new ConversionSpecification<>(SIGMET.class, String.class, null,
+            "SIGMET, XML/IWXXM 2.1");
 
     /**
      * Pre-configured spec for {@link SIGMET} to IWXXM 2.1 XML format SIGMET document DOM Node.
      */
-    public static final ConversionSpecification<SIGMET, Document> SIGMET_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(SIGMET.class, Document.class,
-            null, "SIGMET, XML/IWXXM 2.1");
+    public static final ConversionSpecification<SIGMET, Document> SIGMET_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(SIGMET.class, Document.class, null,
+            "SIGMET, XML/IWXXM 2.1");
 
     /**
      * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document String.

@@ -1,7 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v2_1.taf;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,18 +35,19 @@ import fi.fmi.avi.model.taf.TAFChangeForecast;
 import fi.fmi.avi.model.taf.immutable.TAFBaseForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFChangeForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFImpl;
-import fi.fmi.avi.model.taf.immutable.TAFReferenceImpl;
 import icao.iwxxm21.TAFType;
 
 /**
  * Common functionality for conversions related to reading IWXXM TAFs.
  *
- * @param <T> the type of the raw input message
+ * @param <T>
+ *         the type of the raw input message
  */
 public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
 
     @Override
-    protected TAF createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx, final ConversionResult<TAF> result, final ConversionHints hints) {
+    protected TAF createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx, final ConversionResult<TAF> result,
+            final ConversionHints hints) {
         Objects.requireNonNull(source, "source cannot be null");
         final TAFType input;
         if (TAFType.class.isAssignableFrom(source.getClass())) {
@@ -69,61 +69,64 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         result.addIssue(TAFIWXXMScanner.collectTAFProperties(input, refCtx, properties, hints));
 
         //Build the TAF:
-        final Optional<AviationCodeListUser.TAFStatus> status = properties.get(TAFProperties.Name.STATUS, AviationCodeListUser.TAFStatus.class);
-        if (!status.isPresent()) {
+        final TAFImpl.Builder tafBuilder = TAFImpl.builder();
+
+        final AviationCodeListUser.TAFStatus tafStatus = properties.get(TAFProperties.Name.STATUS, AviationCodeListUser.TAFStatus.class).orElse(null);
+        if (tafStatus == null) {
             result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "TAF status not known, unable to " + "proceed"));
             return null;
         }
-
-        final TAFImpl.Builder tafBuilder = TAFImpl.builder();
-        tafBuilder.setStatus(status.get());
+        tafBuilder//
+                .setReportStatus(tafStatus.getReportStatus())//
+                .setCancelMessage(tafStatus.isCancelMessage());
         properties.get(TAFProperties.Name.ISSUE_TIME, PartialOrCompleteTimeInstant.class).ifPresent(tafBuilder::setIssueTime);
 
-        if (!AviationCodeListUser.TAFStatus.MISSING.equals(status.get())) {
+        if (!AviationCodeListUser.TAFStatus.MISSING.equals(tafStatus)) {
             properties.get(TAFProperties.Name.VALID_TIME, PartialOrCompleteTimePeriod.class).ifPresent(tafBuilder::setValidityTime);
             final List<OMObservationProperties> fctProps = properties.getList(TAFProperties.Name.CHANGE_FORECAST, OMObservationProperties.class);
             if (!fctProps.isEmpty()) {
-                final List<TAFChangeForecast> changeForecasts = new ArrayList<>();
-                for (final OMObservationProperties fctProp : fctProps) {
-                    changeForecasts.add(createChangeForecast(fctProp));
-                }
-                tafBuilder.setChangeForecasts(changeForecasts);
+                tafBuilder.setChangeForecasts(fctProps.stream()//
+                        .map(this::createChangeForecast)//
+                        .collect(toImmutableList()));
             }
         }
 
-        properties.get(TAFProperties.Name.BASE_FORECAST, OMObservationProperties.class).ifPresent((fctProp) -> {
-            Optional<Aerodrome> aerodrome = fctProp.get(OMObservationProperties.Name.AERODROME, Aerodrome.class);
+        final Aerodrome[] aerodrome = new Aerodrome[1];
+        properties.get(TAFProperties.Name.BASE_FORECAST, OMObservationProperties.class).ifPresent(fctProp -> {
+            aerodrome[0] = fctProp.get(OMObservationProperties.Name.AERODROME, Aerodrome.class).orElse(null);
             final Optional<ElevatedPoint> samplingPos = fctProp.get(OMObservationProperties.Name.SAMPLING_POINT, ElevatedPoint.class);
-            if (aerodrome.isPresent()) {
-                if (!aerodrome.get().getReferencePoint().isPresent()) {
-                    if (samplingPos.isPresent()) {
-                        //Use the sampling pos a fallback for a missing aerodrome referencePoint:
-                        aerodrome = Optional.of(AerodromeImpl.immutableCopyOf(aerodrome.get()).toBuilder().setReferencePoint(samplingPos.get()).build());
-                    }
+            if (aerodrome[0] != null) {
+                if (!aerodrome[0].getReferencePoint().isPresent()) {
+                    samplingPos.ifPresent(
+                            //Use the sampling pos a fallback for a missing aerodrome referencePoint:
+                            elevatedPoint -> aerodrome[0] = AerodromeImpl.Builder.from(aerodrome[0]).setReferencePoint(elevatedPoint).build());
                 }
+                tafBuilder.setAerodrome(aerodrome[0]);
             }
-            aerodrome.ifPresent(tafBuilder::setAerodrome);
-            fctProp.get(OMObservationProperties.Name.RESULT, TAFForecastRecordProperties.class).ifPresent((recordProp) -> {
-                tafBuilder.setBaseForecast(createBaseForecast(recordProp));
-            });
+            if (tafStatus != AviationCodeListUser.TAFStatus.MISSING) {
+                fctProp.get(OMObservationProperties.Name.RESULT, TAFForecastRecordProperties.class)
+                        .ifPresent(recordProp -> tafBuilder.setBaseForecast(createBaseForecast(recordProp)));
+            }
         });
 
-        final Optional<Aerodrome> previousReportAerodrome = properties.get(TAFProperties.Name.PREV_REPORT_AERODROME, Aerodrome.class);
-        final Optional<PartialOrCompleteTimePeriod> previousReportValidTime = properties.get(TAFProperties.Name.PREV_REPORT_VALID_TIME,
-                PartialOrCompleteTimePeriod.class);
-        if (previousReportAerodrome.isPresent() && previousReportValidTime.isPresent()) {
-            tafBuilder.setReferredReport(
-                    TAFReferenceImpl.builder().setAerodrome(previousReportAerodrome.get()).setValidityTime(previousReportValidTime.get()).build());
+        if (aerodrome[0] == null) {
+            // Read aerodrome from previous report only if not present in "current" report.
+            properties.get(TAFProperties.Name.PREV_REPORT_AERODROME, Aerodrome.class)//
+                    .ifPresent(tafBuilder::setAerodrome);
         }
 
-        properties.get(TAFProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent((metaProps) -> {
+        properties.get(TAFProperties.Name.PREV_REPORT_VALID_TIME, PartialOrCompleteTimePeriod.class)//
+                .ifPresent(tafBuilder::setReferredReportValidPeriod);
+
+        properties.get(TAFProperties.Name.REPORT_METADATA, GenericReportProperties.class).ifPresent(metaProps -> {
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE, AviationCodeListUser.PermissibleUsage.class)
                     .ifPresent(tafBuilder::setPermissibleUsage);
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_REASON, AviationCodeListUser.PermissibleUsageReason.class)
                     .ifPresent(tafBuilder::setPermissibleUsageReason);
             metaProps.get(GenericReportProperties.Name.PERMISSIBLE_USAGE_SUPPLEMENTARY, String.class).ifPresent(tafBuilder::setPermissibleUsageSupplementary);
             metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_ID, String.class).ifPresent(tafBuilder::setTranslatedBulletinID);
-            metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_RECEPTION_TIME, ZonedDateTime.class).ifPresent(tafBuilder::setTranslatedBulletinReceptionTime);
+            metaProps.get(GenericReportProperties.Name.TRANSLATED_BULLETIN_RECEPTION_TIME, ZonedDateTime.class)
+                    .ifPresent(tafBuilder::setTranslatedBulletinReceptionTime);
             metaProps.get(GenericReportProperties.Name.TRANSLATION_CENTRE_DESIGNATOR, String.class).ifPresent(tafBuilder::setTranslationCentreDesignator);
             metaProps.get(GenericReportProperties.Name.TRANSLATION_CENTRE_NAME, String.class).ifPresent(tafBuilder::setTranslationCentreName);
             metaProps.get(GenericReportProperties.Name.TRANSLATION_TIME, ZonedDateTime.class).ifPresent(tafBuilder::setTranslationTime);
@@ -141,7 +144,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         source.get(TAFForecastRecordProperties.Name.SURFACE_WIND, SurfaceWind.class).ifPresent(builder::setSurfaceWind);
         final Optional<Boolean> nsw = source.get(TAFForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.class);
         final List<Weather> weather = source.getList(TAFForecastRecordProperties.Name.WEATHER, Weather.class);
-        if (nsw.isPresent() && nsw.get()) {
+        if (nsw.orElse(false)) {
             builder.setNoSignificantWeather(true);
         } else if (!weather.isEmpty()) {
             builder.setForecastWeather(weather);
@@ -185,9 +188,13 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         /**
          * Returns the TAF input message as A DOM Document.
          *
-         * @param input the XML Document input as a String
+         * @param input
+         *         the XML Document input as a String
+         *
          * @return the input parsed as DOM
-         * @throws ConversionException if an exception occurs while converting input to DOM
+         *
+         * @throws ConversionException
+         *         if an exception occurs while converting input to DOM
          */
         @Override
         protected Document parseAsDom(final String input) throws ConversionException {
@@ -199,7 +206,9 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         /**
          * Returns the TAF input message as A DOM Document.
          *
-         * @param input the XML Document input as a String
+         * @param input
+         *         the XML Document input as a String
+         *
          * @return the input parsed as DOM
          */
         @Override

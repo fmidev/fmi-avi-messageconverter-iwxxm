@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.v2_1;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
@@ -101,7 +102,7 @@ public class TAFBulletinIWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         final TAFBulletin tb = getTAFBulletin("taf12.json", "taf1.json");
         final ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
@@ -112,7 +113,7 @@ public class TAFBulletinIWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
         final TAFBulletin tb = getTAFBulletin("taf12.json", "taf1.json");
         final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
@@ -127,7 +128,7 @@ public class TAFBulletinIWXXMSerializerTest {
         assertEquals("A_LTFI31EFKL301115_C_EFKL_2017073011----.xml", bulletinId);
 
         expr = xpath.compile("count(/collect:MeteorologicalBulletin/collect:meteorologicalInformation)");
-        assertTrue(2 == Integer.parseInt(expr.evaluate(docElement)));
+        assertEquals(2, Integer.parseInt(expr.evaluate(docElement)));
 
         expr = xpath.compile("/collect:MeteorologicalBulletin/collect:meteorologicalInformation[1]/iwxxm:TAF"
                 + "/iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature"
@@ -137,14 +138,15 @@ public class TAFBulletinIWXXMSerializerTest {
     }
 
     protected TAF readFromJSON(final String fileName) throws IOException {
-        final ObjectMapper om = new ObjectMapper();
-        om.registerModule(new Jdk8Module());
-        om.registerModule(new JavaTimeModule());
-        final InputStream is = TAFBulletinIWXXMSerializerTest.class.getResourceAsStream(fileName);
-        if (is != null) {
-            return om.readValue(is, TAFImpl.class);
-        } else {
-            throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Jdk8Module());
+        objectMapper.registerModule(new JavaTimeModule());
+        try (InputStream inputStream = TAFBulletinIWXXMSerializerTest.class.getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                return objectMapper.readValue(inputStream, TAFImpl.class);
+            } else {
+                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+            }
         }
     }
 }

@@ -40,6 +40,7 @@ functionality to the AviMessageParser instance using Spring:
 
 ```java
 package my.stuff;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,28 +54,28 @@ import fi.fmi.avi.model.taf.TAF;
 @Configuration
 @Import(fi.fmi.avi.converter.iwxxm.IWXXMConverter.class)
 public class MyMessageConverterConfig {
-    
+
     @Autowired
     private AviMessageSpecificConverter<TAF, Document> tafIWXXMDOMSerializer;
-    
+
     @Autowired
     private AviMessageSpecificConverter<TAF, String> tafIWXXMStringSerializer;
-    
+
     @Autowired
     private AviMessageSpecificConverter<Document, TAF> tafIWXXMDOMParser;
-   
+
     @Autowired
     private AviMessageSpecificConverter<String, TAF> tafIWXXMStringParser;
-   
+
     @Bean
     public AviMessageConverter aviMessageConverter() {
-        AviMessageConverter p = new AviMessageConverter();
-        p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM,tafIWXXMDOMSerializer);
-        p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING,tafIWXXMStringSerializer);
+        final AviMessageConverter p = new AviMessageConverter();
+        p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM, tafIWXXMDOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING, tafIWXXMStringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, tafIWXXMStringParser);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, tafIWXXMDOMParser);
         return p;
-     }
+    }
 
 }
 ```

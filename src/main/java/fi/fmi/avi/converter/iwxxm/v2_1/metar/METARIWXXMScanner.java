@@ -86,30 +86,30 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
 
     public static List<ConversionIssue> collectMETARProperties(final MeteorologicalAerodromeObservationReportType input,
             final ReferredObjectRetrievalContext refCtx, final METARProperties properties, final ConversionHints hints) {
-        IssueList retval = new IssueList();
+        final IssueList retval = new IssueList();
 
-        MeteorologicalAerodromeReportStatusType status = input.getStatus();
+        final MeteorologicalAerodromeReportStatusType status = input.getStatus();
         if (status != null) {
             properties.set(METARProperties.Name.STATUS, AviationCodeListUser.MetarStatus.valueOf(status.name()));
         } else {
             retval.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Status is not given"));
         }
 
-        properties.set(METARProperties.Name.SPECI, Boolean.valueOf(input instanceof SPECIType));
+        properties.set(METARProperties.Name.SPECI, input instanceof SPECIType);
 
         // report metadata
-        GenericReportProperties meta = new GenericReportProperties();
+        final GenericReportProperties meta = new GenericReportProperties();
         retval.addAll(AbstractIWXXM21Scanner.collectReportMetadata(input, meta, hints));
         properties.set(METARProperties.Name.REPORT_METADATA, meta);
 
         if (MeteorologicalAerodromeReportStatusType.MISSING == status) {
             boolean missingFound = false;
             if (input.getObservation() != null && input.getObservation().getOMObservation() != null) {
-                Object result = input.getObservation().getOMObservation().getResult();
+                final Object result = input.getObservation().getOMObservation().getResult();
                 if (result instanceof Node) {
-                    Node resultNode = (Node) result;
-                    NamedNodeMap attrs = resultNode.getAttributes();
-                    Node nilReasonAttr = attrs.getNamedItem("nilReason");
+                    final Node resultNode = (Node) result;
+                    final NamedNodeMap attrs = resultNode.getAttributes();
+                    final Node nilReasonAttr = attrs.getNamedItem("nilReason");
                     if (nilReasonAttr != null) {
                         if ("missing".equals(nilReasonAttr.getNodeValue())) {
                             missingFound = true;
@@ -131,9 +131,9 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
         properties.set(METARProperties.Name.AUTOMATED, input.isAutomatedStation());
 
         // observation
-        Optional<OMObservationType> observation = resolveProperty(input.getObservation(), OMObservationType.class, refCtx);
+        final Optional<OMObservationType> observation = resolveProperty(input.getObservation(), OMObservationType.class, refCtx);
         if (observation.isPresent()) {
-            OMObservationProperties obsProps = new OMObservationProperties();
+            final OMObservationProperties obsProps = new OMObservationProperties();
             retval.addAll(collectObservationProperties(observation.get(), status, refCtx, properties, obsProps, hints));
             properties.set(METARProperties.Name.OBSERVATION, obsProps);
         } else {
@@ -142,16 +142,16 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
 
         // trends
         withEachNillableChild(input, input.getTrendForecast(), OMObservationPropertyType.class,
-                new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "trendForecast"), refCtx, (value) -> {
-                    Optional<OMObservationType> trend = resolveProperty(value, OMObservationType.class, refCtx);
+                new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "trendForecast"), refCtx, value -> {
+                    final Optional<OMObservationType> trend = resolveProperty(value, OMObservationType.class, refCtx);
                     if (trend.isPresent()) {
-                        OMObservationProperties trendProps = new OMObservationProperties();
+                        final OMObservationProperties trendProps = new OMObservationProperties();
                         retval.addAll(collectTrendProperties(trend.get(), refCtx, trendProps, hints));
                         properties.addToList(METARProperties.Name.TREND_FORECAST, trendProps);
                     } else {
                         retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No Observation in METAR");
                     }
-                }, (nilReasons) -> {
+                }, nilReasons -> {
                     if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NO_SIGNIFICANT_CHANGE)) {
                         properties.set(METARProperties.Name.TREND_NO_SIGNIFICANT_CHANGES, Boolean.TRUE);
                         if (input.getTrendForecast().size() != 1) {
@@ -165,18 +165,18 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
     }
 
     private static IssueList collectObservationProperties(final OMObservationType obs, final MeteorologicalAerodromeReportStatusType metarStatus,
-            final ReferredObjectRetrievalContext refCtx,
-            final METARProperties metarProps, final OMObservationProperties properties, final ConversionHints hints) {
-        IssueList retval = AbstractIWXXM21Scanner.collectCommonObsMetadata(obs, refCtx, properties, "METAR Observation", hints);
+            final ReferredObjectRetrievalContext refCtx, final METARProperties metarProps, final OMObservationProperties properties,
+            final ConversionHints hints) {
+        final IssueList retval = AbstractIWXXM21Scanner.collectCommonObsMetadata(obs, refCtx, properties, "METAR Observation", hints);
         //check type & observedProperty:
-        Optional<String> type = properties.get(OMObservationProperties.Name.TYPE, String.class);
+        final Optional<String> type = properties.get(OMObservationProperties.Name.TYPE, String.class);
         if (type.isPresent()) {
             if (!AviationCodeListUser.MET_AERODROME_OBSERVATION_TYPE.equals(type.get())) {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
                         "Invalid observation type '" + type.get() + "', expected '" + AviationCodeListUser.MET_AERODROME_OBSERVATION_TYPE + "'");
             }
         }
-        Optional<String> observedProperty = properties.get(OMObservationProperties.Name.OBSERVED_PROPERTY, String.class);
+        final Optional<String> observedProperty = properties.get(OMObservationProperties.Name.OBSERVED_PROPERTY, String.class);
         if (observedProperty.isPresent()) {
             if (!AviationCodeListUser.MET_AERODROME_OBSERVATION_PROPERTIES.equals(observedProperty.get())) {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
@@ -185,10 +185,10 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
             }
         }
         if (obs.getPhenomenonTime() != null) {
-            Optional<PartialOrCompleteTimeInstant> phenomenonTime = AbstractIWXXM21Serializer.getCompleteTimeInstant(obs.getPhenomenonTime(), refCtx);
+            final Optional<PartialOrCompleteTimeInstant> phenomenonTime = AbstractIWXXM21Serializer.getCompleteTimeInstant(obs.getPhenomenonTime(), refCtx);
             if (phenomenonTime.isPresent()) {
                 properties.set(OMObservationProperties.Name.PHENOMENON_TIME, phenomenonTime.get());
-                Optional<PartialOrCompleteTimeInstant> resultTime = properties.get(OMObservationProperties.Name.RESULT_TIME,
+                final Optional<PartialOrCompleteTimeInstant> resultTime = properties.get(OMObservationProperties.Name.RESULT_TIME,
                         PartialOrCompleteTimeInstant.class);
                 if (resultTime.isPresent()) {
                     if (!phenomenonTime.equals(resultTime)) {
@@ -202,24 +202,23 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
         } else {
             retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "phenomenonTime missing for METAR observation");
         }
-        Optional<Aerodrome> aerodrome = properties.get(OMObservationProperties.Name.AERODROME, Aerodrome.class);
+        final Aerodrome aerodrome = properties.get(OMObservationProperties.Name.AERODROME, Aerodrome.class).orElse(null);
 
-        Optional<MeteorologicalAerodromeObservationRecordType> obsRecord = AbstractIWXXM21Scanner.getAerodromeObservationRecordResult(obs, refCtx);
+        final Optional<MeteorologicalAerodromeObservationRecordType> obsRecord = AbstractIWXXM21Scanner.getAerodromeObservationRecordResult(obs, refCtx);
         if (obsRecord.isPresent()) {
-            ObservationRecordProperties obsProps = new ObservationRecordProperties();
+            final ObservationRecordProperties obsProps = new ObservationRecordProperties();
 
             //Surface wind (M)
-            AerodromeSurfaceWindPropertyType windProp = obsRecord.get().getSurfaceWind();
+            final AerodromeSurfaceWindPropertyType windProp = obsRecord.get().getSurfaceWind();
             if (windProp != null) {
-                withSurfaceWindBuilderFor(windProp, refCtx, (builder) -> {
-                    obsProps.set(ObservationRecordProperties.Name.SURFACE_WIND, builder.build());
-                }, retval::add);
+                withSurfaceWindBuilderFor(windProp, refCtx, builder -> obsProps.set(ObservationRecordProperties.Name.SURFACE_WIND, builder.build()),
+                        retval::add);
             } else {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Surface wind is missing in non-missing METAR Observation");
             }
 
             // Air temperature (M)
-            Optional<NumericMeasure> airTemp = asNumericMeasure(obsRecord.get().getAirTemperature());
+            final Optional<NumericMeasure> airTemp = asNumericMeasure(obsRecord.get().getAirTemperature());
             if (airTemp.isPresent()) {
                 obsProps.set(ObservationRecordProperties.Name.AIR_TEMPERATURE, airTemp.get());
             } else {
@@ -227,7 +226,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
             }
 
             //Dew point temperature (M)
-            Optional<NumericMeasure> dewpointTemp = asNumericMeasure(obsRecord.get().getDewpointTemperature());
+            final Optional<NumericMeasure> dewpointTemp = asNumericMeasure(obsRecord.get().getDewpointTemperature());
             if (dewpointTemp.isPresent()) {
                 obsProps.set(ObservationRecordProperties.Name.DEWPOINT_TEMPERATURE, dewpointTemp.get());
             } else {
@@ -236,7 +235,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
             }
 
             //QNH (M)
-            Optional<NumericMeasure> qnh = asNumericMeasure(obsRecord.get().getQnh());
+            final Optional<NumericMeasure> qnh = asNumericMeasure(obsRecord.get().getQnh());
             if (qnh.isPresent()) {
                 obsProps.set(ObservationRecordProperties.Name.QNH, qnh.get());
             } else {
@@ -244,41 +243,36 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
             }
 
             //Recent weather (C)
-            for (AerodromeRecentWeatherType weather:obsRecord.get().getRecentWeather()) {
-                AbstractIWXXM21Scanner.withWeatherBuilderFor(weather, hints, (builder) -> {
-                    obsProps.addToList(ObservationRecordProperties.Name.RECENT_WEATHER, builder.build());
-                }, retval::add);
+            for (final AerodromeRecentWeatherType weather : obsRecord.get().getRecentWeather()) {
+                AbstractIWXXM21Scanner.withWeatherBuilderFor(weather, hints,
+                        builder -> obsProps.addToList(ObservationRecordProperties.Name.RECENT_WEATHER, builder.build()), retval::add);
             }
 
             //wind shear (C)
-            AerodromeWindShearPropertyType wsProp = obsRecord.get().getWindShear();
+            final AerodromeWindShearPropertyType wsProp = obsRecord.get().getWindShear();
             if (wsProp != null) {
-                withWindShearBuilderFor(wsProp, aerodrome, refCtx, (wsBuilder) -> {
-                    obsProps.set(ObservationRecordProperties.Name.WIND_SHEAR, wsBuilder.build());
-                }, retval::add);
+                withWindShearBuilderFor(wsProp, aerodrome, refCtx, wsBuilder -> obsProps.set(ObservationRecordProperties.Name.WIND_SHEAR, wsBuilder.build()),
+                        retval::add);
             }
 
             //sea state (C)
-            AerodromeSeaStatePropertyType ssProp = obsRecord.get().getSeaState();
+            final AerodromeSeaStatePropertyType ssProp = obsRecord.get().getSeaState();
             if (ssProp != null) {
-                withSeaStateBuilderFor(ssProp, refCtx, (ssBuilder) -> {
-                    obsProps.set(ObservationRecordProperties.Name.SEA_STATE, ssBuilder.build());
-                }, retval::add);
+                withSeaStateBuilderFor(ssProp, refCtx, ssBuilder -> obsProps.set(ObservationRecordProperties.Name.SEA_STATE, ssBuilder.build()), retval::add);
             }
 
             // runway state (C)
             boolean snoCloPresent = false;
             boolean nonSnoCloRWSPresent = false;
-            for (AerodromeRunwayStatePropertyType rvsProp : obsRecord.get().getRunwayState()) {
-                Optional<AerodromeRunwayStateType> rvs = resolveProperty(rvsProp, AerodromeRunwayStateType.class, refCtx);
+            for (final AerodromeRunwayStatePropertyType rvsProp : obsRecord.get().getRunwayState()) {
+                final Optional<AerodromeRunwayStateType> rvs = resolveProperty(rvsProp, AerodromeRunwayStateType.class, refCtx);
                 if (rvs.isPresent()) {
                     if (rvs.get().isSnowClosure() != null && rvs.get().isSnowClosure()) {
                         snoCloPresent = true;
                     } else {
                         nonSnoCloRWSPresent = true;
-                        withRunwayStateBuilderFor(rvsProp, aerodrome, refCtx, (rvsBuilder) -> {
-                            obsProps.addToList(ObservationRecordProperties.Name.RUNWAY_STATE, rvsBuilder.build());
-                        }, retval::add);
+                        withRunwayStateBuilderFor(rvsProp, aerodrome, refCtx,
+                                rvsBuilder -> obsProps.addToList(ObservationRecordProperties.Name.RUNWAY_STATE, rvsBuilder.build()), retval::add);
                     }
                 }
             }
@@ -312,35 +306,31 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
 
             } else {
                 //Horizontal visibility (M)
-                AerodromeHorizontalVisibilityPropertyType visProp = obsRecord.get().getVisibility();
+                final AerodromeHorizontalVisibilityPropertyType visProp = obsRecord.get().getVisibility();
                 if (visProp != null) {
-                    withVisibilityBuilderFor(visProp, refCtx, (builder) -> {
-                        obsProps.set(ObservationRecordProperties.Name.VISIBILITY, builder.build());
-                    }, retval::add);
+                    withVisibilityBuilderFor(visProp, refCtx, builder -> obsProps.set(ObservationRecordProperties.Name.VISIBILITY, builder.build()),
+                            retval::add);
                 } else {
                     retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Horizontal visibility missing in METAR Observation");
                 }
 
                 //RVR (C)
-                for (AerodromeRunwayVisualRangePropertyType rvrProp : obsRecord.get().getRvr()) {
-                    withRunwayVisualRangeBuilderFor(rvrProp, aerodrome, refCtx, (rvrBuilder) -> {
-                        obsProps.addToList(ObservationRecordProperties.Name.RUNWAY_VISUAL_RANGE, rvrBuilder.build());
-                    }, retval::add);
+                for (final AerodromeRunwayVisualRangePropertyType rvrProp : obsRecord.get().getRvr()) {
+                    withRunwayVisualRangeBuilderFor(rvrProp, aerodrome, refCtx,
+                            rvrBuilder -> obsProps.addToList(ObservationRecordProperties.Name.RUNWAY_VISUAL_RANGE, rvrBuilder.build()), retval::add);
                 }
 
                 // Present weather (C)
-                for (AerodromePresentWeatherType weather:obsRecord.get().getPresentWeather()) {
-                    AbstractIWXXM21Scanner.withWeatherBuilderFor(weather, hints, (builder) -> {
-                        obsProps.addToList(ObservationRecordProperties.Name.PRESENT_WEATHER, builder.build());
-                    }, retval::add);
+                for (final AerodromePresentWeatherType weather : obsRecord.get().getPresentWeather()) {
+                    AbstractIWXXM21Scanner.withWeatherBuilderFor(weather, hints,
+                            builder -> obsProps.addToList(ObservationRecordProperties.Name.PRESENT_WEATHER, builder.build()), retval::add);
                 }
 
                 // Cloud (M)
-                JAXBElement<MeteorologicalAerodromeObservationRecordType.Cloud> cloudElement = obsRecord.get().getCloud();
+                final JAXBElement<MeteorologicalAerodromeObservationRecordType.Cloud> cloudElement = obsRecord.get().getCloud();
                 if (cloudElement != null) {
-                    withObservedCloudBuilderFor(cloudElement, refCtx, (cloudBuilder) -> {
-                        obsProps.set(ObservationRecordProperties.Name.CLOUD, cloudBuilder.build());
-                    }, retval::add);
+                    withObservedCloudBuilderFor(cloudElement, refCtx,
+                            cloudBuilder -> obsProps.set(ObservationRecordProperties.Name.CLOUD, cloudBuilder.build()), retval::add);
                 }
             }
             properties.set(OMObservationProperties.Name.RESULT, obsProps);
@@ -352,16 +342,16 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
 
     private static IssueList collectTrendProperties(final OMObservationType trend, final ReferredObjectRetrievalContext refCtx,
             final OMObservationProperties properties, final ConversionHints hints) {
-        IssueList retval = AbstractIWXXM21Scanner.collectCommonObsMetadata(trend, refCtx, properties, "METAR Trend", hints);
+        final IssueList retval = AbstractIWXXM21Scanner.collectCommonObsMetadata(trend, refCtx, properties, "METAR Trend", hints);
         //check type & observedProperty:
-        Optional<String> type = properties.get(OMObservationProperties.Name.TYPE, String.class);
+        final Optional<String> type = properties.get(OMObservationProperties.Name.TYPE, String.class);
         if (type.isPresent()) {
             if (!AviationCodeListUser.TREND_FORECAST_OBSERVATION_TYPE.equals(type.get())) {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
                         "Invalid observation type '" + type.get() + "', expected '" + AviationCodeListUser.TREND_FORECAST_OBSERVATION_TYPE + "'");
             }
         }
-        Optional<String> observedProperty = properties.get(OMObservationProperties.Name.OBSERVED_PROPERTY, String.class);
+        final Optional<String> observedProperty = properties.get(OMObservationProperties.Name.OBSERVED_PROPERTY, String.class);
         if (observedProperty.isPresent()) {
             if (!AviationCodeListUser.TREND_FORECAST_PROPERTIES.equals(observedProperty.get())) {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
@@ -370,10 +360,10 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
         }
         //phenomenonTime (C)
         if (trend.getPhenomenonTime() != null) {
-            Optional<PartialOrCompleteTimePeriod> phenomenonTime = AbstractIWXXM21Serializer.getCompleteTimePeriod(trend.getPhenomenonTime(), refCtx);
+            final Optional<PartialOrCompleteTimePeriod> phenomenonTime = AbstractIWXXM21Serializer.getCompleteTimePeriod(trend.getPhenomenonTime(), refCtx);
             if (phenomenonTime.isPresent()) {
-                Optional<PartialOrCompleteTimeInstant> start = phenomenonTime.get().getStartTime();
-                Optional<PartialOrCompleteTimeInstant> end = phenomenonTime.get().getEndTime();
+                final Optional<PartialOrCompleteTimeInstant> start = phenomenonTime.get().getStartTime();
+                final Optional<PartialOrCompleteTimeInstant> end = phenomenonTime.get().getEndTime();
                 if (start.isPresent() && end.isPresent() && start.get().equals(end.get())) {
                     // zero-length period, silently convert to an instant:
                     properties.set(OMObservationProperties.Name.PHENOMENON_TIME, start.get());
@@ -381,67 +371,62 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                     properties.set(OMObservationProperties.Name.PHENOMENON_TIME, phenomenonTime.get());
                 }
             } else {
-                Optional<PartialOrCompleteTimeInstant> phenomenonTimeInstant = AbstractIWXXM21Serializer.getCompleteTimeInstant(trend.getPhenomenonTime(),
+                final Optional<PartialOrCompleteTimeInstant> phenomenonTimeInstant = AbstractIWXXM21Serializer.getCompleteTimeInstant(trend.getPhenomenonTime(),
                         refCtx);
-                phenomenonTimeInstant.ifPresent((time) -> properties.set(OMObservationProperties.Name.PHENOMENON_TIME, time));
+                phenomenonTimeInstant.ifPresent(time -> properties.set(OMObservationProperties.Name.PHENOMENON_TIME, time));
             }
 
         }
-        Optional<MeteorologicalAerodromeTrendForecastRecordType> trendRecord = AbstractIWXXM21Scanner.getAerodromeTrendRecordResult(trend, refCtx);
-        if (trendRecord.isPresent()) {
-
-            TrendForecastRecordProperties trendProps = new TrendForecastRecordProperties();
+        final MeteorologicalAerodromeTrendForecastRecordType trendRecord = AbstractIWXXM21Scanner.getAerodromeTrendRecordResult(trend, refCtx).orElse(null);
+        if (trendRecord == null) {
+            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No observation result record in METAR Trend");
+        } else {
+            final TrendForecastRecordProperties trendProps = new TrendForecastRecordProperties();
             //change indicator (M)
-            if (trendRecord.get().getChangeIndicator() != null) {
+            if (trendRecord.getChangeIndicator() != null) {
                 trendProps.set(TrendForecastRecordProperties.Name.CHANGE_INDICATOR,
-                        AviationCodeListUser.TrendForecastChangeIndicator.valueOf(trendRecord.get().getChangeIndicator().name()));
+                        AviationCodeListUser.TrendForecastChangeIndicator.valueOf(trendRecord.getChangeIndicator().name()));
             } else {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Change indicator missing in METAR Trend");
             }
 
             //wind (C)
-            if (trendRecord.get().getSurfaceWind() != null) {
-                withForecastSurfaceWindBuilderFor(trendRecord.get().getSurfaceWind(), refCtx, (windBuilder) -> {
-                    trendProps.set(TrendForecastRecordProperties.Name.SURFACE_WIND, windBuilder.build());
-                }, retval::add);
+            if (trendRecord.getSurfaceWind() != null) {
+                withForecastSurfaceWindBuilderFor(trendRecord.getSurfaceWind(), refCtx,
+                        windBuilder -> trendProps.set(TrendForecastRecordProperties.Name.SURFACE_WIND, windBuilder.build()), retval::add);
             }
 
             //CAVOK (C)
-            trendProps.set(TrendForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, trendRecord.get().isCloudAndVisibilityOK());
-            if (trendRecord.get().isCloudAndVisibilityOK()) {
+            trendProps.set(TrendForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, trendRecord.isCloudAndVisibilityOK());
+            if (trendRecord.isCloudAndVisibilityOK()) {
                 // no visibility, weather, cloud allowed with CAVOK:
-                if (trendRecord.get().getPrevailingVisibility() != null) {
+                if (trendRecord.getPrevailingVisibility() != null) {
                     retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Visibility is not empty with CAVOKin trend");
                 }
 
-                if (!trendRecord.get().getForecastWeather().isEmpty()) {
+                if (!trendRecord.getForecastWeather().isEmpty()) {
                     retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Forecast weather is not empty with CAVOK trend");
                 }
 
-                if (trendRecord.get().getCloud() != null && !trendRecord.get().getCloud().isNil()) {
+                if (trendRecord.getCloud() != null && !trendRecord.getCloud().isNil()) {
                     retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Cloud is not empty with CAVOK trend");
                 }
             } else {
                 //prevailing visibility (C)
-                if (trendRecord.get().getPrevailingVisibility() != null) {
-                    trendProps.set(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY,
-                            asNumericMeasure(trendRecord.get().getPrevailingVisibility()).get());
-                }
-                if (trendRecord.get().getPrevailingVisibilityOperator() != null) {
-                    trendProps.set(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR,
-                            asRelationalOperator(trendRecord.get().getPrevailingVisibilityOperator()).get());
-                }
+                asNumericMeasure(trendRecord.getPrevailingVisibility())//
+                        .ifPresent(measure -> trendProps.set(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY, measure));
+                asRelationalOperator(trendRecord.getPrevailingVisibilityOperator())//
+                        .ifPresent(operator -> trendProps.set(TrendForecastRecordProperties.Name.PREVAILING_VISIBILITY_OPERATOR, operator));
 
                 //forecast weather (C) (incl. NSW)
-                withEachNillableChild(trendRecord.get(), trendRecord.get().getForecastWeather(), AerodromeForecastWeatherType.class,
-                        new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm2"), "forecastWeather"), refCtx, (value) -> {
-                            AbstractIWXXM21Scanner.withWeatherBuilderFor(value, hints, (builder) -> {
-                                trendProps.addToList(TrendForecastRecordProperties.Name.FORECAST_WEATHER, builder.build());
-                            }, retval::add);
-                        }, (nilReasons) -> {
+                withEachNillableChild(trendRecord, trendRecord.getForecastWeather(), AerodromeForecastWeatherType.class,
+                        new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm2"), "forecastWeather"), refCtx,
+                        value -> AbstractIWXXM21Scanner.withWeatherBuilderFor(value, hints,
+                                builder -> trendProps.addToList(TrendForecastRecordProperties.Name.FORECAST_WEATHER, builder.build()), retval::add),
+                        nilReasons -> {
                             if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
                                 trendProps.set(TrendForecastRecordProperties.Name.NO_SIGNIFICANT_WEATHER, Boolean.TRUE);
-                                if (trendRecord.get().getForecastWeather().size() != 1) {
+                                if (trendRecord.getForecastWeather().size() != 1) {
                                     retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.LOGICAL,
                                             "'No significant weather' (NSW) was reported with other "
                                                     + "weather phenomena, NSW must be the only forecastWeather property if given");
@@ -450,14 +435,11 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                         });
 
                 //cloud (C) (incl. NSC)
-                JAXBElement<AerodromeCloudForecastPropertyType> cloudElem = trendRecord.get().getCloud();
-                withTrendCloudBuilderFor(cloudElem, refCtx, (cloudBuilder) -> {
-                    trendProps.set(TrendForecastRecordProperties.Name.CLOUD, cloudBuilder.build());
-                }, retval::add);
+                final JAXBElement<AerodromeCloudForecastPropertyType> cloudElem = trendRecord.getCloud();
+                withTrendCloudBuilderFor(cloudElem, refCtx, cloudBuilder -> trendProps.set(TrendForecastRecordProperties.Name.CLOUD, cloudBuilder.build()),
+                        retval::add);
             }
             properties.set(OMObservationProperties.Name.RESULT, trendProps);
-        } else {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No observation result record in METAR Trend");
         }
         return retval;
     }
@@ -465,28 +447,27 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
     private static void withSurfaceWindBuilderFor(final AerodromeSurfaceWindPropertyType windProp, final ReferredObjectRetrievalContext refCtx,
             final Consumer<ObservedSurfaceWindImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
-        Optional<AerodromeSurfaceWindType> wind = resolveProperty(windProp, AerodromeSurfaceWindType.class, refCtx);
-        if (wind.isPresent()) {
-            ObservedSurfaceWindImpl.Builder windBuilder = ObservedSurfaceWindImpl.builder();
-            windBuilder.setMeanWindDirection(asNumericMeasure(wind.get().getMeanWindDirection()));
-            windBuilder.setVariableDirection(wind.get().isVariableWindDirection());
-            if (wind.get().getMeanWindSpeed() != null) {
-                windBuilder.setMeanWindSpeed(asNumericMeasure(wind.get().getMeanWindSpeed()).get());
-            } else {
+        final AerodromeSurfaceWindType wind = resolveProperty(windProp, AerodromeSurfaceWindType.class, refCtx).orElse(null);
+        if (wind == null) {
+            issue = new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                    "Could not find AerodromeSurfaceWindType value within AerodromeSurfaceWindPropertyType or by reference");
+        } else {
+            final ObservedSurfaceWindImpl.Builder windBuilder = ObservedSurfaceWindImpl.builder();
+            windBuilder.setMeanWindDirection(asNumericMeasure(wind.getMeanWindDirection()));
+            windBuilder.setVariableDirection(wind.isVariableWindDirection());
+            if (wind.getMeanWindSpeed() == null) {
                 issue = new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
                         "Mean wind speed missing from METAR surface wind observation");
             }
-            windBuilder.setMeanWindSpeedOperator(asRelationalOperator(wind.get().getMeanWindSpeedOperator()));
-            windBuilder.setWindGust(asNumericMeasure(wind.get().getWindGustSpeed()));
-            windBuilder.setWindGustOperator(asRelationalOperator(wind.get().getWindGustSpeedOperator()));
-            windBuilder.setExtremeClockwiseWindDirection(asNumericMeasure(wind.get().getExtremeClockwiseWindDirection()));
-            windBuilder.setExtremeCounterClockwiseWindDirection(asNumericMeasure(wind.get().getExtremeCounterClockwiseWindDirection()));
+            asNumericMeasure(wind.getMeanWindSpeed()).ifPresent(windBuilder::setMeanWindSpeed);
+            windBuilder.setMeanWindSpeedOperator(asRelationalOperator(wind.getMeanWindSpeedOperator()));
+            windBuilder.setWindGust(asNumericMeasure(wind.getWindGustSpeed()));
+            windBuilder.setWindGustOperator(asRelationalOperator(wind.getWindGustSpeedOperator()));
+            windBuilder.setExtremeClockwiseWindDirection(asNumericMeasure(wind.getExtremeClockwiseWindDirection()));
+            windBuilder.setExtremeCounterClockwiseWindDirection(asNumericMeasure(wind.getExtremeCounterClockwiseWindDirection()));
             if (issue == null) {
                 resultHandler.accept(windBuilder);
             }
-        } else {
-            issue = new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                    "Could not find AerodromeSurfaceWindType value within AerodromeSurfaceWindPropertyType or by reference");
         }
         if (issue != null) {
             issueHandler.accept(issue);
@@ -494,65 +475,63 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
     }
 
     private static void withForecastSurfaceWindBuilderFor(final AerodromeSurfaceWindTrendForecastPropertyType windProp,
-            final ReferredObjectRetrievalContext refCtx, final Consumer<SurfaceWindImpl.Builder> resultHandler,
-            final Consumer<ConversionIssue> issueHandler) {
+            final ReferredObjectRetrievalContext refCtx, final Consumer<SurfaceWindImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
-        Optional<AerodromeSurfaceWindTrendForecastType> wind = resolveProperty(windProp, AerodromeSurfaceWindTrendForecastType.class, refCtx);
-        if (wind.isPresent()) {
-            SurfaceWindImpl.Builder windBuilder = SurfaceWindImpl.builder();
-            windBuilder.setMeanWindDirection(asNumericMeasure(wind.get().getMeanWindDirection()).get());
-            if (wind.get().getMeanWindSpeed() != null) {
-                windBuilder.setMeanWindSpeed(asNumericMeasure(wind.get().getMeanWindSpeed()).get());
-            } else {
+        final AerodromeSurfaceWindTrendForecastType wind = resolveProperty(windProp, AerodromeSurfaceWindTrendForecastType.class, refCtx).orElse(null);
+        if (wind == null) {
+            issue = new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                    "Could not find AerodromeSurfaceWindTrendForecastType value within AerodromeSurfaceWindTrendForecastPropertyType or by reference");
+        } else {
+            final SurfaceWindImpl.Builder windBuilder = SurfaceWindImpl.builder();
+            asNumericMeasure(wind.getMeanWindDirection()).ifPresent(windBuilder::setMeanWindDirection);
+            asNumericMeasure(wind.getMeanWindSpeed()).ifPresent(windBuilder::setMeanWindSpeed);
+            if (wind.getMeanWindSpeed() == null) {
                 issue = new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
                         "Mean wind speed missing from METAR trend surface wind forecast");
             }
-            windBuilder.setMeanWindSpeedOperator(asRelationalOperator(wind.get().getMeanWindSpeedOperator()));
-            windBuilder.setWindGust(asNumericMeasure(wind.get().getWindGustSpeed()));
-            windBuilder.setWindGustOperator(asRelationalOperator(wind.get().getWindGustSpeedOperator()));
+            windBuilder.setMeanWindSpeedOperator(asRelationalOperator(wind.getMeanWindSpeedOperator()));
+            windBuilder.setWindGust(asNumericMeasure(wind.getWindGustSpeed()));
+            windBuilder.setWindGustOperator(asRelationalOperator(wind.getWindGustSpeedOperator()));
 
             if (issue == null) {
                 resultHandler.accept(windBuilder);
             }
-        } else {
-            issue = new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                    "Could not find AerodromeSurfaceWindTrendForecastType value within AerodromeSurfaceWindTrendForecastPropertyType or by reference");
         }
         if (issue != null) {
             issueHandler.accept(issue);
         }
     }
 
-    private static void withVisibilityBuilderFor(final AerodromeHorizontalVisibilityPropertyType visProp, final ReferredObjectRetrievalContext refCtx, final Consumer<HorizontalVisibilityImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
+    private static void withVisibilityBuilderFor(final AerodromeHorizontalVisibilityPropertyType visProp, final ReferredObjectRetrievalContext refCtx,
+            final Consumer<HorizontalVisibilityImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
         ConversionIssue issue = null;
-        Optional<AerodromeHorizontalVisibilityType> visibility = resolveProperty(visProp, AerodromeHorizontalVisibilityType.class, refCtx);
-        if (visibility.isPresent()) {
-            HorizontalVisibilityImpl.Builder visBuilder = HorizontalVisibilityImpl.builder();
-            if (visibility.get().getPrevailingVisibility() != null) {
-                visBuilder.setPrevailingVisibility(asNumericMeasure(visibility.get().getPrevailingVisibility()).get());
-            } else {
+        final AerodromeHorizontalVisibilityType visibility = resolveProperty(visProp, AerodromeHorizontalVisibilityType.class, refCtx).orElse(null);
+        if (visibility == null) {
+            issue = new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                    "Could not find AerodromeHorizontalVisibilityType value within AerodromeHorizontalVisibilityPropertyType or by reference");
+        } else {
+            final HorizontalVisibilityImpl.Builder visBuilder = HorizontalVisibilityImpl.builder();
+            if (visibility.getPrevailingVisibility() == null) {
                 issue = new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Prevailing visibility missing from METAR horizontal visibility observation");
             }
-            visBuilder.setPrevailingVisibilityOperator(asRelationalOperator(visibility.get().getPrevailingVisibilityOperator()));
-            visBuilder.setMinimumVisibility(asNumericMeasure(visibility.get().getMinimumVisibility()));
+            asNumericMeasure(visibility.getPrevailingVisibility()).ifPresent(visBuilder::setPrevailingVisibility);
+            visBuilder.setPrevailingVisibilityOperator(asRelationalOperator(visibility.getPrevailingVisibilityOperator()));
+            visBuilder.setMinimumVisibility(asNumericMeasure(visibility.getMinimumVisibility()));
             if (issue == null) {
                 resultHandler.accept(visBuilder);
             }
-        } else {
-            issue = new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                    "Could not find AerodromeHorizontalVisibilityType value within AerodromeHorizontalVisibilityPropertyType or by reference");
         }
         if (issue != null) {
             issueHandler.accept(issue);
         }
     }
 
-    private static void withWindShearBuilderFor(final AerodromeWindShearPropertyType shearProp, final Optional<Aerodrome> aerodrome,
+    private static void withWindShearBuilderFor(final AerodromeWindShearPropertyType shearProp, final Aerodrome aerodrome,
             final ReferredObjectRetrievalContext refCtx, final Consumer<WindShearImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
-        IssueList issues = new IssueList();
-        Optional<AerodromeWindShearType> windShear = resolveProperty(shearProp, AerodromeWindShearType.class, refCtx);
+        final IssueList issues = new IssueList();
+        final Optional<AerodromeWindShearType> windShear = resolveProperty(shearProp, AerodromeWindShearType.class, refCtx);
         if (windShear.isPresent()) {
-            WindShearImpl.Builder wsBuilder = WindShearImpl.builder();
+            final WindShearImpl.Builder wsBuilder = WindShearImpl.builder();
             if (windShear.get().isAllRunways() != null && windShear.get().isAllRunways()) {
                 wsBuilder.setAppliedToAllRunways(windShear.get().isAllRunways());
                 if (!windShear.get().getRunway().isEmpty()) {
@@ -560,11 +539,9 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                             "WindShear has flag 'allRunways' but also contains a " + "non-empty list of runway elements, ignoring the individual runways");
                 }
             } else {
-                List<RunwayDirection> directions = new ArrayList<>();
-                for (RunwayDirectionPropertyType rwdProp : windShear.get().getRunway()) {
-                    withRunwayDirectionBuilderFor(rwdProp, aerodrome, refCtx, (rwdBuilder) -> {
-                        directions.add(rwdBuilder.build());
-                    }, issues::add);
+                final List<RunwayDirection> directions = new ArrayList<>();
+                for (final RunwayDirectionPropertyType rwdProp : windShear.get().getRunway()) {
+                    withRunwayDirectionBuilderFor(rwdProp, aerodrome, refCtx, rwdBuilder -> directions.add(rwdBuilder.build()), issues::add);
                 }
                 wsBuilder.setRunwayDirections(directions);
             }
@@ -573,62 +550,61 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
             issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
                     "Could not resolve AerodromeWindShearType from within " + "AerodromeWindShearPropertyType");
         }
-        for (ConversionIssue issue : issues) {
+        for (final ConversionIssue issue : issues) {
             issueHandler.accept(issue);
         }
     }
 
     private static void withSeaStateBuilderFor(final AerodromeSeaStatePropertyType seaStateProperty, final ReferredObjectRetrievalContext refCtx,
             final Consumer<SeaStateImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
-        IssueList issues = new IssueList();
-        Optional<AerodromeSeaStateType> seaState = resolveProperty(seaStateProperty, AerodromeSeaStateType.class, refCtx);
-        if (seaState.isPresent()) {
-            SeaStateImpl.Builder ssBuilder = SeaStateImpl.builder();
+        final IssueList issues = new IssueList();
+        final AerodromeSeaStateType seaState = resolveProperty(seaStateProperty, AerodromeSeaStateType.class, refCtx).orElse(null);
+        if (seaState == null) {
+            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                    "Could not resolve AerodromeSeaStateType from within " + "AerodromeSeaStatePropertyType");
+        } else {
+            final SeaStateImpl.Builder ssBuilder = SeaStateImpl.builder();
             //Either temp AND (state OR sig wave height)
-            if (seaState.get().getSeaSurfaceTemperature() != null) {
-                ssBuilder.setSeaSurfaceTemperature(asNumericMeasure(seaState.get().getSeaSurfaceTemperature()).get());
-            } else {
+            if (seaState.getSeaSurfaceTemperature() == null) {
                 issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Sea surface temperature missing in SeaState");
             }
-            if (seaState.get().getSeaState() != null && seaState.get().getSeaState().getHref() != null) {
-                if (seaState.get().getSeaState().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SEA_SURFACE_STATE)) {
-                    String code = seaState.get().getSeaState().getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SEA_SURFACE_STATE.length());
+            asNumericMeasure(seaState.getSeaSurfaceTemperature()).ifPresent(ssBuilder::setSeaSurfaceTemperature);
+            if (seaState.getSeaState() != null && seaState.getSeaState().getHref() != null) {
+                if (seaState.getSeaState().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SEA_SURFACE_STATE)) {
+                    final String code = seaState.getSeaState().getHref().substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SEA_SURFACE_STATE.length());
                     ssBuilder.setSeaSurfaceState(AviationCodeListUser.SeaSurfaceState.fromInt(Integer.parseInt(code)));
                 } else {
                     issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
                             "Invalid codelist value used for sea surface state, should start " + "with "
                                     + AviationCodeListUser.CODELIST_VALUE_PREFIX_SEA_SURFACE_STATE);
                 }
-                if (seaState.get().getSignificantWaveHeight() != null) {
+                if (seaState.getSignificantWaveHeight() != null) {
                     issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
                             "Significant wave height not allowed with sea surface state in " + "SeaState");
                 }
-            } else if (seaState.get().getSignificantWaveHeight() != null) {
-                ssBuilder.setSignificantWaveHeight(asNumericMeasure(seaState.get().getSignificantWaveHeight()));
+            } else if (seaState.getSignificantWaveHeight() != null) {
+                ssBuilder.setSignificantWaveHeight(asNumericMeasure(seaState.getSignificantWaveHeight()));
             } else {
                 issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
                         "One of sea surface state or significant wave height must be " + "given in SeaState");
             }
             resultHandler.accept(ssBuilder);
-        } else {
-            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                    "Could not resolve AerodromeSeaStateType from within " + "AerodromeSeaStatePropertyType");
         }
-        for (ConversionIssue issue : issues) {
+        for (final ConversionIssue issue : issues) {
             issueHandler.accept(issue);
         }
     }
 
-    private static void withRunwayStateBuilderFor(final AerodromeRunwayStatePropertyType rwsProp, final Optional<Aerodrome> aerodrome,
+    private static void withRunwayStateBuilderFor(final AerodromeRunwayStatePropertyType rwsProp, final Aerodrome aerodrome,
             final ReferredObjectRetrievalContext refCtx, final Consumer<RunwayStateImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
-        IssueList issues = new IssueList();
-        Optional<AerodromeRunwayStateType> runwayState = resolveProperty(rwsProp, AerodromeRunwayStateType.class, refCtx);
+        final IssueList issues = new IssueList();
+        final Optional<AerodromeRunwayStateType> runwayState = resolveProperty(rwsProp, AerodromeRunwayStateType.class, refCtx);
         if (runwayState.isPresent()) {
             if (runwayState.get().isSnowClosure() != null && runwayState.get().isSnowClosure()) {
                 throw new IllegalArgumentException("Must not give runway state with snow closure as input, no need to parse as RunwayState object. SNOCLO "
                         + "applies to the whole aerodrome, not an individual runway");
             }
-            RunwayStateImpl.Builder rwsBuilder = RunwayStateImpl.builder();
+            final RunwayStateImpl.Builder rwsBuilder = RunwayStateImpl.builder();
             if (runwayState.get().isAllRunways() != null && runwayState.get().isAllRunways()) {
                 rwsBuilder.setAppliedToAllRunways(true);
                 if (runwayState.get().getRunway() != null) {
@@ -636,11 +612,9 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                             "Runway should not be given if 'allRunways' is true in " + "RunwayState");
                 }
             } else {
-                RunwayDirectionPropertyType rwdProp = runwayState.get().getRunway();
+                final RunwayDirectionPropertyType rwdProp = runwayState.get().getRunway();
                 if (rwdProp != null) {
-                    withRunwayDirectionBuilderFor(rwdProp, aerodrome, refCtx, (rwdBuilder) -> {
-                        rwsBuilder.setRunwayDirection(rwdBuilder.build());
-                    }, issues::add);
+                    withRunwayDirectionBuilderFor(rwdProp, aerodrome, refCtx, rwdBuilder -> rwsBuilder.setRunwayDirection(rwdBuilder.build()), issues::add);
                 } else {
                     issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
                             "Runway designator must be given in RunwayState unless " + "'allRunways' flag is given");
@@ -657,7 +631,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                 //deposit
                 if (runwayState.get().getDepositType() != null && runwayState.get().getDepositType().getHref() != null) {
                     if (runwayState.get().getDepositType().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_DEPOSITS)) {
-                        String code = runwayState.get()
+                        final String code = runwayState.get()
                                 .getDepositType()
                                 .getHref()
                                 .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_DEPOSITS.length());
@@ -671,7 +645,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                 //contamination
                 if (runwayState.get().getContamination() != null && runwayState.get().getContamination().getHref() != null) {
                     if (runwayState.get().getContamination().getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_CONTAMINATION)) {
-                        String code = runwayState.get()
+                        final String code = runwayState.get()
                                 .getContamination()
                                 .getHref()
                                 .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_CONTAMINATION.length());
@@ -684,12 +658,10 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
 
                 //depth of deposit
                 if (runwayState.get().getDepthOfDeposit() != null) {
-                    JAXBElement<DistanceWithNilReasonType> dod = runwayState.get().getDepthOfDeposit();
+                    final JAXBElement<DistanceWithNilReasonType> dod = runwayState.get().getDepthOfDeposit();
                     if (dod.isNil()) {
-                        if (dod.getValue() != null && !dod.getValue().getNilReason().isEmpty()){
-                            if (dod.getValue()
-                                    .getNilReason()
-                                    .contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
+                        if (dod.getValue() != null && !dod.getValue().getNilReason().isEmpty()) {
+                            if (dod.getValue().getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE)) {
                                 rwsBuilder.setDepthInsignificant(true);
                             } else if (dod.getValue().getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                                 rwsBuilder.setDepthNotMeasurable(true);
@@ -697,14 +669,13 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                                 rwsBuilder.setRunwayNotOperational(true);
                             } else {
                                 issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
-                                        "Unknown nilReason for runway state depth of deposit '" + dod.getValue().getNilReason() + "', treating as "
-                                                + "notMeasurable");
+                                        "Unknown nilReason for runway state depth of deposit '" + dod.getValue().getNilReason()
+                                                + "', treating as notMeasurable");
                                 rwsBuilder.setDepthNotMeasurable(true);
                             }
                         } else {
                             issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
-                                    "No nilReason for nil runway state depth of deposit, treating as "
-                                            + "notMeasurable");
+                                    "No nilReason for nil runway state depth of deposit, treating as notMeasurable");
                             rwsBuilder.setDepthNotMeasurable(true);
                         }
                     } else if (dod.getValue() != null) {
@@ -719,20 +690,20 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                             .getEstimatedSurfaceFrictionOrBrakingAction()
                             .getHref()
                             .startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_SURFACE_FRICTION_OR_BRAKING_ACTION)) {
-                        String code = runwayState.get()
+                        final String code = runwayState.get()
                                 .getEstimatedSurfaceFrictionOrBrakingAction()
                                 .getHref()
                                 .substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_RUNWAY_SURFACE_FRICTION_OR_BRAKING_ACTION.length());
-                        AviationCodeListUser.BrakingAction ba = AviationCodeListUser.BrakingAction.fromInt(Integer.parseInt(code));
+                        final AviationCodeListUser.BrakingAction ba = AviationCodeListUser.BrakingAction.fromInt(Integer.parseInt(code));
                         if (ba == null) {
                             //not one of the BA codes, must be surface friction
-                            int intValue = Integer.parseInt(code);
+                            final int intValue = Integer.parseInt(code);
                             if (intValue == 127) {
                                 rwsBuilder.setRunwayNotOperational(true);
                             } else if (intValue == 99) {
                                 rwsBuilder.setEstimatedSurfaceFrictionUnreliable(true);
                             } else if (intValue >= 0 && intValue <= 98) {
-                                double friction = Integer.parseInt(code) / 100.0;
+                                final double friction = Integer.parseInt(code) / 100.0;
                                 rwsBuilder.setEstimatedSurfaceFriction(friction);
                             } else {
                                 issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
@@ -756,21 +727,21 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
             issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
                     "Could not resolve AerodromeRunwayStateType from within " + "AerodromeRunwayStatePropertyType");
         }
-        for (ConversionIssue issue : issues) {
+        for (final ConversionIssue issue : issues) {
             issueHandler.accept(issue);
         }
     }
 
-    private static void withRunwayVisualRangeBuilderFor(final AerodromeRunwayVisualRangePropertyType rvrProp, final Optional<Aerodrome> aerodrome,
+    private static void withRunwayVisualRangeBuilderFor(final AerodromeRunwayVisualRangePropertyType rvrProp, final Aerodrome aerodrome,
             final ReferredObjectRetrievalContext refCtx, final Consumer<RunwayVisualRangeImpl.Builder> resultHandler,
             final Consumer<ConversionIssue> issueHandler) {
-        IssueList issues = new IssueList();
-        Optional<AerodromeRunwayVisualRangeType> rvr = resolveProperty(rvrProp, AerodromeRunwayVisualRangeType.class, refCtx);
+        final IssueList issues = new IssueList();
+        final Optional<AerodromeRunwayVisualRangeType> rvr = resolveProperty(rvrProp, AerodromeRunwayVisualRangeType.class, refCtx);
         if (rvr.isPresent()) {
             final RunwayVisualRangeImpl.Builder rvrBuilder = RunwayVisualRangeImpl.builder();
-            RunwayDirectionPropertyType rwdProp = rvr.get().getRunway();
+            final RunwayDirectionPropertyType rwdProp = rvr.get().getRunway();
             if (rwdProp != null) {
-                withRunwayDirectionBuilderFor(rwdProp, aerodrome, refCtx, (rwdBuilder) -> {
+                withRunwayDirectionBuilderFor(rwdProp, aerodrome, refCtx, rwdBuilder -> {
                     rvrBuilder.setRunwayDirection(rwdBuilder.build());
                     rvrBuilder.setMeanRVR(asNumericMeasure(rvr.get().getMeanRVR()));
                     rvrBuilder.setMeanRVROperator(asRelationalOperator(rvr.get().getMeanRVROperator()));
@@ -791,7 +762,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
             issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
                     "Unable to resolve AerodromeRunwayVisualRange from " + "AerodromeRunwayVisualRangeProperty");
         }
-        for (ConversionIssue issue : issues) {
+        for (final ConversionIssue issue : issues) {
             issueHandler.accept(issue);
         }
     }
@@ -799,19 +770,19 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
     private static void withObservedCloudBuilderFor(final JAXBElement<MeteorologicalAerodromeObservationRecordType.Cloud> cloudElement,
             final ReferredObjectRetrievalContext refCtx, final Consumer<ObservedCloudsImpl.Builder> resultHandler,
             final Consumer<ConversionIssue> issueHandler) {
-        IssueList issues = new IssueList();
+        final IssueList issues = new IssueList();
         if (cloudElement != null && cloudElement.getValue() != null) {
-            MeteorologicalAerodromeObservationRecordType.Cloud cloud = cloudElement.getValue();
+            final MeteorologicalAerodromeObservationRecordType.Cloud cloud = cloudElement.getValue();
             if (cloud != null) {
-                ObservedCloudsImpl.Builder cloudBuilder = ObservedCloudsImpl.builder();
-                AerodromeObservedCloudsType obsClouds = cloud.getAerodromeObservedClouds();
+                final ObservedCloudsImpl.Builder cloudBuilder = ObservedCloudsImpl.builder();
+                final AerodromeObservedCloudsType obsClouds = cloud.getAerodromeObservedClouds();
                 if (cloud.getNilReason().isEmpty()) {
                     if (obsClouds != null) {
                         if (obsClouds.getVerticalVisibility() != null) {
-                            JAXBElement<LengthWithNilReasonType> vv = obsClouds.getVerticalVisibility();
+                            final JAXBElement<LengthWithNilReasonType> vv = obsClouds.getVerticalVisibility();
                             if (vv != null) {
                                 if (vv.getValue() != null) {
-                                    LengthWithNilReasonType length = vv.getValue();
+                                    final LengthWithNilReasonType length = vv.getValue();
                                     if (length.getNilReason().contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                                         cloudBuilder.setVerticalVisibilityUnobservableByAutoSystem(true);
                                     } else {
@@ -823,14 +794,12 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                                 }
                             }
                         } else if (!obsClouds.getLayer().isEmpty()) {
-                            List<ObservedCloudLayer> layers = new ArrayList<>();
+                            final List<ObservedCloudLayer> layers = new ArrayList<>();
                             withEachNillableChild(obsClouds, obsClouds.getLayer(), AerodromeObservedCloudsType.Layer.class,
-                                    new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "layer"), refCtx, (value) -> {
-                                        withObservedCloudLayerBuilderFor(value, refCtx, (layerBuilder) -> {
-                                            layers.add(layerBuilder.build());
-                                        }, issues::add, "observed cloud");
-                                    }, (nilReasons) -> {
-                                        ObservedCloudLayerImpl.Builder layerBuilder = ObservedCloudLayerImpl.builder();
+                                    new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "layer"), refCtx,
+                                    value -> withObservedCloudLayerBuilderFor(value, refCtx, layerBuilder -> layers.add(layerBuilder.build()), issues::add,
+                                            "observed cloud"), nilReasons -> {
+                                        final ObservedCloudLayerImpl.Builder layerBuilder = ObservedCloudLayerImpl.builder();
                                         if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                                             layerBuilder.setHeightUnobservableByAutoSystem(true);
                                             layerBuilder.setAmountUnobservableByAutoSystem(true);
@@ -858,7 +827,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                 resultHandler.accept(cloudBuilder);
             }
         }
-        for (ConversionIssue issue : issues) {
+        for (final ConversionIssue issue : issues) {
             issueHandler.accept(issue);
         }
     }
@@ -866,19 +835,19 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
     private static void withTrendCloudBuilderFor(final JAXBElement<AerodromeCloudForecastPropertyType> cloudElement,
             final ReferredObjectRetrievalContext refCtx, final Consumer<CloudForecastImpl.Builder> resultHandler,
             final Consumer<ConversionIssue> issueHandler) {
-        IssueList issues = new IssueList();
+        final IssueList issues = new IssueList();
         if (cloudElement != null && cloudElement.getValue() != null) {
-            AerodromeCloudForecastPropertyType cloudProp = cloudElement.getValue();
+            final AerodromeCloudForecastPropertyType cloudProp = cloudElement.getValue();
             if (cloudProp != null) {
-                CloudForecastImpl.Builder cloudBuilder = CloudForecastImpl.builder();
+                final CloudForecastImpl.Builder cloudBuilder = CloudForecastImpl.builder();
                 if (cloudProp.getNilReason().isEmpty()) {
-                    Optional<AerodromeCloudForecastType> cloudFct = resolveProperty(cloudProp, AerodromeCloudForecastType.class, refCtx);
+                    final Optional<AerodromeCloudForecastType> cloudFct = resolveProperty(cloudProp, AerodromeCloudForecastType.class, refCtx);
                     if (cloudFct.isPresent()) {
                         if (cloudFct.get().getVerticalVisibility() != null) {
-                            JAXBElement<LengthWithNilReasonType> vv = cloudFct.get().getVerticalVisibility();
+                            final JAXBElement<LengthWithNilReasonType> vv = cloudFct.get().getVerticalVisibility();
                             if (vv != null) {
                                 if (vv.getValue() != null) {
-                                    LengthWithNilReasonType length = vv.getValue();
+                                    final LengthWithNilReasonType length = vv.getValue();
                                     if (length.getNilReason().isEmpty()) {
                                         cloudBuilder.setVerticalVisibility(asNumericMeasure(vv.getValue()));
                                     } else {
@@ -891,13 +860,12 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                                 }
                             }
                         } else if (!cloudFct.get().getLayer().isEmpty()) {
-                            List<CloudLayer> layers = new ArrayList<>();
-                            List<AerodromeCloudForecastType.Layer> inputLayers = cloudFct.get().getLayer();
-                            for (CloudLayerPropertyType layerProp : inputLayers) {
+                            final List<CloudLayer> layers = new ArrayList<>();
+                            final List<AerodromeCloudForecastType.Layer> inputLayers = cloudFct.get().getLayer();
+                            for (final CloudLayerPropertyType layerProp : inputLayers) {
                                 if (layerProp != null) {
-                                    AbstractIWXXM21Scanner.withCloudLayerBuilderFor(layerProp, refCtx, (layerBuilder) -> {
-                                        layers.add(layerBuilder.build());
-                                    }, issues::add, "trend cloud");
+                                    AbstractIWXXM21Scanner.withCloudLayerBuilderFor(layerProp, refCtx, layerBuilder -> layers.add(layerBuilder.build()),
+                                            issues::add, "trend cloud");
                                 } else {
                                     issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX, "Nil cloud layer in trend forecast");
                                 }
@@ -919,18 +887,18 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                 resultHandler.accept(cloudBuilder);
             }
         }
-        for (ConversionIssue issue : issues) {
+        for (final ConversionIssue issue : issues) {
             issueHandler.accept(issue);
         }
     }
 
-    private static void withRunwayDirectionBuilderFor(final RunwayDirectionPropertyType rwdProp, final Optional<Aerodrome> aerodrome,
+    private static void withRunwayDirectionBuilderFor(final RunwayDirectionPropertyType rwdProp, final Aerodrome aerodrome,
             final ReferredObjectRetrievalContext refCtx, final Consumer<RunwayDirectionImpl.Builder> resultHandler,
             final Consumer<ConversionIssue> issueHandler) {
-        IssueList issues = new IssueList();
-        Optional<RunwayDirectionType> rwd = resolveProperty(rwdProp, RunwayDirectionType.class, refCtx);
+        final IssueList issues = new IssueList();
+        final Optional<RunwayDirectionType> rwd = resolveProperty(rwdProp, RunwayDirectionType.class, refCtx);
         if (rwd.isPresent()) {
-            List<RunwayDirectionTimeSlicePropertyType> slicePropList = rwd.get().getTimeSlice();
+            final List<RunwayDirectionTimeSlicePropertyType> slicePropList = rwd.get().getTimeSlice();
             if (slicePropList == null || slicePropList.isEmpty()) {
                 issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No timeSlices in RunwayDirection");
             } else {
@@ -939,17 +907,17 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                     issues.add(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
                             "More than one timeSlice within RunwayDirection, choosing the first SNAPSHOT");
                 }
-                for (RunwayDirectionTimeSlicePropertyType sliceProp : slicePropList) {
-                    slice = resolveProperty(slicePropList.get(0), RunwayDirectionTimeSliceType.class, refCtx);
+                for (final RunwayDirectionTimeSlicePropertyType sliceProp : slicePropList) {
+                    slice = resolveProperty(sliceProp, RunwayDirectionTimeSliceType.class, refCtx);
                     if (slice.isPresent() && "SNAPSHOT".equals(slice.get().getInterpretation())) {
                         break;
                     }
                 }
                 if (slice.isPresent()) {
-                    RunwayDirectionImpl.Builder rwdBuilder = RunwayDirectionImpl.builder();
-                    TextDesignatorType designator = slice.get().getDesignator();
-                    ValBearingType trueBearing = slice.get().getTrueBearing();
-                    rwdBuilder.setAssociatedAirportHeliport(aerodrome);
+                    final RunwayDirectionImpl.Builder rwdBuilder = RunwayDirectionImpl.builder();
+                    final TextDesignatorType designator = slice.get().getDesignator();
+                    final ValBearingType trueBearing = slice.get().getTrueBearing();
+                    rwdBuilder.setNullableAssociatedAirportHeliport(aerodrome);
                     if (designator != null && designator.getValue() != null) {
                         rwdBuilder.setDesignator(designator.getValue());
                     }
@@ -962,26 +930,26 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                 }
             }
         } else {
-            String message;
+            final String message;
             if (rwdProp.getHref() != null) {
                 message = "Unable to resolve the RunwayDirectionType within the runway element, id:" + rwdProp.getHref().substring(1);
             } else {
                 message = "Unable to resolve the RunwayDirectionType within the runway element";
             }
-            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,message);
+            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, message);
         }
-        for (ConversionIssue issue : issues) {
+        for (final ConversionIssue issue : issues) {
             issueHandler.accept(issue);
         }
     }
 
     protected static void withObservedCloudLayerBuilderFor(final AerodromeObservedCloudsType.Layer layerProp, final ReferredObjectRetrievalContext refCtx,
             final Consumer<ObservedCloudLayerImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
-        IssueList issues = new IssueList();
-        ObservedCloudLayerImpl.Builder layerBuilder = ObservedCloudLayerImpl.builder();
-        Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
+        final IssueList issues = new IssueList();
+        final ObservedCloudLayerImpl.Builder layerBuilder = ObservedCloudLayerImpl.builder();
+        final Optional<CloudLayerType> layer = resolveProperty(layerProp, CloudLayerType.class, refCtx);
         if (layer.isPresent()) {
-            AbstractIWXXM21Scanner.withCloudBase(layer.get(), refCtx, layerBuilder::setBase, (nilReasons) -> {
+            AbstractIWXXM21Scanner.withCloudBase(layer.get(), refCtx, layerBuilder::setBase, nilReasons -> {
                 if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                     layerBuilder.setHeightUnobservableByAutoSystem(true);
                 }
@@ -990,7 +958,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                 }
             }, issues::add, contextPath);
 
-            AbstractIWXXM21Scanner.withCloudAmount(layer.get(), refCtx, layerBuilder::setAmount, (nilReasons) -> {
+            AbstractIWXXM21Scanner.withCloudAmount(layer.get(), refCtx, layerBuilder::setAmount, nilReasons -> {
                 if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                     layerBuilder.setAmountUnobservableByAutoSystem(true);
                 }
@@ -999,7 +967,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
                 }
             }, issues::add, contextPath);
 
-            AbstractIWXXM21Scanner.withCloudType(layer.get(), refCtx, layerBuilder::setCloudType, (nilReasons) -> {
+            AbstractIWXXM21Scanner.withCloudType(layer.get(), refCtx, layerBuilder::setCloudType, nilReasons -> {
                 if (nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOT_OBSERVABLE)) {
                     layerBuilder.setCloudTypeUnobservableByAutoSystem(true);
                 }
@@ -1010,7 +978,7 @@ public class METARIWXXMScanner extends AbstractIWXXM21Scanner {
             issues.add(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Could not resolve cloud layer in " + contextPath));
         }
 
-        for (ConversionIssue issue : issues) {
+        for (final ConversionIssue issue : issues) {
             issueHandler.accept(issue);
         }
     }

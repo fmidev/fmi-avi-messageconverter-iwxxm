@@ -1,5 +1,5 @@
 {
-  "status": "NORMAL",
+  "reportStatus": "NORMAL",
   "issuingAirTrafficServicesUnit": {
     "name": "AMSTERDAM",
     "type": "FIR",
@@ -28,10 +28,10 @@
     }
   },
   "sigmetPhenomenon": "VA",
-  "analysisType": "OBSERVATION",
-  "intensityChange": "NO_CHANGE",
   "analysisGeometries": [
     {
+      "analysisType": "OBSERVATION",
+      "intensityChange": "NO_CHANGE",
       "time": {
         "completeTime": "2017-08-27T11:30:00Z"
       },
@@ -50,21 +50,9 @@
           "crs": {
             "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
             "dimension": 2,
-            "axisLabels": [
-              "Lat",
-              "Lon"
-            ]
+            "axisLabels": ["Lat", "Lon"]
           },
-          "exteriorRingPositions": [
-            5.0,
-            52.0,
-            6.0,
-            53.0,
-            4.0,
-            54.0,
-            5.0,
-            52.0
-          ]
+          "exteriorRingPositions": [5.0, 52.0, 6.0, 53.0, 4.0, 54.0, 5.0, 52.0]
         }
       }
     }
@@ -80,21 +68,9 @@
           "crs": {
             "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
             "dimension": 2,
-            "axisLabels": [
-              "Lat",
-              "Lon"
-            ]
+            "axisLabels": ["Lat", "Lon"]
           },
-          "exteriorRingPositions": [
-            5.0,
-            53.0,
-            6.0,
-            54.0,
-            4.0,
-            55.0,
-            5.0,
-            53.0
-          ]
+          "exteriorRingPositions": [5.0, 53.0, 6.0, 54.0, 4.0, 55.0, 5.0, 53.0]
         }
       }
     }
@@ -106,15 +82,9 @@
         "crs": {
           "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
           "dimension": 2,
-          "axisLabels": [
-            "Lat",
-            "Lon"
-          ]
+          "axisLabels": ["Lat", "Lon"]
         },
-        "coordinates": [
-          52.0,
-          5.2
-        ]
+        "coordinates": [52.0, 5.2]
       },
       "volcanoName": "GRIMSVOTN"
     }

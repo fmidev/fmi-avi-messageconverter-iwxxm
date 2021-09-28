@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin.generic;
+package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
 import java.io.StringWriter;
 import java.time.ZonedDateTime;
@@ -26,7 +26,6 @@ import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
-import fi.fmi.avi.converter.iwxxm.bulletin.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
@@ -38,13 +37,157 @@ import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScanner<GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
 
+    private static IssueList collectSIGMETMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
+            throws XPathExpressionException {
+        final IssueList retval = new IssueList();
+        //Issue time:
+        final XPathExpression expr = xpath.compile("./iwxxm:analysis/om:OM_Observation/om:resultTime/gml:TimeInstant/gml:timePosition");
+        final String timeStr = expr.evaluate(featureElement);
+        if (!timeStr.isEmpty()) {
+            builder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+        } else {
+            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM SIGMET");
+        }
+
+        retval.addAll(collectValidTime(featureElement, "./iwxxm:validPeriod[1]", xpath, builder));
+        return retval;
+    }
+
+    private static IssueList collectTAFMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
+            throws XPathExpressionException {
+        final IssueList retval = new IssueList();
+        //Issue time:
+        final String timeStr;
+        XPathExpression expr = xpath.compile("./iwxxm:issueTime/gml:TimeInstant/gml:timePosition");
+        timeStr = expr.evaluate(featureElement);
+        if (!timeStr.isEmpty()) {
+            builder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+        } else {
+            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM TAF");
+        }
+
+        expr = xpath.compile("@status");
+        final String status = expr.evaluate(featureElement);
+
+        if (!"MISSING".equals(status)) {
+            //validity time
+            retval.addAll(collectValidTime(featureElement, "./gml:validTime[1]", xpath, builder));
+        }
+
+        //target aerodrome
+        if ("CANCELLATION".equals(status)) {
+            expr = xpath.compile("./iwxxm:previousReportAerodrome/aixm:AirportHeliport");
+        } else {
+            expr = xpath.compile(
+                    "./iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/" + "aixm:AirportHeliport");
+        }
+        if (expr != null) {
+            final NodeList nodes = (NodeList) expr.evaluate(featureElement, XPathConstants.NODESET);
+            if (nodes.getLength() == 1) {
+                builder.setTargetAerodrome(parseAerodromeInfo((Element) nodes.item(0), xpath, retval));
+            } else {
+                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info not available for TAF of status " + status);
+            }
+        }
+
+        return retval;
+    }
+
+    private static IssueList collectValidTime(final Element featureElement, final String selector, final XPath xpath,
+            final GenericAviationWeatherMessageImpl.Builder builder) {
+        final IssueList retval = new IssueList();
+        //validity time
+        try {
+            ZonedDateTime startTime = null, endTime = null;
+            final XPathExpression expr = xpath.compile(selector);
+            final NodeList results = (NodeList) expr.evaluate(featureElement, XPathConstants.NODESET);
+            if (results.getLength() == 1) {
+                final Element validTimeElement = (Element) results.item(0);
+                startTime = parseStartTime(validTimeElement, xpath);
+                endTime = parseEndTime(validTimeElement, xpath);
+            }
+            if (startTime != null && endTime != null) {
+                builder.setValidityTime(PartialOrCompleteTimePeriod.builder()//
+                        .setStartTime(PartialOrCompleteTimeInstant.of(startTime))//
+                        .setEndTime(PartialOrCompleteTimeInstant.of(endTime))//
+                        .build());
+            }
+        } catch (final Exception ex) {
+            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Unable to parse valid time for TAF", ex);
+        }
+        return retval;
+    }
+
+    private static Optional<Aerodrome> parseAerodromeInfo(final Element airportHeliport, final XPath xpath, final IssueList issues)
+            throws XPathExpressionException {
+        Optional<Aerodrome> retval = Optional.empty();
+        XPathExpression expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:designator");
+        final String designator = expr.evaluate(airportHeliport);
+
+        if (designator.isEmpty()) {
+            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No aerodrome designator in AirportHeliportTimeSlice");
+            return retval;
+        }
+
+        expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:locationIndicatorICAO");
+        final String locationIndicatorICAO = expr.evaluate(airportHeliport);
+
+        expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:designatorIATA");
+        final String designatorIATA = expr.evaluate(airportHeliport);
+
+        expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:name");
+        final String name = expr.evaluate(airportHeliport);
+
+        //NOTE: the ARP field elevation of the Aerodrome info is intentionally not parsed here, it's currently not needed in the use cases,
+        // and would require more than a few lines of code.
+
+        retval = Optional.of(AerodromeImpl.builder()//
+                .setDesignator(designator)//
+                .setLocationIndicatorICAO(Optional.ofNullable(locationIndicatorICAO))//
+                .setName(Optional.ofNullable(name))//
+                .setDesignatorIATA(Optional.ofNullable(designatorIATA))//
+                .build());
+
+        return retval;
+    }
+
+    private static ZonedDateTime parseStartTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
+        XPathExpression expr = xpath.compile("./gml:TimePeriod/gml:beginPosition");
+        String timeStr = expr.evaluate(timeElement);
+        if (timeStr.isEmpty()) {
+            //validity time, begin/TimeInstant variant:
+            expr = xpath.compile("./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition");
+            timeStr = expr.evaluate(timeElement);
+        }
+        if (!timeStr.isEmpty()) {
+            return ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        } else {
+            throw new IllegalArgumentException("No valid time begin found from element " + timeElement.getTagName());
+        }
+    }
+
+    private static ZonedDateTime parseEndTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
+        XPathExpression expr = xpath.compile("./gml:TimePeriod/gml:endPosition");
+        String timeStr = expr.evaluate(timeElement);
+        if (timeStr.isEmpty()) {
+            //validity time, begin/TimeInstant variant:
+            expr = xpath.compile("./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition");
+            timeStr = expr.evaluate(timeElement);
+        }
+        if (!timeStr.isEmpty()) {
+            return ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        } else {
+            throw new IllegalArgumentException("No valid time end found from element " + timeElement.getTagName());
+        }
+    }
+
     @Override
     protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
         final ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
         xpath.setNamespaceContext(new IWXXMNamespaceContext());
-        final GenericAviationWeatherMessageImpl.Builder builder = new GenericAviationWeatherMessageImpl.Builder();
+        final GenericAviationWeatherMessageImpl.Builder builder = GenericAviationWeatherMessageImpl.builder();
         builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
         builder.setTranslated(true);
 
@@ -62,6 +205,7 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
 
                 case "SPECI":
                     builder.setMessageType(MessageType.SPECI);
+                    break;
 
                 case "SIGMET":
                 case "TropicalCycloneSIGMET":
@@ -113,150 +257,5 @@ public class IWXXMGenericBulletinScanner extends MeteorologicalBulletinIWXXMScan
                     "Error in parsing content as a GenericAviationWeatherMessage", xpee));
         }
         return retval;
-    }
-
-    private static IssueList collectSIGMETMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
-            throws XPathExpressionException {
-        final IssueList retval = new IssueList();
-        //Issue time:
-        final XPathExpression expr = xpath.compile("./iwxxm:analysis/om:OM_Observation/om:resultTime/gml:TimeInstant/gml:timePosition");
-        final String timeStr = expr.evaluate(featureElement);
-        if (!"".equals(timeStr)) {
-            builder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-        } else {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM SIGMET");
-        }
-
-        retval.addAll(collectValidTime(featureElement, "./iwxxm:validPeriod[1]", xpath, builder));
-        return retval;
-    }
-
-    private static IssueList collectTAFMessage(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
-            throws XPathExpressionException {
-        final IssueList retval = new IssueList();
-        //Issue time:
-        String timeStr = null;
-        XPathExpression expr = xpath.compile("./iwxxm:issueTime/gml:TimeInstant/gml:timePosition");
-        timeStr = expr.evaluate(featureElement);
-        if (!"".equals(timeStr)) {
-            builder.setIssueTime(PartialOrCompleteTimeInstant.of(ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-        } else {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No issue time found for IWXXM TAF");
-        }
-
-        expr = xpath.compile("@status");
-        final String status = expr.evaluate(featureElement);
-
-        if (!"MISSING".equals(status)) {
-            //validity time
-            retval.addAll(collectValidTime(featureElement, "./gml:validTime[1]", xpath, builder));
-        }
-
-        //target aerodrome
-        expr = null;
-        if ("CANCELLATION".equals(status)) {
-            expr = xpath.compile("./iwxxm:previousReportAerodrome/aixm:AirportHeliport");
-        } else {
-            expr = xpath.compile(
-                    "./iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/" + "aixm:AirportHeliport");
-        }
-        if (expr != null) {
-            final NodeList nodes = (NodeList) expr.evaluate(featureElement, XPathConstants.NODESET);
-            if (nodes.getLength() == 1) {
-                builder.setTargetAerodrome(parseAerodromeInfo((Element) nodes.item(0), xpath, retval));
-            } else {
-                retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Aerodrome info not available for TAF of status " + status);
-            }
-        }
-
-        return retval;
-    }
-
-    private static IssueList collectValidTime(final Element featureElement, final String selector, final XPath xpath,
-            final GenericAviationWeatherMessageImpl.Builder builder) {
-        final IssueList retval = new IssueList();
-        //validity time
-        try {
-            ZonedDateTime startTime = null, endTime = null;
-            final XPathExpression expr = xpath.compile(selector);
-            final NodeList results = (NodeList) expr.evaluate(featureElement, XPathConstants.NODESET);
-            if (results.getLength() == 1) {
-                final Element validTimeElement = (Element) results.item(0);
-                startTime = parseStartTime(validTimeElement, xpath);
-                endTime = parseEndTime(validTimeElement, xpath);
-            }
-            if (startTime != null && endTime != null) {
-                builder.setValidityTime(new PartialOrCompleteTimePeriod.Builder()//
-                        .setStartTime(PartialOrCompleteTimeInstant.of(startTime))//
-                        .setEndTime(PartialOrCompleteTimeInstant.of(endTime))//
-                        .build());
-            }
-        } catch (final Exception ex) {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Unable to parse valid time for TAF", ex);
-        }
-        return retval;
-    }
-
-    private static Optional<Aerodrome> parseAerodromeInfo(final Element airportHeliport, final XPath xpath, final IssueList issues)
-            throws XPathExpressionException {
-        Optional<Aerodrome> retval = Optional.empty();
-        XPathExpression expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:designator");
-        final String designator = expr.evaluate(airportHeliport);
-
-        if ("".equals(designator)) {
-            issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No aerodrome designator in AirportHeliportTimeSlice");
-            return retval;
-        }
-
-        expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:locationIndicatorICAO");
-        final String locationIndicatorICAO = expr.evaluate(airportHeliport);
-
-        expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:designatorIATA");
-        final String designatorIATA = expr.evaluate(airportHeliport);
-
-        expr = xpath.compile("./aixm:timeSlice[1]/aixm:AirportHeliportTimeSlice/aixm:name");
-        final String name = expr.evaluate(airportHeliport);
-
-        //NOTE: the ARP field elevation of the Aerodrome info is intentionally not parsed here, it's currently not needed in the use cases,
-        // and would require more than a few lines of code.
-
-        retval = Optional.of(new AerodromeImpl.Builder()//
-                .setDesignator(designator)//
-                .setLocationIndicatorICAO(Optional.ofNullable(locationIndicatorICAO))//
-                .setName(Optional.ofNullable(name))//
-                .setDesignatorIATA(Optional.ofNullable(designatorIATA))//
-                .build());
-
-        return retval;
-    }
-
-    private static ZonedDateTime parseStartTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
-        XPathExpression expr = xpath.compile("./gml:TimePeriod/gml:beginPosition");
-        String timeStr = expr.evaluate(timeElement);
-        if ("".equals(timeStr)) {
-            //validity time, begin/TimeInstant variant:
-            expr = xpath.compile("./gml:TimePeriod/gml:begin/gml:TimeInstant/gml:timePosition");
-            timeStr = expr.evaluate(timeElement);
-        }
-        if (!"".equals(timeStr)) {
-            return ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-        } else {
-            throw new IllegalArgumentException("No valid time begin found from element " + timeElement.getTagName());
-        }
-    }
-
-    private static ZonedDateTime parseEndTime(final Element timeElement, final XPath xpath) throws XPathExpressionException {
-        XPathExpression expr = xpath.compile("./gml:TimePeriod/gml:endPosition");
-        String timeStr = expr.evaluate(timeElement);
-        if ("".equals(timeStr)) {
-            //validity time, begin/TimeInstant variant:
-            expr = xpath.compile("./gml:TimePeriod/gml:end/gml:TimeInstant/gml:timePosition");
-            timeStr = expr.evaluate(timeElement);
-        }
-        if (!"".equals(timeStr)) {
-            return ZonedDateTime.parse(timeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-        } else {
-            throw new IllegalArgumentException("No valid time end found from element " + timeElement.getTagName());
-        }
     }
 }
