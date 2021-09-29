@@ -20,7 +20,7 @@
           <gml:validTime />
           <aixm:interpretation>SNAPSHOT</aixm:interpretation>
           <aixm:name>ACFJ</aixm:name>
-          <aixm:designator>SWXC</aixm:designator>
+          <aixm:type>OTHER:SWXC</aixm:type>
         </aixm:UnitTimeSlice>
       </aixm:timeSlice>
     </aixm:Unit>

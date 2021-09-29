@@ -26,9 +26,9 @@ import org.w3c.dom.NodeList;
  * Provides functionality for resolving internal GML (xlink) references within the document.
  */
 public class ReferredObjectRetrievalContext {
-    private Map<String, Object> identifiedObjects = new HashMap<>();
-    private Map<String, Map<QName, List<String>>> nilReasons = new HashMap<>();
-    private Binder<Node> binder;
+    private final Map<String, Object> identifiedObjects = new HashMap<>();
+    private final Map<String, Map<QName, List<String>>> nilReasons = new HashMap<>();
+    private final Binder<Node> binder;
 
     /**
      * Constructs a resolver. Pre-scans the references used with the given document.
@@ -43,9 +43,9 @@ public class ReferredObjectRetrievalContext {
         Objects.requireNonNull(jaxbBinder, "Binder cannot be null");
         this.binder = jaxbBinder;
         try {
-            XPathFactory factory = XPathFactory.newInstance();
-            XPath xpath = factory.newXPath();
-            IWXXMNamespaceContext namespaceContext = new IWXXMNamespaceContext();
+            final XPathFactory factory = XPathFactory.newInstance();
+            final XPath xpath = factory.newXPath();
+            final IWXXMNamespaceContext namespaceContext = new IWXXMNamespaceContext();
             xpath.setNamespaceContext(namespaceContext);
 
             // Force identifying om:result elements in the Node <-> JAXElemement mapping by unmarshalling them explicitly
@@ -53,7 +53,7 @@ public class ReferredObjectRetrievalContext {
             XPathExpression expr = xpath.compile("//om:result/*[@gml:id]");
             NodeList hits = (NodeList) expr.evaluate(dom.getDocumentElement(), XPathConstants.NODESET);
             for (int i = 0; i < hits.getLength(); i++) {
-                Node hit = hits.item(i);
+                final Node hit = hits.item(i);
                 binder.unmarshal(hit);
             }
 
@@ -61,13 +61,13 @@ public class ReferredObjectRetrievalContext {
             expr = xpath.compile("//*[@gml:id and //*/@xlink:href=concat('#',@gml:id)]");
             hits = (NodeList) expr.evaluate(dom.getDocumentElement(), XPathConstants.NODESET);
             for (int i = 0; i < hits.getLength(); i++) {
-                Node hit = hits.item(i);
-                NamedNodeMap attrs = hit.getAttributes();
-                Node idNode = attrs.getNamedItem("gml:id");
+                final Node hit = hits.item(i);
+                final NamedNodeMap attrs = hit.getAttributes();
+                final Node idNode = attrs.getNamedItem("gml:id");
                 Object elem = binder.getJAXBNode(hit);
                 if (elem != null) {
                     if (elem instanceof JAXBElement) {
-                        elem = ((JAXBElement) elem).getValue();
+                        elem = ((JAXBElement<?>) elem).getValue();
                     }
                     identifiedObjects.put(idNode.getNodeValue(), elem);
                 }
@@ -79,18 +79,18 @@ public class ReferredObjectRetrievalContext {
             expr = xpath.compile("//*[*/@xsi:nil='true' and */@nilReason]");
             hits = (NodeList) expr.evaluate(dom.getDocumentElement(), XPathConstants.NODESET);
             for (int i = 0; i < hits.getLength(); i++) {
-                Node parent = hits.item(i);
-                String parentKey = getNodeParentPath(parent);
-                Map<QName, List<String>> reasonsForThisParent = nilReasons.computeIfAbsent(parentKey, (key) -> new HashMap<>());
-                NodeList children = parent.getChildNodes();
+                final Node parent = hits.item(i);
+                final String parentKey = getNodeParentPath(parent);
+                final Map<QName, List<String>> reasonsForThisParent = nilReasons.computeIfAbsent(parentKey, key -> new HashMap<>());
+                final NodeList children = parent.getChildNodes();
                 for (int j = 0; j < children.getLength(); j++) {
-                    Node hit = children.item(j);
+                    final Node hit = children.item(j);
                     if (Node.ELEMENT_NODE == hit.getNodeType()) {
-                        QName childKey = new QName(hit.getNamespaceURI(), hit.getLocalName());
-                        List<String> reasonsForElement = reasonsForThisParent.computeIfAbsent(childKey,(key) -> new ArrayList<>());
-                        NamedNodeMap attrs = hit.getAttributes();
+                        final QName childKey = new QName(hit.getNamespaceURI(), hit.getLocalName());
+                        final List<String> reasonsForElement = reasonsForThisParent.computeIfAbsent(childKey, key -> new ArrayList<>());
+                        final NamedNodeMap attrs = hit.getAttributes();
                         if (attrs != null) {
-                            Node nilReason = attrs.getNamedItem("nilReason");
+                            final Node nilReason = attrs.getNamedItem("nilReason");
                             if (nilReason != null) {
                                 reasonsForElement.add(nilReason.getNodeValue());
                             } else {
@@ -122,14 +122,14 @@ public class ReferredObjectRetrievalContext {
      */
     @SuppressWarnings("unchecked")
     public <T> Optional<T> getReferredObject(final String gmlId, final Class<T> clz) {
-        String key;
+        final String key;
         if (gmlId.startsWith("#")) {
             key = gmlId.substring(1);
         } else {
             key = gmlId;
         }
         if (identifiedObjects.containsKey(key)) {
-            Object o = identifiedObjects.get(key);
+            final Object o = identifiedObjects.get(key);
             if (clz.isAssignableFrom(o.getClass())) {
                 return Optional.of((T) o);
             } else {
@@ -140,12 +140,12 @@ public class ReferredObjectRetrievalContext {
         }
     }
 
-    public Optional<String> getNilReasonForNthChild(final Object jaxbElement, final QName elementName, int index) {
-        Node n = this.binder.getXMLNode(jaxbElement);
-        String pathKey = getNodeParentPath(n);
-        Map<QName, List<String>> reasonsForParent = this.nilReasons.get(pathKey);
+    public Optional<String> getNilReasonForNthChild(final Object jaxbElement, final QName elementName, final int index) {
+        final Node n = this.binder.getXMLNode(jaxbElement);
+        final String pathKey = getNodeParentPath(n);
+        final Map<QName, List<String>> reasonsForParent = this.nilReasons.get(pathKey);
         if (reasonsForParent != null) {
-            List<String> reasonsForElement = reasonsForParent.get(elementName);
+            final List<String> reasonsForElement = reasonsForParent.get(elementName);
             if (reasonsForElement != null && reasonsForElement.size() > index) {
                 return Optional.of(reasonsForElement.get(index));
             } else {
@@ -162,12 +162,12 @@ public class ReferredObjectRetrievalContext {
             return null;
         }
         Node child = n;
-        List<String> path = new ArrayList<>();
+        final List<String> path = new ArrayList<>();
         StringBuilder sb;
         NodeList children;
-        int childIndex = 0;
+        int childIndex;
         while (parent != null) {
-            Node idAttr = child.getAttributes().getNamedItem("gml:id");
+            final Node idAttr = child.getAttributes().getNamedItem("gml:id");
             sb = new StringBuilder();
             sb.append(child.getNamespaceURI());
             sb.append(':');
@@ -182,7 +182,7 @@ public class ReferredObjectRetrievalContext {
             children = parent.getChildNodes();
             childIndex = -1;
             for (int i = 0; i < children.getLength(); i++) {
-                Node c = children.item(i);
+                final Node c = children.item(i);
                 if (Node.ELEMENT_NODE == c.getNodeType() && (c.getNamespaceURI() + c.getLocalName()).equals(child.getNamespaceURI() + child.getLocalName())) {
                     childIndex++;
                     if (c == child) {
@@ -205,6 +205,7 @@ public class ReferredObjectRetrievalContext {
         Collections.reverse(path);
         return String.join("/", path);
     }
+
     /**
      * Get the JAXBinder object associated with this instance.
      *

@@ -1,7 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
-import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
-
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -123,9 +121,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
         //validTime
         if (observation.getValidTime() != null) {
             final Optional<PartialOrCompleteTimePeriod> validTime = getCompleteTimePeriod(observation.getValidTime(), refCtx);
-            validTime.ifPresent((time) -> {
-                properties.set(OMObservationProperties.Name.VALID_TIME, time);
-            });
+            validTime.ifPresent(time -> properties.set(OMObservationProperties.Name.VALID_TIME, time));
         }
 
         //procedure
@@ -168,9 +164,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
                     final Optional<AirportHeliportType> airport = resolveProperty(sampledFeatures.get(0), "abstractFeature", AirportHeliportType.class, refCtx);
                     if (airport.isPresent()) {
                         final Optional<Aerodrome> drome = buildAerodrome(airport.get(), retval, refCtx);
-                        drome.ifPresent((d) -> {
-                            properties.set(OMObservationProperties.Name.AERODROME, d);
-                        });
+                        drome.ifPresent(d -> properties.set(OMObservationProperties.Name.AERODROME, d));
                     } else {
                         retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Aerodrome info not resolvable from FOI");
                     }
@@ -289,47 +283,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
 
     public static void withWeatherBuilderFor(final ReferenceType weather, final ConversionHints hints, final Consumer<WeatherImpl.Builder> resultHandler,
             final Consumer<ConversionIssue> issueHandler) {
-        ConversionIssue issue = null;
-        final String codeListValue = weather.getHref();
-        if (codeListValue != null && codeListValue.startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER)) {
-            final String code = codeListValue.substring(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER.length());
-            final String description = weather.getTitle();
-            final WeatherImpl.Builder wBuilder = WeatherImpl.builder();
-            boolean codeOk = false;
-            if (hints == null || hints.isEmpty() || !hints.containsKey(ConversionHints.KEY_WEATHER_CODES) || ConversionHints.VALUE_WEATHER_CODES_STRICT_WMO_4678
-                    .equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                // Only the official codes allowed by default
-                if (WEATHER_CODES.containsKey(code)) {
-                    wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
-                    codeOk = true;
-                } else {
-                    issue = new ConversionIssue(ConversionIssue.Type.SYNTAX, "Illegal weather code " + code + " found with strict WMO 4678 " + "checking");
-                }
-            } else {
-                if (ConversionHints.VALUE_WEATHER_CODES_ALLOW_ANY.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                    wBuilder.setCode(code);
-                    if (description != null) {
-                        wBuilder.setDescription(description);
-                    } else if (WEATHER_CODES.containsKey(code)) {
-                        wBuilder.setDescription(WEATHER_CODES.get(code));
-                    }
-                } else if (ConversionHints.VALUE_WEATHER_CODES_IGNORE_NON_WMO_4678.equals(hints.get(ConversionHints.KEY_WEATHER_CODES))) {
-                    if (WEATHER_CODES.containsKey(code)) {
-                        wBuilder.setCode(code).setDescription(WEATHER_CODES.get(code));
-                        codeOk = true;
-                    }
-                }
-            }
-            if (codeOk) {
-                resultHandler.accept(wBuilder);
-            }
-        } else {
-            issue = new ConversionIssue(ConversionIssue.Type.SYNTAX,
-                    "Weather codelist value does not begin with " + AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_WEATHER);
-        }
-        if (issue != null) {
-            issueHandler.accept(issue);
-        }
+        withWeatherBuilderFor(weather.getHref(), weather.getTitle(), hints, resultHandler, issueHandler);
     }
 
     public static void withCloudLayerBuilderFor(final CloudLayerPropertyType layerProp, final ReferredObjectRetrievalContext refCtx,
@@ -359,9 +313,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
             final Consumer<List<String>> nilReasonHandler, final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         if (layer != null) {
             withNillableChild(layer, layer.getBase(), DistanceWithNilReasonType.class, new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "base"), refCtx,
-                    (value) -> {
-                        resultHandler.accept(asNumericMeasure(value).get());
-                    }, nilReasonHandler);
+                    value -> asNumericMeasure(value).ifPresent(resultHandler), nilReasonHandler);
         }
     }
 
@@ -375,7 +327,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
             final Consumer<ConversionIssue> issueHandler, final String contextPath) {
         if (layer != null) {
             withNillableChild(layer, layer.getAmount(), CloudAmountReportedAtAerodromeType.class,
-                    new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "amount"), refCtx, (value) -> {
+                    new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "amount"), refCtx, value -> {
                         if (value.getHref() != null && value.getHref()
                                 .startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_CLOUD_AMOUNT_REPORTED_AT_AERODROME)) {
                             final String amountCode = value.getHref()
@@ -417,7 +369,7 @@ public class AbstractIWXXM21Scanner extends AbstractIWXXMScanner {
             final JAXBElement<SigConvectiveCloudTypeType> type = layer.getCloudType();
             if (type != null && !type.isNil()) {
                 withNillableChild(layer, type.getValue(), SigConvectiveCloudTypeType.class,
-                        new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "cloudType"), refCtx, (value) -> {
+                        new QName(IWXXMNamespaceContext.getDefaultURI("iwxxm"), "cloudType"), refCtx, value -> {
                             if (value.getHref() != null) {
                                 if (value.getHref().startsWith(AviationCodeListUser.CODELIST_VALUE_PREFIX_SIG_CONVECTIVE_CLOUD_TYPE)) {
                                     final String typeCode = value.getHref()

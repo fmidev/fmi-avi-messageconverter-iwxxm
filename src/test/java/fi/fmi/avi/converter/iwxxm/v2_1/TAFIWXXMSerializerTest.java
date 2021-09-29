@@ -1,7 +1,9 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
@@ -34,7 +36,6 @@ import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.immutable.AerodromeImpl;
 import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
 import fi.fmi.avi.model.immutable.ElevatedPointImpl;
@@ -80,9 +81,9 @@ public class TAFIWXXMSerializerTest {
     public void testCancelledTAFSerialisation() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         final TAF t = readFromJSON("taf-A5-2.json");
-        assertTrue(AviationCodeListUser.TAFStatus.CANCELLATION == t.getStatus());
+        assertTrue(t.isCancelMessage());
         final ConversionResult<String> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
@@ -93,7 +94,7 @@ public class TAFIWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         final TAF t = getTAF();
         final ConversionResult<String> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
@@ -104,7 +105,7 @@ public class TAFIWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
         final TAF t = getTAF();
         final ConversionResult<Document> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
@@ -155,7 +156,7 @@ public class TAFIWXXMSerializerTest {
         //Procedure:
         expr = xpath.compile("/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:procedure/metce:Process/@gml:id");
         final String procedureId = expr.evaluate(docElement);
-        assertTrue("No procedure gml:id", !"".equals(procedureId));
+        assertFalse("No procedure gml:id", procedureId.isEmpty());
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:procedure/metce:Process/gml:description");
         assertEquals("Process description does not match",
@@ -171,7 +172,7 @@ public class TAFIWXXMSerializerTest {
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/@gml:id");
         final String foiId = expr.evaluate(docElement);
-        assertTrue("No FOI gml:id", !"".equals(foiId));
+        assertFalse("No FOI gml:id", foiId.isEmpty());
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm"
                 + ":AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice/aixm:designator");
@@ -404,7 +405,8 @@ public class TAFIWXXMSerializerTest {
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Change Forecast 1 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/OVC", expr.evaluate(docElement));
+        assertEquals("Change Forecast 1 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/OVC",
+                expr.evaluate(docElement));
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm:AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
@@ -473,7 +475,8 @@ public class TAFIWXXMSerializerTest {
         //BKN008
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Change Forecast 2 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expr.evaluate(docElement));
+        assertEquals("Change Forecast 2 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN",
+                expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:base/@uom");
@@ -486,7 +489,8 @@ public class TAFIWXXMSerializerTest {
         //SCT015CB
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Change Forecast 2 cloud layer 2 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT", expr.evaluate(docElement));
+        assertEquals("Change Forecast 2 cloud layer 2 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/SCT",
+                expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:base/@uom");
@@ -567,7 +571,8 @@ public class TAFIWXXMSerializerTest {
         //BKN006
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Change Forecast 3 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expr.evaluate(docElement));
+        assertEquals("Change Forecast 3 cloud layer 1 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN",
+                expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:base/@uom");
@@ -580,7 +585,8 @@ public class TAFIWXXMSerializerTest {
         //BKN015CB
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:amount/@xlink:href");
-        assertEquals("Change Forecast 3 cloud layer 2 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN", expr.evaluate(docElement));
+        assertEquals("Change Forecast 3 cloud layer 2 amount does not match", "http://codes.wmo.int/49-2/CloudAmountReportedAtAerodrome/BKN",
+                expr.evaluate(docElement));
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:base/@uom");
@@ -690,14 +696,15 @@ public class TAFIWXXMSerializerTest {
     }
 
     protected TAF readFromJSON(final String fileName) throws IOException {
-        final ObjectMapper om = new ObjectMapper();
-        om.registerModule(new Jdk8Module());
-        om.registerModule(new JavaTimeModule());
-        final InputStream is = TAFIWXXMSerializerTest.class.getResourceAsStream(fileName);
-        if (is != null) {
-            return om.readValue(is, TAFImpl.class);
-        } else {
-            throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Jdk8Module());
+        objectMapper.registerModule(new JavaTimeModule());
+        try (InputStream inputStream = TAFIWXXMSerializerTest.class.getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                return objectMapper.readValue(inputStream, TAFImpl.class);
+            } else {
+                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+            }
         }
     }
 }

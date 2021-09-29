@@ -1,8 +1,9 @@
-package fi.fmi.avi.converter.iwxxm.v3_0;
+package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
 import java.util.Optional;
 
 import javax.xml.XMLConstants;
@@ -21,39 +22,38 @@ import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
-import fi.fmi.avi.converter.iwxxm.bulletin.BulletinProperties;
-import fi.fmi.avi.converter.iwxxm.bulletin.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
-import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
+import fi.fmi.avi.model.taf.TAF;
+import fi.fmi.avi.model.taf.TAFBulletin;
 
 /**
  * Created by rinne on 19/07/17.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class SpaceWeatherBulletinParserTest {
+public class TAFBulletinParserTest {
 
     @Autowired
     private AviMessageConverter converter;
 
     private Document getBulletinDocument(final String filename) throws Exception {
-        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        final DocumentBuilder db = dbf.newDocumentBuilder();
-        return db.parse(SpaceWeatherBulletinParserTest.class.getResourceAsStream(filename));
+        final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setNamespaceAware(true);
+        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        try (InputStream inputStream = TAFBulletinParserTest.class.getResourceAsStream(filename)) {
+            return documentBuilder.parse(inputStream);
+        }
     }
 
     @Test
     public void testScanner() throws Exception {
-        assertTrue(this.converter.isSpecificationSupported(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO));
+        assertTrue(this.converter.isSpecificationSupported(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO));
         final BulletinProperties properties = new BulletinProperties();
-        final MeteorologicalBulletinIWXXMScanner<SpaceWeatherAdvisory, SpaceWeatherBulletin> scanner = new MeteorologicalBulletinIWXXMScanner<>();
-        scanner.setMessageConverter(converter.getConverter(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO));
-        scanner.collectBulletinProperties(this.getBulletinDocument("swx-bulletin.xml"), properties, ConversionHints.EMPTY);
+        final MeteorologicalBulletinIWXXMScanner<TAF, TAFBulletin> scanner = new MeteorologicalBulletinIWXXMScanner<>();
+        scanner.setMessageConverter(converter.getConverter(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO));
+        scanner.collectBulletinProperties(this.getBulletinDocument("taf-bulletin.xml"), properties, ConversionHints.EMPTY);
         assertTrue(properties.contains(BulletinProperties.Name.HEADING));
         final Optional<BulletinHeading> heading = properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class);
         assertEquals(31, heading.get().getBulletinNumber());
@@ -62,15 +62,15 @@ public class SpaceWeatherBulletinParserTest {
 
     @Test
     public void testParser() throws Exception {
-        final Document input = this.getBulletinDocument("swx-bulletin.xml");
-        final ConversionResult<SpaceWeatherBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_BULLETIN_POJO,
+        final Document input = this.getBulletinDocument("taf-bulletin.xml");
+        final ConversionResult<TAFBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_TAF_BULLETIN_POJO,
                 ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
         if (result.getConvertedMessage().isPresent()) {
-            final SpaceWeatherBulletin bulletin = result.getConvertedMessage().get();
-            assertEquals(1, bulletin.getMessages().size());
-            final SpaceWeatherAdvisory mesg = bulletin.getMessages().get(0);
-            assertEquals(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"), mesg.getPhenomena().get(0));
+            final TAFBulletin bulletin = result.getConvertedMessage().get();
+            assertEquals(2, bulletin.getMessages().size());
+            final TAF mesg = bulletin.getMessages().get(0);
+            assertEquals(26.0, mesg.getBaseForecast().get().getSurfaceWind().get().getWindGust().get().getValue(), 0.0001);
         }
     }
 

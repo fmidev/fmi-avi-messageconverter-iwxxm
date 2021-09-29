@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.v2_1;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import javax.xml.namespace.NamespaceContext;
@@ -27,7 +28,6 @@ import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.taf.TAF;
 
-
 /**
  * Created by rinne on 19/07/17.
  */
@@ -43,22 +43,22 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO));
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
 
-        Document toValidate = readDocument(TAFIWXXMLoopbackTest.class, "taf-A5-1.xml");
-        ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        final Document toValidate = readDocument(TAFIWXXMLoopbackTest.class, "taf-A5-1.xml");
+        final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
         assertTrue(result.getConvertedMessage().isPresent());
 
-        ConversionResult<Document> result2 = converter.convertMessage(result.getConvertedMessage().get(), IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM);
-        assertTrue(ConversionResult.Status.SUCCESS == result2.getStatus());
+        final ConversionResult<Document> result2 = converter.convertMessage(result.getConvertedMessage().get(), IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM);
+        assertSame(ConversionResult.Status.SUCCESS, result2.getStatus());
 
-        XPathFactory factory = XPathFactory.newInstance();
-        XPath xpath = factory.newXPath();
-        NamespaceContext ctx = new IWXXMNamespaceContext();
+        final XPathFactory factory = XPathFactory.newInstance();
+        final XPath xpath = factory.newXPath();
+        final NamespaceContext ctx = new IWXXMNamespaceContext();
         xpath.setNamespaceContext(ctx);
 
-        Element output = result2.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
-        Element input = toValidate.getDocumentElement();
+        final Element output = result2.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
+        final Element input = toValidate.getDocumentElement();
         assertNotNull(output);
 
         XPathExpression expr = xpath.compile("/iwxxm:TAF/iwxxm:issueTime/gml:TimeInstant/gml:timePosition");
@@ -150,8 +150,7 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:meanWindDirection");
-        assertEquals("Mean wind direction does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Mean wind direction does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
@@ -161,8 +160,7 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:meanWindSpeed");
-        assertEquals("Mean wind speed does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Mean wind speed does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:windGustSpeed/@uom");
@@ -171,7 +169,7 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         //Visibility:
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:prevailingVisibility");
-        assertEquals("Visibility does not match",Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Visibility does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:prevailingVisibility/@uom");
@@ -195,8 +193,7 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:baseForecast/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm:AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
                         + ":CloudLayer/iwxxm:base");
-        assertEquals("Cloud layer 1 base does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Cloud layer 1 base does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
 
         //Change forecast 1:
 
@@ -238,7 +235,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         assertEquals("Change forecast 1 change indicator does not match", expr.evaluate(output), expr.evaluate(input));
 
         //CAVOK:
-        expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/@cloudAndVisibilityOK");
+        expr = xpath.compile(
+                "/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/@cloudAndVisibilityOK");
         assertEquals("Change forecast 1 CAVOK does not match", expr.evaluate(output), expr.evaluate(input));
 
         //Forecast properties:
@@ -261,8 +259,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm:AerodromeCloudForecast/iwxxm:layer[1]/iwxxm"
                         + ":CloudLayer/iwxxm:base");
-        assertEquals("Change Forecast 1 cloud layer 1 base does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Change Forecast 1 cloud layer 1 base does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)),
+                0.00001);
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:cloudType/@xlink:href");
@@ -278,8 +276,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[1]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:base");
-        assertEquals("Change Forecast 1 cloud layer 2 base does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Change Forecast 1 cloud layer 2 base does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)),
+                0.00001);
 
         //Change forecast 2:
 
@@ -332,8 +330,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         //Visibility:
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:prevailingVisibility");
-        assertEquals("Change forecast 2 Visibility does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Change forecast 2 Visibility does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)),
+                0.00001);
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:prevailingVisibility/@uom");
@@ -353,8 +351,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:meanWindDirection");
-        assertEquals("Change forecast 2 mean wind direction does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Change forecast 2 mean wind direction does not match", Double.parseDouble(expr.evaluate(output)),
+                Double.parseDouble(expr.evaluate(input)), 0.00001);
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
@@ -364,8 +362,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:meanWindSpeed");
-        assertEquals("Change forecast 2 mean wind speed does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Change forecast 2 mean wind speed does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)),
+                0.00001);
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm:AerodromeSurfaceWindForecast"
                         + "/iwxxm:windGustSpeed/@uom");
@@ -392,8 +390,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:base");
-        assertEquals("Change Forecast 2 cloud layer 1 base does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Change Forecast 2 cloud layer 1 base does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)),
+                0.00001);
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:cloudType/@xlink:href");
@@ -409,8 +407,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[2]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[2]/iwxxm" + ":CloudLayer/iwxxm:base");
-        assertEquals("Change Forecast 2 cloud layer 2 base does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Change Forecast 2 cloud layer 2 base does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)),
+                0.00001);
 
         //Change forecast 3:
 
@@ -463,8 +461,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         //Visibility:
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:prevailingVisibility");
-        assertEquals("Change forecast 3 Visibility does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Change forecast 3 Visibility does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)),
+                0.00001);
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:prevailingVisibility/@uom");
@@ -488,8 +486,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm"
                         + ":AerodromeSurfaceWindForecast" + "/iwxxm:meanWindDirection");
-        assertEquals("Change forecast 3 mean wind direction does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Change forecast 3 mean wind direction does not match", Double.parseDouble(expr.evaluate(output)),
+                Double.parseDouble(expr.evaluate(input)), 0.00001);
 
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm"
@@ -499,8 +497,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm"
                         + ":AerodromeSurfaceWindForecast" + "/iwxxm:meanWindSpeed");
-        assertEquals("Change forecast 3 mean wind speed does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Change forecast 3 mean wind speed does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)),
+                0.00001);
         expr = xpath.compile(
                 "/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:surfaceWind/iwxxm"
                         + ":AerodromeSurfaceWindForecast" + "/iwxxm:windGustSpeed/@uom");
@@ -522,8 +520,8 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
 
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[3]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:layer[1]/iwxxm" + ":CloudLayer/iwxxm:base");
-        assertEquals("Change Forecast 3 cloud layer 1 base does not match",
-                Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)), 0.00001);
+        assertEquals("Change Forecast 3 cloud layer 1 base does not match", Double.parseDouble(expr.evaluate(output)), Double.parseDouble(expr.evaluate(input)),
+                0.00001);
 
     }
 }

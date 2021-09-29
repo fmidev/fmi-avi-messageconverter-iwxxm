@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin;
+package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,6 +13,7 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
+import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMSerializer;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 

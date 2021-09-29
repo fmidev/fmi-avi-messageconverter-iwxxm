@@ -1,5 +1,5 @@
 {
-  "status": "CANCELLATION",
+  "cancelMessage": true,
   "permissibleUsage": "OPERATIONAL",
   "issueTime": {
     "completeTime": "2012-08-16T15:00:00Z"
@@ -17,19 +17,13 @@
       "completeTime": "2012-08-17T00:00:00Z"
     }
   },
-  "referredReport": {
-    "aerodrome": {
-      "designator": "YUDO",
-      "name": "DONLON/INTERNATIONAL",
-      "locationIndicatorICAO": "YUDO"
+  "referredReportValidPeriod": {
+    "startTime": {
+      "completeTime": "2012-08-16T00:00:00Z"
     },
-    "validityTime": {
-      "startTime": {
-        "completeTime": "2012-08-16T00:00:00Z"
-      },
-      "endTime": {
-        "completeTime": "2012-08-16T18:00:00Z"
-      }
+    "endTime": {
+      "completeTime": "2012-08-16T18:00:00Z"
     }
-  }
+  },
+  "reportStatus": "AMENDMENT"
 }

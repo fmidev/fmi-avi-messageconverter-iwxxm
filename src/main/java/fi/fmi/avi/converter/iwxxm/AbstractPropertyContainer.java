@@ -1,7 +1,6 @@
 package fi.fmi.avi.converter.iwxxm;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,12 +23,17 @@ public abstract class AbstractPropertyContainer {
     }
 
     public boolean containsAny(final PropertyName... keys) {
-        return this.properties.keySet().stream().anyMatch((key) -> Arrays.stream(keys).anyMatch((key::equals)));
+        for (final PropertyName key : keys) {
+            if (contains(key)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")
     public <S> Optional<S> get(final PropertyName name, final Class<S> clz) {
-        Object o = this.properties.get(name);
+        final Object o = this.properties.get(name);
         if (o != null) {
             if (name.getAcceptedType().isAssignableFrom(o.getClass())) {
                 return (Optional<S>) Optional.of(o);
@@ -40,10 +44,11 @@ public abstract class AbstractPropertyContainer {
 
     @SuppressWarnings("unchecked")
     public <S> List<S> getList(final PropertyName name, final Class<S> itemClz) {
-        Object o = this.properties.get(name);
+        final Object o = this.properties.get(name);
         if (o != null) {
             if (o instanceof List) {
-                return (List<S>) o;
+                final List<S> list = (List<S>) o;
+                return list.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(list);
             } else {
                 throw new IllegalArgumentException("Value for " + name + " is not a List");
             }
@@ -56,14 +61,16 @@ public abstract class AbstractPropertyContainer {
      * Sets a value for the named property.
      * Note: silently ignores setting a null value to any property.
      *
-     * @param key the key
-     * @param value to set
+     * @param key
+     *         the key
+     * @param value
+     *         to set
      *
      * @return the previous value if set
      *
-     * @throws IllegalArgumentException if the value type is not acceptable for the given key
+     * @throws IllegalArgumentException
+     *         if the value type is not acceptable for the given key
      */
-    @SuppressWarnings("unchecked")
     public Object set(final PropertyName key, final Object value) throws IllegalArgumentException {
         if (value == null) {
             return null;
@@ -83,7 +90,7 @@ public abstract class AbstractPropertyContainer {
      * @param key
      *         the property to unset
      */
-    public void unset(final Object key) {
+    public void unset(final PropertyName key) {
         this.properties.remove(key);
     }
 
@@ -99,12 +106,12 @@ public abstract class AbstractPropertyContainer {
      *         if the property with this key already has non-list value, or if the value is of wrong type
      */
     @SuppressWarnings("unchecked")
-    public void addToList(final PropertyName key, final Object value) throws IllegalArgumentException {
+    public <E> void addToList(final PropertyName key, final E value) throws IllegalArgumentException {
         if (key.getAcceptedType().isAssignableFrom(value.getClass())) {
-            Object o = this.properties.computeIfAbsent(key, k -> new ArrayList<>());
+            final Object o = this.properties.computeIfAbsent(key, k -> new ArrayList<>());
             if (o instanceof List) {
-                List retval = (List) o;
-                retval.add(value);
+                final List<E> list = (List<E>) o;
+                list.add(value);
             } else {
                 throw new IllegalArgumentException("Property " + key + " has non-list value set, cannot add as list value");
             }
@@ -118,9 +125,13 @@ public abstract class AbstractPropertyContainer {
     /**
      * Adds all given values to the list of values for the given key.
      *
-     * @param key    the key
-     * @param values the new list items
-     * @throws IllegalArgumentException if the property with this key already has non-list value, or if the value is of wrong type
+     * @param key
+     *         the key
+     * @param values
+     *         the new list items
+     *
+     * @throws IllegalArgumentException
+     *         if the property with this key already has non-list value, or if the value is of wrong type
      */
     public void addAllToList(final PropertyName key, final Collection<?> values) throws IllegalArgumentException {
         if (values != null) {

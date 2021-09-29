@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.v3_0.swx;
+package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -10,8 +10,6 @@ import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMParser;
-import fi.fmi.avi.converter.iwxxm.bulletin.BulletinProperties;
-import fi.fmi.avi.converter.iwxxm.bulletin.MeteorologicalBulletinIWXXMScanner;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
 import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
@@ -44,7 +42,7 @@ public abstract class SpaceWeatherBulletinIWXXMParser<T> extends AbstractBulleti
 
     public static class FromDOM extends SpaceWeatherBulletinIWXXMParser<Document> {
         @Override
-        protected Document parseAsDom(final Document input) throws ConversionException {
+        protected Document parseAsDom(final Document input) {
             return input;
         }
     }

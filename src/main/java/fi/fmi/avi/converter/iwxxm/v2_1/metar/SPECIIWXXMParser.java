@@ -55,12 +55,13 @@ public abstract class SPECIIWXXMParser<T> extends MeteorologicalAerodromeObserva
         /**
          * Returns the SPECI input message as A DOM Document.
          *
-         * @param input the XML Document input as a String
+         * @param input
+         *         the XML Document input as a String
+         *
          * @return the input parsed as DOM
-         * @throws ConversionException if an exception occurs while converting input to DOM
          */
         @Override
-        protected Document parseAsDom(final Document input) throws ConversionException {
+        protected Document parseAsDom(final Document input) {
             return input;
         }
     }
@@ -70,9 +71,13 @@ public abstract class SPECIIWXXMParser<T> extends MeteorologicalAerodromeObserva
         /**
          * Returns the SPECI input message as A DOM Document.
          *
-         * @param input the XML Document input as a String
+         * @param input
+         *         the XML Document input as a String
+         *
          * @return the input parsed as DOM
-         * @throws ConversionException if an exception occurs while converting input to DOM
+         *
+         * @throws ConversionException
+         *         if an exception occurs while converting input to DOM
          */
         @Override
         protected Document parseAsDom(final String input) throws ConversionException {

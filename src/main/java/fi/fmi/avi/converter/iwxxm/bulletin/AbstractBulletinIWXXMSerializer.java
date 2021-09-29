@@ -1,14 +1,13 @@
 package fi.fmi.avi.converter.iwxxm.bulletin;
 
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -16,7 +15,6 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -39,7 +37,8 @@ import fi.fmi.avi.util.GTSExchangeFileInfo;
 import wmo.collect2014.MeteorologicalBulletinType;
 
 /**
- * @param <S> bulletin content model type
+ * @param <S>
+ *         bulletin content model type
  */
 public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends IWXXMConverterBase
         implements AviMessageSpecificConverter<S, T> {
@@ -71,31 +70,20 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
             result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No messages in bulletin"));
             return result;
         }
-        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
-        schemaInfo.addSchemaSource(MeteorologicalBulletinType.class.getResourceAsStream("/int/wmo/collect/1.2/collect.xsd"));
-        schemaInfo.addSchematronRule(MeteorologicalBulletinType.class.getResource("/schematron/xslt/int/wmo/collect/1.2/rule/collect.xsl"));
-        schemaInfo.addSchemaLocation("http://def.wmo.int/collect/2014", "http://schemas.wmo.int/collect/1.2/collect.xsd");
-
-        final XMLSchemaInfo contentSchemaInfo = this.contentMessageConverter.getSchemaInfo();
-        for (final Source s : contentSchemaInfo.getSchemaSources()) {
-            schemaInfo.addSchemaSource(s);
-        }
-        for (final Map.Entry<String, String> e : contentSchemaInfo.getSchemaLocations().entrySet()) {
-            schemaInfo.addSchemaLocation(e.getKey(), e.getValue());
-        }
-        for (final URL u : contentSchemaInfo.getSchematronRules()) {
-            schemaInfo.addSchematronRule(u);
-        }
+        final XMLSchemaInfo schemaInfo = getSchemaInfo();
+        schemaInfo.addAllFrom(this.contentMessageConverter.getSchemaInfo());
 
         final T retval;
         try {
             final Document dom;
             try {
-                final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                dbf.setNamespaceAware(true);
-                dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-                final DocumentBuilder db = dbf.newDocumentBuilder();
-                dom = db.parse(this.getClass().getResourceAsStream("collect-template.xml"));
+                final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+                documentBuilderFactory.setNamespaceAware(true);
+                documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                try (InputStream inputStream = this.getClass().getResourceAsStream("collect-template.xml")) {
+                    dom = documentBuilder.parse(inputStream);
+                }
                 final Element collect = dom.getDocumentElement();
                 final Attr id = dom.createAttributeNS(IWXXMNamespaceContext.getDefaultURI("gml"), "id");
                 id.setPrefix("gml");
@@ -169,6 +157,14 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
         }
 
         return result;
+    }
+
+    private XMLSchemaInfo getSchemaInfo() {
+        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
+        schemaInfo.addSchemaSource(MeteorologicalBulletinType.class.getResource("/int/wmo/collect/1.2/collect.xsd"));
+        schemaInfo.addSchematronRule(MeteorologicalBulletinType.class.getResource("/schematron/xslt/int/wmo/collect/1.2/rule/collect.xsl"));
+        schemaInfo.addSchemaLocation("http://def.wmo.int/collect/2014", "http://schemas.wmo.int/collect/1.2/collect.xsd");
+        return schemaInfo;
     }
 
     protected abstract T aggregateAsBulletin(final Document collection, final List<Document> messages, final ConversionHints hints) throws ConversionException;

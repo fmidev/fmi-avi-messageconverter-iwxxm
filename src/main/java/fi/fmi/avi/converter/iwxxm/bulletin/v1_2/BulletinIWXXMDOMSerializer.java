@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.bulletin;
+package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
 import java.util.List;
 
@@ -16,6 +16,7 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
+import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMSerializer;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 
@@ -23,7 +24,7 @@ public class BulletinIWXXMDOMSerializer<U extends AviationWeatherMessage, S exte
         extends AbstractBulletinIWXXMSerializer<Document, U, S> {
 
     @Override
-    protected Document aggregateAsBulletin(final Document collection, final List<Document> messages, final ConversionHints hints) throws ConversionException {
+    protected Document aggregateAsBulletin(final Document collection, final List<Document> messages, final ConversionHints hints) {
         try {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);

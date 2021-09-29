@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.ls.LSInput;
@@ -21,7 +21,7 @@ import org.w3c.dom.ls.LSResourceResolver;
  */
 public class IWXXMSchemaResourceResolver implements LSResourceResolver {
 
-    private static final Map<String, LSInput> cache = new HashMap<>();
+    private static final ConcurrentMap<String, LSInput> cache = new ConcurrentHashMap<>();
     //Singleton
     private static IWXXMSchemaResourceResolver instance;
 
@@ -37,17 +37,10 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
 
     @Override
     public LSInput resolveResource(final String type, final String namespaceURI, final String publicId, final String systemId, final String baseURI) {
-        NamespaceLocation ns = NamespaceLocation.forURI(namespaceURI);
+        final NamespaceLocation ns = NamespaceLocation.forURI(namespaceURI);
         if (ns != null) {
-            final String key = ns.getFullPathFor(systemId);
-            synchronized (cache) {
-                if (cache.containsKey(key)) {
-                    return cache.get(key);
-                } else {
-                    cache.put(key, new ClassLoaderResourceInput(ns.getFinderClass(), ns.getFullPathFor(systemId), publicId, systemId, baseURI));
-                    return cache.get(key);
-                }
-            }
+            return cache.computeIfAbsent(ns.getFullPathFor(systemId),
+                    key -> new ClassLoaderResourceInput(ns.getFinderClass(), ns.getFullPathFor(systemId), publicId, systemId, baseURI));
         }
         return null;
     }
@@ -73,8 +66,8 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
         IWXXM30("http://icao.int/iwxxm/3.0", "int/icao/iwxxm/3.0.0/", icao.iwxxm30.SpaceWeatherAdvisoryType.class);
 
         private final String namespaceURI;
-        private String pathPrefix;
-        private Class<?> finderClass;
+        private final String pathPrefix;
+        private final Class<?> finderClass;
 
         NamespaceLocation(final String namespaceURI, final String pathPrefix, final Class<?> finderClass) {
             this.namespaceURI = namespaceURI;
@@ -83,7 +76,7 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
         }
 
         public static NamespaceLocation forURI(final String namespaceURI) {
-            for (NamespaceLocation n : values()) {
+            for (final NamespaceLocation n : values()) {
                 if (n.getNamespaceURI().equals(namespaceURI)) {
                     return n;
                 }
@@ -109,10 +102,10 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
     }
 
     private static class ClassLoaderResourceInput implements LSInput {
-        private URL url;
-        private String publicId;
-        private String systemId;
-        private String baseURI;
+        private final URL url;
+        private final String publicId;
+        private final String systemId;
+        private final String baseURI;
         private char[] cachedContent;
 
         public ClassLoaderResourceInput(final Class<?> cls, final String path, final String publicId, final String systemId, final String baseURI)
@@ -138,11 +131,11 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
                     return null;
                 }
                 try {
-                    CharArrayWriter caw = new CharArrayWriter(1024);
+                    final CharArrayWriter caw = new CharArrayWriter(1024);
                     IOUtils.copy(url.openStream(), caw);
                     this.cachedContent = caw.toCharArray();
 
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     //NOOP
                 }
             }
