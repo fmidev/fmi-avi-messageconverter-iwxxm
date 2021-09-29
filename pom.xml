@@ -60,7 +60,7 @@
     <dependency>
       <groupId>fi.fmi.avi.converter</groupId>
       <artifactId>fmi-avi-messageconverter</artifactId>
-      <version>6.0.10.KNMI-add-sigmet-tac-2-SNAPSHOT</version>
+      <version>KNMI-5.0.0</version>
       <!-- <version>5.0.0</version> -->
     </dependency>
     <dependency>
