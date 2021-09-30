@@ -203,6 +203,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         format.setMinimumIntegerDigits(1);
         format.setMinimumFractionDigits(0);
         format.setMaximumFractionDigits(4);
+        format.setGroupingUsed(false);
         type.setValue(format.format(value));
         if (uom != null && !uom.isEmpty()) {
             type.setUom(uom.toUpperCase(Locale.US));

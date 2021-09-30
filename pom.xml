@@ -9,7 +9,7 @@
   <description>Aviation weather message conversions - IWXXM module</description>
   <groupId>fi.fmi.avi.converter</groupId>
   <artifactId>fmi-avi-messageconverter-iwxxm</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1</version>
   <scm>
     <connection>scm:git:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm.git</connection>
     <developerConnection>scm:git:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm.git</developerConnection>
@@ -44,7 +44,7 @@
         <id>fmi-avi-messageconverter</id>
         <url>https://gitlab.com/api/v4/projects/22507877/packages/maven</url>
     </repository>
-    
+
     <!-- fi/fmi/avi/converter/fmi-avi-messageconverter-iwxxm-->
     <repository>
       <id>gitlab-maven</id>
@@ -165,8 +165,8 @@
         </plugin>
       </plugins>
     </pluginManagement>
-  </build>    
-  
+  </build>
+
   <distributionManagement>
     <repository>
       <id>gitlab-maven</id>
