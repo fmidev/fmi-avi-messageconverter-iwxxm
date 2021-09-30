@@ -1,5 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.conf;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.w3c.dom.Document;
@@ -29,21 +30,25 @@ public class IWXXMSIGMETAIRMETConverter {
     // Serializers:
 
     @Bean
+    @Qualifier("sigmetIWXXMStringSerializer")
     public AviMessageSpecificConverter<SIGMET, String> sigmetIWXXMStringSerializer() {
         return new SIGMETIWXXMSerializer.ToString();
     }
 
     @Bean
+    @Qualifier("sigmetIWXXMDOMSerializer")
     public AviMessageSpecificConverter<SIGMET, Document> sigmetIWXXMDOMSerializer() {
         return new SIGMETIWXXMSerializer.ToDOM();
     }
 
     @Bean
+    @Qualifier("airmetIWXXMStringSerializer")
     public AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer() {
         return new AIRMETIWXXMSerializer.ToString();
     }
 
     @Bean
+    @Qualifier("airmetIWXXMDOMSerializer")
     public AviMessageSpecificConverter<AIRMET, Document> airmetIWXXMDOMSerializer() {
         return new AIRMETIWXXMSerializer.ToDOM();
     }
