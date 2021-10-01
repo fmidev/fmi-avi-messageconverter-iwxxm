@@ -1,6 +1,7 @@
 package fi.fmi.avi.converter.iwxxm;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -101,15 +102,19 @@ public class IWXXMTestConfiguration {
     private AviMessageSpecificConverter<Document, SIGMET> sigmetIWXXMDOMParser;
 
     @Autowired
+    @Qualifier("sigmetIWXXMStringSerializer")
     private AviMessageSpecificConverter<SIGMET, String> sigmetIWXXMStringSerializer;
 
     @Autowired
+    @Qualifier("sigmetIWXXMDOMSerializer")
     private AviMessageSpecificConverter<SIGMET, Document> sigmetIWXXMDOMSerializer;
 
     @Autowired
+    @Qualifier("airmetIWXXMStringSerializer")
     private AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer;
 
     @Autowired
+    @Qualifier("airmetIWXXMDOMSerializer")
     private AviMessageSpecificConverter<AIRMET, Document> airmetIWXXMDOMSerializer;
 
     // Space weather
