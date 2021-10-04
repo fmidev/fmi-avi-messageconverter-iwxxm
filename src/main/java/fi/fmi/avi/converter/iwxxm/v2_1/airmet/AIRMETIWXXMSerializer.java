@@ -352,7 +352,12 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                 sect.setDirectionOfMotion(directionOfMotion);
 
                                                 input.getAnalysisGeometries().get().get(0).getMovingSpeed().ifPresent(ms -> sect.setSpeedOfMotion(create(SpeedType.class, spd -> {
-                                                    spd.setUom(ms.getUom());
+                                                    if (ms.getUom().equals("KT")) {
+                                                        spd.setUom("[kn_i]");
+                                                    } else {
+                                                        spd.setUom("km/h");
+                                                    }
+  
                                                     spd.setValue(ms.getValue());
                                                 })));
 
@@ -528,7 +533,11 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                 final AirmetWind w = input.getWind().get();
                                                 sect.setSurfaceWindSpeed(create(SpeedType.class, st -> {
                                                     st.setValue(w.getSpeed().getValue());
-                                                    st.setUom(w.getSpeed().getUom());
+                                                    if (w.getSpeed().getUom().equals("KT")) {
+                                                        st.setUom("[kn_i]");
+                                                    } else {
+                                                        st.setUom("km/h");
+                                                    }
                                                 }));
                                                 sect.setSurfaceWindDirection(create(AngleType.class, at -> {
                                                     at.setValue(w.getDirection().getValue());
