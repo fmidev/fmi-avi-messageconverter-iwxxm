@@ -340,29 +340,31 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         //        final String foiId = "foi-" + sigmetUuid;
 
         final SIGMETType sigmet;
-        switch (input.getSigmetPhenomenon().get()) {
-            case TC:
-                sigmet = create(TropicalCycloneSIGMETType.class);
-                sigmet.setId("wc-" + UUID.randomUUID().toString());
-                break;
-            case VA:
-                sigmet = create(VolcanicAshSIGMETType.class);
-                sigmet.setId("wv-" + UUID.randomUUID().toString());
-                break;
-            default:
-                sigmet = create(SIGMETType.class);
-                sigmet.setId("ws-" + UUID.randomUUID().toString());
-        }
+        if (input.getCancelledReference().isPresent()) {
+            sigmet = create(SIGMETType.class);
+            sigmet.setId("ws-" + UUID.randomUUID().toString());
+            sigmet.setStatus(SIGMETReportStatusType.CANCELLATION);
+        } else {
+            switch (input.getSigmetPhenomenon().get()) {
+                case TC:
+                    sigmet = create(TropicalCycloneSIGMETType.class);
+                    sigmet.setId("wc-" + UUID.randomUUID().toString());
+                    break;
+                case VA:
+                    sigmet = create(VolcanicAshSIGMETType.class);
+                    sigmet.setId("wv-" + UUID.randomUUID().toString());
+                    break;
+                default:
+                    sigmet = create(SIGMETType.class);
+                    sigmet.setId("ws-" + UUID.randomUUID().toString());
+            }
+            sigmet.setStatus(SIGMETReportStatusType.NORMAL);
+    }
 
         //Use current time as issueTime if missing
         final String issueTime = input.getIssueTime().<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                 .orElseGet(() -> toIWXXMDateTime(ZonedDateTime.now()));
 
-        if (input.getCancelledReference().isPresent()) {
-            sigmet.setStatus(SIGMETReportStatusType.CANCELLATION);
-        } else {
-            sigmet.setStatus(SIGMETReportStatusType.NORMAL);
-        }
         sigmet.setIssuingAirTrafficServicesUnit(create(UnitPropertyType.class, prop -> prop.setUnit(create(UnitType.class, unit -> {
             unit.setId("fic-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + sigmetUuid);
             unit.getTimeSlice().add(create(UnitTimeSlicePropertyType.class, sliceProp -> sliceProp.setUnitTimeSlice(create(UnitTimeSliceType.class, slice -> {
@@ -406,31 +408,29 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     phen -> phen.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE)));
 
             sigmet.setAnalysis(createCancelAnalysis(input, issueTime, sigmetUuid));
-            if (input.getSigmetPhenomenon().get().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
-                input.getVAInfo()//
-                        .flatMap(VAInfo::getVolcanicAshMovedToFIR)//
-                        .ifPresent(volcanicAshMovedToFIR -> {
-                            final String designator = volcanicAshMovedToFIR.getDesignator();
-                            final String airSpaceName = volcanicAshMovedToFIR.getName();
-                            sigmet.setVolcanicAshMovedToFIR(create(AirspacePropertyType.class, apt -> {
-                                final AirspaceType airspace = create(AirspaceType.class);
-                                airspace.setValidTime(null);
-                                airspace.setId("movedto-fir-" + designator + "-" + UUID.randomUUID());
-                                airspace.getTimeSlice()
-                                        .add(create(AirspaceTimeSlicePropertyType.class,
-                                                timeSliceProp -> timeSliceProp.setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, timeSlice -> {
-                                                    timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
-                                                    timeSlice.setInterpretation("SNAPSHOT");
-                                                    timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue("FIR")));
-                                                    timeSlice.setAirspaceName(create(TextNameType.class, name -> name.setValue(airSpaceName)));
-                                                    timeSlice.setId("fir-" + designator + "-" + UUID.randomUUID() + "-ts");
-                                                    timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, desig -> desig.setValue(designator)));
+            input.getVAInfo()//
+                    .flatMap(VAInfo::getVolcanicAshMovedToFIR)//
+                    .ifPresent(volcanicAshMovedToFIR -> {
+                        final String designator = volcanicAshMovedToFIR.getDesignator();
+                        final String airSpaceName = volcanicAshMovedToFIR.getName();
+                        sigmet.setVolcanicAshMovedToFIR(create(AirspacePropertyType.class, apt -> {
+                            final AirspaceType airspace = create(AirspaceType.class);
+                            airspace.setValidTime(null);
+                            airspace.setId("movedto-fir-" + designator + "-" + UUID.randomUUID());
+                            airspace.getTimeSlice()
+                                    .add(create(AirspaceTimeSlicePropertyType.class,
+                                            timeSliceProp -> timeSliceProp.setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, timeSlice -> {
+                                                timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
+                                                timeSlice.setInterpretation("SNAPSHOT");
+                                                timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue("FIR")));
+                                                timeSlice.setAirspaceName(create(TextNameType.class, name -> name.setValue(airSpaceName)));
+                                                timeSlice.setId("fir-" + designator + "-" + UUID.randomUUID() + "-ts");
+                                                timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, desig -> desig.setValue(designator)));
 
-                                                }))));
-                                apt.setAirspace(airspace);
-                            }));
-                        });
-            }
+                                            }))));
+                            apt.setAirspace(airspace);
+                        }));
+                    });
         } else {
             final AeronauticalSignificantWeatherPhenomenonType phenType = create(AeronauticalSignificantWeatherPhenomenonType.class, ref -> {
                 ref.setHref(AviationCodeListUser.CODELIST_SIGWX_PHENOMENA_ROOT + input.getSigmetPhenomenon().get());
@@ -447,7 +447,6 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                         createForecastPositionAnalysis(input, input.getIssuingAirTrafficServicesUnit().getDesignator(), issueTime, sigmetUuid));
             }
 
-        }
         if ((input.getSigmetPhenomenon().get()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA) && input.getVAInfo().isPresent()) {
             final VolcanoDescription volcano = input.getVAInfo().get().getVolcano().get();
             final icao.iwxxm21.ObjectFactory of = new icao.iwxxm21.ObjectFactory();
@@ -468,6 +467,8 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                             }));
                             pt.setId("wv-pt-" + sigmetUuid);
                         }))));
+                    } else {
+                        v.setPosition(create(PointPropertyType.class, p -> p.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING)));
                     }
                     if (volcano.getVolcanoName().isPresent()) {
                         v.setVolcanoName(volcano.getVolcanoName().get());
@@ -478,10 +479,9 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                         v.setId("wv-" + generatedVolcanoName + "-" + sigmetUuid);
                     }
                 }));
-                //               } else {
-                //                   vpt.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
             })));
         }
+    }
 
         try {
             this.updateMessageMetadata(input, result, sigmet);
@@ -621,7 +621,11 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                 sect.setDirectionOfMotion(directionOfMotion);
 
                                                 input.getAnalysisGeometries().get().get(0).getMovingSpeed().ifPresent(ms -> sect.setSpeedOfMotion(create(SpeedType.class, spd -> {
-                                                    spd.setUom(ms.getUom());
+                                                    if (ms.getUom().equals("KT")) {
+                                                      spd.setUom("[kn_i]");
+                                                    } else {
+                                                      spd.setUom("km/h");
+                                                    }
                                                     spd.setValue(ms.getValue());
                                                 })));
 
