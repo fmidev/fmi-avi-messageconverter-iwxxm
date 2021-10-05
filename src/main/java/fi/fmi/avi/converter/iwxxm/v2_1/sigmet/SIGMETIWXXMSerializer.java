@@ -621,10 +621,13 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                 sect.setDirectionOfMotion(directionOfMotion);
 
                                                 input.getAnalysisGeometries().get().get(0).getMovingSpeed().ifPresent(ms -> sect.setSpeedOfMotion(create(SpeedType.class, spd -> {
+                                      
                                                     if (ms.getUom().equals("KT")) {
-                                                      spd.setUom("[kn_i]");
+                                                        spd.setUom("[kn_i]");
+                                                    } else if (ms.getUom().equals("KMH")) {
+                                                        spd.setUom("km/h");
                                                     } else {
-                                                      spd.setUom("km/h");
+                                                        spd.setUom(ms.getUom());
                                                     }
                                                     spd.setValue(ms.getValue());
                                                 })));

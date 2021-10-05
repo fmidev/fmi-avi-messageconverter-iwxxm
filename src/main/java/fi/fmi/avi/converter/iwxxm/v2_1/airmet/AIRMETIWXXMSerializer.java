@@ -354,8 +354,10 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                 input.getAnalysisGeometries().get().get(0).getMovingSpeed().ifPresent(ms -> sect.setSpeedOfMotion(create(SpeedType.class, spd -> {
                                                     if (ms.getUom().equals("KT")) {
                                                         spd.setUom("[kn_i]");
-                                                    } else {
+                                                    } else if (ms.getUom().equals("KMH")) {
                                                         spd.setUom("km/h");
+                                                    } else {
+                                                        spd.setUom(ms.getUom());
                                                     }
   
                                                     spd.setValue(ms.getValue());
@@ -533,10 +535,13 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                 final AirmetWind w = input.getWind().get();
                                                 sect.setSurfaceWindSpeed(create(SpeedType.class, st -> {
                                                     st.setValue(w.getSpeed().getValue());
+                                       
                                                     if (w.getSpeed().getUom().equals("KT")) {
                                                         st.setUom("[kn_i]");
-                                                    } else {
+                                                    } else if (w.getSpeed().getUom().equals("KMH")) {
                                                         st.setUom("km/h");
+                                                    } else {
+                                                        st.setUom(w.getSpeed().getUom());
                                                     }
                                                 }));
                                                 sect.setSurfaceWindDirection(create(AngleType.class, at -> {
