@@ -1,12 +1,14 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
 import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertSame;
 import static junit.framework.TestCase.assertTrue;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,6 +48,16 @@ public class SIGMETIWWXXMSerializerTest {
         }
     }
 
+    protected String readFromFile(final String fileName) throws IOException {
+        try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            } else {
+                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+            }
+        }
+    }
+
     @Test
     public void testSIGMETStringSerialization1() throws Exception {
         doTestSIGMETStringSerialization("sigmet1.json");
@@ -76,6 +88,21 @@ public class SIGMETIWWXXMSerializerTest {
         doTestSIGMETStringSerialization("sigmetMOVING.json");
     }
 
+    private String fixIds(String s){
+        if (s==null) return null;
+        return s.replaceAll("gml:id=\"(.*)\"", "gml:id=\"GMLID\"").replaceAll("xlink:href=\"(.*)\"", "xlink:href=\"XLINKHREF\"");
+    }
+
+    @Test
+    public void testSIGMETCleanup() throws Exception {
+        //Asserts the generated SIGMET is cleaned up correctly
+        String xml = fixIds(doTestSIGMETStringSerialization("sigmetMOVING.json"));
+        String expectedXml = fixIds(readFromFile("sigmetMOVING.IWXXM21"));
+
+        assertEquals(expectedXml, xml);
+
+    }
+
     @Test
     public void testSIGMETForecastPosition() throws Exception {
         //SIGMET with forecast position for phenomenon
@@ -83,7 +110,7 @@ public class SIGMETIWWXXMSerializerTest {
         doTestSIGMETStringSerialization("sigmetFORECASTPOSITION.json");
     }
 
-    public void doTestSIGMETStringSerialization(final String fn) throws Exception {
+    public String doTestSIGMETStringSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING));
         final SIGMET s = readFromJSON(fn);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
@@ -91,6 +118,6 @@ public class SIGMETIWWXXMSerializerTest {
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
-
+        return result.getConvertedMessage().orElse(null);
     }
 }

@@ -1,12 +1,14 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
 import static junit.framework.TestCase.assertSame;
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +48,17 @@ public class AIRMETIWWXXMSerializerTest {
         }
     }
 
-    public void doTestAIRMETStringSerialization(final String fn) throws Exception {
+    protected String readFromFile(final String fileName) throws IOException {
+        try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
+            if (inputStream != null) {
+                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            } else {
+                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+            }
+        }
+    }
+
+    public String  doTestAIRMETStringSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING));
         final AIRMET s = readFromJSON(fn);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING);
@@ -56,6 +68,7 @@ public class AIRMETIWWXXMSerializerTest {
         //assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
         assertFalse(ConversionResult.Status.isMoreCritical(result.getStatus(), ConversionResult.Status.WITH_WARNINGS));
         assertTrue(result.getConvertedMessage().isPresent());
+        return result.getConvertedMessage().orElse(null);
     }
 
     public void doTestAIRMETDOMSerialization(final String fn) throws Exception {
@@ -75,6 +88,23 @@ public class AIRMETIWWXXMSerializerTest {
     public void dotestAIRMETMOVING() throws Exception {
         doTestAIRMETStringSerialization("airmetMOVING.json");
     }
+
+    private String fixIds(String s){
+        if (s==null) return null;
+        return s.replaceAll("gml:id=\"(.*)\"", "gml:id=\"GMLID\"").replaceAll("xlink:href=\"(.*)\"", "xlink:href=\"XLINKHREF\"");
+    }
+
+    @Test
+    public void testAIRMETCleanup() throws Exception {
+        //Asserts the generated AIRMET is cleaned up correctly
+        String xml = fixIds(doTestAIRMETStringSerialization("airmetMOVING.json"));
+
+        String expectedXml = fixIds(readFromFile("airmetMOVING.IWXXM21"));
+
+        assertEquals(expectedXml, xml);
+
+    }
+
 
     @Test
     public void dotestAIRMETSTNR() throws Exception {
