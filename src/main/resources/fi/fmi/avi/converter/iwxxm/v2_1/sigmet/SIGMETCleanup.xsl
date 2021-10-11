@@ -39,6 +39,13 @@
   <xsl:template match="//aixm:lowerLimitReference[@xsi:nil='true']" />
   <xsl:template match="//aixm:designatorICAO[@xsi:nil='true']" />
   <xsl:template match="//aixm:horizontalAccuracy[@xsi:nil='true']" />
+  <xsl:template match="//aixm:minimumLimit[@xsi:nil='true']" />
+  <xsl:template match="//aixm:minimumLimitReference[@xsi:nil='true']" />
+  <xsl:template match="//aixm:maximumLimit[@xsi:nil='true']" />
+  <xsl:template match="//aixm:maximumLimitReference[@xsi:nil='true']" />
+  <xsl:template match="//aixm:centreline[@xsi:nil='true']" />
+  <xsl:template match="//aixm:width[@xsi:nil='true']" />
+
   <xsl:template match="//om:result[@xsi:type='iwxxm:MeteorologicalAerodromeForecastRecordPropertyType']/@xsi:type" />
 
   <xsl:template match="//iwxxm:SIGMETEvolvingCondition">

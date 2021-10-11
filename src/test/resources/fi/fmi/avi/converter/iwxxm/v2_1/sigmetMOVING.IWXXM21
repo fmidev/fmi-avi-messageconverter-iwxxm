@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:SIGMET xmlns:iwxxm="http://icao.int/iwxxm/2.1"
+              xmlns:gml="http://www.opengis.net/gml/3.2"
+              xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+              xmlns:metce="http://def.wmo.int/metce/2013"
+              xmlns:om="http://www.opengis.net/om/2.0"
+              xmlns:sam="http://www.opengis.net/sampling/2.0"
+              xmlns:sams="http://www.opengis.net/samplingSpatial/2.0"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              gml:id="ws-0ad69ac6-29e9-4f8e-abf5-aef0fafaca9d"
+              permissibleUsage="NON-OPERATIONAL"
+              permissibleUsageReason="TEST"
+              status="NORMAL"
+              xsi:schemaLocation="http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd">
+   <iwxxm:issuingAirTrafficServicesUnit>
+      <aixm:Unit gml:id="fic-EHAA-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="fic-EHAA-ts-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>EHAA</aixm:name>
+               <aixm:type>FIC</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:issuingAirTrafficServicesUnit>
+   <iwxxm:originatingMeteorologicalWatchOffice>
+      <aixm:Unit gml:id="mwo-EHDB-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="mwo-EHDB-ts-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>EHDB MWO</aixm:name>
+               <aixm:type>MWO</aixm:type>
+               <aixm:designator>EHDB</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:originatingMeteorologicalWatchOffice>
+   <iwxxm:sequenceNumber>1</iwxxm:sequenceNumber>
+   <iwxxm:validPeriod>
+      <gml:TimePeriod gml:id="validt-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+         <gml:beginPosition>2018-08-27T12:00:00Z</gml:beginPosition>
+         <gml:endPosition>2018-08-27T18:00:00Z</gml:endPosition>
+      </gml:TimePeriod>
+   </iwxxm:validPeriod>
+   <iwxxm:phenomenon xlink:href="http://codes.wmo.int/49-2/SigWxPhenomena/EMBD_TS"
+                     xlink:title="Sigmet PhenomenonType"/>
+   <iwxxm:analysis>
+      <om:OM_Observation gml:id="analysis-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+         <om:type xlink:href="http://codes.wmo.int/49-2/observation-type/iwxxm/2.1/SIGMETEvolvingConditionCollectionAnalysis"/>
+         <om:phenomenonTime>
+            <gml:TimeInstant gml:id="phent-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+               <gml:timePosition>2017-08-27T11:30:00Z</gml:timePosition>
+            </gml:TimeInstant>
+         </om:phenomenonTime>
+         <om:resultTime>
+            <gml:TimeInstant gml:id="resltt-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+               <gml:timePosition>2018-08-27T11:40:00Z</gml:timePosition>
+            </gml:TimeInstant>
+         </om:resultTime>
+         <om:validTime xlink:href="#validt-d8857a46-a6d6-4d3d-b99d-4d51849238ef"/>
+         <om:procedure>
+            <metce:Process gml:id="proc-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+               <gml:description>WMO No. 49 Volume 2 Meteorological Service for International Air Navigation APPENDIX 6-1 TECHNICAL SPECIFICATIONS RELATED TO SIGMET INFORMATION</gml:description>
+            </metce:Process>
+         </om:procedure>
+         <om:observedProperty xlink:href="http://codes.wmo.int/49-2/observation-type/iwxxm/2.1/SIGMETEvolvingConditionCollectionAnalysis"/>
+         <om:featureOfInterest>
+            <sams:SF_SpatialSamplingFeature gml:id="sampling-surface-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+               <sam:type xlink:href="http://www.opengis.net/def/samplingFeatureType/OGC-OM/2.0/SF_SamplingSurface"
+                         xlink:title="Sampling surface"/>
+               <sam:sampledFeature>
+                  <aixm:Airspace gml:id="fir-EHAA-a08d9939-2fb2-4e86-9fb8-851e5bb5b431">
+                     <aixm:timeSlice>
+                        <aixm:AirspaceTimeSlice gml:id="fir-EHAA-b43167d9-f633-402b-9ddd-bb001a954ebf-ts">
+                           <gml:validTime/>
+                           <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+                           <aixm:type>FIR</aixm:type>
+                           <aixm:designator>EHAA</aixm:designator>
+                           <aixm:name>AMSTERDAM</aixm:name>
+                        </aixm:AirspaceTimeSlice>
+                     </aixm:timeSlice>
+                  </aixm:Airspace>
+               </sam:sampledFeature>
+               <sams:shape nilReason="http://codes.wmo.int/common/nil/withheld"/>
+            </sams:SF_SpatialSamplingFeature>
+         </om:featureOfInterest>
+         <om:result xsi:type="iwxxm:SIGMETEvolvingConditionCollectionPropertyType">
+            <iwxxm:SIGMETEvolvingConditionCollection gml:id="fcst-d8857a46-a6d6-4d3d-b99d-4d51849238ef"
+                                                     timeIndicator="OBSERVATION">
+               <iwxxm:member>
+                  <iwxxm:SIGMETEvolvingCondition approximateLocation="false"
+                                                 gml:id="sec-0-d8857a46-a6d6-4d3d-b99d-4d51849238ef"
+                                                 intensityChange="NO_CHANGE">
+                     <iwxxm:directionOfMotion uom="deg">180.0</iwxxm:directionOfMotion>
+                     <iwxxm:geometry>
+                        <aixm:AirspaceVolume gml:id="as-0-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+                           <aixm:upperLimit uom="FL">35</aixm:upperLimit>
+                           <aixm:upperLimitReference>STD</aixm:upperLimitReference>
+                           <aixm:lowerLimit uom="FL">10</aixm:lowerLimit>
+                           <aixm:lowerLimitReference>STD</aixm:lowerLimitReference>
+                           <aixm:horizontalProjection>
+                              <aixm:Surface gml:id="an-sfc-0-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
+                                 <gml:patches>
+                                    <gml:PolygonPatch>
+                                       <gml:exterior>
+                                          <gml:Ring>
+                                             <gml:curveMember>
+                                                <gml:Curve gml:id="uuid.ccec49aa-30e3-46b6-afcd-f95536114b4b">
+                                                   <gml:segments>
+                                                      <gml:CircleByCenterPoint numArc="1">
+                                                         <gml:pos>5.0 52.0</gml:pos>
+                                                         <gml:radius uom="[nmi_i]">0.0</gml:radius>
+                                                      </gml:CircleByCenterPoint>
+                                                   </gml:segments>
+                                                </gml:Curve>
+                                             </gml:curveMember>
+                                          </gml:Ring>
+                                       </gml:exterior>
+                                    </gml:PolygonPatch>
+                                 </gml:patches>
+                              </aixm:Surface>
+                           </aixm:horizontalProjection>
+                        </aixm:AirspaceVolume>
+                     </iwxxm:geometry>
+                     <iwxxm:speedOfMotion uom="[kn_i]">10.0</iwxxm:speedOfMotion>
+                  </iwxxm:SIGMETEvolvingCondition>
+               </iwxxm:member>
+            </iwxxm:SIGMETEvolvingConditionCollection>
+         </om:result>
+      </om:OM_Observation>
+   </iwxxm:analysis>
+</iwxxm:SIGMET>
