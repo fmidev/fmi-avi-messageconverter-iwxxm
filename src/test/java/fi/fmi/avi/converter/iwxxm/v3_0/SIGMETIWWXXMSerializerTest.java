@@ -1,7 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertSame;
 import static junit.framework.TestCase.assertTrue;
 
@@ -9,9 +9,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,10 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -46,16 +45,6 @@ public class SIGMETIWWXXMSerializerTest {
         try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
             if (inputStream != null) {
                 return objectMapper.readValue(inputStream, SIGMETImpl.class);
-            } else {
-                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
-            }
-        }
-    }
-
-    protected String readFromFile2(final String fileName) throws IOException {
-        try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
-            if (inputStream != null) {
-                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             } else {
                 throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
             }

@@ -1,14 +1,20 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
-import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertSame;
 import static junit.framework.TestCase.assertTrue;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,10 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
@@ -49,15 +51,14 @@ public class SIGMETIWWXXMSerializerTest {
     }
 
     protected String readFromFile(final String fileName) throws IOException {
-        try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
-            if (inputStream != null) {
-                return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-            } else {
-                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
-            }
+        try {
+            return new String(Files.readAllBytes(Paths.get(getClass().getResource(fileName).toURI())));
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
         }
     }
-
     @Test
     public void testSIGMETStringSerialization1() throws Exception {
         doTestSIGMETStringSerialization("sigmet1.json");
