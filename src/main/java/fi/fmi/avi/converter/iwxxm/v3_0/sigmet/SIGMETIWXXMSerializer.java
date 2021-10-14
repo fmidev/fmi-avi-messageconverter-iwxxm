@@ -3,7 +3,6 @@ package fi.fmi.avi.converter.iwxxm.v3_0.sigmet;
 import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +38,7 @@ import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.PhenomenonGeometry;
@@ -50,15 +50,14 @@ import icao.iwxxm30.AbstractTimeObjectPropertyType;
 import icao.iwxxm30.AeronauticalSignificantWeatherPhenomenonType;
 import icao.iwxxm30.AirspacePropertyType;
 import icao.iwxxm30.AirspaceVolumePropertyType;
+import icao.iwxxm30.AngleWithNilReasonType;
 import icao.iwxxm30.ExpectedIntensityChangeType;
 import icao.iwxxm30.PermissibleUsageReasonType;
 import icao.iwxxm30.PermissibleUsageType;
 import icao.iwxxm30.ReportStatusType;
-import icao.iwxxm30.SIGMETEvolvingConditionCollectionPropertyType;
 import icao.iwxxm30.SIGMETEvolvingConditionCollectionType;
 import icao.iwxxm30.SIGMETEvolvingConditionPropertyType;
 import icao.iwxxm30.SIGMETEvolvingConditionType;
-import icao.iwxxm30.SIGMETPositionCollectionPropertyType;
 import icao.iwxxm30.SIGMETPositionCollectionType;
 import icao.iwxxm30.SIGMETPositionPropertyType;
 import icao.iwxxm30.SIGMETPositionType;
@@ -70,19 +69,19 @@ import icao.iwxxm30.UnitPropertyType;
 import icao.iwxxm30.VolcanicAshSIGMETType;
 import net.opengis.gml32.AbstractTimeObjectType;
 import net.opengis.gml32.AssociationRoleType;
+import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
 import net.opengis.gml32.TimePeriodPropertyType;
 import net.opengis.gml32.TimePeriodType;
 import net.opengis.gml32.TimePositionType;
 import net.opengis.gml32.TimePrimitivePropertyType;
-import net.opengis.om20.OMObservationPropertyType;
 import net.opengis.om20.TimeObjectPropertyType;
 
 public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer<SIGMET, T> {
     private static final Logger LOG = LoggerFactory.getLogger(SIGMETIWXXMSerializer.class);
 
-    // @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     private JAXBElement<SIGMETPositionCollectionType> createFPA(final List<PhenomenonGeometry> fcs, final String fcTime) {
 
         JAXBElement<SIGMETPositionCollectionType> spc = createAndWrap(SIGMETPositionCollectionType.class, spct -> {
@@ -115,192 +114,6 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
 
         return spc;
     }
-            //
-    // create(OMObservationPropertyType.class, omObsType ->
-    // omObsType.setOMObservation(create(OMObservationType.class, omObs -> {
-    // omObs.setId("forecastPositionAnalysis-" + sigmetUUID);
-    // omObs.setType(create(ReferenceType.class, ref ->
-    // ref.setHref(AviationCodeListUser.CODELIST_SIGMET_POSITION_COLLECTION_ANALYSIS)));
-    // omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, toProp -> {
-    // final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period ->
-    // {
-    // period.setId("time-" + UUID.randomUUID().toString());
-    // period.setTimePosition(create(TimePositionType.class, tPos ->
-    // inputs.getForecastGeometries()//
-    // .map(AbstractIWXXM30Serializer::getFirstOrNull)//
-    // .flatMap(PhenomenonGeometry::getTime)//
-    // .<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
-    // .ifPresent(time -> tPos.getValue().add(time))));
-    // });
-    // toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
-    // }));
-
-
-    //
-    // create(OMObservationPropertyType.class, omObsType ->
-    // omObsType.setOMObservation(create(OMObservationType.class, omObs -> {
-    // omObs.setId("forecastPositionAnalysis-" + sigmetUUID);
-    // omObs.setType(create(ReferenceType.class, ref ->
-    // ref.setHref(AviationCodeListUser.CODELIST_SIGMET_POSITION_COLLECTION_ANALYSIS)));
-    // omObs.setPhenomenonTime(create(TimeObjectPropertyType.class, toProp -> {
-    // final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period ->
-    // {
-    // period.setId("time-" + UUID.randomUUID().toString());
-    // period.setTimePosition(create(TimePositionType.class, tPos ->
-    // inputs.getForecastGeometries()//
-    // .map(AbstractIWXXM30Serializer::getFirstOrNull)//
-    // .flatMap(PhenomenonGeometry::getTime)//
-    // .<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
-    // .ifPresent(time -> tPos.getValue().add(time))));
-    // });
-    // toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
-    // }));
-
-    // omObs.setResultTime(create(TimeInstantPropertyType.class, tip ->
-    // tip.setHref("#resltt-" + sigmetUUID)));
-
-    // omObs.setValidTime(create(TimePeriodPropertyType.class, tip ->
-    // tip.setHref("#validt-" + sigmetUUID)));
-
-    // omObs.setProcedure(create(OMProcessPropertyType.class, procProp -> {
-    // procProp.setHref("#proc-" + sigmetUUID);
-    // //
-    // }));
-    // omObs.setFeatureOfInterest(create(FeaturePropertyType.class, fppt ->
-    // fppt.setHref("#sampling-surface-" + sigmetUUID)));
-
-    // omObs.setObservedProperty(create(ReferenceType.class, ref ->
-    // ref.setHref(AviationCodeListUser.CODELIST_SIGMET_POSITION_COLLECTION_ANALYSIS)));
-
-    // int cnt = 0;
-    // for (final PhenomenonGeometry geometry :
-    // inputs.getForecastGeometries().orElse(Collections.emptyList())) {
-    // LOG.debug("About to setResult for FPA");
-    // omObs.setResult(createFPAResult(geometry, designator, cnt, sigmetUUID));
-    // cnt++;
-    // }
-    // })));
-    // }
-
-    private static SIGMETPositionCollectionPropertyType createFPAResult(final PhenomenonGeometry geometry,
-            final String designator, final int cnt, final String sigmetUUID) {
-        return null;
-    }
-    // *
-    // create(SIGMETPositionCollectionPropertyType.class,
-    // spcpt ->
-    // spcpt.setSIGMETPositionCollection(create(SIGMETPositionCollectionType.class,
-    // spct -> {
-    // spct.setId("spc-" + designator + "-" + cnt + "-" + sigmetUUID);
-    // spct.getMember().add(create(SIGMETPositionPropertyType.class, sppt ->
-    // sppt.setSIGMETPosition(create(SIGMETPositionType.class, spot -> {
-    // spot.setId("fpa-pos-" + cnt + "-" + sigmetUUID);
-    // spot.setApproximateLocation(geometry.getApproximateLocation().orElse(false));
-    // spot.setGeometry(create(AirspaceVolumePropertyType.class, avpt ->
-    // avpt.setAirspaceVolume(create(AirspaceVolumeType.class, avt -> {
-    // avt.setId("fpa-" + cnt + "-" + sigmetUUID);
-    // geometry.getGeometry()
-    // .flatMap(TacOrGeoGeometry::getGeoGeometry)
-    // .ifPresent(geom -> avt.setHorizontalProjection(createSurface(geom, "fpa-sfc-"
-    // + cnt + "-" + sigmetUUID)));
-
-    // /*
-    // avt.setHorizontalProjection(create(SurfacePropertyType.class, spt -> {
-    // spt.setSurface(createAndWrap(SurfaceType.class, sft -> {
-    // try {
-    // Geometry geom = geometry.getGeometry().get().getGeoGeometry().get();
-    // if (PointGeometryImpl.class.isAssignableFrom(geom.getClass())) {
-    // List<Double> pts = new ArrayList<>();
-    // for (Double coordElement : ((PointGeometry) geom).getPoint()) {
-    // pts.add(coordElement);
-    // }
-
-    // JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class,
-    // poly -> {
-    // poly.setExterior(create(AbstractRingPropertyType.class, arpt -> {
-    // arpt.setAbstractRing(createAndWrap(RingType.class, rt -> {
-    // rt.getCurveMember().add(create(CurvePropertyType.class, curvept -> {
-    // curvept.setAbstractCurve(createAndWrap(CurveType.class, curvet -> {
-    // curvet.setId("curve-forecast-" + cnt + "-" + sigmetUUID);
-    // curvet.setSegments(create(CurveSegmentArrayPropertyType.class, curvesat -> {
-    // curvesat.getAbstractCurveSegment()
-    // .add(createAndWrap(CircleByCenterPointType.class, cbcpt -> {
-    // cbcpt.setPos(create(DirectPositionType.class, dpt -> {
-    // dpt.getValue().addAll(Arrays.asList(pts.toArray(new Double[0])));
-    // }));
-    // cbcpt.setNumArc(BigInteger.valueOf(1));
-    // cbcpt.setRadius(create(LengthType.class, lt -> {
-    // lt.setValue(0.0);
-    // lt.setUom("[nmi_i]");
-    // }));
-    // }));
-    // }));
-    // }));
-    // }));
-    // }));
-    // }));
-    // });
-
-    // SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
-    // JAXBElement<SurfacePatchArrayPropertyType> spapt =
-    // of.createPolygonPatches(sp);
-    // spapt.getValue().getAbstractSurfacePatch().add(ppt);
-    // /*
-    // JAXBElement<SurfacePatchArrayPropertyType> spapt =
-    // createAndWrap(SurfacePatchArrayPropertyType.class,
-    // _spapt -> {
-    // _spapt.getAbstractSurfacePatch().add(ppt);
-    // });
-
-    // /* SurfacePatchArrayPropertyType sp =
-    // of.createSurfacePatchArrayPropertyType();
-    // JAXBElement<SurfacePatchArrayPropertyType> spapt =
-    // of.createPolygonPatches(sp);
-    // spapt.getValue().getAbstractSurfacePatch().add(ppt);
-    // */
-    // /*
-    // sft.setPatches(spapt);
-    // } else {
-    // List<Double> pts = new ArrayList<Double>();
-    // for (Double coord : ((PolygonGeometryImpl) geom).getExteriorPoints().get(0))
-    // {
-    // pts.add(coord);
-    // }
-
-    // JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class,
-    // poly -> {
-    // poly.setExterior(create(AbstractRingPropertyType.class, arpt -> {
-    // arpt.setAbstractRing(createAndWrap(LinearRingType.class, lrt -> {
-    // DirectPositionListType dplt = create(DirectPositionListType.class, dpl -> {
-    // dpl.getValue().addAll(pts);
-    // });
-    // lrt.setPosList(dplt);
-    // }));
-    // }));
-    // });
-
-    // SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
-    // JAXBElement<SurfacePatchArrayPropertyType> spapt =
-    // of.createPolygonPatches(sp);
-    // spapt.getValue().getAbstractSurfacePatch().add(ppt);
-
-    // sft.setPatches(spapt);
-    // }
-    // } catch (Exception e) {
-    // sft.setPatches(null);
-    // e.printStackTrace();
-    // }
-    // sft.setId("fpa-sfc-" + cnt + "-" + sigmetUUID);
-    // sft.setSrsDimension(new BigInteger("2"));
-    // sft.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
-
-    // }));
-    // }));
-    // */
-    // }))));
-    // }))));
-    // })));
-    // }
 
     private static String getTimePeriodId(final SIGMET input) {
         final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmm'Z'");
@@ -509,11 +322,15 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                 .flatMap(PhenomenonGeometry::getTime)//
                 .<String>flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                 .orElse(null);
+            boolean noForecasts = true;
+            if (input.getForecastGeometries().isPresent()&&input.getForecastGeometries().get().size()>0) {
+                noForecasts=false;
+            }
             List<PhenomenonGeometryWithHeight> ans = input.getAnalysisGeometries().get();
             JAXBElement<SIGMETEvolvingConditionCollectionType> secct = createAnalysis(ans, analysisTime,
             input.getIssuingAirTrafficServicesUnit().getDesignator(),
             input.getIssuingAirTrafficServicesUnit().getName(),
-            issueTime, sigmetUuid);
+            issueTime, sigmetUuid, noForecasts);
 
             // ObjectMapper om = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
             // try {
@@ -558,7 +375,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
 
     @SuppressWarnings("unchecked")
     private JAXBElement<SIGMETEvolvingConditionCollectionType> createAnalysis(final List<PhenomenonGeometryWithHeight> ans, final String analysisTime, final String designator,
-            final String airspaceName, final String issueTime, final String sigmetUUID) {
+            final String airspaceName, final String issueTime, final String sigmetUUID, boolean noForecasts) {
 
                 AbstractTimeObjectPropertyType phenTimeProp =  create(AbstractTimeObjectPropertyType.class, toProp -> {
                         final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period -> {
@@ -588,12 +405,47 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                                 sect.setGeometry(create(AirspaceVolumePropertyType.class, avpt -> {
                                     avpt.setAirspaceVolume(createAirspaceVolume(an));
                                 }));
+                                if (noForecasts) { // Only add Motion elements if there are no forecasts
+                                    final icao.iwxxm30.ObjectFactory of_iwxxm30 = new icao.iwxxm30.ObjectFactory();
+                                    if (an.getMovingDirection().isPresent()) {
+                                        final AngleWithNilReasonType angl = new AngleWithNilReasonType();
+                                        final NumericMeasure md = an.getMovingDirection().get();
+                                        angl.setUom(md.getUom());
+                                        angl.setValue(md.getValue());
+                                        final JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm30.createSIGMETEvolvingConditionTypeDirectionOfMotion(
+                                                angl);
+                                        sect.setDirectionOfMotion(directionOfMotion);
+
+                                        an.getMovingSpeed().ifPresent(ms -> sect.setSpeedOfMotion(create(SpeedType.class, spd -> {
+                                            if (ms.getUom().equals("KT")) {
+                                                spd.setUom("[kn_i]");
+                                            } else if (ms.getUom().equals("KMH")) {
+                                                spd.setUom("km/h");
+                                            } else {
+                                                spd.setUom(ms.getUom());
+                                            }
+                                            spd.setValue(ms.getValue());
+                                        })));
+                                    } else { //Add zero speedOfMotion if STN
+                                        final AngleWithNilReasonType angl = new AngleWithNilReasonType();
+                                        angl.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
+                                        angl.setUom("deg");
+                                        final JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm30.createSIGMETEvolvingConditionTypeDirectionOfMotion(angl);
+                                        sect.setDirectionOfMotion(directionOfMotion);
+                                        sect.setSpeedOfMotion(create(SpeedType.class, spd -> {
+                                            spd.setUom("[kn_i]");
+                                            spd.setValue(0);
+                                        }));
+                                    }
+                                }
+
 
 
                             }));
                         }));
                     }
                 });
+
 
         return sigmetEvolvingConditionCollectionType;
     }

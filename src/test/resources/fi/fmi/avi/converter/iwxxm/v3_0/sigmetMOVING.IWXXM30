@@ -104,6 +104,8 @@
                      </aixm:horizontalProjection>
                   </aixm:AirspaceVolume>
                </iwxxm:geometry>
+               <iwxxm:directionOfMotion uom="deg">180.0</iwxxm:directionOfMotion>
+               <iwxxm:speedOfMotion uom="[kn_i]">10.0</iwxxm:speedOfMotion>
             </iwxxm:SIGMETEvolvingCondition>
          </iwxxm:member>
       </iwxxm:SIGMETEvolvingConditionCollection>

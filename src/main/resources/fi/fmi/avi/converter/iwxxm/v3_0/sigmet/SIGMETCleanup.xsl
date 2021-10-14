@@ -51,12 +51,13 @@
   <xsl:template match="//iwxxm:SIGMETEvolvingCondition">
         <iwxxm:SIGMETEvolvingCondition>
             <xsl:apply-templates select = "@*"/>
-            <xsl:if test="not(iwxxm:directionOfMotion)">
-                <xsl:if test="iwxxm:speedOfMotion">
-                    <iwxxm:directionOfMotion uom="deg" xsi:nil="true" nilReason="http://codes.wmo.int/common/nil/missing"/>
-                </xsl:if>
-            </xsl:if>
             <xsl:apply-templates select = "node()"/>
+            <!-- <xsl:if test="not(iwxxm:directionOfMotion)">
+                <xsl:if test="iwxxm:speedOfMotion">
+                    <iwxxm:directionOfMotion uom="deg2" xsi:nil="true" nilReason="http://codes.wmo.int/common/nil/missing"/>
+                </xsl:if>
+            </xsl:if> -->
+
         </iwxxm:SIGMETEvolvingCondition>
     </xsl:template>
 </xsl:stylesheet>

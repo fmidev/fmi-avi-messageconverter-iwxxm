@@ -114,6 +114,31 @@ public class SIGMETIWWXXMSerializerTest {
         doTestSIGMETStringSerialization("sigmetFORECASTPOSITION.json");
     }
 
+    @Test
+    public void testFL() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_FL.json");
+    }
+    @Test
+    public void testM() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_M.json");
+    }
+
+    @Test
+    public void testFT() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_FT.json");
+    }
+
+    @Test
+    public void testSFCFL() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_SFC_FL.json");
+    }
+
+    @Test
+    public void testTOPABV() throws Exception {
+        //SIGMET with forecast position for phenomenon
+        //should result in IWXXM with no speedOfMotion or directionOfMotion elements
+        doTestSIGMETStringSerialization("sigmet_TOPABV_FL.json");
+    }
     public String doTestSIGMETStringSerialization(final String fn) throws Exception {
         System.err.println("CONV:"+converter);
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING));
@@ -123,9 +148,11 @@ public class SIGMETIWWXXMSerializerTest {
         for (ConversionIssue iss: result.getConversionIssues()) {
             System.err.println("*>"+iss.getMessage()+"==="+iss.getCause());
         }
+
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
+
         return result.getConvertedMessage().orElse(null);
     }
 }
