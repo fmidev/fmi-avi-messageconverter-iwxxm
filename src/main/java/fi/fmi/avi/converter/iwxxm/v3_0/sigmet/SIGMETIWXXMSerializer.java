@@ -394,7 +394,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
 
         sigmet.setValidPeriod(getTimePeriodPropertyType(input, sigmetUuid));
 
-        if (input.getCancelledReference().isEmpty()) {
+        if (!input.getCancelledReference().isPresent()) {
             final String analysisTime = input.getAnalysisGeometries()//
                     .map(AbstractIWXXM30Serializer::getFirstOrNull)//
                     .flatMap(PhenomenonGeometry::getTime)//
