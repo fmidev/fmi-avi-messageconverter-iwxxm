@@ -148,10 +148,14 @@ public class SIGMETIWWXXMSerializerTest {
 
     @Test
     public void testABV() throws Exception {
-        //SIGMET with forecast position for phenomenon
-        //should result in IWXXM with no speedOfMotion or directionOfMotion elements
         doTestSIGMETStringSerialization("sigmet_ABV_FL.json");
     }
+
+    @Test
+    public void testABV_NOOBSTIME() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_ABV_FL_NOOBSTIME.json");
+    }
+
 
     public String doTestSIGMETStringSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING));
@@ -163,6 +167,7 @@ public class SIGMETIWWXXMSerializerTest {
         }
 
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
+        System.err.println("XML:\n"+result.getConvertedMessage().get());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
 

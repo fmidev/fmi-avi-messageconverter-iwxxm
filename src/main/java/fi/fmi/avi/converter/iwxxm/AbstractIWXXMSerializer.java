@@ -72,7 +72,6 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.v2_1.airmet.AIRMETIWXXMSerializer;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import fi.fmi.avi.model.CircleByCenterPoint;
@@ -167,7 +166,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
     }
 
     protected static Optional<String> toIWXXMDateTime(final PartialOrCompleteTimeInstant instant) {
-        return instant.getCompleteTime().map(AIRMETIWXXMSerializer::toIWXXMDateTime);
+        return instant.getCompleteTime().map(AbstractIWXXMSerializer::toIWXXMDateTime);
     }
 
     protected static Optional<String> startToIWXXMDateTime(final PartialOrCompleteTimePeriod period) {

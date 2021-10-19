@@ -41,14 +41,17 @@
   <xsl:template match="//aixm:horizontalAccuracy[@xsi:nil='true']" />
   <xsl:template match="//aixm:minimumLimit[@xsi:nil='true']" />
   <xsl:template match="//aixm:minimumLimitReference[@xsi:nil='true']" />
-  <xsl:template match="//@nilReason">
-    <xsl:copy/>
-    <xsl:attribute name="xsi:nil">true</xsl:attribute>
-  </xsl:template>
   <xsl:template match="//aixm:maximumLimit[@xsi:nil='true' and not(@nilReason)]" />
   <xsl:template match="//aixm:maximumLimitReference[@xsi:nil='true']" />
   <xsl:template match="//aixm:centreline[@xsi:nil='true']" />
   <xsl:template match="//aixm:width[@xsi:nil='true']" />
+
+  <xsl:template match="@nilReason">
+    <xsl:copy/>
+    <xsl:if test="name(parent::node()) != 'iwxxm:phenomenonTime'">
+      <xsl:attribute name="xsi:nil">true</xsl:attribute>
+    </xsl:if>
+  </xsl:template>
 
   <xsl:template match="//om:result[@xsi:type='iwxxm:MeteorologicalAerodromeForecastRecordPropertyType']/@xsi:type" />
 
@@ -57,5 +60,5 @@
             <xsl:apply-templates select = "@*"/>
             <xsl:apply-templates select = "node()"/>
         </iwxxm:SIGMETEvolvingCondition>
-    </xsl:template>
+  </xsl:template>
 </xsl:stylesheet>
