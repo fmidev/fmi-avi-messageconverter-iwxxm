@@ -100,7 +100,6 @@ public class SIGMETIWWXXMSerializerTest {
     public void testSIGMETCleanup() throws Exception {
         //Asserts the generated SIGMET is cleaned up correctly
         String xml = fixIds(doTestSIGMETStringSerialization("sigmetMOVING.json"));
-        System.err.println("xml:"+xml);
         String expectedXml = fixIds(readFromFile("sigmetMOVING.IWXXM30"));
 
         assertEquals(expectedXml, xml);
@@ -139,14 +138,28 @@ public class SIGMETIWWXXMSerializerTest {
         //should result in IWXXM with no speedOfMotion or directionOfMotion elements
         doTestSIGMETStringSerialization("sigmet_TOPABV_FL.json");
     }
+
+    @Test
+    public void testTOPBLW() throws Exception {
+        //SIGMET with forecast position for phenomenon
+        //should result in IWXXM with no speedOfMotion or directionOfMotion elements
+        doTestSIGMETStringSerialization("sigmet_TOPBLW_FL.json");
+    }
+
+    @Test
+    public void testABV() throws Exception {
+        //SIGMET with forecast position for phenomenon
+        //should result in IWXXM with no speedOfMotion or directionOfMotion elements
+        doTestSIGMETStringSerialization("sigmet_ABV_FL.json");
+    }
+
     public String doTestSIGMETStringSerialization(final String fn) throws Exception {
-        System.err.println("CONV:"+converter);
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING));
         final SIGMET s = readFromJSON(fn);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING);
 
         for (ConversionIssue iss: result.getConversionIssues()) {
-            System.err.println("*>"+iss.getMessage()+"==="+iss.getCause());
+            System.err.println("iss:"+iss.getMessage()+"==="+iss.getCause());
         }
 
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());

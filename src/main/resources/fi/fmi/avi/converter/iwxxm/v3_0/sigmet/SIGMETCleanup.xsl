@@ -41,7 +41,11 @@
   <xsl:template match="//aixm:horizontalAccuracy[@xsi:nil='true']" />
   <xsl:template match="//aixm:minimumLimit[@xsi:nil='true']" />
   <xsl:template match="//aixm:minimumLimitReference[@xsi:nil='true']" />
-  <xsl:template match="//aixm:maximumLimit[@xsi:nil='true']" />
+  <xsl:template match="//@nilReason">
+    <xsl:copy/>
+    <xsl:attribute name="xsi:nil">true</xsl:attribute>
+  </xsl:template>
+  <xsl:template match="//aixm:maximumLimit[@xsi:nil='true' and not(@nilReason)]" />
   <xsl:template match="//aixm:maximumLimitReference[@xsi:nil='true']" />
   <xsl:template match="//aixm:centreline[@xsi:nil='true']" />
   <xsl:template match="//aixm:width[@xsi:nil='true']" />
@@ -52,12 +56,6 @@
         <iwxxm:SIGMETEvolvingCondition>
             <xsl:apply-templates select = "@*"/>
             <xsl:apply-templates select = "node()"/>
-            <!-- <xsl:if test="not(iwxxm:directionOfMotion)">
-                <xsl:if test="iwxxm:speedOfMotion">
-                    <iwxxm:directionOfMotion uom="deg2" xsi:nil="true" nilReason="http://codes.wmo.int/common/nil/missing"/>
-                </xsl:if>
-            </xsl:if> -->
-
         </iwxxm:SIGMETEvolvingCondition>
     </xsl:template>
 </xsl:stylesheet>

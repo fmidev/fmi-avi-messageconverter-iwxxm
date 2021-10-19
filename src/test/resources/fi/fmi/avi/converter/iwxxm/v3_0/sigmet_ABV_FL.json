@@ -48,6 +48,7 @@
         "value": 35,
         "uom": "FL"
       },
+      "lowerLimitOperator": "ABOVE",
       "approximateLocation": false,
       "geometry": {
         "geoGeometry": {

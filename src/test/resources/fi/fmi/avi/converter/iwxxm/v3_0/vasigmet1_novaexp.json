@@ -57,24 +57,6 @@
       }
     }
   ],
-  "forecastGeometries": [
-    {
-      "time": {
-        "completeTime": "2018-08-27T18:00:00Z"
-      },
-      "geometry": {
-        "geoGeometry": {
-          "type": "Polygon",
-          "crs": {
-            "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
-            "dimension": 2,
-            "axisLabels": ["Lat", "Lon"]
-          },
-          "exteriorRingPositions": [5.0, 53.0, 6.0, 54.0, 4.0, 55.0, 5.0, 53.0]
-        }
-      }
-    }
-  ],
   "VAInfo": {
     "volcano": {
       "volcanoPosition": {
@@ -87,7 +69,8 @@
         "coordinates": [52.0, 5.2]
       },
       "volcanoName": "GRIMSVOTN"
-    }
+    },
+    "noVolcanicAshExpected": true
   },
   "translated": false
 }

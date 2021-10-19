@@ -44,10 +44,6 @@
       "time": {
         "completeTime": "2018-08-27T12:00:00Z"
       },
-      "lowerLimit": {
-        "value": 10,
-        "uom": "FL"
-      },
       "upperLimit": {
         "value": 35,
         "uom": "FL"
