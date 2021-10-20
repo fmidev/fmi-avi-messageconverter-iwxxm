@@ -67,7 +67,7 @@
                                                timeIndicator="OBSERVATION">
          <iwxxm:phenomenonTime>
             <gml:TimeInstant gml:id="uuid.1154baf9-124a-4fca-901d-3cd19b479160">
-               <gml:timePosition>2018-08-27T11:30:00Z</gml:timePosition>
+               <gml:timePosition>2017-08-27T11:30:00Z</gml:timePosition>
             </gml:TimeInstant>
          </iwxxm:phenomenonTime>
          <iwxxm:member>

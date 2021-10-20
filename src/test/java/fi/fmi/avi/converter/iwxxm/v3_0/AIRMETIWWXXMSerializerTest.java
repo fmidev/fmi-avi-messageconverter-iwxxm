@@ -82,6 +82,9 @@ public class AIRMETIWWXXMSerializerTest {
         final AIRMET s = readFromJSON(fn);
         final ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM30_DOM);
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
+        for (ConversionIssue iss: result.getConversionIssues()) {
+            System.err.println("iss:" + iss);
+        }
         assertTrue(result.getConvertedMessage().isPresent());
     }
 

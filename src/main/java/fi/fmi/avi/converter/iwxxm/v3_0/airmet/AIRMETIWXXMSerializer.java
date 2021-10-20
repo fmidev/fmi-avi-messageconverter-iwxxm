@@ -43,6 +43,7 @@ import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
 import fi.fmi.avi.model.TacOrGeoGeometry;
+import fi.fmi.avi.model.AviationCodeListUser.WeatherCausingVisibilityReduction;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
 import icao.iwxxm30.AIRMETEvolvingConditionCollectionPropertyType;
@@ -62,7 +63,10 @@ import icao.iwxxm30.ReportStatusType;
 import icao.iwxxm30.StringWithNilReasonType;
 import icao.iwxxm30.TimeIndicatorType;
 import icao.iwxxm30.UnitPropertyType;
+import icao.iwxxm30.WeatherCausingVisibilityReductionType;
 import net.opengis.gml32.AbstractTimeObjectType;
+import net.opengis.gml32.AngleType;
+import net.opengis.gml32.LengthType;
 import net.opengis.gml32.SpeedType;
 import net.opengis.gml32.TimeInstantPropertyType;
 import net.opengis.gml32.TimeInstantType;
@@ -221,7 +225,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
 
             List<PhenomenonGeometryWithHeight> ans = input.getAnalysisGeometries().get();
 
-            AIRMETEvolvingConditionCollectionPropertyType aeccpt = createAnalysis(ans, analysisTime,
+            AIRMETEvolvingConditionCollectionPropertyType aeccpt = createAnalysis(input, ans, analysisTime,
                         input.getIssuingAirTrafficServicesUnit().getDesignator(),
                         input.getIssuingAirTrafficServicesUnit().getName(), issueTime, airmetUuid);
             airmet.setAnalysis(aeccpt);
@@ -244,7 +248,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
     /**************************************************************************/
 
     @SuppressWarnings("unchecked")
-    private AIRMETEvolvingConditionCollectionPropertyType createAnalysis(
+    private AIRMETEvolvingConditionCollectionPropertyType createAnalysis(AIRMET input,
             final List<PhenomenonGeometryWithHeight> ans, final String analysisTime, final String designator,
             final String airspaceName, final String issueTime, final String airmetUUID) {
 
@@ -279,6 +283,46 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                             sect.setGeometry(create(AirspaceVolumePropertyType.class, avpt -> {
                                 avpt.setAirspaceVolume(createAirspaceVolume(an));
                             }));
+                            if (input.getAirmetPhenomenon().get().name().equals("SFC_VIS")) {
+                                sect.setSurfaceVisibility(create(LengthType.class, l -> {
+                                    l.setUom("m");
+                                    l.setValue(input.getVisibility().get().getValue());
+                                }));
+                                for (WeatherCausingVisibilityReduction obsc: input.getObscuration().get()) {
+                                    sect.getSurfaceVisibilityCause().add(create(WeatherCausingVisibilityReductionType.class, w -> {
+                                        w.setHref(AviationCodeListUser.CODELIST_VALUE_WEATHERCAUSINGVISIBILITYREDUCTION+"/"+obsc.name());
+                                    }));
+                                }
+                            }
+                            if (input.getAirmetPhenomenon().get().name().equals("BKN_CLD")||
+                                input.getAirmetPhenomenon().get().name().equals("OVC_CLD")) {
+                                    sect.setCloudBase(create(LengthType.class, b -> {
+                                        b.setUom(input.getCloudLevels().get().getCloudBase().getUom());
+                                        b.setValue(input.getCloudLevels().get().getCloudBase().getValue());
+                                    }));
+                                    if (input.getCloudLevels().get().getCloudBase().getValue()==0) {
+                                        sect.setCloudBaseReference("SFC");
+                                    } else {
+                                        sect.setCloudBaseReference("STD");
+                                    }
+                                    sect.setCloudTop(create(LengthType.class, b -> {
+                                        b.setUom(input.getCloudLevels().get().getCloudTop().getUom());
+                                        b.setValue(input.getCloudLevels().get().getCloudTop().getValue());
+                                    }));
+                                    sect.setCloudTopReference("STD");
+                            }
+                            if (input.getAirmetPhenomenon().get().name().equals("SFC_WIND")) {
+                                sect.setSurfaceWindDirection(create(AngleType.class, a ->{
+                                    a.setUom(input.getWind().get().getDirection().getUom());
+                                    a.setValue(input.getWind().get().getDirection().getValue());
+                                }));
+                                sect.setSurfaceWindSpeed(create(SpeedType.class, a ->{
+                                    a.setUom(input.getWind().get().getSpeed().getUom());
+                                    a.setValue(input.getWind().get().getSpeed().getValue());
+                                }));
+
+                            }
+
                             final icao.iwxxm30.ObjectFactory of_iwxxm30 = new icao.iwxxm30.ObjectFactory();
                             if (an.getMovingDirection().isPresent()) {
                                 final AngleWithNilReasonType angl = new AngleWithNilReasonType();
