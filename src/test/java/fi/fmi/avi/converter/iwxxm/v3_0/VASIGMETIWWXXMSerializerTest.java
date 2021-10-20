@@ -2,10 +2,15 @@ package fi.fmi.avi.converter.iwxxm.v3_0;
 
 import static junit.framework.TestCase.assertSame;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,11 +38,11 @@ public class VASIGMETIWWXXMSerializerTest {
     @Autowired
     private AviMessageConverter converter;
 
-    protected SIGMET readFromJson(final String fileName) throws IOException {
+    protected SIGMET readFromJSON(final String fileName) throws IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
-        try (InputStream inputStream = VASIGMETIWWXXMSerializerTest.class.getResourceAsStream(fileName)) {
+        try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
             if (inputStream != null) {
                 return objectMapper.readValue(inputStream, SIGMETImpl.class);
             } else {
@@ -46,24 +51,41 @@ public class VASIGMETIWWXXMSerializerTest {
         }
     }
 
+    protected String readFromFile(final String fileName) throws IOException {
+        try {
+            return new String(Files.readAllBytes(Paths.get(getClass().getResource(fileName).toURI())));
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+        }
+    }
+
+    private String fixIds(String s){
+        if (s==null) return null;
+        return s.replaceAll("gml:id=\"(.*)\"", "gml:id=\"GMLID\"")
+                .replaceAll("xlink:href=\"(.*)\"", "xlink:href=\"XLINKHREF\"")
+                .replaceAll("volcanoId=\"(.*)\"", "volcanoId=\"VOLCANO\"");
+    }
+
     @Test
     public void testVaSigmet() throws Exception {
-        testSIGMETStringSerialization("vasigmet1.json");
+        doTestSIGMETStringSerialization("vasigmet1.json", "vasigmet1.IWXXM30");
     }
 
     @Test
     public void testVaSigmetCancel() throws Exception {
-        testSIGMETStringSerialization("vasigmet1_cancel.json");
+        doTestSIGMETStringSerialization("vasigmet1_cancel.json", "vasigmet1_cancel.IWXXM30");
     }
 
     @Test
     public void testNoVaExp() throws Exception {
-        testSIGMETStringSerialization("vasigmet1_novaexp.json");
+        doTestSIGMETStringSerialization("vasigmet1_novaexp.json", "vasigmet1_novaexp.IWXXM30");
     }
 
     public void testSIGMETStringSerialization(String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING));
-        final SIGMET s = readFromJson(fn);
+        final SIGMET s = readFromJSON(fn);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING);
         for (ConversionIssue iss: result.getConversionIssues()) {
             System.err.println("iss:"+iss);
@@ -71,4 +93,24 @@ public class VASIGMETIWWXXMSerializerTest {
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
     }
+
+    public String doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
+        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING));
+        final SIGMET s = readFromJSON(fn);
+        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING);
+
+        for (ConversionIssue iss: result.getConversionIssues()) {
+            System.err.println("iss:"+iss.getMessage()+"==="+iss.getCause());
+        }
+
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
+        System.err.println("XML:\n"+result.getConvertedMessage().get());
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+
+        String expectedXml = fixIds(readFromFile(iwxxmFn));
+        assertEquals(expectedXml, fixIds(result.getConvertedMessage().get()));
+        return result.getConvertedMessage().orElse(null);
+    }
+
 }
