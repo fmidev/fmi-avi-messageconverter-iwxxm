@@ -1,0 +1,69 @@
+{
+  "reportStatus": "NORMAL",
+  "issuingAirTrafficServicesUnit": {
+    "name": "AMSTERDAM",
+    "type": "FIR",
+    "designator": "EHAA"
+  },
+  "meteorologicalWatchOffice": {
+    "name": "De Bilt",
+    "type": "MWO",
+    "designator": "EHDB"
+  },
+  "sequenceNumber": "1",
+  "issueTime": {
+    "completeTime": "2017-08-27T11:30:00Z"
+  },
+  "validityPeriod": {
+    "startTime": {
+      "completeTime": "2017-08-27T11:30:00Z"
+    },
+    "endTime": {
+      "completeTime": "2017-08-27T13:30:00Z"
+    }
+  },
+  "airspace": {
+    "designator": "EHAA",
+    "name": "AMSTERDAM",
+    "type": "FIR"
+  },
+
+  "permissibleUsage": "NON_OPERATIONAL",
+  "permissibleUsageReason": "EXERCISE",
+  "airmetPhenomenon": "SFC_VIS",
+
+  "visibility": {
+    "value": 500.0,
+    "uom": "M"
+  },
+  "obscuration": ["FG", "DZ"],
+  "analysisGeometries": [
+    {
+      "intensityChange": "NO_CHANGE",
+      "movingDirection": {
+        "value": 180.0,
+        "uom": "deg"
+      },
+      "movingSpeed": {
+        "value": 10.0,
+        "uom": "[kn_i]"
+      },
+      "analysisType": "OBSERVATION",
+      "geometry": {
+        "geoGeometry": {
+          "type": "Polygon",
+          "crs": {
+            "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "dimension": 2,
+            "axisLabels": ["Lat", "Lon"]
+          },
+          "exteriorRingPositions": [5.0, 52.0, 6.0, 53.0, 4.0, 54.0, 5.0, 52.0]
+        }
+      },
+      "time": {
+        "completeTime": "2018-08-27T11:30:00Z"
+      },
+      "approximateLocation": false
+    }
+  ]
+}

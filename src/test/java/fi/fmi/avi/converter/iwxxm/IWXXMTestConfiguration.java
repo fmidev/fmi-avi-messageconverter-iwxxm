@@ -125,6 +125,13 @@ public class IWXXMTestConfiguration {
     @Qualifier("airmetIWXXMDOMSerializer")
     private AviMessageSpecificConverter<AIRMET, Document> airmetIWXXMDOMSerializer;
 
+    @Autowired
+    @Qualifier("airmetIWXXM30StringSerializer")
+    private AviMessageSpecificConverter<AIRMET, String> airmetIWXXM30StringSerializer;
+
+    @Autowired
+    @Qualifier("airmetIWXXM30DOMSerializer")
+    private AviMessageSpecificConverter<AIRMET, Document> airmetIWXXM30DOMSerializer;
     // Space weather
 
     @Autowired
@@ -205,6 +212,8 @@ public class IWXXMTestConfiguration {
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_SIGMET_POJO, sigmetIWXXMDOMParser);
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM, airmetIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING, airmetIWXXMStringSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM30_DOM, airmetIWXXM30DOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM30_STRING, airmetIWXXM30StringSerializer);
 
         // Space weather
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO, spaceWeatherIWXXMStringParser);
