@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:VolcanicAshSIGMET xmlns:iwxxm="http://icao.int/iwxxm/3.0"
+                         xmlns:gml="http://www.opengis.net/gml/3.2"
+                         xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+                         xmlns:metce="http://def.wmo.int/metce/2013"
+                         xmlns:xlink="http://www.w3.org/1999/xlink"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         gml:id="uuid.d644ebfb-0873-40fd-9685-f28001a7b468"
+                         isCancelReport="false"
+                         permissibleUsage="NON-OPERATIONAL"
+                         permissibleUsageReason="TEST"
+                         reportStatus="NORMAL"
+                         xsi:schemaLocation="http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd">
+   <iwxxm:issueTime>
+      <gml:TimeInstant gml:id="uuid.314105d9-dd32-4ce4-98b4-eb377f528e81">
+         <gml:timePosition>2018-08-27T11:30:00Z</gml:timePosition>
+      </gml:TimeInstant>
+   </iwxxm:issueTime>
+   <iwxxm:issuingAirTrafficServicesUnit>
+      <aixm:Unit gml:id="uuid.774f6e69-b1c8-479d-b8de-baa28d3577fe">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.78dd41bd-3444-4d24-beb3-233f7055b8cb">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>EHAA</aixm:name>
+               <aixm:type>FIC</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:issuingAirTrafficServicesUnit>
+   <iwxxm:originatingMeteorologicalWatchOffice>
+      <aixm:Unit gml:id="uuid.fd5b3365-c16d-4a27-a3b3-9d2a309340a7">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.f7b5b87b-3bea-447d-bced-5f50e49ea199">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>EHDB MWO</aixm:name>
+               <aixm:type>MWO</aixm:type>
+               <aixm:designator>EHDB</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:originatingMeteorologicalWatchOffice>
+   <iwxxm:issuingAirTrafficServicesRegion>
+      <aixm:Airspace gml:id="uuid.396158c7-3e4b-45f3-badb-b052215ab017">
+         <aixm:timeSlice>
+            <aixm:AirspaceTimeSlice gml:id="uuid.778348ba-1dcf-40c8-9a3a-e371f422aeae">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:type>FIR</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+               <aixm:name>AMSTERDAM</aixm:name>
+            </aixm:AirspaceTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Airspace>
+   </iwxxm:issuingAirTrafficServicesRegion>
+   <iwxxm:sequenceNumber>1</iwxxm:sequenceNumber>
+   <iwxxm:validPeriod>
+      <gml:TimePeriod gml:id="uuid.40187a88-6985-4a7a-aca5-d236f7a3ff0f">
+         <gml:beginPosition>2018-08-27T12:00:00Z</gml:beginPosition>
+         <gml:endPosition>2018-08-27T18:00:00Z</gml:endPosition>
+      </gml:TimePeriod>
+   </iwxxm:validPeriod>
+   <iwxxm:phenomenon xlink:href="http://codes.wmo.int/49-2/SigWxPhenomena/VA"/>
+   <iwxxm:analysis>
+      <iwxxm:VolcanicAshSIGMETEvolvingConditionCollection gml:id="uuid.6e51cd3a-c61a-43c9-b027-cd62189e6e74"
+                                                          timeIndicator="OBSERVATION"
+                                                          volcanoId="uuid.ef27f7ba-fca4-4f90-a120-2eab74ed8097">
+         <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.9d886686-e1fb-4204-9f2e-6ad809dc949b">
+               <gml:timePosition>2018-08-27T12:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+         </iwxxm:phenomenonTime>
+         <iwxxm:member>
+            <iwxxm:SIGMETEvolvingCondition xmlns:om="http://www.opengis.net/om/2.0"
+                                           gml:id="uuid.3091c26c-2b5a-4d1a-a096-3f71d0c0166d"
+                                           intensityChange="NO_CHANGE">
+               <iwxxm:geometry>
+                  <aixm:AirspaceVolume gml:id="uuid.533cf300-efa4-4116-a848-424e883495ca">
+                     <aixm:upperLimit uom="FL">35</aixm:upperLimit>
+                     <aixm:upperLimitReference>STD</aixm:upperLimitReference>
+                     <aixm:lowerLimit uom="FL">10</aixm:lowerLimit>
+                     <aixm:lowerLimitReference>STD</aixm:lowerLimitReference>
+                     <aixm:horizontalProjection>
+                        <aixm:Surface axisLabels="Lat Lon"
+                                      gml:id="uuid.082df5a2-b182-4a09-9a30-925a5bbde007"
+                                      srsDimension="2"
+                                      srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                           <gml:patches>
+                              <gml:PolygonPatch>
+                                 <gml:exterior>
+                                    <gml:LinearRing>
+                                       <gml:posList>5.0 52.0 6.0 53.0 4.0 54.0 5.0 52.0</gml:posList>
+                                    </gml:LinearRing>
+                                 </gml:exterior>
+                              </gml:PolygonPatch>
+                           </gml:patches>
+                        </aixm:Surface>
+                     </aixm:horizontalProjection>
+                  </aixm:AirspaceVolume>
+               </iwxxm:geometry>
+            </iwxxm:SIGMETEvolvingCondition>
+         </iwxxm:member>
+      </iwxxm:VolcanicAshSIGMETEvolvingConditionCollection>
+   </iwxxm:analysis>
+   <iwxxm:eruptingVolcano>
+      <metce:Volcano gml:id="uuid.7a90c9ac-8bd9-4d1a-9769-065fb07efe85">
+         <metce:name>GRIMSVOTN</metce:name>
+         <metce:position>
+            <gml:Point gml:id="uuid.6c13b042-8bd0-405a-a783-12472ac86601">
+               <gml:pos axisLabels="Lat Lon"
+                        srsDimension="2"
+                        srsName="http://www.opengis.net/def/crs/EPSG/0/4326"
+                        uomLabels="deg deg">52.0 5.2</gml:pos>
+            </gml:Point>
+         </metce:position>
+      </metce:Volcano>
+   </iwxxm:eruptingVolcano>
+</iwxxm:VolcanicAshSIGMET>

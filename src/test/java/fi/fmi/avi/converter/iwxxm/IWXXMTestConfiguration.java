@@ -110,6 +110,14 @@ public class IWXXMTestConfiguration {
     private AviMessageSpecificConverter<SIGMET, Document> sigmetIWXXMDOMSerializer;
 
     @Autowired
+    @Qualifier("sigmetIWXXM30StringSerializer")
+    private AviMessageSpecificConverter<SIGMET, String> sigmetIWXXM30StringSerializer;
+
+    @Autowired
+    @Qualifier("sigmetIWXXM30DOMSerializer")
+    private AviMessageSpecificConverter<SIGMET, Document> sigmetIWXXM30DOMSerializer;
+
+    @Autowired
     @Qualifier("airmetIWXXMStringSerializer")
     private AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer;
 
@@ -191,6 +199,8 @@ public class IWXXMTestConfiguration {
         // SIGMET & AIRMET:
         p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_DOM, sigmetIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING, sigmetIWXXMStringSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_DOM, sigmetIWXXM30DOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING, sigmetIWXXM30StringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_SIGMET_POJO, sigmetIWXXMStringParser);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_SIGMET_POJO, sigmetIWXXMDOMParser);
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM, airmetIWXXMDOMSerializer);

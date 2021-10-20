@@ -42,6 +42,18 @@ public class IWXXMSIGMETAIRMETConverter {
     }
 
     @Bean
+    @Qualifier("sigmetIWXXM30StringSerializer")
+    public AviMessageSpecificConverter<SIGMET, String> sigmetIWXXM30StringSerializer() {
+        return new fi.fmi.avi.converter.iwxxm.v3_0.sigmet.SIGMETIWXXMSerializer.ToString();
+    }
+
+    @Bean
+    @Qualifier("sigmetIWXXM30DOMSerializer")
+    public AviMessageSpecificConverter<SIGMET, Document> sigmetIWXXM30DOMSerializer() {
+        return new fi.fmi.avi.converter.iwxxm.v3_0.sigmet.SIGMETIWXXMSerializer.ToDOM();
+    }
+
+    @Bean
     @Qualifier("airmetIWXXMStringSerializer")
     public AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer() {
         return new AIRMETIWXXMSerializer.ToString();

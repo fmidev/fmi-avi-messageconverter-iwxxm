@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.v2_1;
+package fi.fmi.avi.converter.iwxxm.v3_0;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
@@ -24,6 +24,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
@@ -59,35 +60,7 @@ public class SIGMETIWWXXMSerializerTest {
             throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
         }
     }
-    @Test
-    public void testSIGMETStringSerialization1() throws Exception {
-        doTestSIGMETStringSerialization("sigmet1.json");
-    }
 
-    @Test
-    public void testSIGMETStringSerialization2() throws Exception {
-        doTestSIGMETStringSerialization("sigmet2.json");
-    }
-
-    @Test
-    public void testSIGMETStringSerialization3() throws Exception {
-        doTestSIGMETStringSerialization("sigmet3.json");
-    }
-
-    @Test
-    public void testSIGMETSTNR() throws Exception {
-        //SIGMET describes stationary phenomenon, should result in an IWXXM containing
-        //<directionOfMotion uom="deg" xsi:nil="true" nilReason="http://.."/> and
-        //<speedOfMotion uom="[kt_i]">0.0</speedOfMotion>
-        doTestSIGMETStringSerialization("sigmetSTNR.json");
-    }
-
-    @Test
-    public void testSIGMETMOVING() throws Exception {
-        //SIGMET has a speed and direction, should result in IWXXM containing
-        // directionOfMotion and speedOfMotion elements
-        doTestSIGMETStringSerialization("sigmetMOVING.json");
-    }
 
     private String fixIds(String s){
         if (s==null) return null;
@@ -95,30 +68,102 @@ public class SIGMETIWWXXMSerializerTest {
     }
 
     @Test
+    public void testSIGMETStringSerialization1() throws Exception {
+        doTestSIGMETStringSerialization("sigmet1.json", "sigmet1.IWXXM30");
+    }
+
+    @Test
+    public void testSIGMETStringSerialization2() throws Exception {
+        doTestSIGMETStringSerialization("sigmet2.json", "sigmet2.IWXXM30");
+    }
+
+    @Test
+    public void testSIGMETStringSerialization3() throws Exception {
+        doTestSIGMETStringSerialization("sigmet3.json", "sigmet3.IWXXM30");
+    }
+
+    @Test
+    public void testSIGMETSTNR() throws Exception {
+        //SIGMET describes stationary phenomenon, should result in an IWXXM containing
+        //no <directionOfMotion> and <speedOfMotion> elements
+        doTestSIGMETStringSerialization("sigmetSTNR.json", "sigmetSTNR.IWXXM30");
+    }
+
+    @Test
+    public void testSIGMETMOVING() throws Exception {
+        //SIGMET has a speed and direction, should result in IWXXM containing
+        // directionOfMotion and speedOfMotion elements
+        doTestSIGMETStringSerialization("sigmetMOVING.json", "sigmetMOVING.IWXXM30");
+    }
+
+    @Test
     public void testSIGMETCleanup() throws Exception {
         //Asserts the generated SIGMET is cleaned up correctly
-        String xml = fixIds(doTestSIGMETStringSerialization("sigmetMOVING.json"));
-        String expectedXml = fixIds(readFromFile("sigmetMOVING.IWXXM21"));
-
-        assertEquals(expectedXml, xml);
-
+        doTestSIGMETStringSerialization("sigmetMOVING.json", "sigmetMOVING.IWXXM30");
     }
 
     @Test
     public void testSIGMETForecastPosition() throws Exception {
         //SIGMET with forecast position for phenomenon
         //should result in IWXXM with no speedOfMotion or directionOfMotion elements
-        doTestSIGMETStringSerialization("sigmetFORECASTPOSITION.json");
+        doTestSIGMETStringSerialization("sigmetFORECASTPOSITION.json", "sigmetFORECASTPOSITION.IWXXM30");
     }
 
-    public String doTestSIGMETStringSerialization(final String fn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING));
+    @Test
+    public void testFL() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_FL.json", "sigmet_FL.IWXXM30");
+    }
+    @Test
+    public void testM() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_M.json", "sigmet_M.IWXXM30");
+    }
+
+    @Test
+    public void testFT() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_FT.json", "sigmet_FT.IWXXM30");
+    }
+
+    @Test
+    public void testSFCFL() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_SFC_FL.json", "sigmet_SFC_FL.IWXXM30");
+    }
+
+    @Test
+    public void testTOPABV() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_TOPABV_FL.json", "sigmet_TOPABV_FL.IWXXM30");
+    }
+
+    @Test
+    public void testTOPBLW() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_TOPBLW_FL.json", "sigmet_TOPBLW_FL.IWXXM30");
+    }
+
+    @Test
+    public void testABV() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_ABV_FL.json", "sigmet_ABV_FL.IWXXM30");
+    }
+
+    @Test
+    public void testABV_NOOBSTIME() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_ABV_FL_NOOBSTIME.json", "sigmet_ABV_FL_NOOBSTIME.IWXXM30");
+    }
+
+    public String doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
+        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING));
         final SIGMET s = readFromJSON(fn);
-        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
+        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING);
+
+        for (ConversionIssue iss: result.getConversionIssues()) {
+            System.err.println("iss:"+iss.getMessage()+"==="+iss.getCause());
+        }
 
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
+        System.err.println("XML:\n"+result.getConvertedMessage().get());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
+
+        String expectedXml = fixIds(readFromFile(iwxxmFn));
+        assertEquals(expectedXml, fixIds(result.getConvertedMessage().get()));
         return result.getConvertedMessage().orElse(null);
     }
 }

@@ -1,5 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
+import java.util.List;
+
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
@@ -30,6 +32,10 @@ public abstract class AbstractIWXXM30Serializer<T extends AviationWeatherMessage
     @Override
     protected IWXXMNamespaceContext getNamespaceContext() {
         return getNSContext();
+    }
+
+    protected static <E> E getFirstOrNull(final List<E> list) {
+        return list == null || list.isEmpty() ? null : list.get(0);
     }
 
 }
