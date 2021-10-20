@@ -23,6 +23,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
@@ -67,8 +68,12 @@ public class AIRMETIWWXXMSerializerTest {
         // "When AIRMETEvolvingConditionCollection timeIndicator is an observation, the phenomenonTime must be earlier than or equal to the beginning of the validPeriod of the report."
         // This seems to be a shortcoming of the rule (xlinked validTime is not considered)
         //assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        for (ConversionIssue iss: result.getConversionIssues()) {
+            System.err.println("iss:"+iss);
+        }
         assertFalse(ConversionResult.Status.isMoreCritical(result.getStatus(), ConversionResult.Status.WITH_WARNINGS));
         assertTrue(result.getConvertedMessage().isPresent());
+        System.err.println("XML:\n"+result.getConvertedMessage().orElse(null));
         return result.getConvertedMessage().orElse(null);
     }
 
@@ -76,6 +81,9 @@ public class AIRMETIWWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM));
         final AIRMET s = readFromJSON(fn);
         final ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM);
+        for (ConversionIssue iss: result.getConversionIssues()) {
+            System.err.println("iss:"+iss);
+        }
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
     }
@@ -129,7 +137,8 @@ public class AIRMETIWWXXMSerializerTest {
 
     @Test
     public void dotestAIRMETStringSerialization_wind() throws Exception {
-        doTestAIRMETStringSerialization("airmet_wind.json");
+        String xml = doTestAIRMETStringSerialization("airmet_wind.json");
+        System.err.println("XML:"+xml);
     }
 
     @Test
