@@ -330,7 +330,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                                 angl.setUom(md.getUom());
                                 angl.setValue(md.getValue());
                                 final JAXBElement<AngleWithNilReasonType> directionOfMotion = of_iwxxm30
-                                        .createSIGMETEvolvingConditionTypeDirectionOfMotion(angl);
+                                        .createAIRMETEvolvingConditionTypeDirectionOfMotion(angl);
                                 sect.setDirectionOfMotion(directionOfMotion);
 
                                 an.getMovingSpeed()
