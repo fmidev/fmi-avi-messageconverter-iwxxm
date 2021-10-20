@@ -88,7 +88,7 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM30Parser<T, SIGM
 
     }
 
-    public ConversionResult<SIGMET> convertMessage2(final T input, final ConversionHints hints) {
+    public ConversionResult<SIGMET> convertMessage(final T input, final ConversionHints hints) {
         final ConversionResult<SIGMET> result = new ConversionResult<>();
         final SIGMETType source;
         final ReferredObjectRetrievalContext refCtx;
@@ -100,7 +100,7 @@ public abstract class SIGMETIWXXMParser<T> extends AbstractIWXXM30Parser<T, SIGM
             schemaFactory.setResourceResolver(resolver);
             //Secure processing does not allow "file" protocol loading for schemas:
             schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
-            final Schema iwxxmSchema = schemaFactory.newSchema(SIGMETType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
+            final Schema iwxxmSchema = schemaFactory.newSchema(SIGMETType.class.getResource("/int/icao/iwxxm/3.0/iwxxm.xsd"));
 
             final Binder<Node> binder = getJAXBContext().createBinder();
 
