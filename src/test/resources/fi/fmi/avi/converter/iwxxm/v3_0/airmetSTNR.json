@@ -1,6 +1,4 @@
 {
-  "permissibleUsage": "NON_OPERATIONAL",
-  "permissibleUsageReason": "EXERCISE",
   "reportStatus": "NORMAL",
   "issuingAirTrafficServicesUnit": {
     "name": "AMSTERDAM",
@@ -14,38 +12,34 @@
   },
   "sequenceNumber": "1",
   "issueTime": {
-    "completeTime": "2018-08-27T11:40:00Z"
+    "completeTime": "2017-08-27T11:30:00Z"
+  },
+  "validityPeriod": {
+    "startTime": {
+      "completeTime": "2017-08-27T11:30:00Z"
+    },
+    "endTime": {
+      "completeTime": "2017-08-27T13:30:00Z"
+    }
   },
   "airspace": {
     "designator": "EHAA",
     "name": "AMSTERDAM",
     "type": "FIR"
   },
-  "validityPeriod": {
-    "startTime": {
-      "completeTime": "2018-08-27T12:00:00Z"
-    },
-    "endTime": {
-      "completeTime": "2018-08-27T18:00:00Z"
-    }
-  },
-  "airmetPhenomenon": "ISOL_TSGR",
+
+  "permissibleUsage": "NON_OPERATIONAL",
+  "permissibleUsageReason": "EXERCISE",
+  "airmetPhenomenon": "MOD_ICE",
+
   "analysisGeometries": [
     {
-      "analysisType": "OBSERVATION",
+      "movingSpeed": {
+        "value": 0.0,
+        "uom": "[kn_i]"
+      },
       "intensityChange": "NO_CHANGE",
-      "time": {
-        "completeTime": "2018-08-27T11:30:00Z"
-      },
-      "lowerLimit": {
-        "value": 10,
-        "uom": "FL"
-      },
-      "upperLimit": {
-        "value": 35,
-        "uom": "FL"
-      },
-      "approximateLocation": false,
+      "analysisType": "OBSERVATION",
       "geometry": {
         "geoGeometry": {
           "type": "Polygon",
@@ -56,8 +50,19 @@
           },
           "exteriorRingPositions": [5.0, 52.0, 6.0, 53.0, 4.0, 54.0, 5.0, 52.0]
         }
+      },
+      "time": {
+        "completeTime": "2017-08-27T11:30:00Z"
+      },
+      "approximateLocation": false,
+      "lowerLimit": {
+        "value": 10.0,
+        "uom": "FL"
+      },
+      "upperLimit": {
+        "value": 35.0,
+        "uom": "FL"
       }
     }
-  ],
-  "translated": false
+  ]
 }

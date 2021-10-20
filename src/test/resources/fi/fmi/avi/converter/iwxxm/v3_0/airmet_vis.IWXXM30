@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:AIRMET xmlns:iwxxm="http://icao.int/iwxxm/3.0"
+              xmlns:gml="http://www.opengis.net/gml/3.2"
+              xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              gml:id="uuid.ed0030ef-a4f5-4e67-8637-7400c1b3729a"
+              isCancelReport="false"
+              permissibleUsage="NON-OPERATIONAL"
+              permissibleUsageReason="EXERCISE"
+              reportStatus="NORMAL"
+              xsi:schemaLocation="http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd">
+   <iwxxm:issueTime>
+      <gml:TimeInstant gml:id="uuid.6c1d8298-5203-4f7f-8051-1158758cf50f">
+         <gml:timePosition>2017-08-27T11:30:00Z</gml:timePosition>
+      </gml:TimeInstant>
+   </iwxxm:issueTime>
+   <iwxxm:issuingAirTrafficServicesUnit>
+      <aixm:Unit gml:id="uuid.6eeb5876-12ab-42f4-8529-30fc541f4f75">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.d04fdca8-228e-4c81-9c68-1c292e3e2d7e">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>EHAA</aixm:name>
+               <aixm:type>FIC</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:issuingAirTrafficServicesUnit>
+   <iwxxm:originatingMeteorologicalWatchOffice>
+      <aixm:Unit gml:id="uuid.f76db8df-c8be-464e-9d5a-e5cdcdfd5042">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.67288142-602c-443f-b3b2-c3025c536488">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>EHDB MWO</aixm:name>
+               <aixm:type>MWO</aixm:type>
+               <aixm:designator>EHDB</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:originatingMeteorologicalWatchOffice>
+   <iwxxm:issuingAirTrafficServicesRegion>
+      <aixm:Airspace gml:id="uuid.42753399-2cb1-4cb1-8d69-2aa8a8a233f7">
+         <aixm:timeSlice>
+            <aixm:AirspaceTimeSlice gml:id="uuid.7d1d5e40-6897-429e-a66d-3dc488d07966">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:type>FIR</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+               <aixm:name>AMSTERDAM</aixm:name>
+            </aixm:AirspaceTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Airspace>
+   </iwxxm:issuingAirTrafficServicesRegion>
+   <iwxxm:sequenceNumber>1</iwxxm:sequenceNumber>
+   <iwxxm:validPeriod>
+      <gml:TimePeriod gml:id="uuid.2fc70b2d-8cf6-4783-b8fc-f40ebd76a41d">
+         <gml:beginPosition>2017-08-27T11:30:00Z</gml:beginPosition>
+         <gml:endPosition>2017-08-27T13:30:00Z</gml:endPosition>
+      </gml:TimePeriod>
+   </iwxxm:validPeriod>
+   <iwxxm:phenomenon xlink:href="http://codes.wmo.int/49-2/AirWxPhenomena/SFC_VIS"/>
+   <iwxxm:analysis>
+      <iwxxm:AIRMETEvolvingConditionCollection gml:id="uuid.a1516e20-38dc-42f6-b843-5256cbfbefeb"
+                                               timeIndicator="OBSERVATION">
+         <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.1830d945-3098-4285-95b1-7d6933f7b597">
+               <gml:timePosition>2017-08-27T11:30:00Z</gml:timePosition>
+            </gml:TimeInstant>
+         </iwxxm:phenomenonTime>
+         <iwxxm:member>
+            <iwxxm:AIRMETEvolvingCondition gml:id="uuid.4fbaab01-2ec1-4722-875e-a30f4ed01048"
+                                           intensityChange="NO_CHANGE">
+               <iwxxm:geometry>
+                  <aixm:AirspaceVolume gml:id="uuid.46fa4d2b-18ce-4e9a-98e4-013462dcfe24">
+                     <aixm:horizontalProjection>
+                        <aixm:Surface axisLabels="Lat Lon"
+                                      gml:id="uuid.85f8ee47-45bd-4ff7-be00-d86ff7936ad8"
+                                      srsDimension="2"
+                                      srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                           <gml:patches>
+                              <gml:PolygonPatch>
+                                 <gml:exterior>
+                                    <gml:LinearRing>
+                                       <gml:posList>5.0 52.0 6.0 53.0 4.0 54.0 5.0 52.0</gml:posList>
+                                    </gml:LinearRing>
+                                 </gml:exterior>
+                              </gml:PolygonPatch>
+                           </gml:patches>
+                        </aixm:Surface>
+                     </aixm:horizontalProjection>
+                  </aixm:AirspaceVolume>
+               </iwxxm:geometry>
+               <iwxxm:directionOfMotion uom="deg">180.0</iwxxm:directionOfMotion>
+               <iwxxm:speedOfMotion uom="[kn_i]">10.0</iwxxm:speedOfMotion>
+               <iwxxm:surfaceVisibility uom="m">500.0</iwxxm:surfaceVisibility>
+               <iwxxm:surfaceVisibilityCause xlink:href="http://codes.wmo.int/49-2/WeatherCausingVisibilityReduction/FG"/>
+               <iwxxm:surfaceVisibilityCause xlink:href="http://codes.wmo.int/49-2/WeatherCausingVisibilityReduction/DZ"/>
+            </iwxxm:AIRMETEvolvingCondition>
+         </iwxxm:member>
+      </iwxxm:AIRMETEvolvingConditionCollection>
+   </iwxxm:analysis>
+</iwxxm:AIRMET>

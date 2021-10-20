@@ -14,7 +14,7 @@
   },
   "sequenceNumber": "1",
   "issueTime": {
-    "completeTime": "2018-08-27T11:40:00Z"
+    "completeTime": "2018-08-27T12:00:00Z"
   },
   "airspace": {
     "designator": "EHAA",
@@ -26,7 +26,7 @@
       "completeTime": "2018-08-27T12:00:00Z"
     },
     "endTime": {
-      "completeTime": "2018-08-27T18:00:00Z"
+      "completeTime": "2018-08-27T14:00:00Z"
     }
   },
   "airmetPhenomenon": "ISOL_TSGR",
@@ -35,7 +35,7 @@
       "analysisType": "OBSERVATION",
       "intensityChange": "NO_CHANGE",
       "time": {
-        "completeTime": "2018-08-27T11:30:00Z"
+        "completeTime": "2018-08-27T12:00:00Z"
       },
       "lowerLimit": {
         "value": 10,

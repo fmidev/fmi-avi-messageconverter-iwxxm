@@ -56,13 +56,24 @@ public class IWXXMSIGMETAIRMETConverter {
     @Bean
     @Qualifier("airmetIWXXMStringSerializer")
     public AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer() {
-        return new AIRMETIWXXMSerializer.ToString();
+        return new fi.fmi.avi.converter.iwxxm.v2_1.airmet.AIRMETIWXXMSerializer.ToString();
     }
 
     @Bean
     @Qualifier("airmetIWXXMDOMSerializer")
     public AviMessageSpecificConverter<AIRMET, Document> airmetIWXXMDOMSerializer() {
-        return new AIRMETIWXXMSerializer.ToDOM();
+        return new fi.fmi.avi.converter.iwxxm.v2_1.airmet.AIRMETIWXXMSerializer.ToDOM();
     }
 
+    @Bean
+    @Qualifier("airmetIWXXM30StringSerializer")
+    public AviMessageSpecificConverter<AIRMET, String> airmetIWXXM30StringSerializer() {
+        return new fi.fmi.avi.converter.iwxxm.v3_0.airmet.AIRMETIWXXMSerializer.ToString();
+    }
+
+    @Bean
+    @Qualifier("airmetIWXXM30DOMSerializer")
+    public AviMessageSpecificConverter<AIRMET, Document> airmetIWXXM30DOMSerializer() {
+        return new AIRMETIWXXMSerializer.ToDOM();
+    }
 }
