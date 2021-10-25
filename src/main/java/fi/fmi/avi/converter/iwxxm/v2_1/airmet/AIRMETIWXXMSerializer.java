@@ -138,12 +138,6 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
         }
 
         final String airmetUuid = UUID.randomUUID().toString();
-        //        final String validTimeId = "validt-" + airmetUuid;
-        //        final String phenomenonTimeId = "phent-" + airmetUuid;
-        //        final String resultTimeId = "resltt-" + airmetUuid;
-        //        final String procedureId = "proc-" + airmetUuid;
-        //        final String sfSpatialId = "sampling-surface-" + airmetUuid;
-        //        final String foiId = "foi-" + airmetUuid;
 
         final AIRMETType airmet;
 
@@ -359,7 +353,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                     } else {
                                                         spd.setUom(ms.getUom());
                                                     }
-  
+
                                                     spd.setValue(ms.getValue());
                                                 })));
 
@@ -397,86 +391,6 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                                 .flatMap(TacOrGeoGeometry::getGeoGeometry)
                                                                 .ifPresent(geom -> avt.setHorizontalProjection(
                                                                         createSurface(geom, "an-sfc-" + cnt + "-" + airmetUUID)));
-                            /*
-                            avt.setHorizontalProjection(create(SurfacePropertyType.class, spt -> {
-                                spt.setSurface(createAndWrap(SurfaceType.class, sft -> {
-                                    try {
-                                        if (geometryWithHeight.getGeometry().isPresent()) {
-                                            Geometry geom = geometryWithHeight.getGeometry().get().getGeoGeometry().get();
-                                            geom.getSrsName().ifPresent(sft::setSrsName);
-                                            geom.getSrsDimension().ifPresent(sft::setSrsDimension);
-                                            geom.getAxisLabels().ifPresent(labels -> sft.getAxisLabels().addAll(labels));
-                                            if (CircleByCenterPoint.class.isAssignableFrom(geom.getClass())) {
-                                                CircleByCenterPoint cbcp = (CircleByCenterPoint) geom;
-                                                JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> {
-                                                    poly.setExterior(create(AbstractRingPropertyType.class, arpt -> {
-                                                        arpt.setAbstractRing(createAndWrap(RingType.class, rt -> {
-                                                            rt.getCurveMember().add(create(CurvePropertyType.class, curvept -> {
-                                                                curvept.setAbstractCurve(createAndWrap(CurveType.class, curvet -> {
-                                                                    curvet.setId("curve-analysis-" + cnt + "-" + airmetUUID);
-                                                                    curvet.setSegments(create(CurveSegmentArrayPropertyType.class, curvesat -> {
-                                                                        curvesat.getAbstractCurveSegment()
-                                                                                .add(createAndWrap(CircleByCenterPointType.class, cbcpt -> {
-                                                                                    cbcpt.setPos(create(DirectPositionType.class, dpt -> {
-                                                                                        dpt.getValue()
-                                                                                                //.addAll(Arrays.asList(pts.toArray(new Double[0])));
-                                                                                        .addAll(cbcp.getCoordinates());
-                                                                                    }));
-                                                                                    cbcpt.setNumArc(BigInteger.valueOf(1));
-                                                                                    cbcpt.setRadius(create(LengthType.class, lt -> {
-                                                                                        lt.setValue(0.0);
-                                                                                        lt.setUom("[nmi_i]");
-                                                                                    }));
-                                                                                }));
-                                                                    }));
-                                                                }));
-                                                            }));
-                                                        }));
-                                                    }));
-                                                });
-                                                SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
-                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
-                                                spapt.getValue().getAbstractSurfacePatch().add(ppt);
-/*                                                    JAXBElement<SurfacePatchArrayPropertyType> spapt = createAndWrap(SurfacePatchArrayPropertyType.class,
-                                                    _spapt -> {
-                                                        _spapt.getAbstractSurfacePatch().add(ppt);
-                                                    });*/
-                            /*
-                                                sft.setPatches(spapt);
-                                            } else if (PolygonGeometry.class.isAssignableFrom(geom.getClass())){ //Polygon
-                                                PolygonGeometry polygon = (PolygonGeometry)geom;
-                                                JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> {
-                                                    poly.setExterior(create(AbstractRingPropertyType.class, arpt -> {
-                                                        arpt.setAbstractRing(createAndWrap(LinearRingType.class, lrt -> {
-                                                            DirectPositionListType dplt = create(DirectPositionListType.class, dpl -> {
-                                                                dpl.getValue().addAll(polygon.getExteriorPoints().stream().map(
-                                                                        PointGeometry::getCoordinates).flatMap(List::stream).collect(Collectors.toList()));
-                                                            });
-                                                            lrt.setPosList(dplt);
-                                                        }));
-                                                    }));
-                                                });
-
-                                                SurfacePatchArrayPropertyType sp = of.createSurfacePatchArrayPropertyType();
-                                                JAXBElement<SurfacePatchArrayPropertyType> spapt = of.createPolygonPatches(sp);
-                                                spapt.getValue().getAbstractSurfacePatch().add(ppt);
-
-                                                sft.setPatches(spapt);
-                                            } else {
-                                                //Woot?
-                                            }
-                                        }
-                                    } catch (Exception e) {
-                                        sft.setPatches(null);
-                                        e.printStackTrace();
-                                    }
-                                    sft.setId("an-sfc-" + cnt + "-" + airmetUUID);
-                                    sft.setSrsDimension(new BigInteger("2"));
-                                    sft.setSrsName(AviationCodeListUser.CODELIST_VALUE_EPSG_4326);
-                                }));
-                            }));
-
-                             */
                                                     }))));
                                             if (geometryWithHeight.getLowerLimitOperator().isPresent()) {
                                                 sect.setGeometryLowerLimitOperator(
@@ -535,7 +449,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                 final AirmetWind w = input.getWind().get();
                                                 sect.setSurfaceWindSpeed(create(SpeedType.class, st -> {
                                                     st.setValue(w.getSpeed().getValue());
-                                       
+
                                                     if (w.getSpeed().getUom().equals("KT")) {
                                                         st.setUom("[kn_i]");
                                                     } else if (w.getSpeed().getUom().equals("KMH")) {

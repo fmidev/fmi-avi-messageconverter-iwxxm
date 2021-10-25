@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.v3_0.sigmet;
 
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -176,16 +177,6 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             }
         });
         return spc;
-    }
-
-    private static String getTimePeriodId(final SIGMET input) {
-        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmm'Z'");
-        final PartialOrCompleteTimePeriod valTime = input.getValidityPeriod();
-        return "sigmet-"
-                + valTime.getStartTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
-                        .map(time -> time.format(dtf)).orElse("")//
-                + "-" + valTime.getEndTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
-                        .map(time -> time.format(dtf)).orElse("");
     }
 
     protected static TimePeriodPropertyType getTimePeriodPropertyType(final SIGMET input) {
@@ -396,6 +387,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                 create(StringWithNilReasonType.class, prop -> prop.setValue(input.getSequenceNumber())));
 
         sigmet.setValidPeriod(getTimePeriodPropertyType(input));
+        ZonedDateTime startTime = input.getValidityPeriod().getStartTime().get().getCompleteTime().get();
 
         if (!input.getCancelledReference().isPresent()) {
             final String analysisTime = input.getAnalysisGeometries()//
@@ -412,14 +404,14 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             List<PhenomenonGeometryWithHeight> ans = input.getAnalysisGeometries().get();
             if (input.getSigmetPhenomenon().get().equals(AeronauticalSignificantWeatherPhenomenon.VA)) {
                 JAXBElement<VolcanicAshSIGMETEvolvingConditionCollectionType> secct =
-                    createVolcanicAnalysis(ans, analysisTime,
+                    createVolcanicAnalysis(ans, analysisTime, startTime,
                         input.getIssuingAirTrafficServicesUnit().getDesignator(),
                         input.getIssuingAirTrafficServicesUnit().getName(),
                         issueTime, noForecasts, volcanoId);
                 sigmet.getAnalysis().add(create(AssociationRoleType.class, at -> at.setAny(secct)));
             } else {
 
-                JAXBElement<SIGMETEvolvingConditionCollectionType> secct = createAnalysis(ans, analysisTime,
+                JAXBElement<SIGMETEvolvingConditionCollectionType> secct = createAnalysis(ans, analysisTime, startTime,
                         input.getIssuingAirTrafficServicesUnit().getDesignator(),
                         input.getIssuingAirTrafficServicesUnit().getName(), issueTime, noForecasts);
                 sigmet.getAnalysis().add(create(AssociationRoleType.class, at -> at.setAny(secct)));
@@ -496,18 +488,25 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
     @SuppressWarnings("unchecked")
 
     private JAXBElement<SIGMETEvolvingConditionCollectionType> createAnalysis(
-            final List<PhenomenonGeometryWithHeight> ans, final String analysisTime, final String designator,
+            final List<PhenomenonGeometryWithHeight> ans, final String analysisTime, final ZonedDateTime validityStart,
+            final String designator,
             final String airspaceName, final String issueTime, boolean noForecasts) {
 
         AbstractTimeObjectPropertyType phenTimeProp;
         if (analysisTime!=null) {
             phenTimeProp= create(AbstractTimeObjectPropertyType.class, toProp -> {
-            final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period -> {
-                period.setId(getUUID());
-                period.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue().add(analysisTime)));
+                final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, inst -> {
+                    inst.setId(getUUID());
+                    ZonedDateTime phenTime = ZonedDateTime.parse(analysisTime, DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC));
+                    if (phenTime.isEqual(validityStart)) {
+                        inst.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue().add(analysisTime)));
+                    } else {
+                        String phenomenonTimeString = validityStart.format(DateTimeFormatter.ISO_INSTANT);
+                        inst.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue().add(phenomenonTimeString)));
+                    }
+                });
+                toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
             });
-            toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
-        });
         } else {
             phenTimeProp= create(AbstractTimeObjectPropertyType.class, toProp -> toProp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING));
         }
@@ -564,17 +563,25 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
 
     @SuppressWarnings("unchecked")
     private JAXBElement<VolcanicAshSIGMETEvolvingConditionCollectionType> createVolcanicAnalysis(
-            final List<PhenomenonGeometryWithHeight> ans, final String analysisTime, final String designator,
+            final List<PhenomenonGeometryWithHeight> ans, final String analysisTime, final ZonedDateTime validityStart,
+            final String designator,
             final String airspaceName, final String issueTime, boolean noForecasts,
             String volcanoId) {
 
         AbstractTimeObjectPropertyType phenTimeProp;
         if (analysisTime!=null) {
             phenTimeProp= create(AbstractTimeObjectPropertyType.class, toProp -> {
-            final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period -> {
-                period.setId(getUUID());
-                period.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue().add(analysisTime)));
-            });
+                final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, inst -> {
+                    inst.setId(getUUID());
+                    ZonedDateTime phenTime = ZonedDateTime.parse(analysisTime, DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC));
+                    if (phenTime.isEqual(validityStart)) {
+                        inst.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue().add(analysisTime)));
+                    } else {
+                        String phenomenonTimeString = validityStart.format(DateTimeFormatter.ISO_INSTANT);
+                        inst.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue().add(phenomenonTimeString)));
+                    }
+                });
+
             toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
         });
         } else {

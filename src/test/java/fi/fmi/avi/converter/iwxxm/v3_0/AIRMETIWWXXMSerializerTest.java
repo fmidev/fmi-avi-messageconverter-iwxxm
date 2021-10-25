@@ -134,6 +134,12 @@ public class AIRMETIWWXXMSerializerTest {
     }
 
     @Test
+    public void dotestAIRMET_OBS_BEFORE_StringSerialization3() throws Exception {
+        doTestAIRMETStringSerialization("airmet2_obs_before.json", "airmet2_obs_before.IWXXM30");
+    }
+
+
+    @Test
     public void dotestAIRMETDOMSerialization1() throws Exception {
         doTestAIRMETDOMSerialization("airmet_iwxxm1.json");
     }
