@@ -1,6 +1,8 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.airmet;
 
 import java.io.InputStream;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -78,15 +80,15 @@ import net.opengis.gml32.TimePrimitivePropertyType;
 public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer<AIRMET, T> {
     private static final Logger LOG = LoggerFactory.getLogger(AIRMETIWXXMSerializer.class);
 
-    protected static TimePeriodPropertyType getTimePeriodPropertyType(final AIRMET input, final String uuid) {
-        return getATimePeriodPropertyType(input.getValidityPeriod(), uuid);
+    protected static TimePeriodPropertyType getTimePeriodPropertyType(final AIRMET input) {
+        return getATimePeriodPropertyType(input.getValidityPeriod());
     }
 
-    protected static Optional<TimePeriodPropertyType> getCancelledTimePeriodPropertyType(final AIRMET input, final String uuid) {
-        return input.getCancelledReference().map(airmetReference -> getATimePeriodPropertyType(airmetReference.getValidityPeriod(), uuid));
+    protected static Optional<TimePeriodPropertyType> getCancelledTimePeriodPropertyType(final AIRMET input) {
+        return input.getCancelledReference().map(airmetReference -> getATimePeriodPropertyType(airmetReference.getValidityPeriod()));
     }
 
-    protected static TimePeriodPropertyType getATimePeriodPropertyType(final PartialOrCompleteTimePeriod valTime, final String uuid) {
+    protected static TimePeriodPropertyType getATimePeriodPropertyType(final PartialOrCompleteTimePeriod valTime) {
         return create(TimePeriodPropertyType.class, prop -> {
             final TimePeriodType tp = create(TimePeriodType.class);
             tp.setId(getUUID());
@@ -98,13 +100,6 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             tp.setEndPosition(endPos);
             prop.setTimePeriod(tp);
         });
-    }
-
-    private static String getTimePeriodId(final AIRMET input) {
-        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmm'Z'");
-        final PartialOrCompleteTimePeriod valTime = input.getValidityPeriod();
-        return "airmet-" + valTime.getStartTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(time -> time.format(dtf)).orElse("")//
-                + "-" + valTime.getEndTime().flatMap(PartialOrCompleteTimeInstant::getCompleteTime).map(time -> time.format(dtf)).orElse("");
     }
 
     protected abstract T render(final AIRMETType airmet, final ConversionHints hints) throws ConversionException;
@@ -141,7 +136,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             airmet.setReportStatus(ReportStatusType.NORMAL);
             airmet.setIsCancelReport(true);
             airmet.setCancelledReportSequenceNumber(input.getCancelledReference().get().getSequenceNumber());
-            getCancelledTimePeriodPropertyType(input, "cnl-tp-" + getTimePeriodId(input))
+            getCancelledTimePeriodPropertyType(input)
                     .ifPresent(airmet::setCancelledReportValidPeriod);
         } else {
             airmet.setReportStatus(ReportStatusType.NORMAL);
@@ -214,7 +209,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
         airmet.setSequenceNumber(
                     create(StringWithNilReasonType.class, prop -> prop.setValue(input.getSequenceNumber())));
 
-        airmet.setValidPeriod(getTimePeriodPropertyType(input, airmetUuid));
+        airmet.setValidPeriod(getTimePeriodPropertyType(input));
 
         if (!input.getCancelledReference().isPresent()) {
             final String analysisTime = input.getAnalysisGeometries()//
@@ -255,9 +250,16 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
         AbstractTimeObjectPropertyType phenTimeProp;
         if (analysisTime!=null) {
             phenTimeProp= create(AbstractTimeObjectPropertyType.class, toProp -> {
-            final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period -> {
-                period.setId(getUUID());
-                period.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue().add(analysisTime)));
+            final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, inst -> {
+                inst.setId(getUUID());
+                ZonedDateTime validityStart  = input.getValidityPeriod().getStartTime().get().getCompleteTime().get();
+                ZonedDateTime phenTime = ZonedDateTime.parse(analysisTime, DateTimeFormatter.ISO_INSTANT.withZone(ZoneOffset.UTC));
+                if (phenTime.isEqual(validityStart)) {
+                    inst.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue().add(analysisTime)));
+                } else {
+                    String phenomenonTimeString = validityStart.format(DateTimeFormatter.ISO_INSTANT);
+                    inst.setTimePosition(create(TimePositionType.class, tPos -> tPos.getValue().add(phenomenonTimeString)));
+                }
             });
             toProp.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) wrapped);
         });

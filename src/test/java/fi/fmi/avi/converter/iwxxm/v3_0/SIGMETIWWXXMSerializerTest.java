@@ -64,7 +64,9 @@ public class SIGMETIWWXXMSerializerTest {
 
     private String fixIds(String s){
         if (s==null) return null;
-        return s.replaceAll("gml:id=\"(.*)\"", "gml:id=\"GMLID\"").replaceAll("xlink:href=\"(.*)\"", "xlink:href=\"XLINKHREF\"");
+        return s.replaceAll("gml:id=\"(.*)\"", "gml:id=\"GMLID\"")
+            .replaceAll("xlink:href=\"(.*)\"", "xlink:href=\"XLINKHREF\"")
+            .replaceAll("volcanoId=\"(.*)\"", "volcanoId=\"VOLCANOID\"");
     }
 
     @Test
@@ -143,6 +145,15 @@ public class SIGMETIWWXXMSerializerTest {
         doTestSIGMETStringSerialization("sigmet_ABV_FL.json", "sigmet_ABV_FL.IWXXM30");
     }
 
+    @Test
+    public void test_OBS_BEFORE() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_OBSBEFORE.json", "sigmet_OBSBEFORE.IWXXM30");
+    }
+
+    @Test
+    public void test_VA_OBS_BEFORE() throws Exception {
+        doTestSIGMETStringSerialization("vasigmet1_OBSBEFORE.json", "vasigmet1_OBSBEFORE.IWXXM30");
+    }
     @Test
     public void testABV_NOOBSTIME() throws Exception {
         doTestSIGMETStringSerialization("sigmet_ABV_FL_NOOBSTIME.json", "sigmet_ABV_FL_NOOBSTIME.IWXXM30");
