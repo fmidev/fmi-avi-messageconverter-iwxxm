@@ -282,8 +282,8 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             sigmet.setId(getUUID());
             sigmet.setReportStatus(ReportStatusType.NORMAL);
             sigmet.setIsCancelReport(true);
-            input.getVAInfo().get();
             sigmet.setCancelledReportSequenceNumber(input.getCancelledReference().get().getSequenceNumber());
+            sigmet.setPhenomenon(null);
             getCancelledTimePeriodPropertyType(input)
                     .ifPresent(sigmet::setCancelledReportValidPeriod);
             if (input.getSigmetPhenomenon().get().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
