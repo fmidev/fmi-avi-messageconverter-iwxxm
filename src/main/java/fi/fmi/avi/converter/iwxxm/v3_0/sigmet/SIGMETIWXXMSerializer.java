@@ -458,8 +458,6 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                                 }));
                                 pt.setId(getUUID());
                             }))));
-                        } else {
-                            v.setPosition(create(PointPropertyType.class, p -> p.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING)));
                         }
                         if (volcano.getVolcanoName().isPresent()) {
                             v.setVolcanoName(volcano.getVolcanoName().get());
