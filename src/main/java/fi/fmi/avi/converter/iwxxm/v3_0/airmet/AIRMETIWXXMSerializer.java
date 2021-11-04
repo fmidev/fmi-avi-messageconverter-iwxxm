@@ -279,7 +279,21 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                     }
                     ecct.getMember().add(create(AIRMETEvolvingConditionPropertyType.class, seccpt -> {
                         seccpt.setAIRMETEvolvingCondition(create(AIRMETEvolvingConditionType.class, sect -> {
-                            sect.setIntensityChange(AIRMETExpectedIntensityChangeType.NO_CHANGE);
+                            if (an.getIntensityChange().isPresent()) {
+                                switch (an.getIntensityChange().get()) {
+                                    case INTENSIFYING:
+                                        sect.setIntensityChange(AIRMETExpectedIntensityChangeType.INTENSIFY);
+                                        break;
+                                    case WEAKENING:
+                                        sect.setIntensityChange(AIRMETExpectedIntensityChangeType.WEAKEN);
+                                        break;
+                                    case NO_CHANGE:
+                                        sect.setIntensityChange(AIRMETExpectedIntensityChangeType.NO_CHANGE);
+                                        break;
+                                }
+                            } else {
+                                sect.setIntensityChange(AIRMETExpectedIntensityChangeType.NO_CHANGE);
+                            }
                             sect.setId(getUUID());
                             sect.setGeometry(create(AirspaceVolumePropertyType.class, avpt -> {
                                 avpt.setAirspaceVolume(createAirspaceVolume(an));
