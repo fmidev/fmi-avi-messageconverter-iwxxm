@@ -468,7 +468,6 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                             final String generatedVolcanoName = "Unknown";
                             v.setVolcanoName(generatedVolcanoName);
                         }
-
                     }));
                 }));
             }
@@ -698,12 +697,12 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                         cvrt.setValue("STD");
                     }));
                     avt.setMaximumLimit(create(ValDistanceVerticalType.class, vdvt -> {
-                        vdvt.setNilReason("http://codes.wmo.int/common/nil/unknown");
+                        vdvt.setNilReason("unknown");
                     }));
                 } else if (AviationCodeListUser.RelationalOperator.BELOW.equals(upperLimitOperator)) {
                     // TOP BLW
                     avt.setUpperLimit(create(ValDistanceVerticalType.class, vdvt -> {
-                        vdvt.setNilReason("http://codes.wmo.int/common/nil/unknown");
+                        vdvt.setNilReason("unknown");
                     }));
                     avt.setMaximumLimit(toValDistanceVertical(upperLevel).get());
                     avt.setMaximumLimitReference(create(CodeVerticalReferenceType.class, cvrt -> {
@@ -768,7 +767,6 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
         } catch (final DatatypeConfigurationException e) {
             throw new ConversionException("Exception in setting the translation time", e);
         }
-
     }
 
     @Override
