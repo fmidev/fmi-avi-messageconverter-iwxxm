@@ -40,6 +40,7 @@ import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationCodeListUser.WeatherCausingVisibilityReduction;
+import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
@@ -285,7 +286,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                             }));
                             if (input.getAirmetPhenomenon().get().name().equals("SFC_VIS")) {
                                 sect.setSurfaceVisibility(create(LengthType.class, l -> {
-                                    l.setUom("m");
+                                    l.setUom(toIwxxmLevelUom(input.getVisibility().get()));
                                     l.setValue(input.getVisibility().get().getValue());
                                 }));
                                 for (WeatherCausingVisibilityReduction obsc: input.getObscuration().get()) {
@@ -297,7 +298,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                             if (input.getAirmetPhenomenon().get().name().equals("BKN_CLD")||
                                 input.getAirmetPhenomenon().get().name().equals("OVC_CLD")) {
                                     sect.setCloudBase(create(LengthType.class, b -> {
-                                        b.setUom(input.getCloudLevels().get().getCloudBase().getUom());
+                                        b.setUom(toIwxxmLevelUom(input.getCloudLevels().get().getCloudBase()));
                                         b.setValue(input.getCloudLevels().get().getCloudBase().getValue());
                                     }));
                                     if (input.getCloudLevels().get().getCloudBase().getValue()==0) {
@@ -306,18 +307,18 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                                         sect.setCloudBaseReference("STD");
                                     }
                                     sect.setCloudTop(create(LengthType.class, b -> {
-                                        b.setUom(input.getCloudLevels().get().getCloudTop().getUom());
+                                        b.setUom(toIwxxmLevelUom(input.getCloudLevels().get().getCloudTop()));
                                         b.setValue(input.getCloudLevels().get().getCloudTop().getValue());
                                     }));
                                     sect.setCloudTopReference("STD");
                             }
                             if (input.getAirmetPhenomenon().get().name().equals("SFC_WIND")) {
                                 sect.setSurfaceWindDirection(create(AngleType.class, a ->{
-                                    a.setUom(input.getWind().get().getDirection().getUom());
+                                    a.setUom(toIwxxmLevelUom(input.getWind().get().getDirection()));
                                     a.setValue(input.getWind().get().getDirection().getValue());
                                 }));
                                 sect.setSurfaceWindSpeed(create(SpeedType.class, a ->{
-                                    a.setUom(input.getWind().get().getSpeed().getUom());
+                                    a.setUom(toIwxxmLevelUom(input.getWind().get().getSpeed()));
                                     a.setValue(input.getWind().get().getSpeed().getValue());
                                 }));
 
@@ -351,6 +352,26 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             });
 
         return create(AIRMETEvolvingConditionCollectionPropertyType.class, aeccpt -> aeccpt.setAIRMETEvolvingConditionCollection(aecct));
+    }
+
+    private String toIwxxmLevelUom(NumericMeasure level) {
+        String uom = level.getUom();
+        String iwxxmUom = uom; //Fallback to whatever is already there
+        switch (uom) {
+            case "FT":
+              iwxxmUom = "[ft_i]";
+              break;
+            case "M":
+              iwxxmUom = "m";
+              break;
+            case "KT":
+              iwxxmUom = "[kn_i]";
+              break;
+            case "deg":
+              iwxxmUom = "deg";
+              break;
+        }
+        return iwxxmUom;
     }
 
     private AirspaceVolumeType createAirspaceVolume(PhenomenonGeometryWithHeight an) {

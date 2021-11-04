@@ -35,11 +35,11 @@
   "cloudLevels": {
     "cloudBase": {
       "value": 100.0,
-      "uom": "[ft_i]"
+      "uom": "FT"
     },
     "cloudTop": {
       "value": 5000,
-      "uom": "[ft_i]"
+      "uom": "FT"
     }
   },
   "analysisGeometries": [

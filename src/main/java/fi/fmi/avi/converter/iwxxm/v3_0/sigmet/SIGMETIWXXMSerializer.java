@@ -444,6 +444,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                 ((VolcanicAshSIGMETType) sigmet).getEruptingVolcano().add(create(VolcanoPropertyType.class, vpt -> {
 
                     vpt.setVolcano(createAndWrap(VolcanoType.class, v -> {
+                        v.setId(getUUID());
                         if (volcano.getVolcanoPosition().isPresent()) {
                             final Double[] pts = volcano.getVolcanoPosition().get().getCoordinates().toArray(new Double[0]);
                             v.setPosition(create(PointPropertyType.class, ppt -> ppt.setPoint(create(PointType.class, pt -> {
@@ -458,14 +459,14 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                                 }));
                                 pt.setId(getUUID());
                             }))));
+                        } else {
+                            v.setPosition(create(PointPropertyType.class, ppt -> ppt.getNilReason().add("http://codes.wmo.int/common/nil/unknown")));
                         }
                         if (volcano.getVolcanoName().isPresent()) {
                             v.setVolcanoName(volcano.getVolcanoName().get());
-                            v.setId(getUUID());
                         } else {
                             final String generatedVolcanoName = "Unknown";
                             v.setVolcanoName(generatedVolcanoName);
-                            v.setId(getUUID());
                         }
                     }));
                 }));
@@ -766,7 +767,6 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
         } catch (final DatatypeConfigurationException e) {
             throw new ConversionException("Exception in setting the translation time", e);
         }
-
     }
 
     @Override
