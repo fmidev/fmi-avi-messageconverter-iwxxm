@@ -48,7 +48,7 @@
 
   <xsl:template match="@nilReason">
     <xsl:copy/>
-    <xsl:if test="name(parent::node()) != 'iwxxm:phenomenonTime'">
+    <xsl:if test="(name(parent::node()) != 'iwxxm:phenomenonTime') and (name(parent::node()) != 'metce:position')">
       <xsl:attribute name="xsi:nil">true</xsl:attribute>
     </xsl:if>
   </xsl:template>
