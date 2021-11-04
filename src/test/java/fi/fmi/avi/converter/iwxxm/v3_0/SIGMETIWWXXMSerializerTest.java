@@ -85,6 +85,11 @@ public class SIGMETIWWXXMSerializerTest {
     }
 
     @Test
+    public void testSIGMETStringSerializationCancel() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_cancel.json", "sigmet_cancel.IWXXM30");
+    }
+
+    @Test
     public void testSIGMETSTNR() throws Exception {
         //SIGMET describes stationary phenomenon, should result in an IWXXM containing
         //no <directionOfMotion> and <speedOfMotion> elements
