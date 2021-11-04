@@ -523,8 +523,22 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                         }
                         ecct.getMember().add(create(SIGMETEvolvingConditionPropertyType.class, seccpt -> {
                             seccpt.setSIGMETEvolvingCondition(create(SIGMETEvolvingConditionType.class, sect -> {
-                                sect.setIntensityChange(ExpectedIntensityChangeType.NO_CHANGE);
-                                sect.setId(getUUID());
+                                if (an.getIntensityChange().isPresent()) {
+                                    switch (an.getIntensityChange().get()) {
+                                        case INTENSIFYING:
+                                            sect.setIntensityChange(ExpectedIntensityChangeType.INTENSIFY);
+                                            break;
+                                        case WEAKENING:
+                                            sect.setIntensityChange(ExpectedIntensityChangeType.WEAKEN);
+                                            break;
+                                        case NO_CHANGE:
+                                            sect.setIntensityChange(ExpectedIntensityChangeType.NO_CHANGE);
+                                            break;
+                                    }
+                                } else {
+                                    sect.setIntensityChange(ExpectedIntensityChangeType.NO_CHANGE);
+                                }
+                                    sect.setId(getUUID());
                                 sect.setGeometry(create(AirspaceVolumePropertyType.class, avpt -> {
                                     avpt.setAirspaceVolume(createAirspaceVolume(an));
                                 }));
@@ -602,8 +616,22 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
 
                         ecct.getMember().add(create(SIGMETEvolvingConditionPropertyType.class, seccpt -> {
                             seccpt.setSIGMETEvolvingCondition(create(SIGMETEvolvingConditionType.class, sect -> {
-                                sect.setIntensityChange(ExpectedIntensityChangeType.NO_CHANGE);
-                                sect.setId(getUUID());
+                                if (an.getIntensityChange().isPresent()) {
+                                    switch (an.getIntensityChange().get()) {
+                                        case INTENSIFYING:
+                                            sect.setIntensityChange(ExpectedIntensityChangeType.INTENSIFY);
+                                            break;
+                                        case WEAKENING:
+                                            sect.setIntensityChange(ExpectedIntensityChangeType.WEAKEN);
+                                            break;
+                                        case NO_CHANGE:
+                                            sect.setIntensityChange(ExpectedIntensityChangeType.NO_CHANGE);
+                                            break;
+                                    }
+                                } else {
+                                    sect.setIntensityChange(ExpectedIntensityChangeType.NO_CHANGE);
+                                }
+                                    sect.setId(getUUID());
                                 sect.setGeometry(create(AirspaceVolumePropertyType.class, avpt -> {
                                     avpt.setAirspaceVolume(createAirspaceVolume(an));
                                 }));
