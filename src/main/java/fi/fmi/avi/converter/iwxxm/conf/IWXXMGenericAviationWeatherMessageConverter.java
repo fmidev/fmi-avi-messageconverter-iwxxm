@@ -18,8 +18,8 @@ import fi.fmi.avi.converter.iwxxm.generic.IWXXMGenericBulletinScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.metar.GenericMETARSPECIIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.sigmet.GenericSIGMETAIRMETIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.taf.GenericTAFIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.v2_1.tca.GenericTropicalCycloneAdvisoryIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v3_0.swx.GenericSpaceWeatherAdvisoryIWXXMScanner;
-import fi.fmi.avi.converter.iwxxm.v3_0.tca.GenericTropicalCycloneAdvisoryIWXXMScanner;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
 @Configuration
@@ -75,7 +75,9 @@ public class IWXXMGenericAviationWeatherMessageConverter {
         scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "TAF"), new fi.fmi.avi.converter.iwxxm.v3_0.taf.GenericTAFIWXXMScanner());
 
         scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "SpaceWeatherAdvisory"), new GenericSpaceWeatherAdvisoryIWXXMScanner());
-        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "TropicalCycloneAdvisory"), new GenericTropicalCycloneAdvisoryIWXXMScanner());
+        scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "TropicalCycloneAdvisory"), new GenericTropicalCycloneAdvisoryIWXXMScanner());
+        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "TropicalCycloneAdvisory"),
+                new fi.fmi.avi.converter.iwxxm.v3_0.tca.GenericTropicalCycloneAdvisoryIWXXMScanner());
 
         final GenericSIGMETAIRMETIWXXMScanner genericSIGMETIWXXM21Scanner = new GenericSIGMETAIRMETIWXXMScanner();
         scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "SIGMET"), genericSIGMETIWXXM21Scanner);

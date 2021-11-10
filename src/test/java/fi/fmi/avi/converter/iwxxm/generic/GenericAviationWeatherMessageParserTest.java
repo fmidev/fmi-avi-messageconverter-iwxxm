@@ -428,8 +428,37 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     }
 
     @Test
-    public void tcaDOMMessageTest() throws Exception {
-        final String fileName = "tc-advisory-A2-2.xml";
+    public void tca21DOMMessageTest() throws Exception {
+        final String fileName = "tc-advisory-A2-2-21.xml";
+        final Document input = readDocument(fileName);
+
+        final ConversionHints hints = new ConversionHints();
+        hints.put(ConversionHints.KEY_MESSAGE_TYPE, MessageType.TROPICAL_CYCLONE_ADVISORY);
+        final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
+                IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
+
+        assertEquals(result.getConversionIssues(), Collections.emptyList());
+        assertTrue(result.getConvertedMessage().isPresent());
+        final GenericAviationWeatherMessage message = result.getConvertedMessage().get();
+
+        assertEquals(Format.IWXXM, message.getMessageFormat());
+        assertEquals(IWXXM_2_1_NAMESPACE, message.getXMLNamespace().orElse(null));
+        assertEquals(MessageType.TROPICAL_CYCLONE_ADVISORY, message.getMessageType().orElse(null));
+        assertFalse(message.isTranslated());
+        assertEquals(ReportStatus.NORMAL, message.getReportStatus());
+        assertPartialOrCompleteTime("2004-09-25T16:00:00Z", message.getIssueTime());
+        assertFalse(message.getValidityTime().isPresent());
+        final Map<LocationIndicatorType, String> expectedIndicators = Collections.singletonMap(LocationIndicatorType.ISSUING_CENTRE, "YUFO");
+        assertEquals(expectedIndicators, message.getLocationIndicators());
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        XMLUnit.setIgnoreWhitespace(true);
+        assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
+    }
+
+    @Test
+    public void tca30DOMMessageTest() throws Exception {
+        final String fileName = "tc-advisory-A2-2-30.xml";
         final Document input = readDocument(fileName);
 
         final ConversionHints hints = new ConversionHints();
