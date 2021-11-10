@@ -19,6 +19,7 @@ import fi.fmi.avi.converter.iwxxm.v2_1.metar.GenericMETARSPECIIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.sigmet.GenericSIGMETAIRMETIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.taf.GenericTAFIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v2_1.tca.GenericTropicalCycloneAdvisoryIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.v2_1.vaa.GenericVolcanicAshAdvisoryIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v3_0.swx.GenericSpaceWeatherAdvisoryIWXXMScanner;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
@@ -78,6 +79,9 @@ public class IWXXMGenericAviationWeatherMessageConverter {
         scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "TropicalCycloneAdvisory"), new GenericTropicalCycloneAdvisoryIWXXMScanner());
         scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "TropicalCycloneAdvisory"),
                 new fi.fmi.avi.converter.iwxxm.v3_0.tca.GenericTropicalCycloneAdvisoryIWXXMScanner());
+        scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "VolcanicAshAdvisory"), new GenericVolcanicAshAdvisoryIWXXMScanner());
+        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "VolcanicAshAdvisory"),
+                new fi.fmi.avi.converter.iwxxm.v3_0.vaa.GenericVolcanicAshAdvisoryIWXXMScanner());
 
         final GenericSIGMETAIRMETIWXXMScanner genericSIGMETIWXXM21Scanner = new GenericSIGMETAIRMETIWXXMScanner();
         scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "SIGMET"), genericSIGMETIWXXM21Scanner);
