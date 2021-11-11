@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
@@ -22,6 +23,9 @@ import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 
 public abstract class AbstractGenericAviationWeatherMessageScanner implements GenericAviationWeatherMessageScanner {
+    private static String nullToEmpty(final String nullableString) {
+        return nullableString == null ? "" : nullableString;
+    }
 
     protected static IssueList collectValidTime(final Element featureElement, final String selector, final XPath xpath,
             final GenericAviationWeatherMessageImpl.Builder builder) {
@@ -42,7 +46,8 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
                         .build());
             }
         } catch (final Exception ex) {
-            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Unable to parse valid time for TAF", ex);
+            retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "Unable to parse valid time for " + featureElement.getLocalName(),
+                    ex);
         }
         return retval;
     }
@@ -68,13 +73,23 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
 
     protected static void collectLocationIndicators(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder,
             final Map<GenericAviationWeatherMessage.LocationIndicatorType, String> xpathExpressions, final IssueList issues) throws XPathExpressionException {
+        final XPathExpression designatorExpression = xpath.compile("./aixm:designator");
+        final XPathExpression nameExpression = xpath.compile("./aixm:name");
         for (final Map.Entry<GenericAviationWeatherMessage.LocationIndicatorType, String> entry : xpathExpressions.entrySet()) {
-            final String locationIndicator = xpath.compile(entry.getValue()).evaluate(featureElement);
-            if (locationIndicator == null || locationIndicator.isEmpty()) {
+            final GenericAviationWeatherMessage.LocationIndicatorType locationIndicatorType = entry.getKey();
+            final Object locationNode = xpath.compile(entry.getValue()).evaluate(featureElement, XPathConstants.NODE);
+            String locationIndicator = "";
+            if (locationNode instanceof Element) {
+                locationIndicator = nullToEmpty(designatorExpression.evaluate(locationNode));
+                if (locationIndicator.isEmpty()) {
+                    locationIndicator = nullToEmpty(nameExpression.evaluate(locationNode));
+                }
+            }
+            if (locationIndicator.isEmpty()) {
                 issues.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                        String.format(Locale.ROOT, "Missing location indicator %s", entry.getKey()));
+                        String.format(Locale.ROOT, "Missing location indicator %s", locationIndicatorType));
             } else {
-                builder.putLocationIndicators(entry.getKey(), locationIndicator);
+                builder.putLocationIndicators(locationIndicatorType, locationIndicator);
             }
         }
     }
