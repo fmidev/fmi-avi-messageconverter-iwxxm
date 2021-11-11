@@ -484,4 +484,62 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
         XMLUnit.setIgnoreWhitespace(true);
         assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
     }
+
+    @Test
+    public void vaa21DOMMessageTest() throws Exception {
+        final String fileName = "va-advisory-A2-1-21.xml";
+        final Document input = readDocument(fileName);
+
+        final ConversionHints hints = new ConversionHints();
+        hints.put(ConversionHints.KEY_MESSAGE_TYPE, MessageType.VOLCANIC_ASH_ADVISORY);
+        final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
+                IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
+
+        assertEquals(result.getConversionIssues(), Collections.emptyList());
+        assertTrue(result.getConvertedMessage().isPresent());
+        final GenericAviationWeatherMessage message = result.getConvertedMessage().get();
+
+        assertEquals(Format.IWXXM, message.getMessageFormat());
+        assertEquals(IWXXM_2_1_NAMESPACE, message.getXMLNamespace().orElse(null));
+        assertEquals(MessageType.VOLCANIC_ASH_ADVISORY, message.getMessageType().orElse(null));
+        assertFalse(message.isTranslated());
+        assertEquals(ReportStatus.NORMAL, message.getReportStatus());
+        assertPartialOrCompleteTime("2008-09-23T01:30:00Z", message.getIssueTime());
+        assertFalse(message.getValidityTime().isPresent());
+        final Map<LocationIndicatorType, String> expectedIndicators = Collections.singletonMap(LocationIndicatorType.ISSUING_CENTRE, "TOKYO");
+        assertEquals(expectedIndicators, message.getLocationIndicators());
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        XMLUnit.setIgnoreWhitespace(true);
+        assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
+    }
+
+    @Test
+    public void vaa30DOMMessageTest() throws Exception {
+        final String fileName = "va-advisory-A2-1-30.xml";
+        final Document input = readDocument(fileName);
+
+        final ConversionHints hints = new ConversionHints();
+        hints.put(ConversionHints.KEY_MESSAGE_TYPE, MessageType.VOLCANIC_ASH_ADVISORY);
+        final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
+                IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
+
+        assertEquals(result.getConversionIssues(), Collections.emptyList());
+        assertTrue(result.getConvertedMessage().isPresent());
+        final GenericAviationWeatherMessage message = result.getConvertedMessage().get();
+
+        assertEquals(Format.IWXXM, message.getMessageFormat());
+        assertEquals(IWXXM_3_0_NAMESPACE, message.getXMLNamespace().orElse(null));
+        assertEquals(MessageType.VOLCANIC_ASH_ADVISORY, message.getMessageType().orElse(null));
+        assertFalse(message.isTranslated());
+        assertEquals(ReportStatus.CORRECTION, message.getReportStatus());
+        assertPartialOrCompleteTime("2008-09-23T01:30:00Z", message.getIssueTime());
+        assertFalse(message.getValidityTime().isPresent());
+        final Map<LocationIndicatorType, String> expectedIndicators = Collections.singletonMap(LocationIndicatorType.ISSUING_CENTRE, "TOKYO");
+        assertEquals(expectedIndicators, message.getLocationIndicators());
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        XMLUnit.setIgnoreWhitespace(true);
+        assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
+    }
 }
