@@ -169,23 +169,26 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             }))));
         }))));
 
-        airmet.setOriginatingMeteorologicalWatchOffice(create(UnitPropertyType.class, prop -> prop.setUnit(create(UnitType.class, unit -> {
-            unit.setId(getUUID());
-            unit.getTimeSlice().add(create(UnitTimeSlicePropertyType.class, sliceProp -> sliceProp.setUnitTimeSlice(create(UnitTimeSliceType.class, slice -> {
-                slice.setId(getUUID());
-                slice.setValidTime(create(TimePrimitivePropertyType.class, tp -> {
-                }));
-                slice.setInterpretation("SNAPSHOT");
-                slice.setType(create(CodeUnitType.class, codeUnitType -> codeUnitType.setValue("MWO")));
-                slice.setUnitName(create(TextNameType.class, tnt -> {
-                    tnt.setValue(input.getMeteorologicalWatchOffice().getDesignator() + " MWO");
-                    slice.setDesignator(
-                            create(CodeOrganisationDesignatorType.class, desig -> desig.setValue(input.getMeteorologicalWatchOffice().getDesignator())));
-                }));
-            }))));
-        }))));
+        airmet.setOriginatingMeteorologicalWatchOffice(
+                create(UnitPropertyType.class, prop -> prop.setUnit(create(UnitType.class, unit -> {
+                    unit.setId(getUUID());
+                    unit.getTimeSlice().add(create(UnitTimeSlicePropertyType.class,
+                            sliceProp -> sliceProp.setUnitTimeSlice(create(UnitTimeSliceType.class, slice -> {
+                                slice.setId(getUUID());
+                                slice.setValidTime(create(TimePrimitivePropertyType.class, tp -> {
+                                }));
+                                slice.setInterpretation("SNAPSHOT");
+                                slice.setType(create(CodeUnitType.class, codeUnitType -> codeUnitType.setValue("MWO")));
+                                slice.setUnitName(create(TextNameType.class, tnt -> {
+                                    tnt.setValue(input.getMeteorologicalWatchOffice().getName());
+                                }));
 
-        airmet.setIssuingAirTrafficServicesRegion(
+                                slice.setDesignator(create(CodeOrganisationDesignatorType.class, desig ->
+                                    desig.setValue(input.getMeteorologicalWatchOffice().getDesignator())));
+                            }))));
+                }))));
+
+airmet.setIssuingAirTrafficServicesRegion(
                 create(AirspacePropertyType.class, prop -> prop.setAirspace(create(AirspaceType.class, airspace -> {
                     airspace.setValidTime(null);
                     airspace.setId(getUUID());

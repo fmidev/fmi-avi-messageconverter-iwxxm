@@ -178,10 +178,10 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                 slice.setInterpretation("SNAPSHOT");
                 slice.setType(create(CodeUnitType.class, codeUnitType -> codeUnitType.setValue("MWO")));
                 slice.setUnitName(create(TextNameType.class, tnt -> {
-                    tnt.setValue(input.getMeteorologicalWatchOffice().getDesignator() + " MWO");
-                    slice.setDesignator(
-                            create(CodeOrganisationDesignatorType.class, desig -> desig.setValue(input.getMeteorologicalWatchOffice().getDesignator())));
+                    tnt.setValue(input.getMeteorologicalWatchOffice().getName());
                 }));
+                slice.setDesignator(create(CodeOrganisationDesignatorType.class, desig ->
+                    desig.setValue(input.getMeteorologicalWatchOffice().getDesignator())));
             }))));
         }))));
 

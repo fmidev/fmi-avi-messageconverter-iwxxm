@@ -89,6 +89,12 @@ public class VASIGMETIWWXXMSerializerTest {
     }
 
     @Test
+    public void testVaSigmetCancelMovToFir() throws Exception {
+        doTestSIGMETStringSerialization("vasigmet1_cancel_movtofir.json", "vasigmet1_cancel_movtofir.IWXXM30");
+    }
+
+
+    @Test
     public void testNoVaExp() throws Exception {
         doTestSIGMETStringSerialization("vasigmet1_novaexp.json", "vasigmet1_novaexp.IWXXM30");
     }
