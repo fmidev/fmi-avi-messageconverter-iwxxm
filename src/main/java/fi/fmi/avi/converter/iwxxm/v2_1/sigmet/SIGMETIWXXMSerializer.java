@@ -390,10 +390,10 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                 slice.setInterpretation("SNAPSHOT");
                 slice.setType(create(CodeUnitType.class, codeUnitType -> codeUnitType.setValue("MWO")));
                 slice.setUnitName(create(TextNameType.class, tnt -> {
-                    tnt.setValue(input.getMeteorologicalWatchOffice().getDesignator() + " MWO");
-                    slice.setDesignator(
-                            create(CodeOrganisationDesignatorType.class, desig -> desig.setValue(input.getMeteorologicalWatchOffice().getDesignator())));
+                    tnt.setValue(input.getMeteorologicalWatchOffice().getName());
                 }));
+                slice.setDesignator(create(CodeOrganisationDesignatorType.class, desig ->
+                    desig.setValue(input.getMeteorologicalWatchOffice().getDesignator())));
             }))));
         }))));
 
@@ -621,7 +621,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                 sect.setDirectionOfMotion(directionOfMotion);
 
                                                 input.getAnalysisGeometries().get().get(0).getMovingSpeed().ifPresent(ms -> sect.setSpeedOfMotion(create(SpeedType.class, spd -> {
-                                      
+
                                                     if (ms.getUom().equals("KT")) {
                                                         spd.setUom("[kn_i]");
                                                     } else if (ms.getUom().equals("KMH")) {

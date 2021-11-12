@@ -34,7 +34,7 @@
             <aixm:UnitTimeSlice gml:id="uuid.c3989e27-d023-4ee5-82ce-65b1d9165435">
                <gml:validTime/>
                <aixm:interpretation>SNAPSHOT</aixm:interpretation>
-               <aixm:name>EHDB MWO</aixm:name>
+               <aixm:name>DE BILT</aixm:name>
                <aixm:type>MWO</aixm:type>
                <aixm:designator>EHDB</aixm:designator>
             </aixm:UnitTimeSlice>

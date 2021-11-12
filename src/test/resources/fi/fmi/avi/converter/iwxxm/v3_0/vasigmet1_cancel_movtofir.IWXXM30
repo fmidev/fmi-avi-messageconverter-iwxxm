@@ -67,4 +67,17 @@
          <gml:endPosition>2018-08-27T18:00:00Z</gml:endPosition>
       </gml:TimePeriod>
    </iwxxm:cancelledReportValidPeriod>
+   <iwxxm:volcanicAshMovedToFIR>
+      <aixm:Airspace gml:id="GMLID">
+         <aixm:timeSlice>
+            <aixm:AirspaceTimeSlice gml:id="GMLID">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:type>FIR</aixm:type>
+               <aixm:designator>EDWW</aixm:designator>
+               <aixm:name>BREMEN</aixm:name>
+            </aixm:AirspaceTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Airspace>
+   </iwxxm:volcanicAshMovedToFIR>
 </iwxxm:VolcanicAshSIGMET>

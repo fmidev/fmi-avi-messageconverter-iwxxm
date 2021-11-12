@@ -298,13 +298,12 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                                             .setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, timeSlice -> {
                                                 timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
                                                 timeSlice.setInterpretation("SNAPSHOT");
-                                                timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue("FIR")));
+                                                timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue(movedToFir.getType())));
                                                 timeSlice.setAirspaceName(create(TextNameType.class, name -> name
-                                                        .setValue(input.getIssuingAirTrafficServicesUnit().getName())));
+                                                        .setValue(movedToFir.getName())));
                                                 timeSlice.setId(getUUID());
                                                 timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, desig -> desig
-                                                        .setValue(input.getIssuingAirTrafficServicesUnit().getDesignator())));
-
+                                                        .setValue(movedToFir.getDesignator())));
                                             }))));
                         }))));
                     });
@@ -356,10 +355,11 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                                 slice.setInterpretation("SNAPSHOT");
                                 slice.setType(create(CodeUnitType.class, codeUnitType -> codeUnitType.setValue("MWO")));
                                 slice.setUnitName(create(TextNameType.class, tnt -> {
-                                    tnt.setValue(input.getMeteorologicalWatchOffice().getDesignator() + " MWO");
-                                    slice.setDesignator(create(CodeOrganisationDesignatorType.class, desig -> desig
-                                            .setValue(input.getMeteorologicalWatchOffice().getDesignator())));
+                                    tnt.setValue(input.getMeteorologicalWatchOffice().getName());
                                 }));
+
+                                slice.setDesignator(create(CodeOrganisationDesignatorType.class, desig ->
+                                    desig.setValue(input.getMeteorologicalWatchOffice().getDesignator())));
                             }))));
                 }))));
 
