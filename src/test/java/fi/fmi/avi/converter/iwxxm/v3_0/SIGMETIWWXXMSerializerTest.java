@@ -120,6 +120,7 @@ public class SIGMETIWWXXMSerializerTest {
     public void testFL() throws Exception {
         doTestSIGMETStringSerialization("sigmet_FL.json", "sigmet_FL.IWXXM30");
     }
+
     @Test
     public void testM() throws Exception {
         doTestSIGMETStringSerialization("sigmet_M.json", "sigmet_M.IWXXM30");
@@ -162,6 +163,21 @@ public class SIGMETIWWXXMSerializerTest {
     @Test
     public void testABV_NOOBSTIME() throws Exception {
         doTestSIGMETStringSerialization("sigmet_ABV_FL_NOOBSTIME.json", "sigmet_ABV_FL_NOOBSTIME.IWXXM30");
+    }
+
+    @Test
+    public void testTest() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_FL_TEST.json", "sigmet_FL_TEST.IWXXM30");
+    }
+
+    @Test
+    public void testExercise() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_FL_EXER.json", "sigmet_FL_EXER.IWXXM30");
+    }
+
+    @Test
+    public void testOperational() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_FL_OPER.json", "sigmet_FL_OPER.IWXXM30");
     }
 
     public String doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {

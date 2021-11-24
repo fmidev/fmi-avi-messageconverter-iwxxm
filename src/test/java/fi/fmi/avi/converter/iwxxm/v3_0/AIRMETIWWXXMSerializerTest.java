@@ -138,6 +138,25 @@ public class AIRMETIWWXXMSerializerTest {
         doTestAIRMETStringSerialization("airmet2_obs_before.json", "airmet2_obs_before.IWXXM30");
     }
 
+    @Test
+    public void dotestAIRMET_OPER() throws Exception {
+        String s = doTestAIRMETStringSerialization("airmet_OPER.json", "airmet_OPER.IWXXM30");
+        System.err.println(s);
+    }
+
+    @Test
+    public void dotestAIRMET_TEST() throws Exception {
+        String s = doTestAIRMETStringSerialization("airmet_TEST.json", "airmet_TEST.IWXXM30");
+        System.err.println(s);
+    }
+
+    @Test
+    public void dotestAIRMET_EXER() throws Exception {
+        String s = doTestAIRMETStringSerialization("airmet_EXER.json", "airmet_EXER.IWXXM30");
+        System.err.println(s);
+    }
+
+
 
     @Test
     public void dotestAIRMETDOMSerialization1() throws Exception {

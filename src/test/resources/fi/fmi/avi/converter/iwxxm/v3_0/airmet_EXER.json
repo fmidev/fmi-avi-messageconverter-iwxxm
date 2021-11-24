@@ -1,0 +1,63 @@
+{
+  "permissibleUsage": "NON_OPERATIONAL",
+  "permissibleUsageReason": "EXERCISE",
+  "reportStatus": "NORMAL",
+  "issuingAirTrafficServicesUnit": {
+    "name": "AMSTERDAM",
+    "type": "FIR",
+    "designator": "EHAA"
+  },
+  "meteorologicalWatchOffice": {
+    "name": "DE BILT",
+    "type": "MWO",
+    "designator": "EHDB"
+  },
+  "sequenceNumber": "1",
+  "issueTime": {
+    "completeTime": "2018-08-27T12:00:00Z"
+  },
+  "airspace": {
+    "designator": "EHAA",
+    "name": "AMSTERDAM",
+    "type": "FIR"
+  },
+  "validityPeriod": {
+    "startTime": {
+      "completeTime": "2018-08-27T12:00:00Z"
+    },
+    "endTime": {
+      "completeTime": "2018-08-27T14:00:00Z"
+    }
+  },
+  "airmetPhenomenon": "ISOL_TSGR",
+  "analysisGeometries": [
+    {
+      "analysisType": "OBSERVATION",
+      "intensityChange": "NO_CHANGE",
+      "time": {
+        "completeTime": "2018-08-27T12:00:00Z"
+      },
+      "lowerLimit": {
+        "value": 10,
+        "uom": "FL"
+      },
+      "upperLimit": {
+        "value": 35,
+        "uom": "FL"
+      },
+      "approximateLocation": false,
+      "geometry": {
+        "geoGeometry": {
+          "type": "Polygon",
+          "crs": {
+            "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+            "dimension": 2,
+            "axisLabels": ["Lat", "Lon"]
+          },
+          "exteriorRingPositions": [5.0, 52.0, 6.0, 53.0, 4.0, 54.0, 5.0, 52.0]
+        }
+      }
+    }
+  ],
+  "translated": false
+}
