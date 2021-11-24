@@ -761,21 +761,28 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
         try {
             final DatatypeFactory f = DatatypeFactory.newInstance();
 
-            // Default permissions
-            target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
-            target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
-            source.getPermissibleUsage().ifPresent(us -> {
-                if (us == AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL) {
-                    target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
-                    if (source.getPermissibleUsageReason().isPresent()) {
-                        target.setPermissibleUsageReason(
-                                PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
-                    }
-                    if ((source.getPermissibleUsageSupplementary() != null)
-                            && (source.getPermissibleUsageSupplementary().isPresent())) {
-                        target.setPermissibleUsageSupplementary(source.getPermissibleUsageSupplementary().get());
-                    }
+
+            System.err.println("status: "+source.getPermissibleUsage());
+            source.getPermissibleUsage().ifPresentOrElse(us -> {
+                System.err.println("status: "+us);
+                switch (us) {
+                    case NON_OPERATIONAL:
+                        target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+                        source.getPermissibleUsageReason().ifPresent(r -> {
+                            target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
+                            source.getPermissibleUsageSupplementary().ifPresent(s -> {
+                                target.setPermissibleUsageSupplementary(s);
+                            });
+                        });
+                        break;
+                    case OPERATIONAL:
+                        target.setPermissibleUsage(PermissibleUsageType.OPERATIONAL);
+                        break;
                 }
+            }, () -> {
+                // Default permissions
+                target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+                target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
             });
 
             if (source.isTranslated()) {
