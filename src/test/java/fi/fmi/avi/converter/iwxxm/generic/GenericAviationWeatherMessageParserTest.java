@@ -35,7 +35,6 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.AviationWeatherMessage.ReportStatus;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
@@ -100,7 +99,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void namespacesAreCopiedFromCollectToMessage() throws IOException, SAXException, ParserConfigurationException {
         final String bulletinResourceName = "iwxxm-30-taf-bulletin-namespaces-collect.xml";
-        final String expectedResultResourceName = "iwxxm-30-taf-namespaces.xml";
+        final String expectedResultResourceName = "iwxxm-30-taf-namespaces-collect.xml";
         testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
     }
 
@@ -123,27 +122,27 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
         final Document expectedMessage1 = readDocumentFromResource(expectedResultResourceName);
         final Document actualDocument = readDocumentFromString(messages.get(0));
-        assertXMLEqual(expectedMessage1, actualDocument);
-
-        final Map<String, String> expectedSchemaLocations = XMLSchemaInfo.decodeSchemaLocation(
-                expectedMessage1.getDocumentElement().getAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, XMLSchemaInfo.SCHEMA_LOCATION_ATTRIBUTE));
-        final Map<String, String> actualSchemaLocations = XMLSchemaInfo.decodeSchemaLocation(
-                actualDocument.getDocumentElement().getAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, XMLSchemaInfo.SCHEMA_LOCATION_ATTRIBUTE));
-        assertFalse(expectedSchemaLocations.isEmpty());
-        assertEquals(expectedSchemaLocations, actualSchemaLocations);
+        assertXMLIdentical(XMLUnit.compareXML(expectedMessage1, actualDocument), true);
     }
 
     @Test
     public void namespacesAreRetainedInMessage() throws IOException, SAXException, ParserConfigurationException {
         final String bulletinResourceName = "iwxxm-30-taf-bulletin-namespaces-message.xml";
-        final String expectedResultResourceName = "iwxxm-30-taf-namespaces.xml";
+        final String expectedResultResourceName = "iwxxm-30-taf-namespaces-message.xml";
+        testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
+    }
+
+    @Test
+    public void extraNamespacesAreRetainedInMessage() throws IOException, ParserConfigurationException, SAXException {
+        final String bulletinResourceName = "iwxxm-30-taf-bulletin-namespaces-extra.xml";
+        final String expectedResultResourceName = "iwxxm-30-taf-namespaces-extra.xml";
         testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
     }
 
     @Test
     public void namespacesAreMergedIfNeeded() throws IOException, SAXException, ParserConfigurationException {
         final String bulletinResourceName = "iwxxm-30-taf-bulletin-namespaces-mixed.xml";
-        final String expectedResultResourceName = "iwxxm-30-taf-namespaces.xml";
+        final String expectedResultResourceName = "iwxxm-30-taf-namespaces-mixed.xml";
         testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
     }
 

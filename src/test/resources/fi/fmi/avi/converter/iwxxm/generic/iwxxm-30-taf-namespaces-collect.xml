@@ -8,8 +8,7 @@
   gml:id="uuid.d6a85870-f32e-4ea8-8502-c7d9be7e0144"
   reportStatus="NORMAL"
   permissibleUsage="OPERATIONAL"
-  xsi:schemaLocation="http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd
-      http://www.aixm.aero/schema/5.1.1 http://www.aixm.aero/schema/5.1.1/AIXM_Features.xsd">
+  xsi:schemaLocation="http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd http://www.aixm.aero/schema/5.1.1 http://www.aixm.aero/schema/5.1.1/AIXM_Features.xsd">
   <iwxxm:issueTime>
     <gml:TimeInstant id="uuid.0c02ab83-22e8-4a66-b115-35544e7078f1">
       <gml:timePosition>2012-08-15T18:00:00Z</gml:timePosition>

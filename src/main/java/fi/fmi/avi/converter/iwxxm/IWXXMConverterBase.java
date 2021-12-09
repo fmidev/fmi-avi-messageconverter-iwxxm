@@ -727,7 +727,11 @@ public abstract class IWXXMConverterBase {
     }
 
     private static void mergeSchemaLocationAttribute(final Element sourceElement, final Element targetElement, final Set<String> includeNamespaces) {
-        final String schemaLocation = parentsStream(sourceElement, true)//
+        final String originalSchemaLocation = targetElement.getAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI,
+                XMLSchemaInfo.SCHEMA_LOCATION_ATTRIBUTE);
+        final Map<String, String> originalSchemaLocationMap = XMLSchemaInfo.decodeSchemaLocation(originalSchemaLocation);
+        // no need to include leaf in parentsStream: source and target elements are expected to be equal
+        final Map<String, String> schemaLocationsToMerge = parentsStream(sourceElement, false)//
                 .filter(node -> node instanceof Element && node.hasAttributes())//
                 .map(node -> XMLSchemaInfo.decodeSchemaLocation(
                         ((Element) node).getAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, XMLSchemaInfo.SCHEMA_LOCATION_ATTRIBUTE)).entrySet())
@@ -738,12 +742,13 @@ public abstract class IWXXMConverterBase {
                 }))//
                 .stream()//
                 .flatMap(Collection::stream)//
-                .filter(entry -> includeNamespaces.contains(entry.getKey()))//
-                .collect(Collectors.collectingAndThen(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-                                // on duplicate namespace retain location closest to sourceElement
-                                (oldValue, newValue) -> newValue, LinkedHashMap::new), //
-                        XMLSchemaInfo::encodeSchemaLocation));
-        if (!schemaLocation.isEmpty()) {
+                .filter(entry -> includeNamespaces.contains(entry.getKey()) && !originalSchemaLocationMap.containsKey(entry.getKey()))//
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                        // on duplicate namespace, retain location closest to sourceElement
+                        (oldValue, newValue) -> newValue, LinkedHashMap::new));
+        if (!schemaLocationsToMerge.isEmpty()) {
+            final String schemaLocation = (originalSchemaLocation.isEmpty() ? "" : originalSchemaLocation + " ") //
+                    + XMLSchemaInfo.encodeSchemaLocation(schemaLocationsToMerge);
             // Looking for prefix in sourceElement belonging to a complete document, targetElement is expected to be a subtree copy of sourceElement.
             final String prefix = Optional.ofNullable(sourceElement.lookupPrefix(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI)).orElse("xsi");
             targetElement.setAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, prefix + ":" + XMLSchemaInfo.SCHEMA_LOCATION_ATTRIBUTE, schemaLocation);
