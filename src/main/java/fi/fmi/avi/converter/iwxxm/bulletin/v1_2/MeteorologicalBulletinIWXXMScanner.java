@@ -2,9 +2,6 @@ package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
 import java.util.List;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -12,11 +9,8 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
@@ -94,30 +88,8 @@ public class MeteorologicalBulletinIWXXMScanner<S extends AviationWeatherMessage
         }
         ConversionResult<S> retval = new ConversionResult<>();
         try {
-            final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            dbf.setNamespaceAware(true);
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            final DocumentBuilder db = dbf.newDocumentBuilder();
-            final Document dom = db.newDocument();
-            final Element root = dom.createElementNS(featureElement.getNamespaceURI(), featureElement.getNodeName());
-            dom.appendChild(root);
-            final NamedNodeMap attrs = featureElement.getAttributes();
-            Node toSet;
-            int size = attrs.getLength();
-            for (int i = 0; i < size; i++) {
-                toSet = attrs.item(i);
-                final Attr a = (Attr) dom.importNode(toSet, true);
-                root.setAttributeNodeNS(a);
-            }
-            final NodeList children = featureElement.getChildNodes();
-            size = children.getLength();
-            Node toAppend;
-            for (int i = 0; i < size; i++) {
-                toAppend = children.item(i).cloneNode(true);
-                toAppend = dom.importNode(toAppend, true);
-                root.appendChild(toAppend);
-            }
-            retval = this.contentMessageConverter.convertMessage(dom, hints);
+            final Document document = copyAsDocument(featureElement);
+            retval = this.contentMessageConverter.convertMessage(document, hints);
         } catch (final ParserConfigurationException e) {
             retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER,
                     "Error in creating DOM document for the contained" + " message", e));

@@ -72,6 +72,7 @@ public class GenericBulletinIWXXMParserTest {
         final Document input = this.getBulletinDocument("taf-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+        assertEquals(Collections.emptyList(), result.getConversionIssues());
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
     }
 
@@ -80,6 +81,7 @@ public class GenericBulletinIWXXMParserTest {
         final Document input = this.getBulletinDocument("sigmet-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+        assertEquals(Collections.emptyList(), result.getConversionIssues());
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
 
         final GenericAviationWeatherMessage msg = result.getConvertedMessage().get().getMessages().get(0);
@@ -115,6 +117,7 @@ public class GenericBulletinIWXXMParserTest {
         final Document input = this.getBulletinDocument("sigmet-30-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+        assertEquals(Collections.emptyList(), result.getConversionIssues());
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
 
         final GenericAviationWeatherMessage msg = result.getConvertedMessage().get().getMessages().get(0);
@@ -151,6 +154,7 @@ public class GenericBulletinIWXXMParserTest {
         final Document input = this.getBulletinDocument("iwxxm-30-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+        assertEquals(Collections.emptyList(), result.getConversionIssues());
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
 
         final GenericAviationWeatherMessage message = result.getConvertedMessage().get().getMessages().get(0);
@@ -177,6 +181,7 @@ public class GenericBulletinIWXXMParserTest {
         final Document input = this.getBulletinDocument("iwxxm-30-cancellation-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+        assertEquals(Collections.emptyList(), result.getConversionIssues());
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
 
         final GenericAviationWeatherMessage message = result.getConvertedMessage().get().getMessages().get(0);
