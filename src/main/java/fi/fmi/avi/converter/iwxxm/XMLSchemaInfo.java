@@ -7,10 +7,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -28,11 +29,14 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 
 public class XMLSchemaInfo {
+    public static final String SCHEMA_LOCATION_ATTRIBUTE = "schemaLocation";
+
     private static final Logger LOG = LoggerFactory.getLogger(XMLSchemaInfo.class);
+    private static final Pattern SCHEMA_LOCATION_SEPARATOR = Pattern.compile("\\s+");
 
     private final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
     private final List<URL> schemaSources = new ArrayList<>();
-    private final Map<String, String> schemaLocations = new HashMap<>();
+    private final Map<String, String> schemaLocations = new LinkedHashMap<>();
     private final List<URL> schematronRules = new ArrayList<>();
 
     public XMLSchemaInfo() {
@@ -47,6 +51,27 @@ public class XMLSchemaInfo {
         } catch (SAXNotSupportedException | SAXNotRecognizedException e) {
             LOG.warn("Failed to set the value of {} to XML SchemaFactory", XMLConstants.FEATURE_SECURE_PROCESSING, e);
         }
+    }
+
+    public static Map<String, String> decodeSchemaLocation(final String schemaLocation) {
+        requireNonNull(schemaLocation, "schemaLocation");
+        final String[] schemaLocationComponents = SCHEMA_LOCATION_SEPARATOR.split(schemaLocation);
+        final Map<String, String> builder = new LinkedHashMap<>();
+        for (int i = 0; i + 1 < schemaLocationComponents.length; i += 2) {
+            final String namespace = schemaLocationComponents[i];
+            final String location = schemaLocationComponents[i + 1];
+            if (!namespace.isEmpty() && !location.isEmpty()) {
+                builder.put(namespace, location);
+            }
+        }
+        return builder;
+    }
+
+    public static String encodeSchemaLocation(final Map<String, String> schemaLocation) {
+        requireNonNull(schemaLocation, "schemaLocation");
+        return schemaLocation.entrySet().stream()//
+                .map(entry -> entry.getKey() + " " + entry.getValue())//
+                .collect(Collectors.joining(" "));
     }
 
     public void addAllFrom(final XMLSchemaInfo other) {
@@ -97,7 +122,7 @@ public class XMLSchemaInfo {
     }
 
     public String getCombinedSchemaLocations() {
-        return schemaLocations.entrySet().stream().map(entry -> entry.getKey() + " " + entry.getValue() + " ").reduce("", String::concat).trim();
+        return encodeSchemaLocation(this.schemaLocations);
     }
 
     public List<URL> getSchematronRules() {

@@ -14,15 +14,26 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -61,7 +72,10 @@ import net.opengis.gml32.TimePositionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.ErrorHandler;
@@ -608,6 +622,132 @@ public abstract class IWXXMConverterBase {
 
     protected static <E> Collector<E, ?, List<E>> toImmutableList() {
         return Collectors.collectingAndThen(Collectors.<E> toList(), IWXXMConverterBase::toUnmodifiableList);
+    }
+
+    protected static Document copyAsDocument(final Element sourceElement) throws ParserConfigurationException {
+        final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setNamespaceAware(true);
+        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
+        final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        final Document document = documentBuilder.newDocument();
+        document.appendChild(document.importNode(sourceElement, true));
+        final Element documentElement = document.getDocumentElement();
+        final Set<String> referredNamespaces = scanReferredNamespaces(documentElement);
+        copyXmlnsAttributes(sourceElement, documentElement, referredNamespaces);
+        mergeSchemaLocationAttribute(sourceElement, documentElement, referredNamespaces);
+        return document;
+    }
+
+    /**
+     * Scans provided {@code nodeToScan}, its attributes and child nodes recursively and returns a set of found namespace URIs.
+     *
+     * @param nodeToScan
+     *         node to scan
+     *
+     * @return set of found namespace URIs
+     */
+    private static Set<String> scanReferredNamespaces(final Node nodeToScan) {
+        final Set<String> scannedNamespaces = new LinkedHashSet<>();
+        scanReferredNamespaces(scannedNamespaces, nodeToScan);
+        return scannedNamespaces;
+    }
+
+    private static void scanReferredNamespaces(final Set<String> scannedNamespaces, final Node nodeToScan) {
+        final String namespaceURI = nodeToScan.getNamespaceURI();
+        if (namespaceURI != null) {
+            scannedNamespaces.add(namespaceURI);
+        }
+        if (nodeToScan.hasAttributes()) {
+            final NamedNodeMap attributes = nodeToScan.getAttributes();
+            for (int i = 0; i < attributes.getLength(); i++) {
+                scanReferredNamespaces(scannedNamespaces, attributes.item(i));
+            }
+        }
+        if (nodeToScan.hasChildNodes()) {
+            final NodeList childNodes = nodeToScan.getChildNodes();
+            for (int i = 0; i < childNodes.getLength(); i++) {
+                scanReferredNamespaces(scannedNamespaces, childNodes.item(i));
+            }
+        }
+    }
+
+    private static void copyXmlnsAttributes(final Element sourceElement, final Element targetElement, final Set<String> includeNamespaces) {
+        parentsStream(sourceElement, false)//
+                .filter(Node::hasAttributes)//
+                .flatMap(node -> streamOf(node.getAttributes()))//
+                .map(node -> (Attr) node)//
+                .filter(attr -> XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getPrefix())//
+                        && includeNamespaces.contains(attr.getValue())//
+                        && sourceElement.getAttributes().getNamedItemNS(attr.getNamespaceURI(), attr.getLocalName()) == null)//
+                .collect(Collectors.toMap(Attr::getLocalName, Function.identity(),
+                        // on duplicate local name (namespace prefix) retain value closest to sourceElement
+                        (oldValue, newValue) -> oldValue))//
+                .values()//
+                .forEach(attr -> targetElement.setAttributeNodeNS((Attr) targetElement.getOwnerDocument().importNode(attr, true)));
+    }
+
+    private static Stream<Node> parentsStream(final Node leafNode, final boolean includeLeaf) {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<Node>() {
+            private Node next = includeLeaf ? leafNode : leafNode.getParentNode();
+
+            @Override
+            public boolean hasNext() {
+                return next != null;
+            }
+
+            @Override
+            public Node next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                final Node current = next;
+                next = current.getParentNode();
+                return current;
+            }
+        }, Spliterator.NONNULL), false);
+    }
+
+    private static Stream<Node> streamOf(final NamedNodeMap namedNodeMap) {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<Node>() {
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < namedNodeMap.getLength();
+            }
+
+            @Override
+            public Node next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                return namedNodeMap.item(index++);
+            }
+        }, Spliterator.NONNULL), false);
+    }
+
+    private static void mergeSchemaLocationAttribute(final Element sourceElement, final Element targetElement, final Set<String> includeNamespaces) {
+        final String schemaLocation = parentsStream(sourceElement, true)//
+                .filter(node -> node instanceof Element && node.hasAttributes())//
+                .map(node -> XMLSchemaInfo.decodeSchemaLocation(
+                        ((Element) node).getAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, XMLSchemaInfo.SCHEMA_LOCATION_ATTRIBUTE)).entrySet())
+                .filter(entries -> !entries.isEmpty())//
+                .collect(Collectors.collectingAndThen(Collectors.toCollection(ArrayList::new), list -> {
+                    Collections.reverse(list);
+                    return list;
+                }))//
+                .stream()//
+                .flatMap(Collection::stream)//
+                .filter(entry -> includeNamespaces.contains(entry.getKey()))//
+                .collect(Collectors.collectingAndThen(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                                // on duplicate namespace retain location closest to sourceElement
+                                (oldValue, newValue) -> newValue, LinkedHashMap::new), //
+                        XMLSchemaInfo::encodeSchemaLocation));
+        if (!schemaLocation.isEmpty()) {
+            // Looking for prefix in sourceElement belonging to a complete document, targetElement is expected to be a subtree copy of sourceElement.
+            final String prefix = Optional.ofNullable(sourceElement.lookupPrefix(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI)).orElse("xsi");
+            targetElement.setAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, prefix + ":" + XMLSchemaInfo.SCHEMA_LOCATION_ATTRIBUTE, schemaLocation);
+        }
     }
 
     protected static class ConverterValidationEventHandler implements ValidationEventHandler {

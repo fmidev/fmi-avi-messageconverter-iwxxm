@@ -1,12 +1,18 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
+import static java.util.Objects.requireNonNull;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -29,6 +35,7 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.AviationWeatherMessage.ReportStatus;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
@@ -37,6 +44,7 @@ import fi.fmi.avi.model.GenericAviationWeatherMessage.LocationIndicatorType;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -62,20 +70,81 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
         assertEquals(ZonedDateTime.parse(expected), actualTime.flatMap(PartialOrCompleteTimeInstant::getCompleteTime).orElse(null));
     }
 
-    private Document readDocument(final String name) throws ParserConfigurationException, IOException, SAXException {
+    private Document readDocumentFromResource(final String name) throws ParserConfigurationException, IOException, SAXException {
+        try (InputStream inputStream = getClass().getResourceAsStream(name)) {
+            requireNonNull(inputStream, name);
+            return readDocument(inputStream);
+        }
+    }
+
+    private Document readDocumentFromString(final String xmlString) throws ParserConfigurationException, IOException, SAXException {
+        try (InputStream inputStream = new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8))) {
+            return readDocument(inputStream);
+        }
+    }
+
+    private Document readDocument(final InputStream inputStream) throws ParserConfigurationException, IOException, SAXException {
         final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setNamespaceAware(true);
         documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        try (InputStream inputStream = getClass().getResourceAsStream(name)) {
-            return documentBuilder.parse(inputStream);
-        }
+        return documentBuilder.parse(inputStream);
     }
 
     @Test
     public void specificationTest() {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO));
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.IWXXM_STRING_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO));
+    }
+
+    @Test
+    public void namespacesAreCopiedFromCollectToMessage() throws IOException, SAXException, ParserConfigurationException {
+        final String bulletinResourceName = "iwxxm-30-taf-bulletin-namespaces-collect.xml";
+        final String expectedResultResourceName = "iwxxm-30-taf-namespaces.xml";
+        testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
+    }
+
+    private void testNamespaceDeclarations(final String bulletinResourceName, final String expectedResultResourceName)
+            throws IOException, ParserConfigurationException, SAXException {
+        final String input = readResourceToString(bulletinResourceName);
+
+        final ConversionResult<GenericMeteorologicalBulletin> result = converter.convertMessage(input,
+                IWXXMConverter.WMO_COLLECT_STRING_TO_GENERIC_BULLETIN_POJO);
+        assertEquals(Collections.emptyList(), result.getConversionIssues());
+
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setIgnoreComments(true);
+        final List<String> messages = result.getConvertedMessage()//
+                .map(bulletin -> bulletin.getMessages().stream()//
+                        .map(GenericAviationWeatherMessage::getOriginalMessage)//
+                        .collect(Collectors.toList()))//
+                .orElse(Collections.emptyList());
+        assertEquals(1, messages.size());
+
+        final Document expectedMessage1 = readDocumentFromResource(expectedResultResourceName);
+        final Document actualDocument = readDocumentFromString(messages.get(0));
+        assertXMLEqual(expectedMessage1, actualDocument);
+
+        final Map<String, String> expectedSchemaLocations = XMLSchemaInfo.decodeSchemaLocation(
+                expectedMessage1.getDocumentElement().getAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, XMLSchemaInfo.SCHEMA_LOCATION_ATTRIBUTE));
+        final Map<String, String> actualSchemaLocations = XMLSchemaInfo.decodeSchemaLocation(
+                actualDocument.getDocumentElement().getAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, XMLSchemaInfo.SCHEMA_LOCATION_ATTRIBUTE));
+        assertFalse(expectedSchemaLocations.isEmpty());
+        assertEquals(expectedSchemaLocations, actualSchemaLocations);
+    }
+
+    @Test
+    public void namespacesAreRetainedInMessage() throws IOException, SAXException, ParserConfigurationException {
+        final String bulletinResourceName = "iwxxm-30-taf-bulletin-namespaces-message.xml";
+        final String expectedResultResourceName = "iwxxm-30-taf-namespaces.xml";
+        testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
+    }
+
+    @Test
+    public void namespacesAreMergedIfNeeded() throws IOException, SAXException, ParserConfigurationException {
+        final String bulletinResourceName = "iwxxm-30-taf-bulletin-namespaces-mixed.xml";
+        final String expectedResultResourceName = "iwxxm-30-taf-namespaces.xml";
+        testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
     }
 
     @Test
@@ -94,7 +163,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void taf21DOMMessageTest() throws ParserConfigurationException, IOException, SAXException {
         final String fileName = "taf.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.TAF;
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
@@ -127,7 +196,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void taf21CancelDOMTest() throws Exception {
         final String fileName = "iwxxm-21-taf-cancel.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.TAF;
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
@@ -156,7 +225,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void taf21MissingDOMTest() throws Exception {
         final String fileName = "iwxxm-21-taf-missing.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.TAF;
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
@@ -192,7 +261,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     }
 
     private void assertSIGMET21Xml(final String fileName) throws ParserConfigurationException, IOException, SAXException {
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.SIGMET;
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
@@ -223,7 +292,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void airmet21DOMTest() throws Exception {
         final String fileName = "iwxxm-21-airmet.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.AIRMET;
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
@@ -255,7 +324,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void airmet30MDOMTest() throws Exception {
         final String fileName = "iwxxm-30-airmet.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.AIRMET;
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
@@ -286,7 +355,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void metar21DOMTest() throws ParserConfigurationException, IOException, SAXException {
         final String fileName = "iwxxm-21-metar.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.METAR;
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
@@ -316,7 +385,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void metar30DOMTest() throws Exception {
         final String fileName = "iwxxm-30-metar.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.METAR;
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
@@ -345,7 +414,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void speci21DOMMessageTest() throws Exception {
         final String fileName = "speci-A3-2-21.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.SPECI;
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
@@ -373,7 +442,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void speci30DOMMessageTest() throws Exception {
         final String fileName = "speci-A3-2-30.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.SPECI;
 
@@ -402,7 +471,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void swxDOMMessageTest() throws Exception {
         final String fileName = "spacewx-A2-3.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.SPACE_WEATHER_ADVISORY;
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
@@ -430,7 +499,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void tca21DOMMessageTest() throws Exception {
         final String fileName = "tc-advisory-A2-2-21.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = new ConversionHints();
         hints.put(ConversionHints.KEY_MESSAGE_TYPE, MessageType.TROPICAL_CYCLONE_ADVISORY);
@@ -459,7 +528,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void tca30DOMMessageTest() throws Exception {
         final String fileName = "tc-advisory-A2-2-30.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = new ConversionHints();
         hints.put(ConversionHints.KEY_MESSAGE_TYPE, MessageType.TROPICAL_CYCLONE_ADVISORY);
@@ -488,7 +557,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void vaa21DOMMessageTest() throws Exception {
         final String fileName = "va-advisory-A2-1-21.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = new ConversionHints();
         hints.put(ConversionHints.KEY_MESSAGE_TYPE, MessageType.VOLCANIC_ASH_ADVISORY);
@@ -517,7 +586,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     @Test
     public void vaa30DOMMessageTest() throws Exception {
         final String fileName = "va-advisory-A2-1-30.xml";
-        final Document input = readDocument(fileName);
+        final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = new ConversionHints();
         hints.put(ConversionHints.KEY_MESSAGE_TYPE, MessageType.VOLCANIC_ASH_ADVISORY);

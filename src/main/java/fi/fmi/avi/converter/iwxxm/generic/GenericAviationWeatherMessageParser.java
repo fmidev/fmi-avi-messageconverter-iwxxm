@@ -6,9 +6,6 @@ import java.io.StringWriter;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
@@ -137,19 +134,11 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
 
         @Override
         protected Document parseAsDom(final Element input) throws ConversionException {
-            final Document retval;
-            final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setNamespaceAware(true);
             try {
-                documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
-                final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-                final Document doc = documentBuilder.newDocument();
-                doc.appendChild(doc.importNode(input, true));
-                retval = doc;
+                return copyAsDocument(input);
             } catch (final RuntimeException | ParserConfigurationException e) {
                 throw new ConversionException("Error in parsing input to an XML document", e);
             }
-            return retval;
         }
     }
 
