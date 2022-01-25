@@ -140,7 +140,7 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
                 + "iwxxm30:analysis[1]/iwxxm30:SpaceWeatherAnalysis/iwxxm30:region[1]/iwxxm30:SpaceWeatherRegion/iwxxm30:location[1]"
                 + "/aixm:AirspaceVolume/aixm:horizontalProjection/aixm:Surface/gml:patches[1]/gml:PolygonPatch/gml:exterior/gml:LinearRing/gml:posList");
 
-        assertEquals("-180.0 90.0 -180.0 60.0 180.0 60.0 180.0 90.0 -180.0 90.0", expr.evaluate(docElement));
+        assertEquals("90.0 -180.0 60.0 -180.0 60.0 180.0 90.0 180.0 90.0 -180.0", expr.evaluate(docElement));
     }
 
     protected SpaceWeatherAdvisory readFromJSON(final String fileName) throws IOException {
