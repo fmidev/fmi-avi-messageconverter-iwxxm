@@ -115,7 +115,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             spct.setId(getUUID());
 
             for (PhenomenonGeometry fc : fcs) {
-                LOG.info("adding forecast geometry " + fc.toString());
+                LOG.info("adding forecast geometry");
                 spct.getMember().add(create(SIGMETPositionPropertyType.class, sppt -> {
                     sppt.setSIGMETPosition(create(SIGMETPositionType.class, spt -> {
                         spt.setApproximateLocation(false);
@@ -161,7 +161,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                 }));
             } else {
                 for (PhenomenonGeometry fc : fcs) {
-                    LOG.info("adding forecast geometry " + fc.toString());
+                    LOG.info("adding forecast geometry");
                     spct.getMember().add(create(SIGMETPositionPropertyType.class, sppt -> {
                         sppt.setSIGMETPosition(create(SIGMETPositionType.class, spt -> {
                             spt.setApproximateLocation(false);
@@ -761,11 +761,8 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
         try {
             final DatatypeFactory f = DatatypeFactory.newInstance();
 
-
-            System.err.println("status: "+source.getPermissibleUsage());
-            source.getPermissibleUsage().ifPresentOrElse(us -> {
-                System.err.println("status: "+us);
-                switch (us) {
+            if (source.getPermissibleUsage().isPresent()){
+                switch (source.getPermissibleUsage().get()) {
                     case NON_OPERATIONAL:
                         target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
                         source.getPermissibleUsageReason().ifPresent(r -> {
@@ -779,11 +776,11 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                         target.setPermissibleUsage(PermissibleUsageType.OPERATIONAL);
                         break;
                 }
-            }, () -> {
+            } else {
                 // Default permissions
                 target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
                 target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
-            });
+            };
 
             if (source.isTranslated()) {
                 source.getTranslatedBulletinID().ifPresent(target::setTranslatedBulletinID);

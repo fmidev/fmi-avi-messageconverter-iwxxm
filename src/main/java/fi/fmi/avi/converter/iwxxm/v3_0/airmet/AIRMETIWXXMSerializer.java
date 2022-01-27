@@ -40,7 +40,6 @@ import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationCodeListUser.WeatherCausingVisibilityReduction;
-import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
@@ -474,8 +473,8 @@ airmet.setIssuingAirTrafficServicesRegion(
         try {
             final DatatypeFactory f = DatatypeFactory.newInstance();
 
-            source.getPermissibleUsage().ifPresentOrElse(us -> {
-                switch (us) {
+            if (source.getPermissibleUsage().isPresent()){
+                switch (source.getPermissibleUsage().get()) {
                     case NON_OPERATIONAL:
                         target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
                         source.getPermissibleUsageReason().ifPresent(r -> {
@@ -489,11 +488,11 @@ airmet.setIssuingAirTrafficServicesRegion(
                         target.setPermissibleUsage(PermissibleUsageType.OPERATIONAL);
                         break;
                 }
-            }, () -> {
+            } else {
                 // Default permissions
                 target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
                 target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
-            });
+            };
 
             if (source.isTranslated()) {
                 if (source.getTranslatedBulletinID().isPresent()) {
