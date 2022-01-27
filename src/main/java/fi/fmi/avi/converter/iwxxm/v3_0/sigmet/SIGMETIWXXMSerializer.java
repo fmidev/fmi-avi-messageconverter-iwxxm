@@ -115,7 +115,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             spct.setId(getUUID());
 
             for (PhenomenonGeometry fc : fcs) {
-                LOG.info("adding forecast geometry " + fc.toString());
+                LOG.info("adding forecast geometry");
                 spct.getMember().add(create(SIGMETPositionPropertyType.class, sppt -> {
                     sppt.setSIGMETPosition(create(SIGMETPositionType.class, spt -> {
                         spt.setApproximateLocation(false);
@@ -161,7 +161,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                 }));
             } else {
                 for (PhenomenonGeometry fc : fcs) {
-                    LOG.info("adding forecast geometry " + fc.toString());
+                    LOG.info("adding forecast geometry");
                     spct.getMember().add(create(SIGMETPositionPropertyType.class, sppt -> {
                         sppt.setSIGMETPosition(create(SIGMETPositionType.class, spt -> {
                             spt.setApproximateLocation(false);
