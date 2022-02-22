@@ -35,14 +35,25 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Added generic POJO conversion for IWXXM 3.0.0 messages. [#80]
+- Added support for IWXXM 3.0.0 messages withing COLLECT documents. [#80]
 - Added parsing of all SIGMET location indicators to GenericAviationWeatherMessage. [#84]
+- Added parsing of message translation status from IWXXM Message [#91]
+- Added parsing of xmlNamespace in GenericAviationWeatherMessage [#92]
+- Added parsing of generic IWXXM 3.0 METAR messages [#94]
+- Added parsing of generic IWXXM 3.0 SPECI messages [#96]
+- Added parsing of generic IWXXM 3.0 SPACE WEATHER ADVISORY messages [#97]
+- Added parsing of generic IWXXM 3.0 AIRMET messages [#101]
+- Added parsing of generic IWXXM 3.0 Tropical cyclone advisory messages [#106]
+- Added parsing of generic IWXXM 3.0 Volcanic ash advisory messages [#107]
 
 ### Changed
 
 - Adapted to location indicator model changes in GenericAviationMessage. [#82]
 - Separated generic message parsing from generic bulletin parsing. [#83]
 - Split GenericAviationWeatherMessageScanner into IWXXM version- and message-specific scanners. [#88]
+
+### Fixed
+- Declare all required namespaces in root element of message document extracted from a COLLECT document [#110]
 
 ## [v3.0.0] - 2021-04-13
 
