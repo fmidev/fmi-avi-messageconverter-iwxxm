@@ -31,7 +31,20 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - ...
 
-## [v3.0.0] - 2014-04-13
+## [v4.0.0] - 2022-02-22
+
+### Added
+
+- Added generic POJO conversion for IWXXM 3.0.0 messages. [#80]
+- Added parsing of all SIGMET location indicators to GenericAviationWeatherMessage. [#84]
+
+### Changed
+
+- Adapted to location indicator model changes in GenericAviationMessage. [#82]
+- Separated generic message parsing from generic bulletin parsing. [#83]
+- Split GenericAviationWeatherMessageScanner into IWXXM version- and message-specific scanners. [#88]
+
+## [v3.0.0] - 2021-04-13
 
 ### Added
 
@@ -51,7 +64,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Previous changelog entries are available on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases) in a more freeform format.
 
-[Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-3.0.0...HEAD
+[Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-4.0.0...HEAD
+
+[v4.0.0]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-4.0.0
 
 [v3.0.0]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-3.0.0
 
@@ -70,3 +85,13 @@ Previous changelog entries are available on [GitHub releases page](https://githu
 [#72]:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/72
 
 [#74]:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/74
+
+[#80]:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/80
+
+[#82]:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/82
+
+[#83]:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/83
+
+[#84]:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/84
+
+[#88]:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/88
