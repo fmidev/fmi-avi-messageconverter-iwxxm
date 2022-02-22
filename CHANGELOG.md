@@ -51,6 +51,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Adapted to location indicator model changes in GenericAviationMessage. [#82]
 - Separated generic message parsing from generic bulletin parsing. [#83]
 - Split GenericAviationWeatherMessageScanner into IWXXM version- and message-specific scanners. [#88]
+- Depend on fmi-avi-messageconverter:6.0.0
 
 ### Fixed
 - Declare all required namespaces in root element of message document extracted from a COLLECT document [#110]
@@ -106,3 +107,21 @@ Previous changelog entries are available on [GitHub releases page](https://githu
 [#84]:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/84
 
 [#88]:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/88
+
+[#91]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/91
+
+[#92]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/92
+
+[#94]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/94
+
+[#96]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/96
+
+[#97]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/97
+
+[#101]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/101
+
+[#106]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/106
+
+[#107]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/107
+
+[#110]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/110
