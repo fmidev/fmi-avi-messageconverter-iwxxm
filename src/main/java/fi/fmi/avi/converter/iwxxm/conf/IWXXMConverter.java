@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Import;
 import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.ConversionSpecification;
+import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
@@ -21,7 +22,7 @@ import icao.iwxxm21.TAFType;
  */
 @Configuration
 @Import({ IWXXMTAFConverter.class, IWXXMMETARSPECIConverter.class, IWXXMSIGMETAIRMETConverter.class, IWXXMSpaceWeatherConverter.class,
-        IWXXMGenericBulletinConverter.class })
+        IWXXMGenericAviationWeatherMessageConverter.class })
 public class IWXXMConverter {
 
     // *******************
@@ -251,19 +252,31 @@ public class IWXXMConverter {
             Document.class, SpaceWeatherBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX", null);
 
     // *******************
-    //  Generic bulletins
+    //  Generic aviation messages
     // *******************
 
     /**
      * Pre-configured spec for WMO COLLECT 1.2 XML DOM document to {@link GenericMeteorologicalBulletin}
      */
-    public static final ConversionSpecification<Document, GenericMeteorologicalBulletin> IWXXM21_DOM_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
+    public static final ConversionSpecification<Document, GenericMeteorologicalBulletin> WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
             Document.class, GenericMeteorologicalBulletin.class, "XML/WMO COLLECT 1.2", null);
 
     /**
      * Pre-configured spec for WMO COLLECT 1.2 XML document String to {@link GenericMeteorologicalBulletin}
      */
-    public static final ConversionSpecification<String, GenericMeteorologicalBulletin> IWXXM21_STRING_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
+    public static final ConversionSpecification<String, GenericMeteorologicalBulletin> WMO_COLLECT_STRING_TO_GENERIC_BULLETIN_POJO = new ConversionSpecification<>(
             String.class, GenericMeteorologicalBulletin.class, "XML/WMO COLLECT 1.2", null);
+
+    /**
+     * Pre-configured spec for converting IWXXM string to {@link GenericAviationWeatherMessage}
+     */
+    public static final ConversionSpecification<String, GenericAviationWeatherMessage> IWXXM_STRING_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO = new ConversionSpecification<>(
+            String.class, GenericAviationWeatherMessage.class, "XML/IWXXM", null);
+
+    /**
+     * Pre-configured spec for converting IWXXM document to {@link GenericAviationWeatherMessage}
+     */
+    public static final ConversionSpecification<Document, GenericAviationWeatherMessage> IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO = new ConversionSpecification<>(
+            Document.class, GenericAviationWeatherMessage.class, "XML/IWXXM", null);
 
 }

@@ -22,7 +22,7 @@ import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.MeteorologicalBulletinIWXXMScann
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 
-public abstract class AbstractBulletinIWXXMParser<T, U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends IWXXMConverterBase
+public abstract class  AbstractBulletinIWXXMParser<T, U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends IWXXMConverterBase
         implements AviMessageSpecificConverter<T, S> {
 
     @Override
@@ -93,5 +93,5 @@ public abstract class AbstractBulletinIWXXMParser<T, U extends AviationWeatherMe
 
     protected abstract MeteorologicalBulletinIWXXMScanner<U, S> getScanner();
 
-    protected abstract Document parseAsDom(T input) throws ConversionException;
+    abstract protected Document parseAsDom(T input) throws ConversionException;
 }

@@ -13,6 +13,9 @@ import org.xml.sax.SAXException;
 import fi.fmi.avi.converter.ConversionIssue;
 
 public interface IWXXMConverterTests {
+    String IWXXM_2_1_NAMESPACE = "http://icao.int/iwxxm/2.1";
+    String IWXXM_3_0_NAMESPACE = "http://icao.int/iwxxm/3.0";
+
     static String readResourceToString(final String fileName, final Class<? extends IWXXMConverterTests> referenceClass) throws IOException {
         try (InputStream is = referenceClass.getResourceAsStream(fileName)) {
             Objects.requireNonNull(is);
