@@ -15,6 +15,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
@@ -166,6 +167,16 @@ public class IWXXMTestConfiguration {
     @Autowired
     private AviMessageSpecificConverter<String, GenericMeteorologicalBulletin> genericBulletinIWXXMStringParser;
 
+    // Generic Aviation Weather Message
+
+    @Autowired
+    @Qualifier("genericAviationWeatherMessageIWXXMDOMParser")
+    private AviMessageSpecificConverter<Document, GenericAviationWeatherMessage> genericAviationWeatherMessageDOMParser;
+
+    @Autowired
+    @Qualifier("genericAviationWeatherMessageIWXXMStringParser")
+    private AviMessageSpecificConverter<String, GenericAviationWeatherMessage> genericAviationWeatherMessageStringParser;
+
     @Bean
     static ObjectMapper getObjectMapper() {
         final ObjectMapper om = new ObjectMapper();
@@ -226,8 +237,12 @@ public class IWXXMTestConfiguration {
         p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_BULLETIN_POJO, spaceWeatherBulletinIWXXMDOMParser);
 
         // Generic bulletin messages:
-        p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMDOMParser);
-        p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMStringParser);
+        p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMDOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_STRING_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMStringParser);
+
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, genericAviationWeatherMessageDOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM_STRING_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, genericAviationWeatherMessageStringParser);
+
         return p;
     }
 

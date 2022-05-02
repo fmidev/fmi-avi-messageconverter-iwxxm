@@ -40,8 +40,7 @@ import icao.iwxxm21.TAFType;
 /**
  * Common functionality for conversions related to reading IWXXM TAFs.
  *
- * @param <T>
- *         the type of the raw input message
+ * @param <T> the type of the raw input message
  */
 public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
 
@@ -154,7 +153,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         if (!temps.isEmpty()) {
             builder.setTemperatures(temps);
         }
-        source.get(TAFForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class);
+        source.get(TAFForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class).ifPresent(builder::setCeilingAndVisibilityOk);
         return builder.build();
     }
 
@@ -179,7 +178,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
                 builder.setForecastWeather(weather);
             }
             recordProps.get().get(TAFForecastRecordProperties.Name.CLOUD, CloudForecast.class).ifPresent(builder::setCloud);
-            source.get(TAFForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class);
+            recordProps.get().get(TAFForecastRecordProperties.Name.CLOUD_AND_VISIBILITY_OK, Boolean.class).ifPresent(builder::setCeilingAndVisibilityOk);
         }
         return builder.build();
     }
@@ -188,13 +187,9 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         /**
          * Returns the TAF input message as A DOM Document.
          *
-         * @param input
-         *         the XML Document input as a String
-         *
+         * @param input the XML Document input as a String
          * @return the input parsed as DOM
-         *
-         * @throws ConversionException
-         *         if an exception occurs while converting input to DOM
+         * @throws ConversionException if an exception occurs while converting input to DOM
          */
         @Override
         protected Document parseAsDom(final String input) throws ConversionException {
@@ -206,9 +201,7 @@ public abstract class TAFIWXXMParser<T> extends AbstractIWXXM21Parser<T, TAF> {
         /**
          * Returns the TAF input message as A DOM Document.
          *
-         * @param input
-         *         the XML Document input as a String
-         *
+         * @param input the XML Document input as a String
          * @return the input parsed as DOM
          */
         @Override

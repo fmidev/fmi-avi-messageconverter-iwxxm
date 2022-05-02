@@ -12,7 +12,7 @@
               permissibleUsage="NON-OPERATIONAL"
               permissibleUsageReason="TEST"
               status="NORMAL"
-              xsi:schemaLocation="http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd">
+              xsi:schemaLocation="http://icao.int/iwxxm/2.1 https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd http://def.wmo.int/metce/2013 http://schemas.wmo.int/metce/1.2/metce.xsd http://www.opengis.net/samplingSpatial/2.0 http://schemas.opengis.net/samplingSpatial/2.0/spatialSamplingFeature.xsd">
    <iwxxm:issuingAirTrafficServicesUnit>
       <aixm:Unit gml:id="fic-EHAA-d8857a46-a6d6-4d3d-b99d-4d51849238ef">
          <aixm:timeSlice>
