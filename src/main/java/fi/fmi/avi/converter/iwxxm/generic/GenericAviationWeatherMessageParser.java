@@ -74,8 +74,8 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         try {
             collectTranslationStatus(featureElement, xpath, builder);
             if (scanner == null) {
-                retval.addIssue(new ConversionIssue(ConversionIssue.Severity.WARNING, ConversionIssue.Type.SYNTAX,
-                        "Unknown message type '" + featureElement.getLocalName() + "', unable to parse as generic message"));
+                retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                        "Unknown message type '" + featureElement.getLocalName() + "' and/or namespace '" + featureElement.getNamespaceURI() + "'"));
             } else {
                 retval.addIssue(scanner.collectMessage(featureElement, xpath, builder));
             }
