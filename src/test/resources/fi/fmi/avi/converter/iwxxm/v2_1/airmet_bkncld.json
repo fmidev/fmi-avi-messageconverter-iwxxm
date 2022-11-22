@@ -29,7 +29,7 @@
   },
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "EXERCISE",
-  "airmetPhenomenon": "BKN_CLD",
+  "phenomenon": "BKN_CLD",
   "cloudLevels": {
     "cloudBase": {
       "value": 100.0,

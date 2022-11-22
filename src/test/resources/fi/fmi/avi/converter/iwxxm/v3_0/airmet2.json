@@ -27,7 +27,7 @@
     "name": "AMSTERDAM",
     "type": "FIR"
   },
-  "airmetPhenomenon": "MOD_ICE",
+  "phenomenon": "MOD_ICE",
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "EXERCISE",
 

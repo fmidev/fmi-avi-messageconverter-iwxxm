@@ -27,7 +27,7 @@
       "completeTime": "2018-08-27T18:00:00Z"
     }
   },
-  "sigmetPhenomenon": "EMBD_TS",
+  "phenomenon": "EMBD_TS",
 
   "analysisGeometries": [
     {

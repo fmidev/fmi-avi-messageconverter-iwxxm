@@ -345,7 +345,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             sigmet.setId("ws-" + UUID.randomUUID().toString());
             sigmet.setStatus(SIGMETReportStatusType.CANCELLATION);
         } else {
-            switch (input.getSigmetPhenomenon().get()) {
+            switch (input.getPhenomenon().get()) {
                 case TC:
                     sigmet = create(TropicalCycloneSIGMETType.class);
                     sigmet.setId("wc-" + UUID.randomUUID().toString());
@@ -433,7 +433,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     });
         } else {
             final AeronauticalSignificantWeatherPhenomenonType phenType = create(AeronauticalSignificantWeatherPhenomenonType.class, ref -> {
-                ref.setHref(AviationCodeListUser.CODELIST_SIGWX_PHENOMENA_ROOT + input.getSigmetPhenomenon().get());
+                ref.setHref(AviationCodeListUser.CODELIST_SIGWX_PHENOMENA_ROOT + input.getPhenomenon().get());
                 ref.setTitle("Sigmet PhenomenonType");
 
             });
@@ -447,7 +447,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                         createForecastPositionAnalysis(input, input.getIssuingAirTrafficServicesUnit().getDesignator(), issueTime, sigmetUuid));
             }
 
-        if ((input.getSigmetPhenomenon().get()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA) && input.getVAInfo().isPresent()) {
+        if ((input.getPhenomenon().get()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA) && input.getVAInfo().isPresent()) {
             final VolcanoDescription volcano = input.getVAInfo().get().getVolcano().get();
             final icao.iwxxm21.ObjectFactory of = new icao.iwxxm21.ObjectFactory();
             ((VolcanicAshSIGMETType) sigmet).getRest().add(of.createVolcanicAshSIGMETTypeEruptingVolcano(create(VolcanoPropertyType.class, vpt -> {

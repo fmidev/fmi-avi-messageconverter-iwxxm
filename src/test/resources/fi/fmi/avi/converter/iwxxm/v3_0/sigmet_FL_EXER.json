@@ -28,7 +28,7 @@
     }
   },
 
-  "sigmetPhenomenon": "EMBD_TS",
+  "phenomenon": "EMBD_TS",
   "analysisGeometries": [
     {
       "intensityChange": "NO_CHANGE",

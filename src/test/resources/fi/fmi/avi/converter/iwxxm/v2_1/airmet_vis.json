@@ -30,7 +30,7 @@
 
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "EXERCISE",
-  "airmetPhenomenon": "SFC_VIS",
+  "phenomenon": "SFC_VIS",
 
   "visibility": {
     "value": 500.0,

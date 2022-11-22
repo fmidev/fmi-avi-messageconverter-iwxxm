@@ -30,7 +30,7 @@
 
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "EXERCISE",
-  "airmetPhenomenon": "OVC_CLD",
+  "phenomenon": "OVC_CLD",
 
   "cloudLevels": {
     "cloudBase": {

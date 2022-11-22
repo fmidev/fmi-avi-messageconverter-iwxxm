@@ -28,7 +28,7 @@
       "completeTime": "2018-08-27T14:00:00Z"
     }
   },
-  "airmetPhenomenon": "ISOL_TSGR",
+  "phenomenon": "ISOL_TSGR",
   "analysisGeometries": [
     {
       "analysisType": "OBSERVATION",

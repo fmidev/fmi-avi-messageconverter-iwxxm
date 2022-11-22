@@ -104,6 +104,14 @@
          </iwxxm:member>
       </iwxxm:VolcanicAshSIGMETEvolvingConditionCollection>
    </iwxxm:analysis>
+   <iwxxm:forecastPositionAnalysis>
+      <iwxxm:VolcanicAshSIGMETPositionCollection gml:id="uuid.532288f3-611d-4d74-b999-7528ba162656"
+                                                 volcanoId="uuid.b2aa4e15-986c-45a7-acf9-65ceec5f9095">
+         <iwxxm:phenomenonTime nilReason="http://codes.wmo.int/common/nil/missing"/>
+         <iwxxm:member nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"
+                       xsi:nil="true"/>
+      </iwxxm:VolcanicAshSIGMETPositionCollection>
+   </iwxxm:forecastPositionAnalysis>
    <iwxxm:eruptingVolcano>
       <metce:Volcano gml:id="uuid.7a90c9ac-8bd9-4d1a-9769-065fb07efe85">
          <metce:name>GRIMSVOTN</metce:name>

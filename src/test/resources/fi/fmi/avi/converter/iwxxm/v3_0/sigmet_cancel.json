@@ -27,7 +27,7 @@
         "completeTime": "2018-08-27T18:00:00Z"
       }
     },
-    "sigmetPhenomenon": "OBSC_TS",
+    "phenomenon": "OBSC_TS",
     "cancelledReference": {
       "sequenceNumber": "2",
       "validityPeriod": {

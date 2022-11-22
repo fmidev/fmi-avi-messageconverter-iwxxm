@@ -195,7 +195,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
         } else {
             final AeronauticalAreaWeatherPhenomenonType phenType = create(AeronauticalAreaWeatherPhenomenonType.class, ref -> {
-                ref.setHref(AviationCodeListUser.CODELIST_AIRMET_PHENOMENA_ROOT + input.getAirmetPhenomenon().get());
+                ref.setHref(AviationCodeListUser.CODELIST_AIRMET_PHENOMENA_ROOT + input.getPhenomenon().get());
                 ref.setTitle("Airmet PhenomenonType");
 
             });

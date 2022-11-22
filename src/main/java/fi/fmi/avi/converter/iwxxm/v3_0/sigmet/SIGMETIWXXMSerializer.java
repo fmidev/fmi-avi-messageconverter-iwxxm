@@ -264,7 +264,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
         }
 
         final SIGMETType sigmet;
-        switch (input.getSigmetPhenomenon().get()) {
+        switch (input.getPhenomenon().get()) {
             case TC:
                 sigmet = create(TropicalCycloneSIGMETType.class);
                 sigmet.setId(getUUID());
@@ -286,7 +286,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             sigmet.setPhenomenon(null);
             getCancelledTimePeriodPropertyType(input)
                     .ifPresent(sigmet::setCancelledReportValidPeriod);
-            if (input.getSigmetPhenomenon().get().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+            if (input.getPhenomenon().get().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
                 input.getVAInfo().ifPresent(v -> {
                     v.getVolcanicAshMovedToFIR().ifPresent(movedToFir -> {
                         ((VolcanicAshSIGMETType) sigmet).setVolcanicAshMovedToFIR(
@@ -313,7 +313,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             sigmet.setReportStatus(ReportStatusType.NORMAL);
             sigmet.setIsCancelReport(false);
             sigmet.setPhenomenon(create(AeronauticalSignificantWeatherPhenomenonType.class, phen -> phen.setHref(
-                    AviationCodeListUser.CODELIST_SIGWX_PHENOMENA_ROOT + input.getSigmetPhenomenon().get().name())));
+                    AviationCodeListUser.CODELIST_SIGWX_PHENOMENA_ROOT + input.getPhenomenon().get().name())));
         }
 
         // Use current time as issueTime if missing
@@ -402,7 +402,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
 
             String volcanoId = getUUID();
             List<PhenomenonGeometryWithHeight> ans = input.getAnalysisGeometries().get();
-            if (input.getSigmetPhenomenon().get().equals(AeronauticalSignificantWeatherPhenomenon.VA)) {
+            if (input.getPhenomenon().get().equals(AeronauticalSignificantWeatherPhenomenon.VA)) {
                 JAXBElement<VolcanicAshSIGMETEvolvingConditionCollectionType> secct =
                     createVolcanicAnalysis(ans, analysisTime, startTime,
                         input.getIssuingAirTrafficServicesUnit().getDesignator(),
@@ -424,10 +424,10 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                     .orElse(null);
 
             if (input.getForecastGeometries().isPresent()) {
-                if ((input.getSigmetPhenomenon().get()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+                if ((input.getPhenomenon().get()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
                     boolean noVaExp = false;
                     if (input.getVAInfo().isPresent())  {
-                        noVaExp = input.getVAInfo().get().getNoVolcanicAshExpected().orElse(false);
+                        noVaExp = input.getForecastGeometries().get().get(0).getNoVolcanicAshExpected().orElse(false);
                     };
                     JAXBElement<VolcanicAshSIGMETPositionCollectionType> fpa =
                         createVolcanicAshFPA(input.getForecastGeometries().get(), fcTime, noVaExp, volcanoId);
@@ -438,7 +438,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                 }
             }
 
-            if ((input.getSigmetPhenomenon().get()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA) && input.getVAInfo().isPresent()) {
+            if ((input.getPhenomenon().get()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA) && input.getVAInfo().isPresent()) {
                 final VolcanoDescription volcano = input.getVAInfo().get().getVolcano().get();
 
                 ((VolcanicAshSIGMETType) sigmet).getEruptingVolcano().add(create(VolcanoPropertyType.class, vpt -> {

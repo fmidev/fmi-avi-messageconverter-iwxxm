@@ -27,7 +27,7 @@
       "completeTime": "2018-08-27T18:00:00Z"
     }
   },
-  "sigmetPhenomenon": "VA",
+  "phenomenon": "VA",
   "analysisGeometries": [
     {
       "analysisType": "OBSERVATION",
@@ -57,6 +57,16 @@
       }
     }
   ],
+  "forecastGeometries": [
+    {
+      "time": {
+        "completeTime": "2017-08-27T18:00:00Z"
+      },
+      "approximateLocation": false,
+      "geometry": {},
+      "noVolcanicAshExpected": true
+    }
+  ],
   "VAInfo": {
     "volcano": {
       "volcanoPosition": {
@@ -69,8 +79,7 @@
         "coordinates": [52.0, 5.2]
       },
       "volcanoName": "GRIMSVOTN"
-    },
-    "noVolcanicAshExpected": true
+    }
   },
   "translated": false
 }

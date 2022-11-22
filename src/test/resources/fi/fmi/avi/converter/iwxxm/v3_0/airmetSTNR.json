@@ -30,7 +30,7 @@
 
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "EXERCISE",
-  "airmetPhenomenon": "MOD_ICE",
+  "phenomenon": "MOD_ICE",
 
   "analysisGeometries": [
     {

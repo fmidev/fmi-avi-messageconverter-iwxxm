@@ -140,7 +140,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             airmet.setReportStatus(ReportStatusType.NORMAL);
             airmet.setIsCancelReport(false);
             airmet.setPhenomenon(create(AeronauticalAreaWeatherPhenomenonType.class, phen -> phen.setHref(
-                    AviationCodeListUser.CODELIST_AIRMET_PHENOMENA_ROOT + input.getAirmetPhenomenon().get().name())));
+                    AviationCodeListUser.CODELIST_AIRMET_PHENOMENA_ROOT + input.getPhenomenon().get().name())));
         }
         //Use current time as issueTime if missing
         final String issueTime = input.getIssueTime().<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
@@ -300,7 +300,7 @@ airmet.setIssuingAirTrafficServicesRegion(
                             sect.setGeometry(create(AirspaceVolumePropertyType.class, avpt -> {
                                 avpt.setAirspaceVolume(createAirspaceVolume(an));
                             }));
-                            if (input.getAirmetPhenomenon().get().name().equals("SFC_VIS")) {
+                            if (input.getPhenomenon().get().name().equals("SFC_VIS")) {
                                 sect.setSurfaceVisibility(create(LengthType.class, l -> {
                                     l.setUom(toIwxxmLevelUom(input.getVisibility().get()));
                                     l.setValue(input.getVisibility().get().getValue());
@@ -311,8 +311,8 @@ airmet.setIssuingAirTrafficServicesRegion(
                                     }));
                                 }
                             }
-                            if (input.getAirmetPhenomenon().get().name().equals("BKN_CLD")||
-                                input.getAirmetPhenomenon().get().name().equals("OVC_CLD")) {
+                            if (input.getPhenomenon().get().name().equals("BKN_CLD")||
+                                input.getPhenomenon().get().name().equals("OVC_CLD")) {
                                     sect.setCloudBase(create(LengthType.class, b -> {
                                         b.setUom(toIwxxmLevelUom(input.getCloudLevels().get().getCloudBase()));
                                         b.setValue(input.getCloudLevels().get().getCloudBase().getValue());
@@ -328,7 +328,7 @@ airmet.setIssuingAirTrafficServicesRegion(
                                     }));
                                     sect.setCloudTopReference("STD");
                             }
-                            if (input.getAirmetPhenomenon().get().name().equals("SFC_WIND")) {
+                            if (input.getPhenomenon().get().name().equals("SFC_WIND")) {
                                 sect.setSurfaceWindDirection(create(AngleType.class, a ->{
                                     a.setUom(toIwxxmLevelUom(input.getWind().get().getDirection()));
                                     a.setValue(input.getWind().get().getDirection().getValue());

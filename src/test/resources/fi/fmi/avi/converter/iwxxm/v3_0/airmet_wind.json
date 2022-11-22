@@ -30,7 +30,7 @@
 
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "EXERCISE",
-  "airmetPhenomenon": "SFC_WIND",
+  "phenomenon": "SFC_WIND",
 
   "wind": {
     "speed": {

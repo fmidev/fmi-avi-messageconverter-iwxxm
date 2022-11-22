@@ -84,7 +84,7 @@ import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.PointGeometry;
 import fi.fmi.avi.model.PolygonGeometry;
-import fi.fmi.avi.model.Geometry.Winding;
+import fi.fmi.avi.model.Winding;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.taf.TAF;
 
@@ -133,7 +133,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
                     final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> poly.setExterior(
                             create(AbstractRingPropertyType.class, arpt -> arpt.setAbstractRing(createAndWrap(LinearRingType.class, lrt -> {
                                 final DirectPositionListType dplt = create(DirectPositionListType.class,
-                                        dpl -> dpl.getValue().addAll(polygon.getExteriorRingPositions(Winding.CCW)));
+                                        dpl -> dpl.getValue().addAll(polygon.getExteriorRingPositions(Winding.COUNTERCLOCKWISE)));
                                 lrt.setPosList(dplt);
                             })))));
                     spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", _spapt -> _spapt.getAbstractSurfacePatch().add(ppt));
