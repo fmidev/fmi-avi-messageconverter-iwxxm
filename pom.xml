@@ -9,13 +9,13 @@
   <description>Aviation weather message conversions - IWXXM module</description>
   <groupId>fi.fmi.avi.converter</groupId>
   <artifactId>fmi-avi-messageconverter-iwxxm</artifactId>
-  <version>KNMI-4.1.0</version>
+  <version>4.2.1.KNMI-SNAPSHOT</version>
 
   <scm>
     <connection>scm:git:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm.git</connection>
     <developerConnection>scm:git:https://github.com/fmidev/fmi-avi-messageconverter-iwxxm.git</developerConnection>
     <url>https://github.com/fmidev/fmi-avi-messageconverter-iwxxm</url>
-    <tag>fmi-avi-messageconverter-iwxxm-4.0.0</tag>
+    <tag>HEAD</tag>
   </scm>
   <repositories>
     <repository>
@@ -61,7 +61,7 @@
     <dependency>
       <groupId>fi.fmi.avi.converter</groupId>
       <artifactId>fmi-avi-messageconverter</artifactId>
-      <version>KNMI-6.0.15</version>
+      <version>6.3.1.KNMI-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>fi.fmi.xmlmodel</groupId>

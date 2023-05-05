@@ -55,12 +55,10 @@ public class AIRMETIWWXXMSerializerTest {
         try {
             return new String(Files.readAllBytes(Paths.get(getClass().getResource(fileName).toURI())));
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
             throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
         }
     }
-    public String  doTestAIRMETStringSerialization(final String fn) throws Exception {
+    public String doTestAIRMETStringSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING));
         final AIRMET s = readFromJSON(fn);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING);
@@ -137,8 +135,7 @@ public class AIRMETIWWXXMSerializerTest {
 
     @Test
     public void dotestAIRMETStringSerialization_wind() throws Exception {
-        String xml = doTestAIRMETStringSerialization("airmet_wind.json");
-        System.err.println("XML:"+xml);
+        doTestAIRMETStringSerialization("airmet_wind.json");
     }
 
     @Test
