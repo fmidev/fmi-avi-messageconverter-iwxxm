@@ -7,26 +7,12 @@ import org.w3c.dom.Document;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.v2_1.airmet.AIRMETIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.v2_1.sigmet.SIGMETIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.v2_1.sigmet.SIGMETIWXXMSerializer;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SIGMET;
 
 @Configuration
 public class IWXXMSIGMETAIRMETConverter {
-
-    // Parsers:
-
-    @Bean
-    public AviMessageSpecificConverter<String, SIGMET> sigmetIWXXMStringParser() {
-        return new SIGMETIWXXMParser.FromString();
-    }
-
-    @Bean
-    public AviMessageSpecificConverter<Document, SIGMET> sigmetIWXXMDOMParser() {
-        return new SIGMETIWXXMParser.FromDOM();
-    }
-
     // Serializers:
 
     @Bean
