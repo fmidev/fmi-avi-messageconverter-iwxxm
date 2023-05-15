@@ -39,6 +39,7 @@ import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.AviationCodeListUser.AeronauticalAirmetWeatherPhenomenon;
 import fi.fmi.avi.model.AviationCodeListUser.WeatherCausingVisibilityReduction;
 import fi.fmi.avi.model.NumericMeasure;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
@@ -120,13 +121,20 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
 
         LOG.info("Starting conversion of AIRMET");
         if (!input.areAllTimeReferencesComplete()) {
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "All time references must be completed before converting to IWXXM"));
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                    "All time references must be completed before converting to IWXXM"));
+            return result;
+        }
+        if (!input.getPhenomenon().isPresent()||(input.getPhenomenon().get()==null)) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                    "An AIRMET phenomenon has to be specified"));
             return result;
         }
 
         final String airmetUuid = getUUID();
 
         final AIRMETType airmet;
+        AeronauticalAirmetWeatherPhenomenon airmetPhenomenon = input.getPhenomenon().get();
 
         airmet = create(AIRMETType.class);
         airmet.setId(getUUID());
@@ -140,10 +148,10 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             airmet.setReportStatus(ReportStatusType.NORMAL);
             airmet.setIsCancelReport(false);
             airmet.setPhenomenon(create(AeronauticalAreaWeatherPhenomenonType.class, phen -> phen.setHref(
-                    AviationCodeListUser.CODELIST_AIRMET_PHENOMENA_ROOT + input.getPhenomenon().get().name())));
+                    AviationCodeListUser.CODELIST_AIRMET_PHENOMENA_ROOT + airmetPhenomenon.name())));
         }
         //Use current time as issueTime if missing
-        final String issueTime = input.getIssueTime().<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+        final String issueTime = input.getIssueTime().flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                 .orElseGet(() -> toIWXXMDateTime(ZonedDateTime.now()));
 
         airmet.setIssueTime(
@@ -162,9 +170,9 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                 slice.setType(create(CodeUnitType.class, codeUnitType -> codeUnitType.setValue("FIC")));
                 slice.setUnitName(create(TextNameType.class, tnt -> {
                     tnt.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator());
-                    slice.setDesignator(
-                            create(CodeOrganisationDesignatorType.class, desig -> desig.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator())));
                 }));
+                slice.setDesignator(
+                        create(CodeOrganisationDesignatorType.class, desig -> desig.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator())));
             }))));
         }))));
 
@@ -187,7 +195,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                             }))));
                 }))));
 
-airmet.setIssuingAirTrafficServicesRegion(
+        airmet.setIssuingAirTrafficServicesRegion(
                 create(AirspacePropertyType.class, prop -> prop.setAirspace(create(AirspaceType.class, airspace -> {
                     airspace.setValidTime(null);
                     airspace.setId(getUUID());
@@ -216,14 +224,13 @@ airmet.setIssuingAirTrafficServicesRegion(
             final String analysisTime = input.getAnalysisGeometries()//
                     .map(AbstractIWXXM30Serializer::getFirstOrNull)//
                     .flatMap(PhenomenonGeometryWithHeight::getTime)//
-                    .<String>flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                    .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                     .orElse(null);
 
             List<PhenomenonGeometryWithHeight> ans = input.getAnalysisGeometries().get();
 
             AIRMETEvolvingConditionCollectionPropertyType aeccpt = createAnalysis(input, ans, analysisTime,
-                        input.getIssuingAirTrafficServicesUnit().getDesignator(),
-                        input.getIssuingAirTrafficServicesUnit().getName(), issueTime, airmetUuid);
+                        airmetUuid);
             airmet.setAnalysis(aeccpt);
 
         }
@@ -245,9 +252,9 @@ airmet.setIssuingAirTrafficServicesRegion(
 
     @SuppressWarnings("unchecked")
     private AIRMETEvolvingConditionCollectionPropertyType createAnalysis(AIRMET input,
-            final List<PhenomenonGeometryWithHeight> ans, final String analysisTime, final String designator,
-            final String airspaceName, final String issueTime, final String airmetUUID) {
+            final List<PhenomenonGeometryWithHeight> ans, final String analysisTime, final String airmetUUID) {
 
+        AeronauticalAirmetWeatherPhenomenon airmetPhenomenon = input.getPhenomenon().get();
         AbstractTimeObjectPropertyType phenTimeProp;
         if (analysisTime!=null) {
             phenTimeProp= create(AbstractTimeObjectPropertyType.class, toProp -> {
@@ -300,7 +307,7 @@ airmet.setIssuingAirTrafficServicesRegion(
                             sect.setGeometry(create(AirspaceVolumePropertyType.class, avpt -> {
                                 avpt.setAirspaceVolume(createAirspaceVolume(an));
                             }));
-                            if (input.getPhenomenon().get().name().equals("SFC_VIS")) {
+                            if (airmetPhenomenon.name().equals("SFC_VIS")) {
                                 sect.setSurfaceVisibility(create(LengthType.class, l -> {
                                     l.setUom(toIwxxmLevelUom(input.getVisibility().get()));
                                     l.setValue(input.getVisibility().get().getValue());
@@ -311,8 +318,8 @@ airmet.setIssuingAirTrafficServicesRegion(
                                     }));
                                 }
                             }
-                            if (input.getPhenomenon().get().name().equals("BKN_CLD")||
-                                input.getPhenomenon().get().name().equals("OVC_CLD")) {
+                            if (airmetPhenomenon.name().equals("BKN_CLD")||
+                                airmetPhenomenon.name().equals("OVC_CLD")) {
                                     sect.setCloudBase(create(LengthType.class, b -> {
                                         b.setUom(toIwxxmLevelUom(input.getCloudLevels().get().getCloudBase()));
                                         b.setValue(input.getCloudLevels().get().getCloudBase().getValue());
@@ -328,7 +335,7 @@ airmet.setIssuingAirTrafficServicesRegion(
                                     }));
                                     sect.setCloudTopReference("STD");
                             }
-                            if (input.getPhenomenon().get().name().equals("SFC_WIND")) {
+                            if (airmetPhenomenon.name().equals("SFC_WIND")) {
                                 sect.setSurfaceWindDirection(create(AngleType.class, a ->{
                                     a.setUom(toIwxxmLevelUom(input.getWind().get().getDirection()));
                                     a.setValue(input.getWind().get().getDirection().getValue());
@@ -479,9 +486,7 @@ airmet.setIssuingAirTrafficServicesRegion(
                         target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
                         source.getPermissibleUsageReason().ifPresent(r -> {
                             target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
-                            source.getPermissibleUsageSupplementary().ifPresent(s -> {
-                                target.setPermissibleUsageSupplementary(s);
-                            });
+                            source.getPermissibleUsageSupplementary().ifPresent(target::setPermissibleUsageSupplementary);
                         });
                         break;
                     case OPERATIONAL:

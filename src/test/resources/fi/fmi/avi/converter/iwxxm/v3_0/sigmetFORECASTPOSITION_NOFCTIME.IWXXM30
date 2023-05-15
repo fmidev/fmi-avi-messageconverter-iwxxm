@@ -4,21 +4,21 @@
               xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
               xmlns:xlink="http://www.w3.org/1999/xlink"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              gml:id="uuid.2b586c3a-c637-4e42-b683-bd03fd1617dc"
+              gml:id="uuid.bd1da77a-858d-4bf0-b895-abd6960482ca"
               isCancelReport="false"
               permissibleUsage="NON-OPERATIONAL"
               permissibleUsageReason="TEST"
               reportStatus="NORMAL"
               xsi:schemaLocation="http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd">
    <iwxxm:issueTime>
-      <gml:TimeInstant gml:id="uuid.0953b3e5-d18e-446d-bf9e-dfa013db63d1">
+      <gml:TimeInstant gml:id="uuid.e88d11de-8a5a-40ce-bac7-831886ab1cd1">
          <gml:timePosition>2018-08-27T11:40:00Z</gml:timePosition>
       </gml:TimeInstant>
    </iwxxm:issueTime>
    <iwxxm:issuingAirTrafficServicesUnit>
-      <aixm:Unit gml:id="uuid.6433cac2-2986-4d6c-aff4-f5d4b8750f10">
+      <aixm:Unit gml:id="uuid.09fdcd7f-c3c3-49c9-87e5-6bd670fe77dc">
          <aixm:timeSlice>
-            <aixm:UnitTimeSlice gml:id="uuid.4b572b75-52e0-4ccc-a56a-9558739a171c">
+            <aixm:UnitTimeSlice gml:id="uuid.5f7a2247-a443-46c1-9a16-70771526d08c">
                <gml:validTime/>
                <aixm:interpretation>SNAPSHOT</aixm:interpretation>
                <aixm:name>EHAA</aixm:name>
@@ -29,9 +29,9 @@
       </aixm:Unit>
    </iwxxm:issuingAirTrafficServicesUnit>
    <iwxxm:originatingMeteorologicalWatchOffice>
-      <aixm:Unit gml:id="uuid.5bb11068-10f9-4896-8096-a2d815a36759">
+      <aixm:Unit gml:id="uuid.8bff8f1f-e4ad-4ef2-ac56-04897e7a16ab">
          <aixm:timeSlice>
-            <aixm:UnitTimeSlice gml:id="uuid.daa69206-f401-4509-a419-7d3d90c604d6">
+            <aixm:UnitTimeSlice gml:id="uuid.e3ba706c-ce44-4e50-be3e-3f493b89e52d">
                <gml:validTime/>
                <aixm:interpretation>SNAPSHOT</aixm:interpretation>
                <aixm:name>DE BILT</aixm:name>
@@ -42,9 +42,9 @@
       </aixm:Unit>
    </iwxxm:originatingMeteorologicalWatchOffice>
    <iwxxm:issuingAirTrafficServicesRegion>
-      <aixm:Airspace gml:id="uuid.b2c1a812-4357-407f-91c0-34945e8558bd">
+      <aixm:Airspace gml:id="uuid.978cf1e1-2f59-4f88-b9de-4bd5ba45ac78">
          <aixm:timeSlice>
-            <aixm:AirspaceTimeSlice gml:id="uuid.dc079e25-1858-421e-a088-bb4b708f559b">
+            <aixm:AirspaceTimeSlice gml:id="uuid.d5d92dba-5ca3-4abb-8a4b-0fbffeda15d2">
                <gml:validTime/>
                <aixm:interpretation>SNAPSHOT</aixm:interpretation>
                <aixm:type>FIR</aixm:type>
@@ -56,38 +56,38 @@
    </iwxxm:issuingAirTrafficServicesRegion>
    <iwxxm:sequenceNumber>1</iwxxm:sequenceNumber>
    <iwxxm:validPeriod>
-      <gml:TimePeriod gml:id="uuid.d25b1cf1-28d2-4a62-bd64-ef771f6cbcaf">
+      <gml:TimePeriod gml:id="uuid.20e54ab3-bc9b-4371-98af-eea95681dc2c">
          <gml:beginPosition>2018-08-27T12:00:00Z</gml:beginPosition>
          <gml:endPosition>2018-08-27T18:00:00Z</gml:endPosition>
       </gml:TimePeriod>
    </iwxxm:validPeriod>
    <iwxxm:phenomenon xlink:href="http://codes.wmo.int/49-2/SigWxPhenomena/EMBD_TS"/>
    <iwxxm:analysis>
-      <iwxxm:SIGMETEvolvingConditionCollection gml:id="uuid.fe08a89e-a87d-4175-a7e6-a84b0fdbf586"
+      <iwxxm:SIGMETEvolvingConditionCollection gml:id="uuid.56d8c99c-1337-4505-8a8d-d961ad38d1a6"
                                                timeIndicator="OBSERVATION">
          <iwxxm:phenomenonTime>
-            <gml:TimeInstant gml:id="uuid.ec406e4c-6fab-479e-8fa1-57e70493362c">
+            <gml:TimeInstant gml:id="uuid.b40a5d24-4f5a-4152-a1bf-242d1ae7b6ec">
                <gml:timePosition>2018-08-27T12:00:00Z</gml:timePosition>
             </gml:TimeInstant>
          </iwxxm:phenomenonTime>
          <iwxxm:member>
             <iwxxm:SIGMETEvolvingCondition xmlns:om="http://www.opengis.net/om/2.0"
-                                           gml:id="uuid.ebd656bc-2035-454c-916d-4d1b5d983031"
+                                           gml:id="uuid.d432799f-27f5-427a-89ad-1802fe8e02c8"
                                            intensityChange="NO_CHANGE">
                <iwxxm:geometry>
-                  <aixm:AirspaceVolume gml:id="uuid.873b558e-0c79-415d-9124-eed8c58253c2">
+                  <aixm:AirspaceVolume gml:id="uuid.38992a1b-aa26-4be4-9bec-4c36dea0e0e8">
                      <aixm:upperLimit uom="FL">35</aixm:upperLimit>
                      <aixm:upperLimitReference>STD</aixm:upperLimitReference>
                      <aixm:lowerLimit uom="FL">10</aixm:lowerLimit>
                      <aixm:lowerLimitReference>STD</aixm:lowerLimitReference>
                      <aixm:horizontalProjection>
-                        <aixm:Surface gml:id="uuid.3cd990d9-8fc6-4448-b375-d84188f81cf5">
+                        <aixm:Surface gml:id="uuid.8d564fb8-eff6-4fb3-b0b1-5dd84abbf739">
                            <gml:patches>
                               <gml:PolygonPatch>
                                  <gml:exterior>
                                     <gml:Ring>
                                        <gml:curveMember>
-                                          <gml:Curve gml:id="uuid.64c67645-6897-4e98-86a6-e6a780fd1fd0">
+                                          <gml:Curve gml:id="uuid.e8460979-0f85-4780-8d6d-296e0f653304">
                                              <gml:segments>
                                                 <gml:CircleByCenterPoint numArc="1">
                                                    <gml:pos>5.0 52.0</gml:pos>
@@ -109,25 +109,21 @@
       </iwxxm:SIGMETEvolvingConditionCollection>
    </iwxxm:analysis>
    <iwxxm:forecastPositionAnalysis>
-      <iwxxm:SIGMETPositionCollection gml:id="uuid.f8ebcd91-3d0e-4455-84b8-58e4c8020153">
-         <iwxxm:phenomenonTime>
-            <gml:TimeInstant gml:id="uuid.23785cc8-f307-11ed-a3fd-570b7b4ebbca">
-               <gml:timePosition>2018-08-27T18:00:00Z</gml:timePosition>
-            </gml:TimeInstant>
-         </iwxxm:phenomenonTime>
+      <iwxxm:SIGMETPositionCollection gml:id="uuid.a402be88-d713-4e65-a363-8c1914ad848e">
+         <iwxxm:phenomenonTime nilReason="http://codes.wmo.int/common/nil/missing"/>
          <iwxxm:member>
             <iwxxm:SIGMETPosition approximateLocation="false"
-                                  gml:id="uuid.20b4a40d-3aab-4fc4-85cf-858ad6692b1a">
+                                  gml:id="uuid.7f4273e2-153b-48ae-bfd1-9bed230a43d2">
                <iwxxm:geometry>
-                  <aixm:AirspaceVolume gml:id="uuid.01497f69-0bad-478c-8217-7a7dcd1135fc">
+                  <aixm:AirspaceVolume gml:id="uuid.790d7168-8b07-4f7a-9239-741b19fb0ada">
                      <aixm:horizontalProjection>
-                        <aixm:Surface gml:id="uuid.9755be68-f652-48f9-9089-f158af05239f">
+                        <aixm:Surface gml:id="uuid.aa0e8134-2a32-4a45-9d3a-70852f0ead9e">
                            <gml:patches>
                               <gml:PolygonPatch>
                                  <gml:exterior>
                                     <gml:Ring>
                                        <gml:curveMember>
-                                          <gml:Curve gml:id="uuid.9b4742d2-d212-4ad1-818b-dcdad7e89ed3">
+                                          <gml:Curve gml:id="uuid.62348a0f-363d-4847-a17a-8fb122a17e14">
                                              <gml:segments>
                                                 <gml:CircleByCenterPoint numArc="1">
                                                    <gml:pos>6.0 54.0</gml:pos>

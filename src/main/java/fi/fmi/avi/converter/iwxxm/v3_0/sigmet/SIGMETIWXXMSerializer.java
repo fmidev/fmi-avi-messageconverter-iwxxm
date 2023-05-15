@@ -99,7 +99,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             final String fcTime) {
 
         AbstractTimeObjectPropertyType phenTimeProp;
-        if (fcTime==null) {
+        if (fcTime!=null) {
             phenTimeProp= create(AbstractTimeObjectPropertyType.class, toProp -> {
             final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period -> {
                 period.setId(getUUID());
@@ -138,7 +138,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             final String fcTime, final boolean noVaExp, String volcanoId) {
 
         AbstractTimeObjectPropertyType phenTimeProp;
-        if (fcTime==null) {
+        if (fcTime!=null) {
             phenTimeProp= create(AbstractTimeObjectPropertyType.class, toProp -> {
             final JAXBElement<?> wrapped = createAndWrap(TimeInstantType.class, period -> {
                 period.setId(getUUID());
@@ -262,9 +262,15 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                     "All time references must be completed before converting to IWXXM"));
             return result;
         }
+        if (!input.getPhenomenon().isPresent()||(input.getPhenomenon().get()==null)) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                    "A SIGMET phenomenon has to be specified"));
+            return result;
+        }
 
         final SIGMETType sigmet;
-        switch (input.getPhenomenon().get()) {
+        AeronauticalSignificantWeatherPhenomenon sigmetPhenomen = input.getPhenomenon().get();
+        switch (sigmetPhenomen) {
             case TC:
                 sigmet = create(TropicalCycloneSIGMETType.class);
                 sigmet.setId(getUUID());
@@ -286,7 +292,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             sigmet.setPhenomenon(null);
             getCancelledTimePeriodPropertyType(input)
                     .ifPresent(sigmet::setCancelledReportValidPeriod);
-            if (input.getPhenomenon().get().equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+            if (sigmetPhenomen.equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
                 input.getVAInfo().ifPresent(v -> {
                     v.getVolcanicAshMovedToFIR().ifPresent(movedToFir -> {
                         ((VolcanicAshSIGMETType) sigmet).setVolcanicAshMovedToFIR(
@@ -313,11 +319,11 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             sigmet.setReportStatus(ReportStatusType.NORMAL);
             sigmet.setIsCancelReport(false);
             sigmet.setPhenomenon(create(AeronauticalSignificantWeatherPhenomenonType.class, phen -> phen.setHref(
-                    AviationCodeListUser.CODELIST_SIGWX_PHENOMENA_ROOT + input.getPhenomenon().get().name())));
+                    AviationCodeListUser.CODELIST_SIGWX_PHENOMENA_ROOT + sigmetPhenomen.name())));
         }
 
         // Use current time as issueTime if missing
-        final String issueTime = input.getIssueTime().<String>flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+        final String issueTime = input.getIssueTime().flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                 .orElseGet(() -> toIWXXMDateTime(ZonedDateTime.now()));
 
         sigmet.setIssueTime(
@@ -338,9 +344,9 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                                 slice.setType(create(CodeUnitType.class, codeUnitType -> codeUnitType.setValue("FIC")));
                                 slice.setUnitName(create(TextNameType.class, tnt -> {
                                     tnt.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator());
-                                    slice.setDesignator(create(CodeOrganisationDesignatorType.class, desig -> desig
-                                            .setValue(input.getIssuingAirTrafficServicesUnit().getDesignator())));
                                 }));
+                                slice.setDesignator(create(CodeOrganisationDesignatorType.class, desig ->
+                                    desig.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator())));
                             }))));
                 }))));
 
@@ -393,38 +399,32 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             final String analysisTime = input.getAnalysisGeometries()//
                     .map(AbstractIWXXM30Serializer::getFirstOrNull)//
                     .flatMap(PhenomenonGeometryWithHeight::getTime)//
-                    .<String>flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                    .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                     .orElse(null);
-            boolean noForecasts = true;
-            if (input.getForecastGeometries().isPresent() && input.getForecastGeometries().get().size() > 0) {
-                noForecasts = false;
-            }
+            boolean noForecasts = !input.getForecastGeometries().isPresent()||(input.getForecastGeometries().get().size() == 0);
 
             String volcanoId = getUUID();
             List<PhenomenonGeometryWithHeight> ans = input.getAnalysisGeometries().get();
-            if (input.getPhenomenon().get().equals(AeronauticalSignificantWeatherPhenomenon.VA)) {
+            if (sigmetPhenomen.equals(AeronauticalSignificantWeatherPhenomenon.VA)) {
                 JAXBElement<VolcanicAshSIGMETEvolvingConditionCollectionType> secct =
                     createVolcanicAnalysis(ans, analysisTime, startTime,
-                        input.getIssuingAirTrafficServicesUnit().getDesignator(),
-                        input.getIssuingAirTrafficServicesUnit().getName(),
-                        issueTime, noForecasts, volcanoId);
+                        noForecasts, volcanoId);
                 sigmet.getAnalysis().add(create(AssociationRoleType.class, at -> at.setAny(secct)));
             } else {
 
                 JAXBElement<SIGMETEvolvingConditionCollectionType> secct = createAnalysis(ans, analysisTime, startTime,
-                        input.getIssuingAirTrafficServicesUnit().getDesignator(),
-                        input.getIssuingAirTrafficServicesUnit().getName(), issueTime, noForecasts);
+                        noForecasts);
                 sigmet.getAnalysis().add(create(AssociationRoleType.class, at -> at.setAny(secct)));
             }
 
             final String fcTime = input.getForecastGeometries()//
                     .map(AbstractIWXXM30Serializer::getFirstOrNull)//
                     .flatMap(PhenomenonGeometry::getTime)//
-                    .<String>flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                    .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                     .orElse(null);
 
             if (input.getForecastGeometries().isPresent()) {
-                if ((input.getPhenomenon().get()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+                if (sigmetPhenomen.equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
                     boolean noVaExp = false;
                     if (input.getVAInfo().isPresent())  {
                         noVaExp = input.getForecastGeometries().get().get(0).getNoVolcanicAshExpected().orElse(false);
@@ -438,7 +438,9 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                 }
             }
 
-            if ((input.getPhenomenon().get()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA) && input.getVAInfo().isPresent()) {
+            if (sigmetPhenomen.equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)
+                                    && input.getVAInfo().isPresent()
+                                    && input.getVAInfo().get().getVolcano().isPresent()) {
                 final VolcanoDescription volcano = input.getVAInfo().get().getVolcano().get();
 
                 ((VolcanicAshSIGMETType) sigmet).getEruptingVolcano().add(create(VolcanoPropertyType.class, vpt -> {
@@ -484,12 +486,11 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
         }
         return result;
     }
-    @SuppressWarnings("unchecked")
 
+    @SuppressWarnings("unchecked")
     private JAXBElement<SIGMETEvolvingConditionCollectionType> createAnalysis(
             final List<PhenomenonGeometryWithHeight> ans, final String analysisTime, final ZonedDateTime validityStart,
-            final String designator,
-            final String airspaceName, final String issueTime, boolean noForecasts) {
+            final boolean noForecasts) {
 
         AbstractTimeObjectPropertyType phenTimeProp;
         if (analysisTime!=null) {
@@ -577,8 +578,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
     @SuppressWarnings("unchecked")
     private JAXBElement<VolcanicAshSIGMETEvolvingConditionCollectionType> createVolcanicAnalysis(
             final List<PhenomenonGeometryWithHeight> ans, final String analysisTime, final ZonedDateTime validityStart,
-            final String designator,
-            final String airspaceName, final String issueTime, boolean noForecasts,
+            boolean noForecasts,
             String volcanoId) {
 
         AbstractTimeObjectPropertyType phenTimeProp;
@@ -767,9 +767,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                         target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
                         source.getPermissibleUsageReason().ifPresent(r -> {
                             target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
-                            source.getPermissibleUsageSupplementary().ifPresent(s -> {
-                                target.setPermissibleUsageSupplementary(s);
-                            });
+                            source.getPermissibleUsageSupplementary().ifPresent(target::setPermissibleUsageSupplementary);
                         });
                         break;
                     case OPERATIONAL:

@@ -110,7 +110,11 @@
    </iwxxm:analysis>
    <iwxxm:forecastPositionAnalysis>
       <iwxxm:SIGMETPositionCollection gml:id="uuid.a402be88-d713-4e65-a363-8c1914ad848e">
-         <iwxxm:phenomenonTime nilReason="http://codes.wmo.int/common/nil/missing"/>
+         <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.23785cc8-f307-11ed-a3fd-570b7b4ebbca">
+               <gml:timePosition>2018-08-27T18:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+         </iwxxm:phenomenonTime>
          <iwxxm:member>
             <iwxxm:SIGMETPosition approximateLocation="false"
                                   gml:id="uuid.7f4273e2-153b-48ae-bfd1-9bed230a43d2">

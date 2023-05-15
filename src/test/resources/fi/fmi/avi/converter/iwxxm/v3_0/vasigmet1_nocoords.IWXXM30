@@ -107,7 +107,11 @@
    <iwxxm:forecastPositionAnalysis>
       <iwxxm:VolcanicAshSIGMETPositionCollection gml:id="uuid.e0fe9301-b6f6-4c66-97c2-32001ee5e46d"
                                                  volcanoId="uuid.7b8eca61-1bda-4be8-9582-0de6dec0e06a">
-         <iwxxm:phenomenonTime nilReason="http://codes.wmo.int/common/nil/missing"/>
+         <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.23785cc8-f307-11ed-a3fd-570b7b4ebbca">
+               <gml:timePosition>2018-08-27T18:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+         </iwxxm:phenomenonTime>
          <iwxxm:member>
             <iwxxm:SIGMETPosition approximateLocation="false"
                                   gml:id="uuid.6d39df61-df29-43f4-93f7-b0e6d134af5d">

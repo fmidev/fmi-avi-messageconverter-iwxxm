@@ -117,6 +117,13 @@ public class SIGMETIWWXXMSerializerTest {
     }
 
     @Test
+    public void testSIGMETForecastPositionNoFcTime() throws Exception {
+        //SIGMET with forecast position for phenomenon
+        //should result in IWXXM with no speedOfMotion or directionOfMotion elements
+        doTestSIGMETStringSerialization("sigmetFORECASTPOSITION_NOFCTIME.json", "sigmetFORECASTPOSITION_NOFCTIME.IWXXM30");
+    }
+
+    @Test
     public void testFL() throws Exception {
         doTestSIGMETStringSerialization("sigmet_FL.json", "sigmet_FL.IWXXM30");
     }
