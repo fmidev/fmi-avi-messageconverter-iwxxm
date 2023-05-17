@@ -20,7 +20,7 @@
             <aixm:UnitTimeSlice gml:id="uuid.46c637a3-61a9-4787-9de4-aade7887d9d3">
                <gml:validTime/>
                <aixm:interpretation>SNAPSHOT</aixm:interpretation>
-               <aixm:name>EHAA</aixm:name>
+               <aixm:name>AMSTERDAM</aixm:name>
                <aixm:type>FIC</aixm:type>
                <aixm:designator>EHAA</aixm:designator>
             </aixm:UnitTimeSlice>

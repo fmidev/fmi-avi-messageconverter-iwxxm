@@ -21,7 +21,7 @@
             <aixm:UnitTimeSlice gml:id="uuid.da183ce0-63db-4f11-9643-439d7e45bdba">
                <gml:validTime/>
                <aixm:interpretation>SNAPSHOT</aixm:interpretation>
-               <aixm:name>EHAA</aixm:name>
+               <aixm:name>AMSTERDAM</aixm:name>
                <aixm:type>FIC</aixm:type>
                <aixm:designator>EHAA</aixm:designator>
             </aixm:UnitTimeSlice>
@@ -49,7 +49,7 @@
                <aixm:interpretation>SNAPSHOT</aixm:interpretation>
                <aixm:type>FIR</aixm:type>
                <aixm:designator>EHAA</aixm:designator>
-               <aixm:name>AMSTERDAM FIR</aixm:name>
+               <aixm:name>AMSTERDAM</aixm:name>
             </aixm:AirspaceTimeSlice>
          </aixm:timeSlice>
       </aixm:Airspace>

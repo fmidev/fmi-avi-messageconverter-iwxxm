@@ -125,7 +125,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                     "All time references must be completed before converting to IWXXM"));
             return result;
         }
-        if (!input.getPhenomenon().isPresent()||(input.getPhenomenon().get()==null)) {
+        if (!input.getPhenomenon().isPresent()) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
                     "An AIRMET phenomenon has to be specified"));
             return result;
@@ -169,7 +169,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                 slice.setInterpretation("SNAPSHOT");
                 slice.setType(create(CodeUnitType.class, codeUnitType -> codeUnitType.setValue("FIC")));
                 slice.setUnitName(create(TextNameType.class, tnt -> {
-                    tnt.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator());
+                    tnt.setValue(input.getIssuingAirTrafficServicesUnit().getName());
                 }));
                 slice.setDesignator(
                         create(CodeOrganisationDesignatorType.class, desig -> desig.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator())));
