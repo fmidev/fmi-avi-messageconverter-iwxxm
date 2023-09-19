@@ -359,7 +359,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     sigmet.setId("ws-" + UUID.randomUUID().toString());
             }
             sigmet.setStatus(SIGMETReportStatusType.NORMAL);
-    }
+        }
 
         //Use current time as issueTime if missing
         final String issueTime = input.getIssueTime().<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
@@ -440,11 +440,11 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
             sigmet.setPhenomenon(phenType);
 
             sigmet.setAnalysis(
-                    createAnalysis(input, input.getIssuingAirTrafficServicesUnit().getDesignator(), input.getIssuingAirTrafficServicesUnit().getName(),
+                    createAnalysis(input, input.getAirspace().getDesignator(), input.getAirspace().getName(),
                             issueTime, sigmetUuid));
             if ((input.getForecastGeometries().isPresent()) && (input.getForecastGeometries().get().size() > 0)) {
                 sigmet.setForecastPositionAnalysis(
-                        createForecastPositionAnalysis(input, input.getIssuingAirTrafficServicesUnit().getDesignator(), issueTime, sigmetUuid));
+                        createForecastPositionAnalysis(input, input.getAirspace().getDesignator(), issueTime, sigmetUuid));
             }
 
         if ((input.getPhenomenon().get()).equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA) && input.getVAInfo().isPresent()) {
@@ -780,7 +780,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
 
             final FeaturePropertyType ftp = create(FeaturePropertyType.class,
                     prop -> prop.setAbstractFeature(createAndWrap(SFSpatialSamplingFeatureType.class, samsFeature -> {
-                        samsFeature.setId("sampling-surface-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + UUID.randomUUID());
+                        samsFeature.setId("sampling-surface-" + input.getAirspace().getDesignator() + "-" + UUID.randomUUID());
                         samsFeature.setType(create(ReferenceType.class, ref -> {
                             ref.setHref(AviationCodeListUser.CODELIST_VALUE_PREFIX_OM_SAMPLING + "SF_SamplingSurface");
                             ref.setTitle("Sampling surface");
@@ -789,7 +789,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                         samsFeature.getSampledFeature().add(create(FeaturePropertyType.class, samProp -> {
                             final AirspaceType airspace = create(AirspaceType.class);
                             airspace.setValidTime(null);
-                            airspace.setId("fir-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + UUID.randomUUID());
+                            airspace.setId("fir-" + input.getAirspace().getDesignator() + "-" + UUID.randomUUID());
                             airspace.getTimeSlice()
                                     .add(create(AirspaceTimeSlicePropertyType.class,
                                             timeSliceProp -> timeSliceProp.setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, timeSlice -> {
@@ -797,11 +797,11 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                 timeSlice.setInterpretation("SNAPSHOT");
                                                 timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue("FIR")));
                                                 timeSlice.setAirspaceName(
-                                                        create(TextNameType.class, name -> name.setValue(input.getIssuingAirTrafficServicesUnit().getName())));
+                                                        create(TextNameType.class, name -> name.setValue(input.getAirspace().getName())));
                                                 timeSlice.setId(
-                                                        "fir-" + input.getIssuingAirTrafficServicesUnit().getDesignator() + "-" + UUID.randomUUID() + "-ts");
+                                                        "fir-" + input.getAirspace().getDesignator() + "-" + UUID.randomUUID() + "-ts");
                                                 timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class,
-                                                        desig -> desig.setValue(input.getIssuingAirTrafficServicesUnit().getDesignator())));
+                                                        desig -> desig.setValue(input.getAirspace().getDesignator())));
 
                                             }))));
                             samProp.setAbstractFeature(wrap(airspace, AirspaceType.class));

@@ -142,6 +142,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             airmet.setReportStatus(ReportStatusType.NORMAL);
             airmet.setIsCancelReport(true);
             airmet.setCancelledReportSequenceNumber(input.getCancelledReference().get().getSequenceNumber());
+            airmet.setPhenomenon(null);
             getCancelledTimePeriodPropertyType(input)
                     .ifPresent(airmet::setCancelledReportValidPeriod);
         } else {
@@ -206,10 +207,10 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                                         timeSlice.setInterpretation("SNAPSHOT");
                                         timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue("FIR")));
                                         timeSlice.setAirspaceName(create(TextNameType.class, name -> name
-                                                .setValue(input.getIssuingAirTrafficServicesUnit().getName())));
+                                                .setValue(input.getAirspace().getName())));
                                         timeSlice.setId(getUUID());
                                         timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, desig -> desig
-                                                .setValue(input.getIssuingAirTrafficServicesUnit().getDesignator())));
+                                                .setValue(input.getAirspace().getDesignator())));
 
                                     }))));
 

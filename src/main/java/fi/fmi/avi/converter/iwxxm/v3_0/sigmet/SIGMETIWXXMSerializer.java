@@ -380,10 +380,10 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                                         timeSlice.setInterpretation("SNAPSHOT");
                                         timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue("FIR")));
                                         timeSlice.setAirspaceName(create(TextNameType.class, name -> name
-                                                .setValue(input.getIssuingAirTrafficServicesUnit().getName())));
+                                                .setValue(input.getAirspace().getName())));
                                         timeSlice.setId(getUUID());
                                         timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, desig -> desig
-                                                .setValue(input.getIssuingAirTrafficServicesUnit().getDesignator())));
+                                                .setValue(input.getAirspace().getDesignator())));
 
                                     }))));
 
