@@ -6,7 +6,7 @@
     "designator": "EHAA"
   },
   "meteorologicalWatchOffice": {
-    "name": "De Bilt",
+    "name": "DE BILT",
     "type": "MWO",
     "designator": "EHDB"
   },
@@ -15,9 +15,9 @@
     "completeTime": "2018-08-27T11:40:00Z"
   },
   "airspace": {
-    "designator":"EHAA",
-    "name":"AMSTERDAM",
-    "type":"FIR"
+    "designator": "EHAA",
+    "name": "AMSTERDAM",
+    "type": "FIR"
   },
   "validityPeriod": {
     "startTime": {
@@ -27,11 +27,20 @@
       "completeTime": "2018-08-27T18:00:00Z"
     }
   },
-  "sigmetPhenomenon": "EMBD_TS",
-  "analysisType": "OBSERVATION",
-  "intensityChange": "NO_CHANGE",
+  "phenomenon": "EMBD_TS",
+
   "analysisGeometries": [
     {
+      "movingSpeed": {
+        "value": 10,
+        "uom": "[kn_i]"
+      },
+      "movingDirection": {
+        "value": 180,
+        "uom": "deg"
+      },
+      "analysisType": "OBSERVATION",
+      "intensityChange": "NO_CHANGE",
       "time": {
         "completeTime": "2017-08-27T11:30:00Z"
       },
@@ -48,21 +57,11 @@
       "geometry": {
         "geoGeometry": {
           "type": "Point",
-          "coordinates": [
-            5.0,
-            52.0
-          ]
+          "coordinates": [5.0, 52.0]
         }
       }
     }
   ],
-  "movingSpeed": {
-    "value": 10,
-    "uom": "[kn_i]"
-  },
-  "movingDirection": {
-    "value": 180,
-    "uom": "deg"
-  },
+
   "translated": false
 }

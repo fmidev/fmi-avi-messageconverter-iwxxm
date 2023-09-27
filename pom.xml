@@ -5,9 +5,7 @@
     <artifactId>fmi-os-parent-pom</artifactId>
     <version>0.8.2</version>
   </parent>
-
   <modelVersion>4.0.0</modelVersion>
-
   <description>Aviation weather message conversions - IWXXM module</description>
   <groupId>fi.fmi.avi.converter</groupId>
   <artifactId>fmi-avi-messageconverter-iwxxm</artifactId>
@@ -19,14 +17,52 @@
     <url>https://github.com/fmidev/fmi-avi-messageconverter-iwxxm</url>
     <tag>HEAD</tag>
   </scm>
+  <repositories>
+    <repository>
+      <id>fmi-os-mvn-snapshot-repo</id>
+      <url>https://raw.githubusercontent.com/fmidev/fmi-os-mvn-snapshot-repo/master</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+    <repository>
+      <id>fmi-os-mvn-release-repo</id>
+      <url>https://raw.githubusercontent.com/fmidev/fmi-os-mvn-repo/master</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+      </releases>
+    </repository>
+    <!-- fi/fmi/avi/converter/fmi-avi-messageconverter -->
+    <repository>
+        <id>fmi-avi-messageconverter</id>
+        <url>https://gitlab.com/api/v4/projects/22507877/packages/maven</url>
+    </repository>
 
+    <!-- fi/fmi/avi/converter/fmi-avi-messageconverter-iwxxm-->
+    <repository>
+      <id>gitlab-maven</id>
+      <url>https://gitlab.com/api/v4/projects/22507974/packages/maven</url>
+    </repository>
+  </repositories>
   <dependencies>
+    <!-- <dependency>
+      <groupId>fi.fmi.avi.converter</groupId>
+      <artifactId>fmi-avi-messageconverter</artifactId>
+      <version>4.0.3</version>
+    </dependency> -->
     <dependency>
       <groupId>fi.fmi.avi.converter</groupId>
       <artifactId>fmi-avi-messageconverter</artifactId>
-      <version>6.2.0</version>
+      <version>6.3.1-SNAPSHOT</version>
     </dependency>
-
     <dependency>
       <groupId>fi.fmi.xmlmodel</groupId>
       <artifactId>fmi-avi-xmlmodel-iwxxm211</artifactId>
@@ -37,33 +73,28 @@
       <artifactId>fmi-avi-xmlmodel-iwxxm30</artifactId>
       <version>1.5.0</version>
     </dependency>
-
     <dependency>
       <groupId>fi.fmi.xmlmodel</groupId>
       <artifactId>fmi-avi-xmlmodel-wmo-collect2014</artifactId>
       <version>1.5.0</version>
     </dependency>
-
     <dependency>
       <groupId>net.sf.saxon</groupId>
       <artifactId>Saxon-HE</artifactId>
       <version>9.8.0-12</version>
     </dependency>
-
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
       <version>2.3.3</version>
       <optional>true</optional>
     </dependency>
-
     <!-- Need for exposing the com.sum internal NamespacePrefixMapper classes -->
     <dependency>
       <groupId>com.googlecode.jaxb-namespaceprefixmapper-interfaces</groupId>
       <artifactId>JAXBNamespacePrefixMapper</artifactId>
       <version>2.2.4</version>
     </dependency>
-
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-core</artifactId>
@@ -82,13 +113,11 @@
       <scope>compile</scope>
       <version>2.4.0-b180830.0359</version>
     </dependency>
-
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>2.7</version>
     </dependency>
-
     <!-- For JUnit tests -->
     <dependency>
       <groupId>junit</groupId>
@@ -102,7 +131,6 @@
       <version>3.4.6</version>
       <scope>test</scope>
     </dependency>
-
     <!-- https://mvnrepository.com/artifact/xmlunit/xmlunit -->
     <dependency>
       <groupId>xmlunit</groupId>
@@ -110,7 +138,6 @@
       <version>1.6</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
@@ -124,4 +151,31 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <build>
+    <!-- Overriding settings from parent pom: -->
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>${maven-deploy-plugin.version}</version>
+          <configuration>
+            <altDeploymentRepository>gitlab-maven::default::${env.CI_SERVER_URL}/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</altDeploymentRepository>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <distributionManagement>
+    <repository>
+      <id>gitlab-maven</id>
+      <url>${env.CI_SERVER_URL}/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+    </repository>
+    <snapshotRepository>
+      <id>gitlab-maven</id>
+      <url>${env.CI_SERVER_URL}/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+    </snapshotRepository>
+  </distributionManagement>
 </project>
+

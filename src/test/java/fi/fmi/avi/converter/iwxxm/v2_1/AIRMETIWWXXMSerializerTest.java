@@ -1,5 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertSame;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -7,6 +8,11 @@ import static org.junit.Assert.assertFalse;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,9 +22,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
@@ -46,7 +51,14 @@ public class AIRMETIWWXXMSerializerTest {
         }
     }
 
-    public void doTestAIRMETStringSerialization(final String fn) throws Exception {
+    protected String readFromFile(final String fileName) throws IOException {
+        try {
+            return new String(Files.readAllBytes(Paths.get(getClass().getResource(fileName).toURI())));
+        } catch (URISyntaxException e) {
+            throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
+        }
+    }
+    public String doTestAIRMETStringSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING));
         final AIRMET s = readFromJSON(fn);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING);
@@ -54,14 +66,22 @@ public class AIRMETIWWXXMSerializerTest {
         // "When AIRMETEvolvingConditionCollection timeIndicator is an observation, the phenomenonTime must be earlier than or equal to the beginning of the validPeriod of the report."
         // This seems to be a shortcoming of the rule (xlinked validTime is not considered)
         //assertTrue(ConversionResult.Status.SUCCESS == result.getStatus());
+        for (ConversionIssue iss: result.getConversionIssues()) {
+            System.err.println("iss:"+iss);
+        }
         assertFalse(ConversionResult.Status.isMoreCritical(result.getStatus(), ConversionResult.Status.WITH_WARNINGS));
         assertTrue(result.getConvertedMessage().isPresent());
+        System.err.println("XML:\n"+result.getConvertedMessage().orElse(null));
+        return result.getConvertedMessage().orElse(null);
     }
 
     public void doTestAIRMETDOMSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM));
         final AIRMET s = readFromJSON(fn);
         final ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM);
+        for (ConversionIssue iss: result.getConversionIssues()) {
+            System.err.println("iss:"+iss);
+        }
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
     }
@@ -75,6 +95,23 @@ public class AIRMETIWWXXMSerializerTest {
     public void dotestAIRMETMOVING() throws Exception {
         doTestAIRMETStringSerialization("airmetMOVING.json");
     }
+
+    private String fixIds(String s){
+        if (s==null) return null;
+        return s.replaceAll("gml:id=\"(.*)\"", "gml:id=\"GMLID\"").replaceAll("xlink:href=\"(.*)\"", "xlink:href=\"XLINKHREF\"");
+    }
+
+    @Test
+    public void testAIRMETCleanup() throws Exception {
+        //Asserts the generated AIRMET is cleaned up correctly
+        String xml = fixIds(doTestAIRMETStringSerialization("airmetMOVING.json"));
+
+        String expectedXml = fixIds(readFromFile("airmetMOVING.IWXXM21"));
+
+        assertEquals(expectedXml, xml);
+
+    }
+
 
     @Test
     public void dotestAIRMETSTNR() throws Exception {

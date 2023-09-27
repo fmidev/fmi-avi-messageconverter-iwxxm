@@ -109,7 +109,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase implements I
         assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
         final PolygonGeometry geometry = (PolygonGeometry) airspaceVolume.getHorizontalProjection().get();
         assertEquals(Optional.of(CoordinateReferenceSystemImpl.wgs84()), CoordinateReferenceSystemImpl.immutableCopyOf(geometry.getCrs()));
-        assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getExteriorRingPositions());
+        assertEquals(Arrays.asList(90.0, -180.0, 60.0, -180.0, 60.0, 180.0, 90.0, 180.0, 90.0, -180.0), geometry.getExteriorRingPositions());
         assertFalse(airspaceVolume.getUpperLimitReference().isPresent());
         assertFalse(airspaceVolume.getUpperLimit().isPresent());
 
@@ -166,7 +166,7 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase implements I
         assertTrue(region0AirspaceVolume.getHorizontalProjection().isPresent());
         final PolygonGeometry geometry = (PolygonGeometry) region0AirspaceVolume.getHorizontalProjection().get();
         assertEquals(Optional.of(CoordinateReferenceSystemImpl.wgs84()), CoordinateReferenceSystemImpl.immutableCopyOf(geometry.getCrs()));
-        assertEquals(Arrays.asList(-180.0, 90.0, -180.0, 60.0, 180.0, 60.0, 180.0, 90.0, -180.0, 90.0), geometry.getExteriorRingPositions());
+        assertEquals(Arrays.asList(90.0, -180.0, 60.0, -180.0, 60.0, 180.0, 90.0, 180.0, 90.0, -180.0), geometry.getExteriorRingPositions());
         assertEquals(340.0, region0AirspaceVolume.getLowerLimit().map(NumericMeasure::getValue).orElse(Double.NaN), 0.001);
         assertEquals("FL", region0AirspaceVolume.getLowerLimit().map(NumericMeasure::getUom).orElse(null));
         assertEquals("STD", region0AirspaceVolume.getLowerLimitReference().orElse(null));

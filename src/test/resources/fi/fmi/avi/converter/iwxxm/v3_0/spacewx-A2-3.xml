@@ -55,7 +55,7 @@
                     <gml:PolygonPatch>
                       <gml:exterior>
                         <gml:LinearRing>
-                          <gml:posList>-180.0 90.0 -180.0 60.0 180.0 60.0 180.0 90.0 -180.0 90.0</gml:posList>
+                          <gml:posList>90.0 -180.0 60.0 -180.0 60.0 180.0 90.0 180.0 90.0 -180.0</gml:posList>
                         </gml:LinearRing>
                       </gml:exterior>
                     </gml:PolygonPatch>
@@ -78,7 +78,7 @@
                     <gml:PolygonPatch>
                       <gml:exterior>
                         <gml:LinearRing>
-                          <gml:posList>-180.0 -90.0 -180.0 -60.0 180.0 -60.0 180.0 -90.0 -180.0 -90.0</gml:posList>
+                          <gml:posList>-90.0 -180.0 -90.0 180.0 -60.0 180.0 -60.0 -180.0 -90.0 -180.0</gml:posList>
                         </gml:LinearRing>
                       </gml:exterior>
                     </gml:PolygonPatch>

@@ -163,19 +163,6 @@ public class IWXXMConverter {
     // *******************
     //  SIGMET & AIRMET
     // *******************
-
-    /**
-     * Pre-configured spec for IWXXM 2.1 XML format SIGMET document String to {@link SIGMET}.
-     */
-    public static final ConversionSpecification<String, SIGMET> IWXXM21_STRING_TO_SIGMET_POJO = new ConversionSpecification<>(String.class, SIGMET.class,
-            "SIGMET, XML/IWXXM 2.1", null);
-
-    /**
-     * Pre-configured spec for IWXXM 2.1 XML format SIGMET document DOM Node to {@link SIGMET}.
-     */
-    public static final ConversionSpecification<Document, SIGMET> IWXXM21_DOM_TO_SIGMET_POJO = new ConversionSpecification<>(Document.class, SIGMET.class,
-            "SIGMET, XML/IWXXM 2.1", null);
-
     /**
      * Pre-configured spec for {@link SIGMET} to IWXXM 2.1 XML format SIGMET document String.
      */
@@ -189,16 +176,40 @@ public class IWXXMConverter {
             "SIGMET, XML/IWXXM 2.1");
 
     /**
-     * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document String.
+     * Pre-configured spec for {@link SIGMET} to IWXXM 3.0 XML format SIGMET document String.
      */
+    public static final ConversionSpecification<SIGMET, String> SIGMET_POJO_TO_IWXXM30_STRING = new ConversionSpecification<>(SIGMET.class, String.class, null,
+            "SIGMET, XML/IWXXM 3.0");
+
+    /**
+     * Pre-configured spec for {@link SIGMET} to IWXXM 3.0 XML format SIGMET document DOM Node.
+     */
+    public static final ConversionSpecification<SIGMET, Document> SIGMET_POJO_TO_IWXXM30_DOM = new ConversionSpecification<>(SIGMET.class, Document.class, null,
+            "SIGMET, XML/IWXXM 3.0");
+
+    /**
+     * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document String.
+    */
     public static final ConversionSpecification<AIRMET, String> AIRMET_POJO_TO_IWXXM21_STRING = new ConversionSpecification<>(AIRMET.class, String.class, null,
             "AIRMET, XML/IWXXM 2.1");
 
     /**
-     * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document DOM Node.
-     */
+    * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document DOM Node.
+    */
     public static final ConversionSpecification<AIRMET, Document> AIRMET_POJO_TO_IWXXM21_DOM = new ConversionSpecification<>(AIRMET.class, Document.class, null,
             "AIRMET, XML/IWXXM 2.1");
+
+    /**
+     * Pre-configured spec for {@link AIRMET} to IWXXM 3.0 XML format AIRMET document String.
+    */
+    public static final ConversionSpecification<AIRMET, String> AIRMET_POJO_TO_IWXXM30_STRING = new ConversionSpecification<>(AIRMET.class, String.class, null,
+            "AIRMET, XML/IWXXM 3.0");
+
+    /**
+    * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document DOM Node.
+    */
+    public static final ConversionSpecification<AIRMET, Document> AIRMET_POJO_TO_IWXXM30_DOM = new ConversionSpecification<>(AIRMET.class, Document.class, null,
+            "AIRMET, XML/IWXXM 3.0");
 
     // *******************
     //  Space weather

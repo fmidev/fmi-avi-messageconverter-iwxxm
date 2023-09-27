@@ -27,6 +27,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 
+
 import net.opengis.gml32.AbstractGeometryType;
 import net.opengis.gml32.AbstractRingPropertyType;
 import net.opengis.gml32.CircleByCenterPointType;
@@ -72,7 +73,6 @@ import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.v2_1.airmet.AIRMETIWXXMSerializer;
 import fi.fmi.avi.model.Aerodrome;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import fi.fmi.avi.model.CircleByCenterPoint;
@@ -84,6 +84,7 @@ import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.PointGeometry;
 import fi.fmi.avi.model.PolygonGeometry;
+import fi.fmi.avi.model.Winding;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import fi.fmi.avi.model.taf.TAF;
 
@@ -132,7 +133,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
                     final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> poly.setExterior(
                             create(AbstractRingPropertyType.class, arpt -> arpt.setAbstractRing(createAndWrap(LinearRingType.class, lrt -> {
                                 final DirectPositionListType dplt = create(DirectPositionListType.class,
-                                        dpl -> dpl.getValue().addAll(polygon.getExteriorRingPositions()));
+                                        dpl -> dpl.getValue().addAll(polygon.getExteriorRingPositions(Winding.COUNTERCLOCKWISE)));
                                 lrt.setPosList(dplt);
                             })))));
                     spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", _spapt -> _spapt.getAbstractSurfacePatch().add(ppt));
@@ -167,7 +168,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
     }
 
     protected static Optional<String> toIWXXMDateTime(final PartialOrCompleteTimeInstant instant) {
-        return instant.getCompleteTime().map(AIRMETIWXXMSerializer::toIWXXMDateTime);
+        return instant.getCompleteTime().map(AbstractIWXXMSerializer::toIWXXMDateTime);
     }
 
     protected static Optional<String> startToIWXXMDateTime(final PartialOrCompleteTimePeriod period) {
@@ -203,6 +204,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         format.setMinimumIntegerDigits(1);
         format.setMinimumFractionDigits(0);
         format.setMaximumFractionDigits(4);
+        format.setGroupingUsed(false);
         type.setValue(format.format(value));
         if (uom != null && !uom.isEmpty()) {
             type.setUom(uom.toUpperCase(Locale.US));
@@ -337,6 +339,10 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         tp.setBeginPosition(beginPos);
         tp.setEndPosition(endPos);
         prop.setTimePeriod(tp);
+    }
+
+    protected static String getUUID() {
+        return "uuid."+UUID.randomUUID().toString();
     }
 
     protected abstract InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException;

@@ -6,7 +6,7 @@
     "designator": "EHAA"
   },
   "meteorologicalWatchOffice": {
-    "name": "De Bilt",
+    "name": "DE BILT",
     "type": "MWO",
     "designator": "EHDB"
   },
@@ -27,41 +27,31 @@
     "name": "AMSTERDAM",
     "type": "FIR"
   },
-  "movingDirection": {
-    "value": 180.0,
-    "uom": "deg"
-  },
-  "movingSpeed": {
-    "value": 10.0,
-    "uom": "[kn_i]"
-  },
+
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "EXERCISE",
-  "airmetPhenomenon": "MOD_ICE",
-  "analysisType": "OBSERVATION",
+  "phenomenon": "MOD_ICE",
   "analysisGeometries": [
     {
+      "intensityChange": "NO_CHANGE",
+      "movingDirection": {
+        "value": 180.0,
+        "uom": "deg"
+      },
+      "movingSpeed": {
+        "value": 10.0,
+        "uom": "[kn_i]"
+      },
+      "analysisType": "OBSERVATION",
       "geometry": {
         "geoGeometry": {
           "type": "Polygon",
           "crs": {
             "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
             "dimension": 2,
-            "axisLabels": [
-              "Lat",
-              "Lon"
-            ]
+            "axisLabels": ["Lat", "Lon"]
           },
-          "exteriorRingPositions": [
-            5.0,
-            52.0,
-            6.0,
-            53.0,
-            4.0,
-            54.0,
-            5.0,
-            52.0
-          ]
+          "exteriorRingPositions": [52.0,5.0, 53.0,6.0, 54.0,4.0, 52.0,5.0]
         }
       },
       "time": {
@@ -77,6 +67,5 @@
         "uom": "FL"
       }
     }
-  ],
-  "intensityChange": "NO_CHANGE"
+  ]
 }

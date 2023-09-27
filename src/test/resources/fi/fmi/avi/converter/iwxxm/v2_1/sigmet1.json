@@ -6,7 +6,7 @@
     "designator": "EHAA"
   },
   "meteorologicalWatchOffice": {
-    "name": "De Bilt",
+    "name": "DE BILT",
     "type": "MWO",
     "designator": "EHDB"
   },
@@ -27,19 +27,20 @@
       "completeTime": "2018-08-27T18:00:00Z"
     }
   },
-  "movingDirection": {
-    "value": 10.0,
-    "uom": "deg"
-  },
-  "movingSpeed": {
-    "value": 15.0,
-    "uom": "[kn_i]"
-  },
-  "sigmetPhenomenon": "EMBD_TS",
-  "analysisType": "OBSERVATION",
-  "intensityChange": "NO_CHANGE",
+
+  "phenomenon": "EMBD_TS",
   "analysisGeometries": [
     {
+      "intensityChange": "NO_CHANGE",
+      "movingDirection": {
+        "value": 10.0,
+        "uom": "deg"
+      },
+      "movingSpeed": {
+        "value": 15.0,
+        "uom": "[kn_i]"
+      },
+      "analysisType": "OBSERVATION",
       "time": {
         "completeTime": "2017-08-27T11:30:00Z"
       },
@@ -58,21 +59,9 @@
           "crs": {
             "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
             "dimension": 2,
-            "axisLabels": [
-              "Lat",
-              "Lon"
-            ]
+            "axisLabels": ["Lat", "Lon"]
           },
-          "exteriorRingPositions": [
-            5.0,
-            52.0,
-            6.0,
-            53.0,
-            4.0,
-            54.0,
-            5.0,
-            52.0
-          ]
+          "exteriorRingPositions": [5.0, 52.0, 6.0, 53.0, 4.0, 54.0, 5.0, 52.0]
         }
       }
     }
