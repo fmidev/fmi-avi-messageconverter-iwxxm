@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
@@ -25,6 +26,8 @@ import java.nio.file.Paths;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -192,14 +195,14 @@ public class SIGMETIWWXXMSerializerTest {
         final SIGMET s = readFromJSON(fn);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING);
 
-//        for (ConversionIssue iss: result.getConversionIssues()) {
-//            System.err.println("iss:"+iss.getMessage()+"==="+iss.getCause());
-//        }
-//
-//        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
-//        System.err.println("XML:\n"+result.getConvertedMessage().get());
-//        assertTrue(result.getConvertedMessage().isPresent());
-//        assertNotNull(result.getConvertedMessage().get());
+        for (ConversionIssue iss : result.getConversionIssues()) {
+            System.err.println("iss:" + iss.getMessage() + "===" + iss.getCause());
+        }
+
+        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
+        System.err.println("XML:\n" + result.getConvertedMessage().get());
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
 
         String expectedXml = fixIds(readFromFile(iwxxmFn));
         assertEquals(expectedXml, fixIds(result.getConvertedMessage().get()));
