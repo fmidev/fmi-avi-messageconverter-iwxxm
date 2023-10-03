@@ -1,5 +1,38 @@
 package fi.fmi.avi.converter.iwxxm.v2_1.sigmet;
 
+import aero.aixm511.*;
+import fi.fmi.avi.converter.*;
+import fi.fmi.avi.converter.ConversionResult.Status;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
+import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
+import fi.fmi.avi.model.*;
+import fi.fmi.avi.model.sigmet.SIGMET;
+import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
+import fi.fmi.avi.model.sigmet.VAInfo;
+import icao.iwxxm21.AirspacePropertyType;
+import icao.iwxxm21.UnitPropertyType;
+import icao.iwxxm21.*;
+import net.opengis.gml32.PointPropertyType;
+import net.opengis.gml32.PointType;
+import net.opengis.gml32.*;
+import net.opengis.om20.OMObservationPropertyType;
+import net.opengis.om20.OMObservationType;
+import net.opengis.om20.OMProcessPropertyType;
+import net.opengis.om20.TimeObjectPropertyType;
+import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
+import net.opengis.sampling.spatial.ShapeType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import wmo.metce2013.ProcessType;
+import wmo.metce2013.VolcanoPropertyType;
+import wmo.metce2013.VolcanoType;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.time.ZonedDateTime;
@@ -9,101 +42,12 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
-import net.opengis.gml32.AbstractTimeObjectType;
-import net.opengis.gml32.DirectPositionType;
-import net.opengis.gml32.FeaturePropertyType;
-import net.opengis.gml32.PointPropertyType;
-import net.opengis.gml32.PointType;
-import net.opengis.gml32.ReferenceType;
-import net.opengis.gml32.SpeedType;
-import net.opengis.gml32.StringOrRefType;
-import net.opengis.gml32.TimeInstantPropertyType;
-import net.opengis.gml32.TimeInstantType;
-import net.opengis.gml32.TimePeriodPropertyType;
-import net.opengis.gml32.TimePeriodType;
-import net.opengis.gml32.TimePositionType;
-import net.opengis.gml32.TimePrimitivePropertyType;
-import net.opengis.om20.OMObservationPropertyType;
-import net.opengis.om20.OMObservationType;
-import net.opengis.om20.OMProcessPropertyType;
-import net.opengis.om20.TimeObjectPropertyType;
-import net.opengis.sampling.spatial.SFSpatialSamplingFeatureType;
-import net.opengis.sampling.spatial.ShapeType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-
-import aero.aixm511.AirspaceTimeSlicePropertyType;
-import aero.aixm511.AirspaceTimeSliceType;
-import aero.aixm511.AirspaceType;
-import aero.aixm511.AirspaceVolumePropertyType;
-import aero.aixm511.AirspaceVolumeType;
-import aero.aixm511.CodeAirspaceDesignatorType;
-import aero.aixm511.CodeAirspaceType;
-import aero.aixm511.CodeOrganisationDesignatorType;
-import aero.aixm511.CodeUnitType;
-import aero.aixm511.CodeVerticalReferenceType;
-import aero.aixm511.TextNameType;
-import aero.aixm511.UnitTimeSlicePropertyType;
-import aero.aixm511.UnitTimeSliceType;
-import aero.aixm511.UnitType;
-import fi.fmi.avi.converter.ConversionException;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.ConversionResult.Status;
-import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
-import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.NumericMeasure;
-import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
-import fi.fmi.avi.model.PhenomenonGeometry;
-import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
-import fi.fmi.avi.model.TacOrGeoGeometry;
-import fi.fmi.avi.model.VolcanoDescription;
-import fi.fmi.avi.model.sigmet.SIGMET;
-import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
-import fi.fmi.avi.model.sigmet.VAInfo;
-import icao.iwxxm21.AeronauticalSignificantWeatherPhenomenonType;
-import icao.iwxxm21.AirspacePropertyType;
-import icao.iwxxm21.AngleWithNilReasonType;
-import icao.iwxxm21.ExpectedIntensityChangeType;
-import icao.iwxxm21.PermissibleUsageReasonType;
-import icao.iwxxm21.PermissibleUsageType;
-import icao.iwxxm21.RelationalOperatorType;
-import icao.iwxxm21.SIGMETEvolvingConditionCollectionPropertyType;
-import icao.iwxxm21.SIGMETEvolvingConditionCollectionType;
-import icao.iwxxm21.SIGMETEvolvingConditionPropertyType;
-import icao.iwxxm21.SIGMETEvolvingConditionType;
-import icao.iwxxm21.SIGMETPositionCollectionPropertyType;
-import icao.iwxxm21.SIGMETPositionCollectionType;
-import icao.iwxxm21.SIGMETPositionPropertyType;
-import icao.iwxxm21.SIGMETPositionType;
-import icao.iwxxm21.SIGMETReportStatusType;
-import icao.iwxxm21.SIGMETType;
-import icao.iwxxm21.TimeIndicatorType;
-import icao.iwxxm21.TropicalCycloneSIGMETType;
-import icao.iwxxm21.UnitPropertyType;
-import icao.iwxxm21.VolcanicAshSIGMETType;
-import wmo.metce2013.ProcessType;
-import wmo.metce2013.VolcanoPropertyType;
-import wmo.metce2013.VolcanoType;
-
 public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer<SIGMET, T> {
     private static final Logger LOG = LoggerFactory.getLogger(SIGMETIWXXMSerializer.class);
 
     @SuppressWarnings("unchecked")
     private static OMObservationPropertyType createForecastPositionAnalysis(final SIGMET inputs, final String designator, final String issueTime,
-            final String sigmetUUID) {
+                                                                            final String sigmetUUID) {
         return create(OMObservationPropertyType.class, omObsType -> omObsType.setOMObservation(create(OMObservationType.class, omObs -> {
             omObs.setId("forecastPositionAnalysis-" + sigmetUUID);
             omObs.setType(create(ReferenceType.class, ref -> ref.setHref(AviationCodeListUser.CODELIST_SIGMET_POSITION_COLLECTION_ANALYSIS)));
@@ -515,7 +459,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                     .flatMap(PhenomenonGeometry::getTime)//
                     .<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                     .orElse(null);
-            if (input.getAnalysisGeometries().get().get(0).getAnalysisType() == SigmetAnalysisType.UNKNOWN || analysisTime == null) {
+            if (!input.getAnalysisGeometries().get().get(0).getAnalysisType().isPresent() || analysisTime == null) {
                 //set Phen time to nil with nilReason of "missing"
                 omObs.setPhenomenonTime(
                         create(TimeObjectPropertyType.class, toProp -> toProp.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING)));
@@ -584,7 +528,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                 seccpt -> seccpt.setSIGMETEvolvingConditionCollection(create(SIGMETEvolvingConditionCollectionType.class, secct -> {
                     secct.setId("fcst-" + sigmetUUID);
                     secct.setTimeIndicator(TimeIndicatorType.OBSERVATION);
-                    if (input.getAnalysisGeometries().get().get(0).getAnalysisType() == SigmetAnalysisType.FORECAST) {
+                    if (input.getAnalysisGeometries().get().get(0).getAnalysisType().orElse(null) == SigmetAnalysisType.FORECAST) {
                         secct.setTimeIndicator(TimeIndicatorType.FORECAST);
                     }
                     final int cnt = 0;
