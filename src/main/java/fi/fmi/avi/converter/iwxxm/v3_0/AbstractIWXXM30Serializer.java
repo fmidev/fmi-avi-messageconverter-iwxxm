@@ -1,14 +1,14 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import java.util.List;
-
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMAixm511WxSerializer;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import icao.iwxxm30.SpaceWeatherAdvisoryType;
 
-public abstract class AbstractIWXXM30Serializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMSerializer<T, S> {
+import java.util.List;
+
+public abstract class AbstractIWXXM30Serializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMAixm511WxSerializer<T, S> {
     private static IWXXMNamespaceContext nsCtx;
 
     private static synchronized IWXXMNamespaceContext getNSContext() {

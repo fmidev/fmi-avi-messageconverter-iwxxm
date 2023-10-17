@@ -1,0 +1,73 @@
+{
+  "reportStatus": "NORMAL",
+  "issuingAirTrafficServicesUnit": {
+    "name": "AMSTERDAM",
+    "type": "FIR",
+    "designator": "EHAA"
+  },
+  "meteorologicalWatchOffice": {
+    "name": "DE BILT",
+    "type": "MWO",
+    "designator": "EHDB"
+  },
+  "sequenceNumber": "2",
+  "issueTime": {
+    "completeTime": "2018-08-27T11:30:00Z"
+  },
+  "airspace": {
+    "designator": "EHAA",
+    "name": "AMSTERDAM",
+    "type": "FIR"
+  },
+  "validityPeriod": {
+    "startTime": {
+      "completeTime": "2018-08-27T12:00:00Z"
+    },
+    "endTime": {
+      "completeTime": "2018-08-27T18:00:00Z"
+    }
+  },
+  "phenomenon": "VA",
+  "cancelledReference": {
+    "sequenceNumber": "2",
+    "validityPeriod": {
+      "startTime": {
+        "completeTime": "2018-08-27T15:00:00Z"
+      },
+      "endTime": {
+        "completeTime": "2018-08-27T18:00:00Z"
+      }
+    },
+    "issuingAirTrafficServicesUnit": {
+      "name": "AMSTERDAM",
+      "type": "FIR",
+      "designator": "EHAA"
+    },
+    "meteorologicalWatchOffice": {
+      "name": "DE BILT",
+      "type": "MWO",
+      "designator": "EHDB"
+    }
+  },
+  "VAInfo": {
+    "volcano": {
+      "volcanoPosition": {
+        "type": "ElevatedPoint",
+        "crs": {
+          "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+          "dimension": 2,
+          "axisLabels": [
+            "Lat",
+            "Lon"
+          ]
+        },
+        "coordinates": [
+          52.0,
+          5.2
+        ]
+      },
+      "volcanoName": "GRIMSVOTN"
+    }
+  },
+  "translated": false
+}

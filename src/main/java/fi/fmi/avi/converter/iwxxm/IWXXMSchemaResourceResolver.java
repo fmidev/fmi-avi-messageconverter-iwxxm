@@ -1,17 +1,13 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import java.io.CharArrayReader;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.net.URL;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
+
+import java.io.*;
+import java.net.URL;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Resolves the locations of the IWXXM XML Schema files within
@@ -58,12 +54,15 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
         SAMPLING20("http://www.opengis.net/sampling/2.0", "net/opengis/sampling/2.0/", net.opengis.sampling.SamplingFeatureComplexType.class),
         SAMPLING_SPATIAL20("http://www.opengis.net/samplingSpatial/2.0", "net/opengis/samplingSpatial/2.0/",
                 net.opengis.sampling.spatial.SFSpatialSamplingFeatureType.class),
-        AIXM51("http://www.aixm.aero/schema/5.1.1", "aero/aixm/schema/5.1.1b/", aero.aixm511.CodeICAOType.class),
+        // TODO separate contexts for AIXM511WX ja AIXM511FULL
+        //AIXM511WX("http://www.aixm.aero/schema/5.1.1", "aero/aixm/schema/5.1.1b/", aero.aixm511.CodeICAOType.class),
+        AIXM511FULL("http://www.aixm.aero/schema/5.1.1", "aero/aixm/schema/5.1.1/", aero.aixm511full.CodeICAOType.class),
         METCE12("http://def.wmo.int/metce/2013", "int/wmo/metce/1.2/", wmo.metce2013.ProcessType.class),
         COLLECT12("http://def.wmo.int/collect/2014", "int/wmo/collect/1.2/", wmo.collect2014.MeteorologicalBulletinType.class),
         OPM12("http://def.wmo.int/opm/2013", "int/wmo/opm/1.2/", wmo.opm2013.AbstractObservablePropertyPropertyType.class),
         IWXXM21("http://icao.int/iwxxm/2.1", "int/icao/iwxxm/2.1.1/", icao.iwxxm21.TAFType.class),
-        IWXXM30("http://icao.int/iwxxm/3.0", "int/icao/iwxxm/3.0.0/", icao.iwxxm30.SpaceWeatherAdvisoryType.class);
+        IWXXM30("http://icao.int/iwxxm/3.0", "int/icao/iwxxm/3.0.0/", icao.iwxxm30.SpaceWeatherAdvisoryType.class),
+        IWXXM2023_1("http://icao.int/iwxxm/2023-1", "int/icao/iwxxm/20231/", icao.iwxxm20231.AIRMETType.class);
 
         private final String namespaceURI;
         private final String pathPrefix;

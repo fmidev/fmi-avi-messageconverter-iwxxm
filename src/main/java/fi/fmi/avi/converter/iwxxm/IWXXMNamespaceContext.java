@@ -1,18 +1,10 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 
 import javax.xml.namespace.NamespaceContext;
-
-import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Helper for using per-defined XML Schema namespace prefixes in IWXXM documents.
@@ -31,6 +23,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
         m.put("http://www.aixm.aero/schema/5.1.1", "aixm");
         m.put("http://icao.int/iwxxm/2.1", "iwxxm");
         m.put("http://icao.int/iwxxm/3.0", "iwxxm30");
+        m.put("http://icao.int/iwxxm/2023-1", "iwxxm20231");
         m.put("http://def.wmo.int/opm/2013", "opm");
         m.put("http://def.wmo.int/metce/2013", "metce");
         m.put("http://def.wmo.int/collect/2014", "collect");
@@ -40,7 +33,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
         m.put("http://purl.oclc.org/dsdl/svrl", "svrl");
         final Set<String> duplicates = findDuplicatePrefixes(m);
         if (duplicates.size() > 0) {
-            throw new RuntimeException("The default namespace-prefix mapping contains duplicate prefixes, this is not allowed: " + duplicates.toString());
+            throw new RuntimeException("The default namespace-prefix mapping contains duplicate prefixes, this is not allowed: " + duplicates);
         }
         DEFAULT_MAPPING = Collections.unmodifiableMap(m);
     }

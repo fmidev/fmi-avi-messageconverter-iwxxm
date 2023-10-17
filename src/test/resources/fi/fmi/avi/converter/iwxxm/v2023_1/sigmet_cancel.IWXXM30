@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:SIGMET xmlns:iwxxm="http://icao.int/iwxxm/3.0"
+              xmlns:gml="http://www.opengis.net/gml/3.2"
+              xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              gml:id="uuid.70361639-0686-4687-ba6a-cabb833668f8"
+              isCancelReport="true"
+              permissibleUsage="NON-OPERATIONAL"
+              permissibleUsageReason="TEST"
+              reportStatus="NORMAL"
+              xsi:schemaLocation="http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd">
+    <iwxxm:issueTime>
+        <gml:TimeInstant gml:id="uuid.861507e1-7619-4fb8-b922-e1c65a0cebc7">
+            <gml:timePosition>2018-08-27T11:30:00Z</gml:timePosition>
+        </gml:TimeInstant>
+    </iwxxm:issueTime>
+    <iwxxm:issuingAirTrafficServicesUnit>
+        <aixm:Unit gml:id="uuid.8a35731b-ba16-4a17-be88-d91275a98e77">
+            <aixm:timeSlice>
+                <aixm:UnitTimeSlice gml:id="uuid.96cb1c61-c2ae-4a46-82c7-083059cd6caf">
+                    <gml:validTime/>
+                    <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+                    <aixm:name>AMSTERDAM</aixm:name>
+                    <aixm:type>FIC</aixm:type>
+                    <aixm:designator>EHAA</aixm:designator>
+                </aixm:UnitTimeSlice>
+            </aixm:timeSlice>
+        </aixm:Unit>
+    </iwxxm:issuingAirTrafficServicesUnit>
+    <iwxxm:originatingMeteorologicalWatchOffice>
+        <aixm:Unit gml:id="uuid.2f8257bc-38d9-4bfa-84c1-78479de8172d">
+            <aixm:timeSlice>
+                <aixm:UnitTimeSlice gml:id="uuid.e32dec08-11e2-4bec-a8bc-e25f61b71e19">
+                    <gml:validTime/>
+                    <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+                    <aixm:name>DE BILT</aixm:name>
+                    <aixm:type>MWO</aixm:type>
+                    <aixm:designator>EHDB</aixm:designator>
+                </aixm:UnitTimeSlice>
+            </aixm:timeSlice>
+        </aixm:Unit>
+    </iwxxm:originatingMeteorologicalWatchOffice>
+    <iwxxm:issuingAirTrafficServicesRegion>
+        <aixm:Airspace gml:id="uuid.19182cd8-2c57-449b-81ed-f72a4ab0c8f2">
+            <aixm:timeSlice>
+                <aixm:AirspaceTimeSlice gml:id="uuid.dd86daa4-0286-4643-839b-a43395774554">
+                    <gml:validTime/>
+                    <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+                    <aixm:type>FIR</aixm:type>
+                    <aixm:designator>EHAA</aixm:designator>
+                    <aixm:name>AMSTERDAM</aixm:name>
+                </aixm:AirspaceTimeSlice>
+            </aixm:timeSlice>
+        </aixm:Airspace>
+    </iwxxm:issuingAirTrafficServicesRegion>
+    <iwxxm:sequenceNumber>2</iwxxm:sequenceNumber>
+    <iwxxm:validPeriod>
+        <gml:TimePeriod gml:id="uuid.8bc6d6ec-19c5-4e20-80c8-4dd247ba0ef5">
+            <gml:beginPosition>2018-08-27T12:00:00Z</gml:beginPosition>
+            <gml:endPosition>2018-08-27T18:00:00Z</gml:endPosition>
+        </gml:TimePeriod>
+    </iwxxm:validPeriod>
+    <iwxxm:cancelledReportSequenceNumber>2</iwxxm:cancelledReportSequenceNumber>
+    <iwxxm:cancelledReportValidPeriod>
+        <gml:TimePeriod gml:id="uuid.69e30e9c-3f3b-41d4-9daf-a71bacce2719">
+            <gml:beginPosition>2018-08-27T15:00:00Z</gml:beginPosition>
+            <gml:endPosition>2018-08-27T18:00:00Z</gml:endPosition>
+        </gml:TimePeriod>
+    </iwxxm:cancelledReportValidPeriod>
+</iwxxm:SIGMET>
