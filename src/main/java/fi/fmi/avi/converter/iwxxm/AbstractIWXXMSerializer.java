@@ -9,8 +9,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -22,7 +20,6 @@ import javax.xml.transform.dom.DOMSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -65,22 +62,9 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         return period.getEndTime().flatMap(AbstractIWXXMSerializer::toIWXXMDateTime);
     }
 
-    @SuppressWarnings("unchecked")
-    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
-        final StringWriter sw = new StringWriter();
-        try {
-            final Marshaller marshaller = getJAXBContext().createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getCombinedSchemaLocations());
-            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", getNamespaceContext());
-            marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
-            return asCleanedUpXML(sw.toString(), hints);
-        } catch (final JAXBException e) {
-            throw new ConversionException("Exception in rendering to DOM", e);
-        }
-    }
+    protected abstract Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException;
 
-    private Document asCleanedUpXML(final String input, final ConversionHints hints) throws ConversionException {
+    protected Document asCleanedUpXML(final String input, final ConversionHints hints) throws ConversionException {
         try {
             final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);

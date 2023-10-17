@@ -2,10 +2,7 @@ package fi.fmi.avi.converter.iwxxm.v2_1;
 
 import aero.aixm511.AirportHeliportType;
 import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMAixm511WxSerializer;
-import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
-import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
+import fi.fmi.avi.converter.iwxxm.*;
 import fi.fmi.avi.model.*;
 import icao.iwxxm21.*;
 import net.opengis.gml32.*;
@@ -75,7 +72,7 @@ public abstract class AbstractIWXXM21Serializer<T extends AviationWeatherMessage
 
     @Override
     public XMLSchemaInfo getSchemaInfo() {
-        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
+        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(IWXXMSchemaResourceResolverAixm511Wx.getInstance(), F_SECURE_PROCESSING);
         schemaInfo.addSchemaSource(TAFType.class.getResource("/int/icao/iwxxm/2.1.1/iwxxm.xsd"));
         schemaInfo.addSchematronRule(TAFType.class.getResource("/schematron/xslt/int/icao/iwxxm/2.1.1/rule/iwxxm.xsl"));
         schemaInfo.addSchemaLocation("http://icao.int/iwxxm/2.1", "https://schemas.wmo.int/iwxxm/2.1.1/iwxxm.xsd");

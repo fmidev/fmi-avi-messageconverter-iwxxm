@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.v2023_1;
 
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMAixm511FullSerializer;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
+import fi.fmi.avi.converter.iwxxm.IWXXMSchemaResourceResolverAixm511Full;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import icao.iwxxm20231.SIGMETType;
@@ -26,7 +27,7 @@ public abstract class AbstractIWXXM2023_1Serializer<T extends AviationWeatherMes
 
     @Override
     public XMLSchemaInfo getSchemaInfo() {
-        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
+        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(IWXXMSchemaResourceResolverAixm511Full.getInstance(), F_SECURE_PROCESSING);
         schemaInfo.addSchemaSource(SIGMETType.class.getResource(IWXXM_2023_1_SCHEMA_PATH));
         schemaInfo.addSchematronRule(SIGMETType.class.getResource(IWXXM_2023_1_SCHEMATRON_RULE_PATH));
         schemaInfo.addSchemaLocation("http://icao.int/iwxxm/2023-1", "http://schemas.wmo.int/iwxxm/2023-1/iwxxm.xsd");

@@ -3,13 +3,20 @@ package fi.fmi.avi.converter.iwxxm;
 import aero.aixm511.SurfacePropertyType;
 import aero.aixm511.SurfaceType;
 import aero.aixm511.*;
+import fi.fmi.avi.converter.ConversionException;
+import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.model.*;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
 import net.opengis.gml32.CurvePropertyType;
 import net.opengis.gml32.CurveType;
 import net.opengis.gml32.*;
+import org.w3c.dom.Document;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -22,6 +29,41 @@ import java.util.UUID;
  * Common functionality for serializing aviation messages into IWXXM. Uses the AIXM 5.1.1 WX schema.
  */
 public abstract class AbstractIWXXMAixm511WxSerializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMSerializer<T, S> {
+
+    private static JAXBContext aixm511WxJaxbContext = null;
+
+    /**
+     * Singleton for accessing the shared JAXBContext for IWXXM JAXB handling. Uses the AIXM 5.1.1 WX schema.
+     * <p>
+     * NOTE: this can take several seconds when done for the first time after JVM start,
+     * needs to scan all the jars in classpath.
+     *
+     * @return the context
+     * @throws JAXBException if the context cannot be created
+     */
+    public static synchronized JAXBContext getAixm511WxJAXBContext() throws JAXBException {
+        if (aixm511WxJaxbContext == null) {
+            aixm511WxJaxbContext = JAXBContext.newInstance("icao.iwxxm21:icao.iwxxm30:aero.aixm511:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
+                    + ".iso19139.ogc2007.gss:org.iso19139.ogc2007.gts:org.iso19139.ogc2007.gsr:net.opengis.om20:net.opengis.sampling:net.opengis.sampling"
+                    + ".spatial:wmo.metce2013:wmo.opm2013:wmo.collect2014:org.w3c.xlink11");
+        }
+        return aixm511WxJaxbContext;
+    }
+
+    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
+        final StringWriter sw = new StringWriter();
+        try {
+            final Marshaller marshaller = getAixm511WxJAXBContext().createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getCombinedSchemaLocations());
+            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", getNamespaceContext());
+            marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
+            return asCleanedUpXML(sw.toString(), hints);
+        } catch (final JAXBException e) {
+            throw new ConversionException("Exception in rendering to DOM", e);
+        }
+    }
+
     protected static SurfacePropertyType createSurface(final Geometry geom, final String id) throws IllegalArgumentException {
         SurfacePropertyType retval = null;
         if (geom != null) {

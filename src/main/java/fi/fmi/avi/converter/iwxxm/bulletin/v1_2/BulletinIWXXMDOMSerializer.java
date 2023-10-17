@@ -1,27 +1,25 @@
 package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
-import java.util.List;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMAixm511WxSerializer;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.util.List;
 
 public class BulletinIWXXMDOMSerializer<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>>
-        extends AbstractBulletinIWXXMSerializer<Document, U, S> {
+        extends AbstractBulletinIWXXMAixm511WxSerializer<Document, U, S> {
 
     @Override
     protected Document aggregateAsBulletin(final Document collection, final List<Document> messages, final ConversionHints hints) {

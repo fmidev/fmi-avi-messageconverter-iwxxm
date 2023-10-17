@@ -1,5 +1,22 @@
 package fi.fmi.avi.converter.iwxxm.bulletin;
 
+import fi.fmi.avi.converter.*;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
+import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
+import fi.fmi.avi.model.AviationWeatherMessage;
+import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
+import fi.fmi.avi.util.GTSExchangeFileInfo;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -10,31 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
-
-import fi.fmi.avi.converter.AviMessageSpecificConverter;
-import fi.fmi.avi.converter.ConversionException;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
-import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.model.AviationWeatherMessage;
-import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
-import fi.fmi.avi.util.GTSExchangeFileInfo;
-import wmo.collect2014.MeteorologicalBulletinType;
 
 /**
  * @param <S>
@@ -159,13 +151,7 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
         return result;
     }
 
-    private XMLSchemaInfo getSchemaInfo() {
-        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
-        schemaInfo.addSchemaSource(MeteorologicalBulletinType.class.getResource("/int/wmo/collect/1.2/collect.xsd"));
-        schemaInfo.addSchematronRule(MeteorologicalBulletinType.class.getResource("/schematron/xslt/int/wmo/collect/1.2/rule/collect.xsl"));
-        schemaInfo.addSchemaLocation("http://def.wmo.int/collect/2014", "http://schemas.wmo.int/collect/1.2/collect.xsd");
-        return schemaInfo;
-    }
+    protected abstract XMLSchemaInfo getSchemaInfo();
 
     protected abstract T aggregateAsBulletin(final Document collection, final List<Document> messages, final ConversionHints hints) throws ConversionException;
 
