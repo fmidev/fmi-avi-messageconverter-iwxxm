@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:VolcanicAshSIGMET xmlns:iwxxm="http://icao.int/iwxxm/2023-1"
+                         xmlns:gml="http://www.opengis.net/gml/3.2"
+                         xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         gml:id="uuid.aa2dfd59-4525-48dd-a088-3601fedb67a4"
+                         isCancelReport="true"
+                         permissibleUsage="NON-OPERATIONAL"
+                         permissibleUsageReason="TEST"
+                         reportStatus="NORMAL"
+                         xsi:schemaLocation="http://icao.int/iwxxm/2023-1 http://schemas.wmo.int/iwxxm/2023-1/iwxxm.xsd">
+   <iwxxm:issueTime>
+      <gml:TimeInstant gml:id="uuid.d8a358ff-3ed9-4f78-93f2-e51b118caf85">
+         <gml:timePosition>2018-08-27T11:30:00Z</gml:timePosition>
+      </gml:TimeInstant>
+   </iwxxm:issueTime>
+   <iwxxm:issuingAirTrafficServicesUnit>
+      <aixm:Unit gml:id="uuid.2d66e3c1-849f-4c85-ba1e-57ee88ceb037">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.d82b1168-eb6f-4803-a08d-1db50d9f19b2">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>AMSTERDAM</aixm:name>
+               <aixm:type>FIC</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:issuingAirTrafficServicesUnit>
+   <iwxxm:originatingMeteorologicalWatchOffice>
+      <aixm:Unit gml:id="uuid.6c7de594-7cf3-4dd6-88fa-fdda19771f90">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.46f38667-cb05-4686-aaa1-ab4f760440ac">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>DE BILT</aixm:name>
+               <aixm:type>MWO</aixm:type>
+               <aixm:designator>EHDB</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:originatingMeteorologicalWatchOffice>
+   <iwxxm:issuingAirTrafficServicesRegion>
+      <aixm:Airspace gml:id="uuid.97cef3f5-19ce-417a-80f5-e84fa680e2a0">
+         <aixm:timeSlice>
+            <aixm:AirspaceTimeSlice gml:id="uuid.e125a85c-f8a6-41b5-9145-07a845523196">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:type>FIR</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+               <aixm:name>AMSTERDAM</aixm:name>
+            </aixm:AirspaceTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Airspace>
+   </iwxxm:issuingAirTrafficServicesRegion>
+   <iwxxm:sequenceNumber>2</iwxxm:sequenceNumber>
+   <iwxxm:validPeriod>
+      <gml:TimePeriod gml:id="uuid.a410a971-638f-4836-b201-4fc52c10056b">
+         <gml:beginPosition>2018-08-27T12:00:00Z</gml:beginPosition>
+         <gml:endPosition>2018-08-27T18:00:00Z</gml:endPosition>
+      </gml:TimePeriod>
+   </iwxxm:validPeriod>
+   <iwxxm:cancelledReportSequenceNumber>2</iwxxm:cancelledReportSequenceNumber>
+   <iwxxm:cancelledReportValidPeriod>
+      <gml:TimePeriod gml:id="uuid.4c110e7c-0ed8-462c-85e5-6b347b090e73">
+         <gml:beginPosition>2018-08-27T15:00:00Z</gml:beginPosition>
+         <gml:endPosition>2018-08-27T18:00:00Z</gml:endPosition>
+      </gml:TimePeriod>
+   </iwxxm:cancelledReportValidPeriod>
+   <iwxxm:volcanicAshMovedToFIR>
+      <aixm:Airspace gml:id="uuid.52b7f87a-c6ae-4e9f-b00c-28661222c6ad">
+         <aixm:timeSlice>
+            <aixm:AirspaceTimeSlice gml:id="uuid.9709b8f4-bae6-4d47-895d-f83b9a00cdc1">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:type>FIR</aixm:type>
+               <aixm:designator>EDWW</aixm:designator>
+               <aixm:name>BREMEN</aixm:name>
+            </aixm:AirspaceTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Airspace>
+   </iwxxm:volcanicAshMovedToFIR>
+</iwxxm:VolcanicAshSIGMET>

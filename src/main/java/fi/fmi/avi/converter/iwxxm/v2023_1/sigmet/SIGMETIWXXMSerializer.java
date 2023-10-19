@@ -12,6 +12,7 @@ import fi.fmi.avi.model.*;
 import fi.fmi.avi.model.AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
+import fi.fmi.avi.model.sigmet.VAInfo;
 import icao.iwxxm20231.AirspacePropertyType;
 import icao.iwxxm20231.AirspaceVolumePropertyType;
 import icao.iwxxm20231.UnitPropertyType;
@@ -199,26 +200,24 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM2023_1Serial
             getCancelledTimePeriodPropertyType(input)
                     .ifPresent(sigmet::setCancelledReportValidPeriod);
             if (sigmetPhenomen.equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
-                input.getVAInfo().ifPresent(v -> {
-                    v.getVolcanicAshMovedToFIR().ifPresent(movedToFir -> {
-                        ((VolcanicAshSIGMETType) sigmet).setVolcanicAshMovedToFIR(
-                                create(AirspacePropertyType.class, prop -> prop.setAirspace(create(AirspaceType.class, airspace -> {
-                                    airspace.setValidTime(null);
-                                    airspace.setId(getUUID());
-                                    airspace.getTimeSlice()
-                                            .add(create(AirspaceTimeSlicePropertyType.class, timeSliceProp -> timeSliceProp
-                                                    .setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, timeSlice -> {
-                                                        timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
-                                                        timeSlice.setInterpretation("SNAPSHOT");
-                                                        timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue(movedToFir.getType())));
-                                                        timeSlice.setAirspaceName(create(TextNameType.class, name -> name
-                                                                .setValue(movedToFir.getName())));
-                                                        timeSlice.setId(getUUID());
-                                                        timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, desig -> desig
-                                                                .setValue(movedToFir.getDesignator())));
-                                                    }))));
-                                }))));
-                    });
+                input.getVAInfo().flatMap(VAInfo::getVolcanicAshMovedToFIR).ifPresent(movedToFir -> {
+                    ((VolcanicAshSIGMETType) sigmet).setVolcanicAshMovedToFIR(
+                            create(AirspacePropertyType.class, prop -> prop.setAirspace(create(AirspaceType.class, airspace -> {
+                                airspace.setValidTime(null);
+                                airspace.setId(getUUID());
+                                airspace.getTimeSlice()
+                                        .add(create(AirspaceTimeSlicePropertyType.class, timeSliceProp -> timeSliceProp
+                                                .setAirspaceTimeSlice(create(AirspaceTimeSliceType.class, timeSlice -> {
+                                                    timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
+                                                    timeSlice.setInterpretation("SNAPSHOT");
+                                                    timeSlice.setType(create(CodeAirspaceType.class, type -> type.setValue(movedToFir.getType())));
+                                                    timeSlice.setAirspaceName(create(TextNameType.class, name -> name
+                                                            .setValue(movedToFir.getName())));
+                                                    timeSlice.setId(getUUID());
+                                                    timeSlice.setDesignator(create(CodeAirspaceDesignatorType.class, desig -> desig
+                                                            .setValue(movedToFir.getDesignator())));
+                                                }))));
+                            }))));
                 });
             }
         } else {
@@ -307,16 +306,13 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM2023_1Serial
                     .flatMap(PhenomenonGeometryWithHeight::getTime)//
                     .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                     .orElse(null);
-            boolean noForecasts = !input.getForecastGeometries().isPresent() || (input.getForecastGeometries().get().size() == 0);
+            boolean noForecasts = !input.getForecastGeometries().isPresent() || (input.getForecastGeometries().get().isEmpty());
 
             List<PhenomenonGeometryWithHeight> ans = input.getAnalysisGeometries().get();
 
-            final AnalysisAndForecastPositionAnalysisType analysis = create(AnalysisAndForecastPositionAnalysisType.class);
-            SIGMETEvolvingConditionCollectionType secct =
-                    createAnalysis(ans, analysisTime, startTime,
-                            noForecasts);
+            final AnalysisAndForecastPositionAnalysisType analysis = create(AnalysisAndForecastPositionAnalysisType.class, a -> a.setId(getUUID()));
+            final SIGMETEvolvingConditionCollectionType secct = createAnalysis(ans, analysisTime, startTime, noForecasts);
             analysis.setAnalysis(create(SIGMETEvolvingConditionCollectionPropertyType.class, s -> s.setSIGMETEvolvingConditionCollection(secct)));
-
 
             if (input.getForecastGeometries().isPresent()) {
                 final String fcTime = input.getForecastGeometries()//
@@ -459,6 +455,15 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM2023_1Serial
                                                     }
                                                     spd.setValue(ms.getValue());
                                                 })));
+                                    } else {
+                                        sect.setDirectionOfMotion(create(AngleWithNilReasonType.class, angle -> {
+                                            angle.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
+                                            angle.setUom("deg");
+                                        }));
+                                        sect.setSpeedOfMotion(create(SpeedType.class, speed -> {
+                                            speed.setValue(0);
+                                            speed.setUom("[kn_i]");
+                                        }));
                                     }
                                 }
                             }));

@@ -68,39 +68,33 @@ public class VASIGMETIWWXXMSerializerTest {
 
     @Test
     public void testVaSigmet() throws Exception {
-        doTestSIGMETStringSerialization("vasigmet1.json", "vasigmet1.IWXXM30");
+        doTestSIGMETStringSerialization("vasigmet1.json", "vasigmet1.xml");
     }
 
     @Test
     public void testVaSigmet_NoCoords() throws Exception {
-        doTestSIGMETStringSerializationNoCoords("vasigmet1_nocoords.json", "vasigmet1_nocoords.IWXXM30");
+        doTestSIGMETStringSerializationNoCoords("vasigmet1_nocoords.json", "vasigmet1_nocoords.xml");
     }
 
     @Test
     public void testVaSigmet_NoName() throws Exception {
-        doTestSIGMETStringSerialization("vasigmet1_noname.json", "vasigmet1_noname.IWXXM30");
+        doTestSIGMETStringSerialization("vasigmet1_noname.json", "vasigmet1_noname.xml");
     }
 
     @Test
     public void testVaSigmetCancel() throws Exception {
-        doTestSIGMETStringSerialization("vasigmet1_cancel.json", "vasigmet1_cancel.IWXXM30");
+        doTestSIGMETStringSerialization("vasigmet1_cancel.json", "vasigmet1_cancel.xml");
     }
 
     @Test
     public void testVaSigmetCancelMovToFir() throws Exception {
-        doTestSIGMETStringSerialization("vasigmet1_cancel_movtofir.json", "vasigmet1_cancel_movtofir.IWXXM30");
-    }
-
-
-    @Test
-    public void testNoVaExp() throws Exception {
-
+        doTestSIGMETStringSerialization("vasigmet1_cancel_movtofir.json", "vasigmet1_cancel_movtofir.xml");
     }
 
     public void testSIGMETStringSerialization(String fn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING));
+        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING));
         final SIGMET s = readFromJSON(fn);
-        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING);
+        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING);
         for (ConversionIssue iss : result.getConversionIssues()) {
             System.err.println("iss:" + iss);
         }
@@ -109,9 +103,9 @@ public class VASIGMETIWWXXMSerializerTest {
     }
 
     public String doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING));
+        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING));
         final SIGMET s = readFromJSON(fn);
-        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING);
+        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING);
 
         for (ConversionIssue iss : result.getConversionIssues()) {
             System.err.println("iss:" + iss.getMessage() + "===" + iss.getCause());
@@ -128,9 +122,9 @@ public class VASIGMETIWWXXMSerializerTest {
     }
 
     public String doTestSIGMETStringSerializationNoCoords(final String fn, final String iwxxmFn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING));
+        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING));
         final SIGMET s = readFromJSON(fn);
-        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING);
+        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING);
 
         boolean letItPass = false;
         for (ConversionIssue iss : result.getConversionIssues()) {
