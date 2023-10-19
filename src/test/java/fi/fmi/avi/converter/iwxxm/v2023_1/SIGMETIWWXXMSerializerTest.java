@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
 import static junit.framework.TestCase.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -54,14 +55,6 @@ public class SIGMETIWWXXMSerializerTest {
             e.printStackTrace();
             throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
         }
-    }
-
-
-    private String fixIds(String s) {
-        if (s == null) return null;
-        return s.replaceAll("gml:id=\"(.*)\"", "gml:id=\"GMLID\"")
-                .replaceAll("xlink:href=\"(.*)\"", "xlink:href=\"XLINKHREF\"")
-                .replaceAll("volcanoId=\"(.*)\"", "volcanoId=\"VOLCANOID\"");
     }
 
     @Test
@@ -198,8 +191,7 @@ public class SIGMETIWWXXMSerializerTest {
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
 
-        String expectedXml = fixIds(readFromFile(iwxxmFn));
-        assertEquals(expectedXml, fixIds(result.getConvertedMessage().get()));
+        assertXMLEqualsIgnoringVariables(readFromFile(iwxxmFn), result.getConvertedMessage().get());
         return result.getConvertedMessage().orElse(null);
     }
 }

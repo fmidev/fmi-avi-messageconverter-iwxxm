@@ -6,16 +6,16 @@ import fi.fmi.avi.converter.*;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.converter.iwxxm.v2023_1.AbstractIWXXM2023_1Serializer;
+import fi.fmi.avi.converter.iwxxm.v2023_1.AbstractIWXXM20231Serializer;
 import fi.fmi.avi.model.*;
 import fi.fmi.avi.model.AviationCodeListUser.AeronauticalAirmetWeatherPhenomenon;
 import fi.fmi.avi.model.AviationCodeListUser.WeatherCausingVisibilityReduction;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
-import icao.iwxxm20231.AirspacePropertyType;
-import icao.iwxxm20231.AirspaceVolumePropertyType;
-import icao.iwxxm20231.UnitPropertyType;
-import icao.iwxxm20231.*;
+import icao.iwxxm2023_1.AirspacePropertyType;
+import icao.iwxxm2023_1.AirspaceVolumePropertyType;
+import icao.iwxxm2023_1.UnitPropertyType;
+import icao.iwxxm2023_1.*;
 import net.opengis.gml32.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM2023_1Serializer<AIRMET, T> {
+public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM20231Serializer<AIRMET, T> {
     private static final Logger LOG = LoggerFactory.getLogger(AIRMETIWXXMSerializer.class);
 
     protected static TimePeriodPropertyType getTimePeriodPropertyType(final AIRMET input) {
@@ -175,7 +175,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM2023_1Serial
 
         if (!input.getCancelledReference().isPresent()) {
             final String analysisTime = input.getAnalysisGeometries()//
-                    .map(AbstractIWXXM2023_1Serializer::getFirstOrNull)//
+                    .map(AbstractIWXXM20231Serializer::getFirstOrNull)//
                     .flatMap(PhenomenonGeometryWithHeight::getTime)//
                     .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                     .orElse(null);

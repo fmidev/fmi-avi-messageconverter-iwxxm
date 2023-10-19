@@ -23,7 +23,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
         m.put("http://www.aixm.aero/schema/5.1.1", "aixm");
         m.put("http://icao.int/iwxxm/2.1", "iwxxm");
         m.put("http://icao.int/iwxxm/3.0", "iwxxm30");
-        m.put("http://icao.int/iwxxm/2023-1", "iwxxm20231");
+        m.put("http://icao.int/iwxxm/2023-1", "iwxxm2023_1");
         m.put("http://def.wmo.int/opm/2013", "opm");
         m.put("http://def.wmo.int/metce/2013", "metce");
         m.put("http://def.wmo.int/collect/2014", "collect");

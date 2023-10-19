@@ -5,14 +5,14 @@ import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.IWXXMSchemaResourceResolverAixm511Full;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
-import icao.iwxxm20231.SIGMETType;
+import icao.iwxxm2023_1.SIGMETType;
 
 import java.util.List;
 
-public abstract class AbstractIWXXM2023_1Serializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMAixm511FullSerializer<T, S> {
+public abstract class AbstractIWXXM20231Serializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMAixm511FullSerializer<T, S> {
 
-    private static final String IWXXM_2023_1_SCHEMA_PATH = "/int/icao/iwxxm/20231/iwxxm.xsd";
-    private static final String IWXXM_2023_1_SCHEMATRON_RULE_PATH = "/schematron/xslt/int/icao/iwxxm/20231/rule/iwxxm.xsl";
+    private static final String IWXXM_2023_1_SCHEMA_PATH = "/int/icao/iwxxm/2023_1/iwxxm.xsd";
+    private static final String IWXXM_2023_1_SCHEMATRON_RULE_PATH = "/schematron/xslt/int/icao/iwxxm/2023_1/rule/iwxxm.xsl";
     private static IWXXMNamespaceContext nsCtx;
 
     private static synchronized IWXXMNamespaceContext getNSContext() {

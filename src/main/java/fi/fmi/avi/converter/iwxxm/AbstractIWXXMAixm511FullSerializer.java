@@ -41,7 +41,7 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
      */
     public static synchronized JAXBContext getAixm511FullJAXBContext() throws JAXBException {
         if (aixm511FullJaxbContext == null) {
-            aixm511FullJaxbContext = JAXBContext.newInstance("icao.iwxxm20231:aero.aixm511full:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
+            aixm511FullJaxbContext = JAXBContext.newInstance("icao.iwxxm2023_1:aero.aixm511full:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
                     + ".iso19139.ogc2007.gss:org.iso19139.ogc2007.gts:org.iso19139.ogc2007.gsr:net.opengis.om20:net.opengis.sampling:net.opengis.sampling"
                     + ".spatial:wmo.metce2013:wmo.opm2013:wmo.collect2014:org.w3c.xlink11");
         }

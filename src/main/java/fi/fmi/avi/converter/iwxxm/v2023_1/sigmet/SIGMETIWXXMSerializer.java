@@ -7,16 +7,16 @@ import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.converter.iwxxm.v2023_1.AbstractIWXXM2023_1Serializer;
+import fi.fmi.avi.converter.iwxxm.v2023_1.AbstractIWXXM20231Serializer;
 import fi.fmi.avi.model.*;
 import fi.fmi.avi.model.AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
 import fi.fmi.avi.model.sigmet.VAInfo;
-import icao.iwxxm20231.AirspacePropertyType;
-import icao.iwxxm20231.AirspaceVolumePropertyType;
-import icao.iwxxm20231.UnitPropertyType;
-import icao.iwxxm20231.*;
+import icao.iwxxm2023_1.AirspacePropertyType;
+import icao.iwxxm2023_1.AirspaceVolumePropertyType;
+import icao.iwxxm2023_1.UnitPropertyType;
+import icao.iwxxm2023_1.*;
 import net.opengis.gml32.PointPropertyType;
 import net.opengis.gml32.PointType;
 import net.opengis.gml32.*;
@@ -39,7 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM2023_1Serializer<SIGMET, T> {
+public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Serializer<SIGMET, T> {
     private static final Logger LOG = LoggerFactory.getLogger(SIGMETIWXXMSerializer.class);
 
     @SuppressWarnings("unchecked")
@@ -302,7 +302,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM2023_1Serial
 
         if (!input.getCancelledReference().isPresent()) {
             final String analysisTime = input.getAnalysisGeometries()//
-                    .map(AbstractIWXXM2023_1Serializer::getFirstOrNull)//
+                    .map(AbstractIWXXM20231Serializer::getFirstOrNull)//
                     .flatMap(PhenomenonGeometryWithHeight::getTime)//
                     .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                     .orElse(null);
@@ -316,7 +316,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM2023_1Serial
 
             if (input.getForecastGeometries().isPresent()) {
                 final String fcTime = input.getForecastGeometries()//
-                        .map(AbstractIWXXM2023_1Serializer::getFirstOrNull)//
+                        .map(AbstractIWXXM20231Serializer::getFirstOrNull)//
                         .flatMap(PhenomenonGeometry::getTime)//
                         .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                         .orElse(null);

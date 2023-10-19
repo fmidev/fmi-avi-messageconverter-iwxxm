@@ -25,7 +25,9 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static junit.framework.TestCase.*;
+import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
+import static junit.framework.TestCase.assertSame;
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -79,11 +81,6 @@ public class AIRMETIWWXXMSerializerTest {
     @Test
     public void dotestAIRMETMOVING() throws Exception {
         String s = doTestAIRMETStringSerialization("airmetMOVING.json", "airmetMOVING.xml");
-    }
-
-    private String fixIds(String s) {
-        if (s == null) return null;
-        return s.replaceAll("gml:id=\"(.*)\"", "gml:id=\"GMLID\"").replaceAll("xlink:href=\"(.*)\"", "xlink:href=\"XLINKHREF\"");
     }
 
     @Test
@@ -177,8 +174,7 @@ public class AIRMETIWWXXMSerializerTest {
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
 
-        String expectedXml = fixIds(readFromFile(iwxxmFn));
-        assertEquals(expectedXml, fixIds(result.getConvertedMessage().get()));
+        assertXMLEqualsIgnoringVariables(readFromFile(iwxxmFn), result.getConvertedMessage().get());
         return result.getConvertedMessage().orElse(null);
     }
 
