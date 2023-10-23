@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:SIGMET xmlns:iwxxm="http://icao.int/iwxxm/2023-1"
+              xmlns:gml="http://www.opengis.net/gml/3.2"
+              xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              gml:id="uuid.09e1b413-7782-47b1-8c74-714863a20a68"
+              isCancelReport="false"
+              permissibleUsage="NON-OPERATIONAL"
+              permissibleUsageReason="TEST"
+              reportStatus="NORMAL"
+              xsi:schemaLocation="http://icao.int/iwxxm/2023-1 http://schemas.wmo.int/iwxxm/2023-1/iwxxm.xsd">
+   <iwxxm:issueTime>
+      <gml:TimeInstant gml:id="uuid.a59f48e6-f7f8-4372-b217-4f2d486aca85">
+         <gml:timePosition>2018-08-27T11:40:00Z</gml:timePosition>
+      </gml:TimeInstant>
+   </iwxxm:issueTime>
+   <iwxxm:issuingAirTrafficServicesUnit>
+      <aixm:Unit gml:id="uuid.88d17797-417e-45e4-a828-0ea2bf4dd460">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.9c6974d1-9a09-41aa-baba-fc0009ab4610">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>AMSTERDAM</aixm:name>
+               <aixm:type>FIC</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:issuingAirTrafficServicesUnit>
+   <iwxxm:originatingMeteorologicalWatchOffice>
+      <aixm:Unit gml:id="uuid.4c6416dc-f3c9-4c8a-84cd-0eae52dc45a3">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.bc4a74f5-17e7-45cf-9dec-d28ba9a2df4b">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>DE BILT</aixm:name>
+               <aixm:type>MWO</aixm:type>
+               <aixm:designator>EHDB</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:originatingMeteorologicalWatchOffice>
+   <iwxxm:issuingAirTrafficServicesRegion>
+      <aixm:Airspace gml:id="uuid.3e8734b5-4391-490e-afe4-9e689933a633">
+         <aixm:timeSlice>
+            <aixm:AirspaceTimeSlice gml:id="uuid.17d0df52-a19a-4612-a189-6065b7751cdb">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:type>FIR</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+               <aixm:name>AMSTERDAM</aixm:name>
+            </aixm:AirspaceTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Airspace>
+   </iwxxm:issuingAirTrafficServicesRegion>
+   <iwxxm:sequenceNumber>1</iwxxm:sequenceNumber>
+   <iwxxm:validPeriod>
+      <gml:TimePeriod gml:id="uuid.f144488c-aba6-43bb-bafb-562124012979">
+         <gml:beginPosition>2018-08-27T12:00:00Z</gml:beginPosition>
+         <gml:endPosition>2018-08-27T18:00:00Z</gml:endPosition>
+      </gml:TimePeriod>
+   </iwxxm:validPeriod>
+   <iwxxm:phenomenon xlink:href="http://codes.wmo.int/49-2/SigWxPhenomena/EMBD_TS"/>
+   <iwxxm:analysisCollection>
+      <iwxxm:analysisAndForecastPositionAnalysis gml:id="uuid.20395e70-3591-4f72-8f4e-f58fac382348">
+         <iwxxm:analysis>
+            <iwxxm:SIGMETEvolvingConditionCollection gml:id="uuid.8a68db95-3c58-4e73-8c81-e0872e77d675"
+                                                     timeIndicator="OBSERVATION">
+               <iwxxm:phenomenonTime>
+                  <gml:TimeInstant gml:id="uuid.05a039fd-86dd-4218-96d5-abb95ef1f434">
+                     <gml:timePosition>2018-08-27T12:00:00Z</gml:timePosition>
+                  </gml:TimeInstant>
+               </iwxxm:phenomenonTime>
+               <iwxxm:member>
+                  <iwxxm:SIGMETEvolvingCondition
+                          gml:id="uuid.a5366c98-3cea-4639-9989-b5a37d4c9bc7"
+                          intensityChange="NO_CHANGE">
+                     <iwxxm:geometry>
+                        <aixm:AirspaceVolume gml:id="uuid.ca4f4c7c-4eb9-40c4-bded-46cc9d2d6f09">
+                           <aixm:upperLimit uom="FL">35</aixm:upperLimit>
+                           <aixm:upperLimitReference>STD</aixm:upperLimitReference>
+                           <aixm:lowerLimit uom="FL">10</aixm:lowerLimit>
+                           <aixm:lowerLimitReference>STD</aixm:lowerLimitReference>
+                           <aixm:horizontalProjection>
+                              <aixm:Surface gml:id="uuid.9a1c3a27-e90b-4dc6-bdbe-520825191920">
+                                 <gml:patches>
+                                    <gml:PolygonPatch>
+                                       <gml:exterior>
+                                          <gml:Ring>
+                                             <gml:curveMember>
+                                                <gml:Curve gml:id="uuid.c30263a2-562a-426e-9534-b59063bed16c">
+                                                   <gml:segments>
+                                                      <gml:CircleByCenterPoint numArc="1">
+                                                         <gml:pos>5.0 52.0</gml:pos>
+                                                         <gml:radius uom="[nmi_i]">0.0</gml:radius>
+                                                      </gml:CircleByCenterPoint>
+                                                   </gml:segments>
+                                                </gml:Curve>
+                                             </gml:curveMember>
+                                          </gml:Ring>
+                                       </gml:exterior>
+                                    </gml:PolygonPatch>
+                                 </gml:patches>
+                              </aixm:Surface>
+                           </aixm:horizontalProjection>
+                        </aixm:AirspaceVolume>
+                     </iwxxm:geometry>
+                     <iwxxm:directionOfMotion nilReason="http://codes.wmo.int/common/nil/inapplicable"
+                                              uom="deg"
+                                              xsi:nil="true"/>
+                     <iwxxm:speedOfMotion uom="[kn_i]">0.0</iwxxm:speedOfMotion>
+                  </iwxxm:SIGMETEvolvingCondition>
+               </iwxxm:member>
+            </iwxxm:SIGMETEvolvingConditionCollection>
+         </iwxxm:analysis>
+      </iwxxm:analysisAndForecastPositionAnalysis>
+   </iwxxm:analysisCollection>
+</iwxxm:SIGMET>

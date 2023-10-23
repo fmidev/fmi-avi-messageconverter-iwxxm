@@ -1,17 +1,9 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.w3c.dom.Document;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
@@ -25,6 +17,12 @@ import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
 import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.w3c.dom.Document;
 
 @Configuration
 @Import(IWXXMConverter.class)
@@ -113,6 +111,14 @@ public class IWXXMTestConfiguration {
     private AviMessageSpecificConverter<SIGMET, Document> sigmetIWXXM30DOMSerializer;
 
     @Autowired
+    @Qualifier("sigmetIWXXM20231StringSerializer")
+    private AviMessageSpecificConverter<SIGMET, String> sigmetIWXXM20231StringSerializer;
+
+    @Autowired
+    @Qualifier("sigmetIWXXM20231DOMSerializer")
+    private AviMessageSpecificConverter<SIGMET, Document> sigmetIWXXM20231DOMSerializer;
+
+    @Autowired
     @Qualifier("airmetIWXXMStringSerializer")
     private AviMessageSpecificConverter<AIRMET, String> airmetIWXXMStringSerializer;
 
@@ -127,6 +133,15 @@ public class IWXXMTestConfiguration {
     @Autowired
     @Qualifier("airmetIWXXM30DOMSerializer")
     private AviMessageSpecificConverter<AIRMET, Document> airmetIWXXM30DOMSerializer;
+
+    @Autowired
+    @Qualifier("airmetIWXXM20231StringSerializer")
+    private AviMessageSpecificConverter<AIRMET, String> airmetIWXXM20231StringSerializer;
+
+    @Autowired
+    @Qualifier("airmetIWXXM20231DOMSerializer")
+    private AviMessageSpecificConverter<AIRMET, Document> airmetIWXXM20231DOMSerializer;
+
     // Space weather
 
     @Autowired
@@ -213,10 +228,14 @@ public class IWXXMTestConfiguration {
         p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING, sigmetIWXXMStringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_DOM, sigmetIWXXM30DOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING, sigmetIWXXM30StringSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_DOM, sigmetIWXXM20231DOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING, sigmetIWXXM20231StringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM, airmetIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING, airmetIWXXMStringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM30_DOM, airmetIWXXM30DOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM30_STRING, airmetIWXXM30StringSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM2023_1_DOM, airmetIWXXM20231DOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM2023_1_STRING, airmetIWXXM20231StringSerializer);
 
         // Space weather
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO, spaceWeatherIWXXMStringParser);

@@ -1,58 +1,29 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import fi.fmi.avi.converter.ConversionException;
+import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
+import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
+import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import net.opengis.gml32.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
+import org.w3c.dom.*;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.URIResolver;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -62,33 +33,22 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-
-import net.opengis.gml32.TimeInstantPropertyType;
-import net.opengis.gml32.TimeInstantType;
-import net.opengis.gml32.TimePeriodPropertyType;
-import net.opengis.gml32.TimePeriodType;
-import net.opengis.gml32.TimePositionType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
-import fi.fmi.avi.converter.ConversionException;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Helpers for creating and handling JAXB generated content classes.
@@ -117,8 +77,6 @@ public abstract class IWXXMConverterBase {
     private static final Map<String, Object> OBJECT_FACTORY_MAP = new HashMap<>();
     private static final HashMap<String, Templates> IWXXM_TEMPLATES = new HashMap<>();
 
-    private static JAXBContext jaxbCtx = null;
-
     static {
         if (System.getSecurityManager() != null) {
             F_SECURE_PROCESSING = true;
@@ -130,27 +88,6 @@ public abstract class IWXXMConverterBase {
             F_SECURE_PROCESSING = false;
         }
     }
-
-    /**
-     * Singleton for accessing the shared JAXBContext for IWXXM JAXB handling.
-     *
-     * NOTE: this can take several seconds when done for the first time after JVM start,
-     * needs to scan all the jars in classpath.
-     *
-     * @return the context
-     *
-     * @throws JAXBException
-     *         if the context cannot be created
-     */
-    public static synchronized JAXBContext getJAXBContext() throws JAXBException {
-        if (jaxbCtx == null) {
-            jaxbCtx = JAXBContext.newInstance("icao.iwxxm21:icao.iwxxm30:aero.aixm511:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
-                    + ".iso19139.ogc2007.gss:org.iso19139.ogc2007.gts:org.iso19139.ogc2007.gsr:net.opengis.om20:net.opengis.sampling:net.opengis.sampling"
-                    + ".spatial:wmo.metce2013:wmo.opm2013:wmo.collect2014:org.w3c.xlink11");
-        }
-        return jaxbCtx;
-    }
-
     public static <T> T create(final Class<T> clz) throws IllegalArgumentException {
         return create(clz, null);
     }
@@ -260,38 +197,6 @@ public abstract class IWXXMConverterBase {
             }
         } catch (final RuntimeException | SAXException e) {
             throw new ConversionException("Error in validating document", e);
-        }
-        return retval;
-    }
-
-    protected static <S> IssueList validateJAXBObjectAgainstSchemaAndSchematron(final S input, final Class<S> clz, final XMLSchemaInfo schemaInfo,
-            final ConversionHints hints) {
-        final IssueList retval = new IssueList();
-        try {
-            final Marshaller marshaller = getJAXBContext().createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaInfo.getCombinedSchemaLocations());
-            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new IWXXMNamespaceContext());
-
-            marshaller.setSchema(schemaInfo.getSchema());
-            final ConverterValidationEventHandler eventHandler = new ConverterValidationEventHandler(retval);
-            marshaller.setEventHandler(eventHandler);
-
-            final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            dbf.setNamespaceAware(true);
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            final DocumentBuilder db = dbf.newDocumentBuilder();
-            final Document dom = db.newDocument();
-
-            //Marshall to run the validation:
-            marshaller.marshal(wrap(input, clz), dom);
-
-            retval.addAll(eventHandler.getIssues());
-
-            //Schematron validation:
-            retval.addAll(validateAgainstIWXXMSchematron(dom, schemaInfo, hints));
-        } catch (final RuntimeException | JAXBException | SAXException | ParserConfigurationException e) {
-            throw new RuntimeException("Error in validating document", e);
         }
         return retval;
     }

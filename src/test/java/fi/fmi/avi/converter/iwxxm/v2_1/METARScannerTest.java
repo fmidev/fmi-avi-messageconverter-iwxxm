@@ -1,50 +1,38 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.function.Consumer;
+import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
+import fi.fmi.avi.converter.iwxxm.*;
+import fi.fmi.avi.converter.iwxxm.v2_1.metar.METARIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.v2_1.metar.METARProperties;
+import fi.fmi.avi.converter.iwxxm.v2_1.metar.ObservationRecordProperties;
+import fi.fmi.avi.converter.iwxxm.v2_1.metar.TrendForecastRecordProperties;
+import fi.fmi.avi.model.*;
+import icao.iwxxm21.METARType;
+import icao.iwxxm21.ReportType;
+import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import wmo.metce2013.ProcessType;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBContext;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.function.Consumer;
 
-import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.iwxxm.DOMParsingTestBase;
-import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
-import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
-import fi.fmi.avi.converter.iwxxm.IWXXMSchemaResourceResolver;
-import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
-import fi.fmi.avi.converter.iwxxm.v2_1.metar.METARIWXXMScanner;
-import fi.fmi.avi.converter.iwxxm.v2_1.metar.METARProperties;
-import fi.fmi.avi.converter.iwxxm.v2_1.metar.ObservationRecordProperties;
-import fi.fmi.avi.converter.iwxxm.v2_1.metar.TrendForecastRecordProperties;
-import fi.fmi.avi.model.Aerodrome;
-import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.ElevatedPoint;
-import fi.fmi.avi.model.PartialOrCompleteTime;
-import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import icao.iwxxm21.METARType;
-import icao.iwxxm21.ReportType;
-import wmo.metce2013.ProcessType;
+import static org.junit.Assert.*;
 
 public class METARScannerTest extends DOMParsingTestBase {
 
     private List<ConversionIssue> withCollectedPropertiesFrom(final String fileName, final Consumer<METARProperties> resultHandler) throws Exception {
         final Document doc = readDocument(METARScannerTest.class, fileName);
-        final JAXBContext ctx = IWXXMConverterBase.getJAXBContext();
+        final JAXBContext ctx = AbstractIWXXMAixm511WxSerializer.getAixm511WxJAXBContext();
         final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
+        final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolverAixm511Wx.getInstance();
         schemaFactory.setResourceResolver(resolver);
         //Secure processing does not allow "file" protocol loading for schemas:
         schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);

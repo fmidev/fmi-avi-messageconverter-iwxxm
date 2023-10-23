@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:SIGMET xmlns:iwxxm="http://icao.int/iwxxm/2023-1"
+              xmlns:gml="http://www.opengis.net/gml/3.2"
+              xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              gml:id="uuid.06acb4c6-e7e5-4dc0-91a1-ec8ba6752846"
+              isCancelReport="false"
+              permissibleUsage="NON-OPERATIONAL"
+              permissibleUsageReason="TEST"
+              reportStatus="NORMAL"
+              xsi:schemaLocation="http://icao.int/iwxxm/2023-1 http://schemas.wmo.int/iwxxm/2023-1/iwxxm.xsd">
+   <iwxxm:issueTime>
+      <gml:TimeInstant gml:id="uuid.5c9acbfe-d6cb-40a1-906b-e98eec1e80eb">
+         <gml:timePosition>2018-08-27T11:40:00Z</gml:timePosition>
+      </gml:TimeInstant>
+   </iwxxm:issueTime>
+   <iwxxm:issuingAirTrafficServicesUnit>
+      <aixm:Unit gml:id="uuid.8da7c48c-deb0-4e32-a052-f712a130b4b3">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.60e8299c-4b57-4efb-9d14-d4732caa244f">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>AMSTERDAM</aixm:name>
+               <aixm:type>FIC</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:issuingAirTrafficServicesUnit>
+   <iwxxm:originatingMeteorologicalWatchOffice>
+      <aixm:Unit gml:id="uuid.c613a08d-de25-4a2a-9df1-47b92ba2e367">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.6495ef4f-6ed0-4a55-a638-1a30be551d1a">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>DE BILT</aixm:name>
+               <aixm:type>MWO</aixm:type>
+               <aixm:designator>EHDB</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:originatingMeteorologicalWatchOffice>
+   <iwxxm:issuingAirTrafficServicesRegion>
+      <aixm:Airspace gml:id="uuid.c8af4c04-5d3c-49b0-9086-7ee4318f1d4b">
+         <aixm:timeSlice>
+            <aixm:AirspaceTimeSlice gml:id="uuid.a60c4ac5-bd7a-4634-9785-567ab219b9a0">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:type>FIR</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+               <aixm:name>AMSTERDAM</aixm:name>
+            </aixm:AirspaceTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Airspace>
+   </iwxxm:issuingAirTrafficServicesRegion>
+   <iwxxm:sequenceNumber>1</iwxxm:sequenceNumber>
+   <iwxxm:validPeriod>
+      <gml:TimePeriod gml:id="uuid.56613d77-a63e-422b-b064-4d1b912f279e">
+         <gml:beginPosition>2018-08-27T12:00:00Z</gml:beginPosition>
+         <gml:endPosition>2018-08-27T18:00:00Z</gml:endPosition>
+      </gml:TimePeriod>
+   </iwxxm:validPeriod>
+   <iwxxm:phenomenon xlink:href="http://codes.wmo.int/49-2/SigWxPhenomena/EMBD_TS"/>
+   <iwxxm:analysisCollection>
+      <iwxxm:analysisAndForecastPositionAnalysis gml:id="uuid.a90683bd-2284-401a-928e-f8dc459aee68">
+         <iwxxm:analysis>
+            <iwxxm:SIGMETEvolvingConditionCollection gml:id="uuid.6d1c4c38-127b-45ad-9857-fcf2e2cc3b58"
+                                                     timeIndicator="OBSERVATION">
+               <iwxxm:phenomenonTime>
+                  <gml:TimeInstant gml:id="uuid.f052d8a9-45c2-4dae-a678-3643f8af04b6">
+                     <gml:timePosition>2018-08-27T12:00:00Z</gml:timePosition>
+                  </gml:TimeInstant>
+               </iwxxm:phenomenonTime>
+               <iwxxm:member>
+                  <iwxxm:SIGMETEvolvingCondition
+                          gml:id="uuid.15410d46-aada-403c-b703-ac923321515c"
+                          intensityChange="NO_CHANGE">
+                     <iwxxm:geometry>
+                        <aixm:AirspaceVolume gml:id="uuid.48a26392-48cc-4ce3-8e0e-f4b1473e5980">
+                           <aixm:upperLimit uom="FL">35</aixm:upperLimit>
+                           <aixm:upperLimitReference>STD</aixm:upperLimitReference>
+                           <aixm:lowerLimit uom="FL">10</aixm:lowerLimit>
+                           <aixm:lowerLimitReference>STD</aixm:lowerLimitReference>
+                           <aixm:horizontalProjection>
+                              <aixm:Surface gml:id="uuid.76208ab7-717c-4aab-9be2-e507b74348e7">
+                                 <gml:patches>
+                                    <gml:PolygonPatch>
+                                       <gml:exterior>
+                                          <gml:Ring>
+                                             <gml:curveMember>
+                                                <gml:Curve gml:id="uuid.93e1852c-8405-4cb2-b58d-8a1001a942da">
+                                                   <gml:segments>
+                                                      <gml:CircleByCenterPoint numArc="1">
+                                                         <gml:pos>5.0 52.0</gml:pos>
+                                                         <gml:radius uom="[nmi_i]">0.0</gml:radius>
+                                                      </gml:CircleByCenterPoint>
+                                                   </gml:segments>
+                                                </gml:Curve>
+                                             </gml:curveMember>
+                                          </gml:Ring>
+                                       </gml:exterior>
+                                    </gml:PolygonPatch>
+                                 </gml:patches>
+                              </aixm:Surface>
+                           </aixm:horizontalProjection>
+                        </aixm:AirspaceVolume>
+                     </iwxxm:geometry>
+                  </iwxxm:SIGMETEvolvingCondition>
+               </iwxxm:member>
+            </iwxxm:SIGMETEvolvingConditionCollection>
+         </iwxxm:analysis>
+         <iwxxm:forecastPositionAnalysis>
+            <iwxxm:SIGMETPositionCollection gml:id="uuid.e2eef130-70cc-4ae1-b89a-9d0f1cb21f89">
+               <iwxxm:phenomenonTime>
+                  <gml:TimeInstant gml:id="uuid.b7b0b1d5-54a6-44ed-82a3-6277ccf66689">
+                     <gml:timePosition>2018-08-27T18:00:00Z</gml:timePosition>
+                  </gml:TimeInstant>
+               </iwxxm:phenomenonTime>
+               <iwxxm:member>
+                  <iwxxm:SIGMETPosition approximateLocation="false"
+                                        gml:id="uuid.1defc517-004f-4fe5-bb84-7c80934a0e26">
+                     <iwxxm:geometry>
+                        <aixm:AirspaceVolume gml:id="uuid.746d3b7a-018e-4da6-83ec-08530c24d04b">
+                           <aixm:horizontalProjection>
+                              <aixm:Surface gml:id="uuid.b1ce00ff-4b5d-49aa-80fa-df06bf32bdbe">
+                                 <gml:patches>
+                                    <gml:PolygonPatch>
+                                       <gml:exterior>
+                                          <gml:Ring>
+                                             <gml:curveMember>
+                                                <gml:Curve gml:id="uuid.4f59fc8f-4cfe-498c-8fa2-70af0bfb6967">
+                                                   <gml:segments>
+                                                      <gml:CircleByCenterPoint numArc="1">
+                                                         <gml:pos>6.0 54.0</gml:pos>
+                                                         <gml:radius uom="[nmi_i]">0.0</gml:radius>
+                                                      </gml:CircleByCenterPoint>
+                                                   </gml:segments>
+                                                </gml:Curve>
+                                             </gml:curveMember>
+                                          </gml:Ring>
+                                       </gml:exterior>
+                                    </gml:PolygonPatch>
+                                 </gml:patches>
+                              </aixm:Surface>
+                           </aixm:horizontalProjection>
+                        </aixm:AirspaceVolume>
+                     </iwxxm:geometry>
+                  </iwxxm:SIGMETPosition>
+               </iwxxm:member>
+            </iwxxm:SIGMETPositionCollection>
+         </iwxxm:forecastPositionAnalysis>
+      </iwxxm:analysisAndForecastPositionAnalysis>
+   </iwxxm:analysisCollection>
+</iwxxm:SIGMET>

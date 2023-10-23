@@ -1,5 +1,14 @@
 package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
+import fi.fmi.avi.converter.ConversionException;
+import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
+import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMAixm511WxSerializer;
+import fi.fmi.avi.model.AviationWeatherMessage;
+import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
+import org.w3c.dom.Document;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -7,18 +16,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.w3c.dom.Document;
-
-import fi.fmi.avi.converter.ConversionException;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMSerializer;
-import fi.fmi.avi.model.AviationWeatherMessage;
-import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
-
 public class BulletinIWXXMStringSerializer<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>>
-        extends AbstractBulletinIWXXMSerializer<String, U, S> {
+        extends AbstractBulletinIWXXMAixm511WxSerializer<String, U, S> {
     private static final Pattern XML_DECLARATION_PATTERN = Pattern.compile("^\\s*<\\?xml\\s[^>]*\\?>(?:[ \t]*(?:\r\n|\r|\n))?");
     private static final int INDENT_LENGTH = 2;
 

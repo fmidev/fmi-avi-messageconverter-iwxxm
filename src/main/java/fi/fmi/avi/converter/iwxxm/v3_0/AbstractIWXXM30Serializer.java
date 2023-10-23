@@ -1,14 +1,15 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import java.util.List;
-
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMAixm511WxSerializer;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
+import fi.fmi.avi.converter.iwxxm.IWXXMSchemaResourceResolverAixm511Wx;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.AviationWeatherMessageOrCollection;
 import icao.iwxxm30.SpaceWeatherAdvisoryType;
 
-public abstract class AbstractIWXXM30Serializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMSerializer<T, S> {
+import java.util.List;
+
+public abstract class AbstractIWXXM30Serializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMAixm511WxSerializer<T, S> {
     private static IWXXMNamespaceContext nsCtx;
 
     private static synchronized IWXXMNamespaceContext getNSContext() {
@@ -22,7 +23,7 @@ public abstract class AbstractIWXXM30Serializer<T extends AviationWeatherMessage
 
     @Override
     public XMLSchemaInfo getSchemaInfo() {
-        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(F_SECURE_PROCESSING);
+        final XMLSchemaInfo schemaInfo = new XMLSchemaInfo(IWXXMSchemaResourceResolverAixm511Wx.getInstance(), F_SECURE_PROCESSING);
         schemaInfo.addSchemaSource(SpaceWeatherAdvisoryType.class.getResource("/int/icao/iwxxm/3.0.0/iwxxm.xsd"));
         schemaInfo.addSchematronRule(SpaceWeatherAdvisoryType.class.getResource("/schematron/xslt/int/icao/iwxxm/3.0.0/rule/iwxxm.xsl"));
         schemaInfo.addSchemaLocation("http://icao.int/iwxxm/3.0", "http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd");
