@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:SIGMET xmlns:iwxxm="http://icao.int/iwxxm/2023-1"
+              xmlns:gml="http://www.opengis.net/gml/3.2"
+              xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              gml:id="uuid.732f2907-63a8-42b9-aff1-95d4da9fec40"
+              isCancelReport="false"
+              permissibleUsage="OPERATIONAL"
+              reportStatus="NORMAL"
+              xsi:schemaLocation="http://icao.int/iwxxm/2023-1 http://schemas.wmo.int/iwxxm/2023-1/iwxxm.xsd">
+   <iwxxm:issueTime>
+      <gml:TimeInstant gml:id="uuid.d12cb650-5972-4a9b-97ae-3da9a2b04dbb">
+         <gml:timePosition>2023-10-25T11:25:00Z</gml:timePosition>
+      </gml:TimeInstant>
+   </iwxxm:issueTime>
+   <iwxxm:issuingAirTrafficServicesUnit>
+      <aixm:Unit gml:id="uuid.eadd21b9-5002-411d-979e-44cfacacb344">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.4ac21114-ad65-4552-8ba7-1240d6b6f997">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>AMSTERDAM</aixm:name>
+               <aixm:type>FIC</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:issuingAirTrafficServicesUnit>
+   <iwxxm:originatingMeteorologicalWatchOffice>
+      <aixm:Unit gml:id="uuid.cfd91654-2edf-415e-bab7-4a7dd5cae6ca">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.865de50d-0525-4595-b49a-93c1b51a98ac">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>DE BILT</aixm:name>
+               <aixm:type>MWO</aixm:type>
+               <aixm:designator>EHDB</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:originatingMeteorologicalWatchOffice>
+   <iwxxm:issuingAirTrafficServicesRegion>
+      <aixm:Airspace gml:id="uuid.3f5c33c1-7b30-42c9-ac89-e684a2b94cc2">
+         <aixm:timeSlice>
+            <aixm:AirspaceTimeSlice gml:id="uuid.16fdef76-8e54-49b7-9921-efac40096172">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:type>FIR</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+               <aixm:name>AMSTERDAM FIR</aixm:name>
+            </aixm:AirspaceTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Airspace>
+   </iwxxm:issuingAirTrafficServicesRegion>
+   <iwxxm:sequenceNumber>1</iwxxm:sequenceNumber>
+   <iwxxm:validPeriod>
+      <gml:TimePeriod gml:id="uuid.71829413-d211-4841-a778-8c871cd244e6">
+         <gml:beginPosition>2023-10-25T11:30:00Z</gml:beginPosition>
+         <gml:endPosition>2023-10-25T15:30:00Z</gml:endPosition>
+      </gml:TimePeriod>
+   </iwxxm:validPeriod>
+   <iwxxm:phenomenon xlink:href="http://codes.wmo.int/49-2/SigWxPhenomena/RDOACT_CLD"/>
+   <iwxxm:analysisCollection>
+      <iwxxm:analysisAndForecastPositionAnalysis gml:id="uuid.5a899b85-c83d-4328-ba0c-f0c27aec6e87">
+         <iwxxm:analysis>
+            <iwxxm:SIGMETEvolvingConditionCollection gml:id="uuid.2d388e0b-5cbc-4f1a-829e-51ed63fd38ac"
+                                                     timeIndicator="FORECAST">
+               <iwxxm:phenomenonTime>
+                  <gml:TimeInstant gml:id="uuid.d7912639-4e83-41f7-8c28-7f2b0f068e11">
+                     <gml:timePosition>2023-10-25T11:30:00Z</gml:timePosition>
+                  </gml:TimeInstant>
+               </iwxxm:phenomenonTime>
+               <iwxxm:member>
+                  <iwxxm:SIGMETEvolvingCondition
+                          gml:id="uuid.7e06fcd4-d5b4-44fe-967c-8bc04ab11005"
+                          intensityChange="NO_CHANGE">
+                     <iwxxm:geometry>
+                        <aixm:AirspaceVolume gml:id="uuid.378ef726-2c2c-49a3-b987-ab31f26fa5e7">
+                           <aixm:horizontalProjection>
+                              <aixm:Surface gml:id="uuid.213752ce-d332-4029-9059-122672f98912">
+                                 <gml:patches>
+                                    <gml:PolygonPatch>
+                                       <gml:exterior>
+                                          <gml:Ring>
+                                             <gml:curveMember>
+                                                <gml:Curve gml:id="uuid.48541b7d-71eb-47ef-a476-c9e1406f5c6d">
+                                                   <gml:segments>
+                                                      <gml:CircleByCenterPoint numArc="1">
+                                                         <gml:pos>5.333333333333333 52.0</gml:pos>
+                                                         <gml:radius uom="km">25.0</gml:radius>
+                                                      </gml:CircleByCenterPoint>
+                                                   </gml:segments>
+                                                </gml:Curve>
+                                             </gml:curveMember>
+                                          </gml:Ring>
+                                       </gml:exterior>
+                                    </gml:PolygonPatch>
+                                 </gml:patches>
+                              </aixm:Surface>
+                           </aixm:horizontalProjection>
+                        </aixm:AirspaceVolume>
+                     </iwxxm:geometry>
+                     <iwxxm:directionOfMotion nilReason="http://codes.wmo.int/common/nil/inapplicable"
+                                              uom="deg"
+                                              xsi:nil="true"/>
+                     <iwxxm:speedOfMotion uom="[kn_i]">0.0</iwxxm:speedOfMotion>
+                  </iwxxm:SIGMETEvolvingCondition>
+               </iwxxm:member>
+            </iwxxm:SIGMETEvolvingConditionCollection>
+         </iwxxm:analysis>
+      </iwxxm:analysisAndForecastPositionAnalysis>
+   </iwxxm:analysisCollection>
+</iwxxm:SIGMET>

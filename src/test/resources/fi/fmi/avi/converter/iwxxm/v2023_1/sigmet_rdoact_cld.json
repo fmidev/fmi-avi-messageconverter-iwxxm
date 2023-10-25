@@ -1,0 +1,59 @@
+{
+  "reportStatus": "NORMAL",
+  "permissibleUsage": "OPERATIONAL",
+  "issueTime": {
+    "completeTime": "2023-10-25T11:25:00Z"
+  },
+  "issuingAirTrafficServicesUnit": {
+    "name": "AMSTERDAM",
+    "type": "FIC",
+    "designator": "EHAA"
+  },
+  "meteorologicalWatchOffice": {
+    "name": "DE BILT",
+    "type": "MWO",
+    "designator": "EHDB"
+  },
+  "airspace": {
+    "designator": "EHAA",
+    "name": "AMSTERDAM FIR",
+    "type": "FIR"
+  },
+  "validityPeriod": {
+    "startTime": {
+      "completeTime": "2023-10-25T11:30:00Z"
+    },
+    "endTime": {
+      "completeTime": "2023-10-25T15:30:00Z"
+    }
+  },
+  "phenomenon": "RDOACT_CLD",
+  "sequenceNumber": "1",
+  "analysisGeometries": [
+    {
+      "geometry": {
+        "tacGeometry": {
+          "tacContent": "WI 25KM OF N5200 E00520"
+        },
+        "geoGeometry": {
+          "type": "CircleByCenterPoint",
+          "centerPointCoordinates": [
+            5.333333333333333,
+            52.0
+          ],
+          "radius": {
+            "value": 25.0,
+            "uom": "KM"
+          }
+        }
+      },
+      "analysisType": "FORECAST",
+      "intensityChange": "NO_CHANGE",
+      "approximateLocation": false,
+      "time": {
+        "completeTime": "2023-10-25T12:00:00Z"
+      }
+    }
+  ],
+  "translated": false
+}
