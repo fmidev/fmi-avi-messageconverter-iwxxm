@@ -34,7 +34,7 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
     protected static <T extends MeasureType> T asMeasure(final NumericMeasure input, final Class<T> measureType) {
         return create(measureType, measure -> {
             measure.setValue(input.getValue());
-            measure.setUom(input.getUom());
+            measure.setUom("km".equalsIgnoreCase(input.getUom()) ? "km" : input.getUom());
         });
     }
 
