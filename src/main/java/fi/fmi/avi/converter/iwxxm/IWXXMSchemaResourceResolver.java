@@ -1,17 +1,12 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import java.io.CharArrayReader;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.net.URL;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.apache.commons.io.IOUtils;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
+
+import java.io.*;
+import java.net.URL;
+import java.util.EnumSet;
 
 /**
  * Resolves the locations of the IWXXM XML Schema files within
@@ -19,28 +14,15 @@ import org.w3c.dom.ls.LSResourceResolver;
  * cache internally to avoid repeated class path searches
  * (keeps the full XML Schema file contents in memory as char arrays).
  */
-public class IWXXMSchemaResourceResolver implements LSResourceResolver {
+public abstract class IWXXMSchemaResourceResolver implements LSResourceResolver {
 
-    private static final ConcurrentMap<String, LSInput> cache = new ConcurrentHashMap<>();
-    //Singleton
-    private static IWXXMSchemaResourceResolver instance;
+    public abstract EnumSet<NamespaceLocation> ignoredNamespaceLocations();
 
-    private IWXXMSchemaResourceResolver() {
-    }
-
-    public synchronized static IWXXMSchemaResourceResolver getInstance() {
-        if (instance == null) {
-            instance = new IWXXMSchemaResourceResolver();
-        }
-        return instance;
-    }
-
-    @Override
-    public LSInput resolveResource(final String type, final String namespaceURI, final String publicId, final String systemId, final String baseURI) {
-        final NamespaceLocation ns = NamespaceLocation.forURI(namespaceURI);
-        if (ns != null) {
-            return cache.computeIfAbsent(ns.getFullPathFor(systemId),
-                    key -> new ClassLoaderResourceInput(ns.getFinderClass(), ns.getFullPathFor(systemId), publicId, systemId, baseURI));
+    protected NamespaceLocation forURI(final String namespaceURI) {
+        for (final NamespaceLocation namespace : EnumSet.complementOf(ignoredNamespaceLocations())) {
+            if (namespace.getNamespaceURI().equals(namespaceURI)) {
+                return namespace;
+            }
         }
         return null;
     }
@@ -58,12 +40,14 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
         SAMPLING20("http://www.opengis.net/sampling/2.0", "net/opengis/sampling/2.0/", net.opengis.sampling.SamplingFeatureComplexType.class),
         SAMPLING_SPATIAL20("http://www.opengis.net/samplingSpatial/2.0", "net/opengis/samplingSpatial/2.0/",
                 net.opengis.sampling.spatial.SFSpatialSamplingFeatureType.class),
-        AIXM51("http://www.aixm.aero/schema/5.1.1", "aero/aixm/schema/5.1.1b/", aero.aixm511.CodeICAOType.class),
+        AIXM511WX("http://www.aixm.aero/schema/5.1.1", "aero/aixm/schema/5.1.1b/", aero.aixm511.CodeICAOType.class),
+        AIXM511FULL("http://www.aixm.aero/schema/5.1.1", "aero/aixm/schema/5.1.1/", aero.aixm511full.CodeICAOType.class),
         METCE12("http://def.wmo.int/metce/2013", "int/wmo/metce/1.2/", wmo.metce2013.ProcessType.class),
         COLLECT12("http://def.wmo.int/collect/2014", "int/wmo/collect/1.2/", wmo.collect2014.MeteorologicalBulletinType.class),
         OPM12("http://def.wmo.int/opm/2013", "int/wmo/opm/1.2/", wmo.opm2013.AbstractObservablePropertyPropertyType.class),
         IWXXM21("http://icao.int/iwxxm/2.1", "int/icao/iwxxm/2.1.1/", icao.iwxxm21.TAFType.class),
-        IWXXM30("http://icao.int/iwxxm/3.0", "int/icao/iwxxm/3.0.0/", icao.iwxxm30.SpaceWeatherAdvisoryType.class);
+        IWXXM30("http://icao.int/iwxxm/3.0", "int/icao/iwxxm/3.0.0/", icao.iwxxm30.SpaceWeatherAdvisoryType.class),
+        IWXXM2023_1("http://icao.int/iwxxm/2023-1", "int/icao/iwxxm/2023_1/", icao.iwxxm2023_1.AIRMETType.class);
 
         private final String namespaceURI;
         private final String pathPrefix;
@@ -73,15 +57,6 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
             this.namespaceURI = namespaceURI;
             this.pathPrefix = pathPrefix;
             this.finderClass = finderClass;
-        }
-
-        public static NamespaceLocation forURI(final String namespaceURI) {
-            for (final NamespaceLocation n : values()) {
-                if (n.getNamespaceURI().equals(namespaceURI)) {
-                    return n;
-                }
-            }
-            return null;
         }
 
         public String getFullPathFor(final String systemId) {
@@ -101,7 +76,7 @@ public class IWXXMSchemaResourceResolver implements LSResourceResolver {
         }
     }
 
-    private static class ClassLoaderResourceInput implements LSInput {
+    protected static class ClassLoaderResourceInput implements LSInput {
         private final URL url;
         private final String publicId;
         private final String systemId;

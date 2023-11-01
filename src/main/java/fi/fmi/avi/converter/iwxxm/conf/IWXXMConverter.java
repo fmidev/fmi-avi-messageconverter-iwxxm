@@ -1,9 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.conf;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.w3c.dom.Document;
-
 import fi.fmi.avi.converter.ConversionSpecification;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
@@ -16,6 +12,9 @@ import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import icao.iwxxm21.TAFType;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.w3c.dom.Document;
 
 /**
  * Created by rinne on 10/02/17.
@@ -188,6 +187,18 @@ public class IWXXMConverter {
             "SIGMET, XML/IWXXM 3.0");
 
     /**
+     * Pre-configured spec for {@link SIGMET} to IWXXM 2023-1 XML format SIGMET document String.
+     */
+    public static final ConversionSpecification<SIGMET, String> SIGMET_POJO_TO_IWXXM2023_1_STRING = new ConversionSpecification<>(SIGMET.class, String.class, null,
+            "SIGMET, XML/IWXXM 2023-1");
+
+    /**
+     * Pre-configured spec for {@link SIGMET} to IWXXM 2023-1 XML format SIGMET document DOM Node.
+     */
+    public static final ConversionSpecification<SIGMET, Document> SIGMET_POJO_TO_IWXXM2023_1_DOM = new ConversionSpecification<>(SIGMET.class, Document.class, null,
+            "SIGMET, XML/IWXXM 2023-1");
+
+    /**
      * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document String.
     */
     public static final ConversionSpecification<AIRMET, String> AIRMET_POJO_TO_IWXXM21_STRING = new ConversionSpecification<>(AIRMET.class, String.class, null,
@@ -206,10 +217,22 @@ public class IWXXMConverter {
             "AIRMET, XML/IWXXM 3.0");
 
     /**
-    * Pre-configured spec for {@link AIRMET} to IWXXM 2.1 XML format AIRMET document DOM Node.
+     * Pre-configured spec for {@link AIRMET} to IWXXM 3.0 XML format AIRMET document DOM Node.
     */
     public static final ConversionSpecification<AIRMET, Document> AIRMET_POJO_TO_IWXXM30_DOM = new ConversionSpecification<>(AIRMET.class, Document.class, null,
             "AIRMET, XML/IWXXM 3.0");
+
+    /**
+     * Pre-configured spec for {@link AIRMET} to IWXXM 2023-1 XML format AIRMET document String.
+     */
+    public static final ConversionSpecification<AIRMET, String> AIRMET_POJO_TO_IWXXM2023_1_STRING = new ConversionSpecification<>(AIRMET.class, String.class, null,
+            "AIRMET, XML/IWXXM 2023-1");
+
+    /**
+     * Pre-configured spec for {@link AIRMET} to IWXXM 2023-1 XML format AIRMET document DOM Node.
+     */
+    public static final ConversionSpecification<AIRMET, Document> AIRMET_POJO_TO_IWXXM2023_1_DOM = new ConversionSpecification<>(AIRMET.class, Document.class, null,
+            "AIRMET, XML/IWXXM 2023-1");
 
     // *******************
     //  Space weather

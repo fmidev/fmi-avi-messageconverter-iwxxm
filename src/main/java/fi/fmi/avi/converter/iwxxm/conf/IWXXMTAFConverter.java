@@ -1,9 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.conf;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.w3c.dom.Document;
-
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.BulletinIWXXMDOMSerializer;
@@ -13,7 +9,9 @@ import fi.fmi.avi.converter.iwxxm.v2_1.taf.TAFIWXXMParser;
 import fi.fmi.avi.converter.iwxxm.v2_1.taf.TAFIWXXMSerializer;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
-import icao.iwxxm21.TAFType;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.w3c.dom.Document;
 
 @Configuration
 public class IWXXMTAFConverter {
@@ -87,12 +85,6 @@ public class IWXXMTAFConverter {
     @Bean
     public AbstractIWXXMSerializer<TAF, Document> tafIWXXM30DOMSerializer() {
         return new fi.fmi.avi.converter.iwxxm.v3_0.taf.TAFIWXXMSerializer.ToDOM();
-    }
-
-    // TODO: check if this bean / class is actually used / required somewhere?
-    @Bean
-    public AviMessageSpecificConverter<TAF, TAFType> tafIWXXMJAXBSerializer() {
-        return new TAFIWXXMSerializer.ToJAXBObject();
     }
 
     @Bean

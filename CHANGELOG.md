@@ -31,11 +31,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - ...
 
+## [v5.0.0-beta2] - 2023-10-23
+
+### Added
+
+- Experimental support for SIGMET/AIRMET IWXXM 2023-1 serialization [#121]
+
 ## [v5.0.0-beta1] - 2023-09-27
 
 ### Added
 
-- Experimental support for SIGMET/AIRMET IWXXM serialization [#114]
+- Experimental support for SIGMET/AIRMET IWXXM 3.0 serialization [#114]
 
 ## [v4.2.0] - 2022-08-24
 
@@ -97,6 +103,8 @@ on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwx
 
 [Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-4.2.0...HEAD
 
+[v5.0.0-beta2]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-5.0.0-beta2
+
 [v5.0.0-beta1]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-5.0.0-beta1
 
 [v4.2.0]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-4.2.0
@@ -152,3 +160,5 @@ on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwx
 [#110]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/issues/110
 
 [#114]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/114
+
+[#121]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/121

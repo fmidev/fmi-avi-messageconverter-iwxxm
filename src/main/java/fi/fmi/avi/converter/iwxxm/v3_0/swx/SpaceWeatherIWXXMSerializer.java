@@ -1,63 +1,27 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.UUID;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
-import net.opengis.gml32.AbstractTimeObjectType;
-import net.opengis.gml32.TimeIndeterminateValueType;
-import net.opengis.gml32.TimeInstantPropertyType;
-import net.opengis.gml32.TimeInstantType;
-import net.opengis.gml32.TimePositionType;
-import net.opengis.gml32.TimePrimitivePropertyType;
-
-import org.w3c.dom.Document;
-
-import aero.aixm511.AirspaceVolumeType;
-import aero.aixm511.CodeOrganisationDesignatorType;
-import aero.aixm511.CodeUnitType;
-import aero.aixm511.CodeVerticalReferenceType;
 import aero.aixm511.SurfacePropertyType;
-import aero.aixm511.TextNameType;
-import aero.aixm511.UnitTimeSlicePropertyType;
-import aero.aixm511.UnitTimeSliceType;
-import aero.aixm511.UnitType;
-import fi.fmi.avi.converter.ConversionException;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.IssueList;
+import aero.aixm511.*;
+import fi.fmi.avi.converter.*;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMAixm511WxSerializer;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.swx.AirspaceVolume;
-import fi.fmi.avi.model.swx.IssuingCenter;
-import fi.fmi.avi.model.swx.NextAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
-import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
-import fi.fmi.avi.model.swx.SpaceWeatherRegion;
-import icao.iwxxm30.AbstractTimeObjectPropertyType;
+import fi.fmi.avi.model.swx.*;
 import icao.iwxxm30.AirspaceVolumePropertyType;
-import icao.iwxxm30.PermissibleUsageReasonType;
-import icao.iwxxm30.PermissibleUsageType;
-import icao.iwxxm30.ReportStatusType;
-import icao.iwxxm30.SpaceWeatherAdvisoryType;
-import icao.iwxxm30.SpaceWeatherAnalysisPropertyType;
-import icao.iwxxm30.SpaceWeatherAnalysisType;
-import icao.iwxxm30.SpaceWeatherLocationType;
-import icao.iwxxm30.SpaceWeatherPhenomenaType;
-import icao.iwxxm30.SpaceWeatherRegionPropertyType;
-import icao.iwxxm30.SpaceWeatherRegionType;
-import icao.iwxxm30.StringWithNilReasonType;
-import icao.iwxxm30.TimeIndicatorType;
 import icao.iwxxm30.UnitPropertyType;
+import icao.iwxxm30.*;
+import net.opengis.gml32.*;
+import org.w3c.dom.Document;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import java.io.InputStream;
+import java.util.List;
+import java.util.UUID;
 
 public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Serializer<SpaceWeatherAdvisory, T> {
     private static final int REQUIRED_NUMBER_OF_ANALYSES = 5;
@@ -72,7 +36,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         final ConversionResult<T> result = new ConversionResult<>();
 
         final SpaceWeatherAdvisoryType swxType = create(SpaceWeatherAdvisoryType.class);
-        swxType.setId(UUID_PREFIX + UUID.randomUUID().toString());
+        swxType.setId(UUID_PREFIX + UUID.randomUUID());
 
         if (input.getIssueTime().isPresent()) {
             swxType.setIssueTime(create(TimeInstantPropertyType.class, prop -> getIssueTime(prop, input.getIssueTime().get())));
@@ -207,7 +171,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             analysisType.setTimeIndicator(TimeIndicatorType.FORECAST);
         }
 
-        analysisType.setId(UUID_PREFIX + UUID.randomUUID().toString());
+        analysisType.setId(UUID_PREFIX + UUID.randomUUID());
         analysisType.setPhenomenonTime(create(AbstractTimeObjectPropertyType.class, prop -> getAnalysisTime(prop, analysis.getTime())));
 
         final int regionsAmount = analysis.getRegions().size();
@@ -258,7 +222,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
 
     private void getAnalysisTime(final AbstractTimeObjectPropertyType prop, final PartialOrCompleteTimeInstant time) {
         final TimeInstantType timeInstantType = create(TimeInstantType.class);
-        timeInstantType.setId(UUID_PREFIX + UUID.randomUUID().toString());
+        timeInstantType.setId(UUID_PREFIX + UUID.randomUUID());
         final TimePositionType timePositionType = create(TimePositionType.class);
         toIWXXMDateTime(time).ifPresent(t -> timePositionType.getValue().add(t));
         timeInstantType.setTimePosition(timePositionType);
@@ -269,10 +233,10 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
 
     private void getIssuingCenter(final UnitPropertyType prop, final IssuingCenter issuingCenter) {
         final UnitType unitType = create(UnitType.class);
-        unitType.setId(UUID_PREFIX + UUID.randomUUID().toString());
+        unitType.setId(UUID_PREFIX + UUID.randomUUID());
         final UnitTimeSlicePropertyType unitTimeSlicePropertyType = create(UnitTimeSlicePropertyType.class);
         final UnitTimeSliceType unitTimeSliceType = create(UnitTimeSliceType.class);
-        unitTimeSliceType.setId(UUID_PREFIX + UUID.randomUUID().toString());
+        unitTimeSliceType.setId(UUID_PREFIX + UUID.randomUUID());
         final TextNameType textNameType = create(TextNameType.class);
         if (issuingCenter.getName().isPresent()) {
             textNameType.setValue(issuingCenter.getName().get());
@@ -300,27 +264,27 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         final TimePositionType tp = create(TimePositionType.class);
         toIWXXMDateTime(time).ifPresent(t -> tp.getValue().add(t));
         ti.setTimePosition(tp);
-        ti.setId(UUID_PREFIX + UUID.randomUUID().toString());
+        ti.setId(UUID_PREFIX + UUID.randomUUID());
         prop.setTimeInstant(ti);
     }
 
     private void getAirspaceVolumeProperty(final AirspaceVolumePropertyType prop, final AirspaceVolume volume) {
         final AirspaceVolumeType airspaceVolumeType = create(AirspaceVolumeType.class);
         if (volume.getHorizontalProjection().isPresent()) {
-            airspaceVolumeType.setId(UUID_PREFIX + UUID.randomUUID().toString());
-            final SurfacePropertyType surfaceProperty = createSurface(volume.getHorizontalProjection().get(), UUID_PREFIX + UUID.randomUUID().toString());
+            airspaceVolumeType.setId(UUID_PREFIX + UUID.randomUUID());
+            final SurfacePropertyType surfaceProperty = createSurface(volume.getHorizontalProjection().get(), UUID_PREFIX + UUID.randomUUID());
             airspaceVolumeType.setHorizontalProjection(surfaceProperty);
         }
 
         volume.getLowerLimit().ifPresent(limit -> {
             // TODO: Once xsi:nil can be set, setLowerLimit can be moved outside presence test
-            airspaceVolumeType.setLowerLimit(toValDistanceVertical(limit).orElseGet(AbstractIWXXMSerializer::nilValDistanceVertical));
+            airspaceVolumeType.setLowerLimit(toValDistanceVertical(limit).orElseGet(AbstractIWXXMAixm511WxSerializer::nilValDistanceVertical));
             airspaceVolumeType.setLowerLimitReference(create(CodeVerticalReferenceType.class,
                     codeVerticalReferenceType -> volume.getLowerLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
         });
         volume.getUpperLimit().ifPresent(limit -> {
             // TODO: Once xsi:nil can be set, setLowerLimit can be moved outside presence test
-            airspaceVolumeType.setUpperLimit(toValDistanceVertical(limit).orElseGet(AbstractIWXXMSerializer::nilValDistanceVertical));
+            airspaceVolumeType.setUpperLimit(toValDistanceVertical(limit).orElseGet(AbstractIWXXMAixm511WxSerializer::nilValDistanceVertical));
             airspaceVolumeType.setUpperLimitReference(create(CodeVerticalReferenceType.class,
                     codeVerticalReferenceType -> volume.getUpperLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
         });
@@ -339,7 +303,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             nextAdvisory.getTime()//
                     .<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                     .ifPresent(t -> timePosition.getValue().add(t));
-            timeInstant.setId(UUID_PREFIX + UUID.randomUUID().toString());
+            timeInstant.setId(UUID_PREFIX + UUID.randomUUID());
             timeInstant.setTimePosition(timePosition);
             prop.setTimeInstant(timeInstant);
         } else {

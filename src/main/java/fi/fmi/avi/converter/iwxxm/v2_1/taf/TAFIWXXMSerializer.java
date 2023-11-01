@@ -1,7 +1,27 @@
 package fi.fmi.avi.converter.iwxxm.v2_1.taf;
 
-import static fi.fmi.avi.model.AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE;
+import aero.aixm511.AirportHeliportType;
+import fi.fmi.avi.converter.*;
+import fi.fmi.avi.converter.ConversionIssue.Type;
+import fi.fmi.avi.converter.ConversionResult.Status;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
+import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
+import fi.fmi.avi.model.*;
+import fi.fmi.avi.model.AviationWeatherMessage.ReportStatus;
+import fi.fmi.avi.model.taf.*;
+import icao.iwxxm21.*;
+import net.opengis.gml32.*;
+import net.opengis.om20.OMObservationPropertyType;
+import net.opengis.om20.OMObservationType;
+import net.opengis.om20.OMProcessPropertyType;
+import net.opengis.om20.TimeObjectPropertyType;
+import org.w3c.dom.Document;
+import wmo.metce2013.ProcessType;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -9,77 +29,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
-import net.opengis.gml32.AbstractTimeObjectType;
-import net.opengis.gml32.AngleType;
-import net.opengis.gml32.FeaturePropertyType;
-import net.opengis.gml32.LengthType;
-import net.opengis.gml32.MeasureType;
-import net.opengis.gml32.ReferenceType;
-import net.opengis.gml32.SpeedType;
-import net.opengis.gml32.StringOrRefType;
-import net.opengis.gml32.TimeInstantPropertyType;
-import net.opengis.gml32.TimeInstantType;
-import net.opengis.gml32.TimePeriodPropertyType;
-import net.opengis.gml32.TimePeriodType;
-import net.opengis.gml32.TimePositionType;
-import net.opengis.om20.OMObservationPropertyType;
-import net.opengis.om20.OMObservationType;
-import net.opengis.om20.OMProcessPropertyType;
-import net.opengis.om20.TimeObjectPropertyType;
-
-import org.w3c.dom.Document;
-
-import aero.aixm511.AirportHeliportType;
-import fi.fmi.avi.converter.ConversionException;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.ConversionIssue.Type;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.ConversionResult.Status;
-import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.converter.iwxxm.v2_1.AbstractIWXXM21Serializer;
-import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationWeatherMessage.ReportStatus;
-import fi.fmi.avi.model.CloudForecast;
-import fi.fmi.avi.model.NumericMeasure;
-import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
-import fi.fmi.avi.model.SurfaceWind;
-import fi.fmi.avi.model.Weather;
-import fi.fmi.avi.model.taf.TAF;
-import fi.fmi.avi.model.taf.TAFAirTemperatureForecast;
-import fi.fmi.avi.model.taf.TAFBaseForecast;
-import fi.fmi.avi.model.taf.TAFChangeForecast;
-import fi.fmi.avi.model.taf.TAFForecast;
-import icao.iwxxm21.AerodromeAirTemperatureForecastPropertyType;
-import icao.iwxxm21.AerodromeAirTemperatureForecastType;
-import icao.iwxxm21.AerodromeCloudForecastPropertyType;
-import icao.iwxxm21.AerodromeCloudForecastType;
-import icao.iwxxm21.AerodromeForecastChangeIndicatorType;
-import icao.iwxxm21.AerodromeForecastWeatherType;
-import icao.iwxxm21.AerodromeSurfaceWindForecastPropertyType;
-import icao.iwxxm21.AerodromeSurfaceWindForecastType;
-import icao.iwxxm21.AirportHeliportPropertyType;
-import icao.iwxxm21.MeteorologicalAerodromeForecastRecordPropertyType;
-import icao.iwxxm21.MeteorologicalAerodromeForecastRecordType;
-import icao.iwxxm21.PermissibleUsageReasonType;
-import icao.iwxxm21.PermissibleUsageType;
-import icao.iwxxm21.RelationalOperatorType;
-import icao.iwxxm21.TAFReportStatusType;
-import icao.iwxxm21.TAFType;
-import wmo.metce2013.ProcessType;
+import static fi.fmi.avi.model.AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE;
 
 /**
  * Common functionality for conversions related to producing IWXXM TAF messages.
  *
- * @param <T>
- *         the type of the
+ * @param <T> the type of the
  */
 public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TAF, T> {
 
@@ -94,11 +49,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
     /**
      * Converts a TAF object into another format.
      *
-     * @param input
-     *         input message
-     * @param hints
-     *         parsing hints
-     *
+     * @param input input message
+     * @param hints parsing hints
      * @return the conversion result.
      */
     @Override
@@ -138,8 +90,8 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
 
         if (!input.isMissingMessage()) {
             if (input.getValidityTime().isPresent()) {
-                final String validityStart = input.getValidityTime().<String> flatMap(AbstractIWXXMSerializer::startToIWXXMDateTime).orElse(null);
-                final String validityEnd = input.getValidityTime().<String> flatMap(AbstractIWXXMSerializer::endToIWXXMDateTime).orElse(null);
+                final String validityStart = input.getValidityTime().flatMap(AbstractIWXXMSerializer::startToIWXXMDateTime).orElse(null);
+                final String validityEnd = input.getValidityTime().flatMap(AbstractIWXXMSerializer::endToIWXXMDateTime).orElse(null);
                 if (validityStart == null || validityEnd == null) {
                     result.addIssue(new ConversionIssue(Type.MISSING_DATA, "Validity time for TAF is missing complete start or end"));
                     return result;
@@ -182,7 +134,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
     }
 
     protected void updateBaseForecast(final TAF source, final TAFType target, final String issueTimeId, final String validTimeId, final String foiId,
-            final String processId, final String aerodromeId, final ConversionResult<?> result) {
+                                      final String processId, final String aerodromeId, final ConversionResult<?> result) {
 
         final Optional<TAFBaseForecast> baseForecastInput = source.getBaseForecast();
         if (baseForecastInput.isPresent()) {
@@ -241,7 +193,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
 
     @SuppressWarnings("unchecked")
     protected void updateChangeForecast(final TAF source, final TAFType target, final String issueTimeId, final String validTimeId, final String foid,
-            final String processId, final ConversionResult<?> result) {
+                                        final String processId, final ConversionResult<?> result) {
 
         final Optional<List<TAFChangeForecast>> fcts = source.getChangeForecasts();
         final ZonedDateTime tafValidityStart = source.getValidityTime()//
@@ -427,7 +379,7 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
     }
 
     private void setAirTemperatureForecast(final TAFAirTemperatureForecast source, final AerodromeAirTemperatureForecastType target,
-            final ConversionResult<?> result) {
+                                           final ConversionResult<?> result) {
         if (source != null) {
             NumericMeasure measure = source.getMinTemperature();
             if (!source.getMinTemperatureTime().getCompleteTime().isPresent()) {
@@ -564,20 +516,6 @@ public abstract class TAFIWXXMSerializer<T> extends AbstractIWXXM21Serializer<TA
         protected IssueList validate(final String output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
             return TAFIWXXMSerializer.validateStringAgainstSchemaAndSchematron(output, schemaInfo, hints);
         }
-    }
-
-    public static class ToJAXBObject extends TAFIWXXMSerializer<TAFType> {
-
-        @Override
-        protected TAFType render(final TAFType taf, final ConversionHints hints) {
-            return taf;
-        }
-
-        @Override
-        protected IssueList validate(final TAFType output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) {
-            return TAFIWXXMSerializer.validateJAXBObjectAgainstSchemaAndSchematron(output, TAFType.class, schemaInfo, hints);
-        }
-
     }
 
 }

@@ -1,18 +1,11 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import static java.util.Objects.requireNonNull;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
 
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
@@ -20,13 +13,14 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import java.io.Closeable;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
+import static java.util.Objects.requireNonNull;
 
 public class XMLSchemaInfo {
     public static final String SCHEMA_LOCATION_ATTRIBUTE = "schemaLocation";
@@ -39,13 +33,8 @@ public class XMLSchemaInfo {
     private final Map<String, String> schemaLocations = new LinkedHashMap<>();
     private final List<URL> schematronRules = new ArrayList<>();
 
-    public XMLSchemaInfo() {
-        this(false);
-    }
-
-    public XMLSchemaInfo(final boolean secureProcessing) {
-        final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolver.getInstance();
-        schemaFactory.setResourceResolver(resolver);
+    public XMLSchemaInfo(final IWXXMSchemaResourceResolver schemaResourceResolver, final boolean secureProcessing) {
+        schemaFactory.setResourceResolver(schemaResourceResolver);
         try {
             schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, secureProcessing);
         } catch (SAXNotSupportedException | SAXNotRecognizedException e) {
