@@ -36,6 +36,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -169,26 +170,34 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
                     "All time references must be completed before converting to IWXXM"));
             return result;
         }
-        if (!input.getPhenomenon().isPresent()) {
+        // Test SIGMETs do not need a phenomenon
+        final boolean testSigmet = input.getPermissibleUsage().orElse(null) == AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL
+                && input.getPermissibleUsageReason().orElse(null) == AviationCodeListUser.PermissibleUsageReason.TEST;
+        if (!input.getPhenomenon().isPresent() && !testSigmet) {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
                     "A SIGMET phenomenon has to be specified"));
             return result;
         }
 
         final SIGMETType sigmet;
-        AeronauticalSignificantWeatherPhenomenon sigmetPhenomen = input.getPhenomenon().get();
-        switch (sigmetPhenomen) {
-            case TC:
-                sigmet = create(TropicalCycloneSIGMETType.class);
-                sigmet.setId(getUUID());
-                break;
-            case VA:
-                sigmet = create(VolcanicAshSIGMETType.class);
-                sigmet.setId(getUUID());
-                break;
-            default:
-                sigmet = create(SIGMETType.class);
-                sigmet.setId(getUUID());
+        AeronauticalSignificantWeatherPhenomenon sigmetPhenomen = input.getPhenomenon().orElse(null);
+        if (sigmetPhenomen == null) {
+            sigmet = create(SIGMETType.class);
+            sigmet.setId(getUUID());
+        } else {
+            switch (sigmetPhenomen) {
+                case TC:
+                    sigmet = create(TropicalCycloneSIGMETType.class);
+                    sigmet.setId(getUUID());
+                    break;
+                case VA:
+                    sigmet = create(VolcanicAshSIGMETType.class);
+                    sigmet.setId(getUUID());
+                    break;
+                default:
+                    sigmet = create(SIGMETType.class);
+                    sigmet.setId(getUUID());
+            }
         }
 
         if (input.getCancelledReference().isPresent()) {
@@ -199,7 +208,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
             sigmet.setPhenomenon(null);
             getCancelledTimePeriodPropertyType(input)
                     .ifPresent(sigmet::setCancelledReportValidPeriod);
-            if (sigmetPhenomen.equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)) {
+            if (AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA.equals(sigmetPhenomen)) {
                 input.getVAInfo().flatMap(VAInfo::getVolcanicAshMovedToFIR).ifPresent(movedToFir -> {
                     ((VolcanicAshSIGMETType) sigmet).setVolcanicAshMovedToFIR(
                             create(AirspacePropertyType.class, prop -> prop.setAirspace(create(AirspaceType.class, airspace -> {
@@ -223,8 +232,10 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
         } else {
             sigmet.setReportStatus(ReportStatusType.NORMAL);
             sigmet.setIsCancelReport(false);
-            sigmet.setPhenomenon(create(AeronauticalSignificantWeatherPhenomenonType.class, phen -> phen.setHref(
-                    AviationCodeListUser.CODELIST_SIGWX_PHENOMENA_ROOT + sigmetPhenomen.name())));
+            if (sigmetPhenomen != null) {
+                sigmet.setPhenomenon(create(AeronauticalSignificantWeatherPhenomenonType.class, phen -> phen.setHref(
+                        AviationCodeListUser.CODELIST_SIGWX_PHENOMENA_ROOT + sigmetPhenomen.name())));
+            }
         }
 
         // Use current time as issueTime if missing
@@ -301,38 +312,44 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
         ZonedDateTime startTime = input.getValidityPeriod().getStartTime().get().getCompleteTime().get();
 
         if (!input.getCancelledReference().isPresent()) {
-            final String analysisTime = input.getAnalysisGeometries()//
-                    .map(AbstractIWXXM20231Serializer::getFirstOrNull)//
-                    .flatMap(PhenomenonGeometryWithHeight::getTime)//
-                    .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
-                    .orElse(null);
-            boolean noForecasts = !input.getForecastGeometries().isPresent() || (input.getForecastGeometries().get().isEmpty());
+            final boolean hasAnalaysisGeometries = input.getAnalysisGeometries().isPresent() && !input.getAnalysisGeometries().get().isEmpty();
+            final boolean hasForecasts = input.getForecastGeometries().isPresent() && !input.getForecastGeometries().get().isEmpty();
 
-            List<PhenomenonGeometryWithHeight> ans = input.getAnalysisGeometries().get();
-
-            final AnalysisAndForecastPositionAnalysisType analysis = create(AnalysisAndForecastPositionAnalysisType.class, a -> a.setId(getUUID()));
-            final SIGMETEvolvingConditionCollectionType secct = createAnalysis(ans, analysisTime, startTime, noForecasts);
-            analysis.setAnalysis(create(SIGMETEvolvingConditionCollectionPropertyType.class, s -> s.setSIGMETEvolvingConditionCollection(secct)));
-
-            if (input.getForecastGeometries().isPresent()) {
-                final String fcTime = input.getForecastGeometries()//
+            if (hasAnalaysisGeometries || hasForecasts) {
+                final String analysisTime = input.getAnalysisGeometries()//
                         .map(AbstractIWXXM20231Serializer::getFirstOrNull)//
-                        .flatMap(PhenomenonGeometry::getTime)//
+                        .flatMap(PhenomenonGeometryWithHeight::getTime)//
                         .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                         .orElse(null);
 
-                boolean noVaExp = false;
-                if (input.getVAInfo().isPresent()) {
-                    noVaExp = input.getForecastGeometries().get().get(0).getNoVolcanicAshExpected().orElse(false);
+                final AnalysisAndForecastPositionAnalysisType analysis = create(AnalysisAndForecastPositionAnalysisType.class, a -> a.setId(getUUID()));
+                final List<PhenomenonGeometryWithHeight> analysisGeometries = input.getAnalysisGeometries().orElse(Collections.emptyList());
+
+                if (hasAnalaysisGeometries) {
+                    final SIGMETEvolvingConditionCollectionType secct = createAnalysis(analysisGeometries, analysisTime, startTime, hasForecasts);
+                    analysis.setAnalysis(create(SIGMETEvolvingConditionCollectionPropertyType.class, s -> s.setSIGMETEvolvingConditionCollection(secct)));
                 }
 
-                SIGMETPositionCollectionType fpa = createFPA(input.getForecastGeometries().get(), fcTime, noVaExp);
-                analysis.setForecastPositionAnalysis(create(SIGMETPositionCollectionPropertyType.class, s -> s.setSIGMETPositionCollection(fpa)));
+                if (input.getForecastGeometries().isPresent()) {
+                    final String fcTime = input.getForecastGeometries()//
+                            .map(AbstractIWXXM20231Serializer::getFirstOrNull)//
+                            .flatMap(PhenomenonGeometry::getTime)//
+                            .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                            .orElse(null);
+
+                    boolean noVaExp = false;
+                    if (input.getVAInfo().isPresent()) {
+                        noVaExp = input.getForecastGeometries().get().get(0).getNoVolcanicAshExpected().orElse(false);
+                    }
+
+                    SIGMETPositionCollectionType fpa = createFPA(input.getForecastGeometries().get(), fcTime, noVaExp);
+                    analysis.setForecastPositionAnalysis(create(SIGMETPositionCollectionPropertyType.class, s -> s.setSIGMETPositionCollection(fpa)));
+                }
+
+                sigmet.getAnalysisCollection().add(create(SIGMETType.AnalysisCollection.class, ac -> ac.setAnalysisAndForecastPositionAnalysis(analysis)));
             }
 
-            sigmet.getAnalysisCollection().add(create(SIGMETType.AnalysisCollection.class, ac -> ac.setAnalysisAndForecastPositionAnalysis(analysis)));
-
-            if (sigmetPhenomen.equals(AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA)
+            if (sigmetPhenomen == AviationCodeListUser.AeronauticalSignificantWeatherPhenomenon.VA
                     && input.getVAInfo().isPresent()
                     && input.getVAInfo().get().getVolcano().isPresent()) {
                 final VolcanoDescription volcano = input.getVAInfo().get().getVolcano().get();
@@ -383,7 +400,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
     @SuppressWarnings("unchecked")
     private SIGMETEvolvingConditionCollectionType createAnalysis(
             final List<PhenomenonGeometryWithHeight> ans, final String analysisTime, final ZonedDateTime validityStart,
-            final boolean noForecasts) {
+            final boolean hasForecasts) {
 
         AbstractTimeObjectPropertyType phenTimeProp;
         if (analysisTime != null) {
@@ -408,9 +425,9 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
                     ecct.setPhenomenonTime(phenTimeProp);
                     ecct.setId(getUUID());
                     for (PhenomenonGeometryWithHeight an : ans) {
-                        if (an.getAnalysisType().equals(SigmetAnalysisType.FORECAST)) {
+                        if (an.getAnalysisType().orElse(null) == SigmetAnalysisType.FORECAST) {
                             ecct.setTimeIndicator(TimeIndicatorType.FORECAST);
-                        } else if (an.getAnalysisType().equals(SigmetAnalysisType.OBSERVATION)) {
+                        } else if (an.getAnalysisType().orElse(null) == SigmetAnalysisType.OBSERVATION) {
                             ecct.setTimeIndicator(TimeIndicatorType.OBSERVATION);
                         } else {
                             ecct.setTimeIndicator(null);
@@ -436,7 +453,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
                                 sect.setGeometry(create(AirspaceVolumePropertyType.class, avpt -> {
                                     avpt.setAirspaceVolume(createAirspaceVolume(an));
                                 }));
-                                if (noForecasts) { // Only add Motion elements if there are no forecasts
+                                if (!hasForecasts) { // Only add Motion elements if there are no forecasts
                                     if (an.getMovingDirection().isPresent()) {
                                         final AngleWithNilReasonType angl = new AngleWithNilReasonType();
                                         final NumericMeasure md = an.getMovingDirection().get();

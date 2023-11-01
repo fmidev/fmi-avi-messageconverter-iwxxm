@@ -1,0 +1,34 @@
+{
+  "reportStatus": "NORMAL",
+  "issuingAirTrafficServicesUnit": {
+    "name": "AMSTERDAM",
+    "type": "FIC",
+    "designator": "EHAA"
+  },
+  "meteorologicalWatchOffice": {
+    "name": "DE BILT",
+    "type": "MWO",
+    "designator": "EHDB"
+  },
+  "airspace": {
+    "designator": "EHAA",
+    "name": "AMSTERDAM FIR",
+    "type": "FIR"
+  },
+  "issueTime": {
+    "completeTime": "2023-10-03T11:25Z"
+  },
+  "validityPeriod": {
+    "startTime": {
+      "completeTime": "2023-10-03T11:30Z"
+    },
+    "endTime": {
+      "completeTime": "2023-10-03T15:30Z"
+    }
+  },
+  "sequenceNumber": "M01",
+  "translatedTAC": "EHAA SIGMET M01 VALID 111130/111530 EHDB-\r\nEHAA AMSTERDAM FIR TEST=",
+  "translated": false,
+  "permissibleUsage": "NON_OPERATIONAL",
+  "permissibleUsageReason": "TEST"
+}

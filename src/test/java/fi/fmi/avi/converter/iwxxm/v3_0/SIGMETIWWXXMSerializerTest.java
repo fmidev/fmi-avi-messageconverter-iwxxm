@@ -10,6 +10,7 @@ import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.sigmet.immutable.SIGMETImpl;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -186,6 +187,7 @@ public class SIGMETIWWXXMSerializerTest {
     }
 
     @Test
+    @Ignore("Test sigmets without meteorological information cannot be represented in IWXXM 3.0")
     public void testMinimalTest() throws Exception {
         doTestSIGMETStringSerialization("sigmet_minimal_test.json", "sigmet_minimal_test.IWXXM30");
     }
