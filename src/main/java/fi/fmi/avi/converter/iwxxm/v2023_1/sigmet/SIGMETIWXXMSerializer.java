@@ -318,7 +318,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
             if (hasAnalaysisGeometries || hasForecasts) {
                 final String analysisTime = input.getAnalysisGeometries()//
                         .map(AbstractIWXXM20231Serializer::getFirstOrNull)//
-                        .flatMap(PhenomenonGeometryWithHeight::getTime)//
+                        .flatMap(PhenomenonGeometry::getTime)//
                         .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                         .orElse(null);
 
