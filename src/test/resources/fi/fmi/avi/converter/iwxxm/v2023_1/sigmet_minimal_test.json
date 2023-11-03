@@ -26,8 +26,8 @@
       "completeTime": "2023-10-03T15:30Z"
     }
   },
-  "sequenceNumber": "M01",
-  "translatedTAC": "EHAA SIGMET M01 VALID 111130/111530 EHDB-\r\nEHAA AMSTERDAM FIR TEST=",
+  "sequenceNumber": "Z01",
+  "translatedTAC": "EHAA SIGMET Z01 VALID 111130/111530 EHDB-\r\nEHAA AMSTERDAM FIR TEST=",
   "translated": false,
   "permissibleUsage": "NON_OPERATIONAL",
   "permissibleUsageReason": "TEST"
