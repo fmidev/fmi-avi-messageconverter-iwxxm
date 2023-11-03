@@ -383,7 +383,6 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                     if (input.getVAInfo().isPresent()) {
                         noVaExp = input.getForecastGeometries().get().get(0).getNoVolcanicAshExpected().orElse(false);
                     }
-                    ;
                     JAXBElement<VolcanicAshSIGMETPositionCollectionType> fpa =
                             createVolcanicAshFPA(input.getForecastGeometries().get(), fcTime, noVaExp, volcanoId);
                     sigmet.getForecastPositionAnalysis().add(create(AssociationRoleType.class, at -> at.setAny(fpa)));
@@ -735,7 +734,6 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                 target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
                 target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
             }
-            ;
 
             if (source.isTranslated()) {
                 source.getTranslatedBulletinID().ifPresent(target::setTranslatedBulletinID);
