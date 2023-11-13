@@ -232,9 +232,9 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
                     ecct.setPhenomenonTime(phenTimeProp);
                     ecct.setId(getUUID());
                     for (PhenomenonGeometryWithHeight an : ans) {
-                        if (an.getAnalysisType().equals(SigmetAnalysisType.FORECAST)) {
+                        if (an.getAnalysisType().orElse(null) == SigmetAnalysisType.FORECAST) {
                             ecct.setTimeIndicator(TimeIndicatorType.FORECAST);
-                        } else if (an.getAnalysisType().equals(SigmetAnalysisType.OBSERVATION)) {
+                        } else if (an.getAnalysisType().orElse(null) == SigmetAnalysisType.OBSERVATION) {
                             ecct.setTimeIndicator(TimeIndicatorType.OBSERVATION);
                         } else {
                             ecct.setTimeIndicator(null);

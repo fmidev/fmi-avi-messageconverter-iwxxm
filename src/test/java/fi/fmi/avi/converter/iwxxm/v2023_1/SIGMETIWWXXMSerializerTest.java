@@ -182,6 +182,11 @@ public class SIGMETIWWXXMSerializerTest {
         doTestSIGMETStringSerialization("sigmet_rdoact_cld.json", "sigmet_rdoact_cld.xml");
     }
 
+    @Test
+    public void testMinimalTest() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_minimal_test.json", "sigmet_minimal_test.xml");
+    }
+
     public String doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING));
         final SIGMET s = readFromJSON(fn);

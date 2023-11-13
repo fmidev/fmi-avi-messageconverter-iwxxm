@@ -1,80 +1,34 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.airmet;
 
+import aero.aixm511.*;
+import fi.fmi.avi.converter.*;
+import fi.fmi.avi.converter.ConversionResult.Status;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
+import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
+import fi.fmi.avi.model.*;
+import fi.fmi.avi.model.AviationCodeListUser.AeronauticalAirmetWeatherPhenomenon;
+import fi.fmi.avi.model.AviationCodeListUser.WeatherCausingVisibilityReduction;
+import fi.fmi.avi.model.sigmet.AIRMET;
+import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
+import icao.iwxxm30.AirspacePropertyType;
+import icao.iwxxm30.AirspaceVolumePropertyType;
+import icao.iwxxm30.UnitPropertyType;
+import icao.iwxxm30.*;
+import net.opengis.gml32.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import java.io.InputStream;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-
-import aero.aixm511.AirspaceTimeSlicePropertyType;
-import aero.aixm511.AirspaceTimeSliceType;
-import aero.aixm511.AirspaceType;
-import aero.aixm511.AirspaceVolumeType;
-import aero.aixm511.CodeAirspaceDesignatorType;
-import aero.aixm511.CodeAirspaceType;
-import aero.aixm511.CodeOrganisationDesignatorType;
-import aero.aixm511.CodeUnitType;
-import aero.aixm511.CodeVerticalReferenceType;
-import aero.aixm511.TextNameType;
-import aero.aixm511.UnitTimeSlicePropertyType;
-import aero.aixm511.UnitTimeSliceType;
-import aero.aixm511.UnitType;
-import aero.aixm511.ValDistanceVerticalType;
-import fi.fmi.avi.converter.ConversionException;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.ConversionResult.Status;
-import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
-import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationCodeListUser.AeronauticalAirmetWeatherPhenomenon;
-import fi.fmi.avi.model.AviationCodeListUser.WeatherCausingVisibilityReduction;
-import fi.fmi.avi.model.NumericMeasure;
-import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
-import fi.fmi.avi.model.PhenomenonGeometryWithHeight;
-import fi.fmi.avi.model.TacOrGeoGeometry;
-import fi.fmi.avi.model.sigmet.AIRMET;
-import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
-import icao.iwxxm30.AIRMETEvolvingConditionCollectionPropertyType;
-import icao.iwxxm30.AIRMETEvolvingConditionCollectionType;
-import icao.iwxxm30.AIRMETEvolvingConditionPropertyType;
-import icao.iwxxm30.AIRMETEvolvingConditionType;
-import icao.iwxxm30.AIRMETExpectedIntensityChangeType;
-import icao.iwxxm30.AIRMETType;
-import icao.iwxxm30.AbstractTimeObjectPropertyType;
-import icao.iwxxm30.AeronauticalAreaWeatherPhenomenonType;
-import icao.iwxxm30.AirspacePropertyType;
-import icao.iwxxm30.AirspaceVolumePropertyType;
-import icao.iwxxm30.AngleWithNilReasonType;
-import icao.iwxxm30.PermissibleUsageReasonType;
-import icao.iwxxm30.PermissibleUsageType;
-import icao.iwxxm30.ReportStatusType;
-import icao.iwxxm30.StringWithNilReasonType;
-import icao.iwxxm30.TimeIndicatorType;
-import icao.iwxxm30.UnitPropertyType;
-import icao.iwxxm30.WeatherCausingVisibilityReductionType;
-import net.opengis.gml32.AbstractTimeObjectType;
-import net.opengis.gml32.AngleType;
-import net.opengis.gml32.LengthType;
-import net.opengis.gml32.SpeedType;
-import net.opengis.gml32.TimeInstantPropertyType;
-import net.opengis.gml32.TimeInstantType;
-import net.opengis.gml32.TimePeriodPropertyType;
-import net.opengis.gml32.TimePeriodType;
-import net.opengis.gml32.TimePositionType;
-import net.opengis.gml32.TimePrimitivePropertyType;
 
 public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer<AIRMET, T> {
     private static final Logger LOG = LoggerFactory.getLogger(AIRMETIWXXMSerializer.class);
@@ -280,9 +234,9 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
                 ecct.setPhenomenonTime(phenTimeProp);
                 ecct.setId(getUUID());
                 for (PhenomenonGeometryWithHeight an : ans) {
-                    if (an.getAnalysisType().equals(SigmetAnalysisType.FORECAST)) {
+                    if (an.getAnalysisType().orElse(null) == SigmetAnalysisType.FORECAST) {
                         ecct.setTimeIndicator(TimeIndicatorType.FORECAST);
-                    } else if (an.getAnalysisType().equals(SigmetAnalysisType.OBSERVATION)) {
+                    } else if (an.getAnalysisType().orElse(null) == SigmetAnalysisType.OBSERVATION) {
                         ecct.setTimeIndicator(TimeIndicatorType.OBSERVATION);
                     } else {
                         ecct.setTimeIndicator(null);

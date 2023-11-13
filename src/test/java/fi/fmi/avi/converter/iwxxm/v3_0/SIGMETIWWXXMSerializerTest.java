@@ -1,9 +1,22 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertSame;
-import static junit.framework.TestCase.assertTrue;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionIssue;
+import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
+import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.sigmet.SIGMET;
+import fi.fmi.avi.model.sigmet.immutable.SIGMETImpl;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,24 +25,10 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-
-import fi.fmi.avi.converter.AviMessageConverter;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
-import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.sigmet.SIGMET;
-import fi.fmi.avi.model.sigmet.immutable.SIGMETImpl;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -187,17 +186,23 @@ public class SIGMETIWWXXMSerializerTest {
         doTestSIGMETStringSerialization("sigmet_FL_OPER.json", "sigmet_FL_OPER.IWXXM30");
     }
 
+    @Test
+    @Ignore("Test sigmets without meteorological information cannot be represented in IWXXM 3.0")
+    public void testMinimalTest() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_minimal_test.json", "sigmet_minimal_test.IWXXM30");
+    }
+
     public String doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING));
         final SIGMET s = readFromJSON(fn);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING);
 
-        for (ConversionIssue iss: result.getConversionIssues()) {
-            System.err.println("iss:"+iss.getMessage()+"==="+iss.getCause());
+        for (ConversionIssue iss : result.getConversionIssues()) {
+            System.err.println("iss:" + iss.getMessage() + "===" + iss.getCause());
         }
 
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
-        System.err.println("XML:\n"+result.getConvertedMessage().get());
+        System.err.println("XML:\n" + result.getConvertedMessage().get());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
 
