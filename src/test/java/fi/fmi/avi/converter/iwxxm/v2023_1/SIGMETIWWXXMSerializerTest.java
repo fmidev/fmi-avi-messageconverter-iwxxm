@@ -187,6 +187,11 @@ public class SIGMETIWWXXMSerializerTest {
         doTestSIGMETStringSerialization("sigmet_minimal_test.json", "sigmet_minimal_test.xml");
     }
 
+    @Test
+    public void testMinimalVaTest() throws Exception {
+        doTestSIGMETStringSerialization("sigmet_minimal_va_test.json", "sigmet_minimal_va_test.xml");
+    }
+
     public String doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING));
         final SIGMET s = readFromJSON(fn);

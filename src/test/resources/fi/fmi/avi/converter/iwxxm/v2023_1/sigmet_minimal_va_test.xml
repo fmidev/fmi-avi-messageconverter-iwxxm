@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:VolcanicAshSIGMET xmlns:iwxxm="http://icao.int/iwxxm/2023-1"
+                         xmlns:gml="http://www.opengis.net/gml/3.2"
+                         xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         gml:id="uuid.35bfb8c7-6390-42d8-b5e9-9b88055d1594"
+                         isCancelReport="false"
+                         permissibleUsage="NON-OPERATIONAL"
+                         permissibleUsageReason="TEST"
+                         reportStatus="NORMAL"
+                         xsi:schemaLocation="http://icao.int/iwxxm/2023-1 http://schemas.wmo.int/iwxxm/2023-1/iwxxm.xsd">
+   <iwxxm:issueTime>
+      <gml:TimeInstant gml:id="uuid.4179613f-7632-47d3-8d23-3aa6439532ea">
+         <gml:timePosition>2023-10-03T11:25:00Z</gml:timePosition>
+      </gml:TimeInstant>
+   </iwxxm:issueTime>
+   <iwxxm:issuingAirTrafficServicesUnit>
+      <aixm:Unit gml:id="uuid.1c770f44-f1e9-4bd0-b84c-3ad35a7034e0">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.89ea1c12-1651-4280-b0da-afe5fe71920b">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>AMSTERDAM</aixm:name>
+               <aixm:type>FIC</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:issuingAirTrafficServicesUnit>
+   <iwxxm:originatingMeteorologicalWatchOffice>
+      <aixm:Unit gml:id="uuid.d2f66f9a-a0f1-4500-b266-d49f75be3f1d">
+         <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.f6a6e135-9958-498f-ad89-a84d4a95c476">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:name>DE BILT</aixm:name>
+               <aixm:type>MWO</aixm:type>
+               <aixm:designator>EHDB</aixm:designator>
+            </aixm:UnitTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Unit>
+   </iwxxm:originatingMeteorologicalWatchOffice>
+   <iwxxm:issuingAirTrafficServicesRegion>
+      <aixm:Airspace gml:id="uuid.cea2deb3-d242-48c0-be32-349476a27169">
+         <aixm:timeSlice>
+            <aixm:AirspaceTimeSlice gml:id="uuid.56160db0-52fa-4a79-b060-67fd21404dd7">
+               <gml:validTime/>
+               <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+               <aixm:type>FIR</aixm:type>
+               <aixm:designator>EHAA</aixm:designator>
+               <aixm:name>AMSTERDAM FIR</aixm:name>
+            </aixm:AirspaceTimeSlice>
+         </aixm:timeSlice>
+      </aixm:Airspace>
+   </iwxxm:issuingAirTrafficServicesRegion>
+   <iwxxm:sequenceNumber>Y01</iwxxm:sequenceNumber>
+   <iwxxm:validPeriod>
+      <gml:TimePeriod gml:id="uuid.548aae8a-73fb-4d40-b3b5-571561299840">
+         <gml:beginPosition>2023-10-03T11:30:00Z</gml:beginPosition>
+         <gml:endPosition>2023-10-03T15:30:00Z</gml:endPosition>
+      </gml:TimePeriod>
+   </iwxxm:validPeriod>
+</iwxxm:VolcanicAshSIGMET>

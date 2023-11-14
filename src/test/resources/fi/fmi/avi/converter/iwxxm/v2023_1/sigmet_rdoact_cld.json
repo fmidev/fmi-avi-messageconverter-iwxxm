@@ -27,6 +27,7 @@
       "completeTime": "2023-10-25T15:30:00Z"
     }
   },
+  "phenomenonType": "SIGMET",
   "phenomenon": "RDOACT_CLD",
   "sequenceNumber": "1",
   "analysisGeometries": [
