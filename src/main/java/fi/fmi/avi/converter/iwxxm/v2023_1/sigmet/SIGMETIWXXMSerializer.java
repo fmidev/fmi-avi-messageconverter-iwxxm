@@ -180,25 +180,19 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
         }
 
         final SIGMETType sigmet;
-        AeronauticalSignificantWeatherPhenomenon sigmetPhenomen = input.getPhenomenon().orElse(null);
-        if (sigmetPhenomen == null) {
-            sigmet = create(SIGMETType.class);
-            sigmet.setId(getUUID());
-        } else {
-            switch (sigmetPhenomen) {
-                case TC:
-                    sigmet = create(TropicalCycloneSIGMETType.class);
-                    sigmet.setId(getUUID());
-                    break;
-                case VA:
-                    sigmet = create(VolcanicAshSIGMETType.class);
-                    sigmet.setId(getUUID());
-                    break;
-                default:
-                    sigmet = create(SIGMETType.class);
-                    sigmet.setId(getUUID());
-            }
+        switch (input.getPhenomenonType()) {
+            case VOLCANIC_ASH_SIGMET:
+                sigmet = create(VolcanicAshSIGMETType.class);
+                break;
+            case TROPICAL_CYCLONE_SIGMET:
+                sigmet = create(TropicalCycloneSIGMETType.class);
+                break;
+            default:
+                sigmet = create(SIGMETType.class);
         }
+        sigmet.setId(getUUID());
+
+        final AeronauticalSignificantWeatherPhenomenon sigmetPhenomen = input.getPhenomenon().orElse(null);
 
         if (input.getCancelledReference().isPresent()) {
             sigmet.setId(getUUID());

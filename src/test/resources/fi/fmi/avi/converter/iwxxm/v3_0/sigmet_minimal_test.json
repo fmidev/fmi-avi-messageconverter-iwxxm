@@ -26,6 +26,7 @@
       "completeTime": "2023-10-03T15:30Z"
     }
   },
+  "phenomenonType": "SIGMET",
   "sequenceNumber": "M01",
   "translatedTAC": "EHAA SIGMET M01 VALID 111130/111530 EHDB-\r\nEHAA AMSTERDAM FIR TEST=",
   "translated": false,

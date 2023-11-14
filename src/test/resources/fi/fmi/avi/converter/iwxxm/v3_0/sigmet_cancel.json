@@ -27,6 +27,7 @@
         "completeTime": "2018-08-27T18:00:00Z"
       }
     },
+  "phenomenonType": "SIGMET",
     "phenomenon": "OBSC_TS",
     "cancelledReference": {
       "sequenceNumber": "2",
