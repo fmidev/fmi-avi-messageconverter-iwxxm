@@ -31,6 +31,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - ...
 
+## [v5.0.0-beta3] - 2023-11-14
+
+### Added
+
+- Added support for minimal test SIGMETs [#118], [#128]
+
 ## [v5.0.0-beta2] - 2023-10-23
 
 ### Added
@@ -103,6 +109,8 @@ on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwx
 
 [Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-4.2.0...HEAD
 
+[v5.0.0-beta3]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-5.0.0-beta3
+
 [v5.0.0-beta2]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-5.0.0-beta2
 
 [v5.0.0-beta1]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-5.0.0-beta1
@@ -161,4 +169,8 @@ on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwx
 
 [#114]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/114
 
+[#118]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/118
+
 [#121]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/121
+
+[#128]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/128
