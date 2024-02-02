@@ -71,6 +71,7 @@ public class IWXXMGenericAviationWeatherMessageConverter {
 
         final String iwxxm_2_1_NamespaceURI = "http://icao.int/iwxxm/2.1";
         final String iwxxm_3_0_NamespaceURI = "http://icao.int/iwxxm/3.0";
+        final String iwxxm_2023_1_NamespaceURI = "http://icao.int/iwxxm/2023-1";
 
         scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "TAF"), new GenericTAFIWXXMScanner());
         scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "TAF"), new fi.fmi.avi.converter.iwxxm.v3_0.taf.GenericTAFIWXXMScanner());
@@ -94,6 +95,12 @@ public class IWXXMGenericAviationWeatherMessageConverter {
         scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "VolcanicAshSIGMET"), genericSIGMETIWXXM30Scanner);
         scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "SIGMET"), genericSIGMETIWXXM30Scanner);
         scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "AIRMET"), genericSIGMETIWXXM30Scanner);
+
+        final fi.fmi.avi.converter.iwxxm.v2023_1.sigmet.GenericSIGMETAIRMETIWXXMScanner genericSIGMETIWXXM20231Scanner = new fi.fmi.avi.converter.iwxxm.v2023_1.sigmet.GenericSIGMETAIRMETIWXXMScanner();
+        scannersMap.put(new ScannerKey(iwxxm_2023_1_NamespaceURI, "TropicalCycloneSIGMET"), genericSIGMETIWXXM20231Scanner);
+        scannersMap.put(new ScannerKey(iwxxm_2023_1_NamespaceURI, "VolcanicAshSIGMET"), genericSIGMETIWXXM20231Scanner);
+        scannersMap.put(new ScannerKey(iwxxm_2023_1_NamespaceURI, "SIGMET"), genericSIGMETIWXXM20231Scanner);
+        scannersMap.put(new ScannerKey(iwxxm_2023_1_NamespaceURI, "AIRMET"), genericSIGMETIWXXM20231Scanner);
 
         final GenericMETARSPECIIWXXMScanner genericMETARSPECIIWXXM21Scanner = new GenericMETARSPECIIWXXMScanner();
         final fi.fmi.avi.converter.iwxxm.v3_0.metar.GenericMETARSPECIIWXXMScanner genericMETARSPECIIWXXM30Scanner = new fi.fmi.avi.converter.iwxxm.v3_0.metar.GenericMETARSPECIIWXXMScanner();
