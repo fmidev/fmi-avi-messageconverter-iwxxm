@@ -1,14 +1,14 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
-import java.util.List;
-
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.converter.iwxxm.GenericReportProperties;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.swx.AdvisoryNumber;
-import fi.fmi.avi.model.swx.IssuingCenter;
-import fi.fmi.avi.model.swx.NextAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
+import fi.fmi.avi.model.swx.amd79.AdvisoryNumber;
+import fi.fmi.avi.model.swx.amd79.IssuingCenter;
+import fi.fmi.avi.model.swx.amd79.NextAdvisory;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherPhenomenon;
+
+import java.util.List;
 
 public class SpaceWeatherAdvisoryProperties extends AbstractPropertyContainer {
 

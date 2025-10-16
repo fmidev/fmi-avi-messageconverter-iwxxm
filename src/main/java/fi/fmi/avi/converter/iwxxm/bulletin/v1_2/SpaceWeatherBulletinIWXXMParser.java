@@ -1,34 +1,33 @@
 package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
-import java.util.Set;
-
-import org.w3c.dom.Document;
-
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMParser;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
-import fi.fmi.avi.model.swx.immutable.SpaceWeatherBulletinImpl;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAdvisoryAmd79;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAmd79Bulletin;
+import fi.fmi.avi.model.swx.amd79.immutable.SpaceWeatherAmd79BulletinImpl;
+import org.w3c.dom.Document;
 
-public abstract class SpaceWeatherBulletinIWXXMParser<T> extends AbstractBulletinIWXXMParser<T, SpaceWeatherAdvisory, SpaceWeatherBulletin> {
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.util.Set;
 
-    final private MeteorologicalBulletinIWXXMScanner<SpaceWeatherAdvisory, SpaceWeatherBulletin> scanner = new MeteorologicalBulletinIWXXMScanner<>();
+public abstract class SpaceWeatherBulletinIWXXMParser<T> extends AbstractBulletinIWXXMParser<T, SpaceWeatherAdvisoryAmd79, SpaceWeatherAmd79Bulletin> {
 
-    public void setMessageConverter(final AviMessageSpecificConverter<Document, SpaceWeatherAdvisory> converter) {
+    final private MeteorologicalBulletinIWXXMScanner<SpaceWeatherAdvisoryAmd79, SpaceWeatherAmd79Bulletin> scanner = new MeteorologicalBulletinIWXXMScanner<>();
+
+    public void setMessageConverter(final AviMessageSpecificConverter<Document, SpaceWeatherAdvisoryAmd79> converter) {
         this.scanner.setMessageConverter(converter);
     }
 
     @Override
-    protected SpaceWeatherBulletin buildBulletin(final BulletinProperties properties, final ZonedDateTime timestamp, final Set<ChronoField> timestampFields,
-            final ConversionHints hints) {
-        final SpaceWeatherBulletinImpl.Builder builder = SpaceWeatherBulletinImpl.builder();
+    protected SpaceWeatherAmd79Bulletin buildBulletin(final BulletinProperties properties, final ZonedDateTime timestamp, final Set<ChronoField> timestampFields,
+                                                      final ConversionHints hints) {
+        final SpaceWeatherAmd79BulletinImpl.Builder builder = SpaceWeatherAmd79BulletinImpl.builder();
         properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class).ifPresent(builder::setHeading);
-        builder.addAllMessages(properties.getList(BulletinProperties.Name.MESSAGE, SpaceWeatherAdvisory.class));
+        builder.addAllMessages(properties.getList(BulletinProperties.Name.MESSAGE, SpaceWeatherAdvisoryAmd79.class));
         if (timestamp != null && timestampFields != null) {
             builder.setTimeStamp(timestamp).addAllTimeStampFields(timestampFields);
         }
@@ -36,7 +35,7 @@ public abstract class SpaceWeatherBulletinIWXXMParser<T> extends AbstractBulleti
     }
 
     @Override
-    protected MeteorologicalBulletinIWXXMScanner<SpaceWeatherAdvisory, SpaceWeatherBulletin> getScanner() {
+    protected MeteorologicalBulletinIWXXMScanner<SpaceWeatherAdvisoryAmd79, SpaceWeatherAmd79Bulletin> getScanner() {
         return this.scanner;
     }
 

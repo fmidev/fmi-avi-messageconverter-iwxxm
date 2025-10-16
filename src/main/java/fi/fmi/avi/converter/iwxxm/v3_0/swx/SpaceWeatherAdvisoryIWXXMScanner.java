@@ -1,26 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import net.opengis.gml32.TimeIndeterminateValueType;
-import net.opengis.gml32.TimeInstantPropertyType;
-import net.opengis.gml32.TimeInstantType;
-import net.opengis.gml32.TimePositionType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import aero.aixm511.AirspaceVolumeType;
-import aero.aixm511.SurfaceType;
-import aero.aixm511.UnitTimeSlicePropertyType;
-import aero.aixm511.UnitTimeSliceType;
-import aero.aixm511.UnitType;
+import aero.aixm511.*;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
@@ -29,22 +9,22 @@ import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Scanner;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.swx.AdvisoryNumber;
-import fi.fmi.avi.model.swx.NextAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
-import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
-import fi.fmi.avi.model.swx.SpaceWeatherRegion;
-import fi.fmi.avi.model.swx.immutable.AdvisoryNumberImpl;
-import fi.fmi.avi.model.swx.immutable.AirspaceVolumeImpl;
-import fi.fmi.avi.model.swx.immutable.IssuingCenterImpl;
-import fi.fmi.avi.model.swx.immutable.NextAdvisoryImpl;
-import icao.iwxxm30.SpaceWeatherAdvisoryType;
-import icao.iwxxm30.SpaceWeatherAnalysisPropertyType;
-import icao.iwxxm30.SpaceWeatherAnalysisType;
-import icao.iwxxm30.SpaceWeatherPhenomenaType;
-import icao.iwxxm30.SpaceWeatherRegionPropertyType;
-import icao.iwxxm30.SpaceWeatherRegionType;
-import icao.iwxxm30.TimeIndicatorType;
+import fi.fmi.avi.model.swx.amd79.*;
+import fi.fmi.avi.model.swx.amd79.immutable.AdvisoryNumberImpl;
+import fi.fmi.avi.model.swx.amd79.immutable.AirspaceVolumeImpl;
+import fi.fmi.avi.model.swx.amd79.immutable.IssuingCenterImpl;
+import fi.fmi.avi.model.swx.amd79.immutable.NextAdvisoryImpl;
+import icao.iwxxm30.*;
+import net.opengis.gml32.TimeIndeterminateValueType;
+import net.opengis.gml32.TimeInstantPropertyType;
+import net.opengis.gml32.TimeInstantType;
+import net.opengis.gml32.TimePositionType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SpaceWeatherAdvisoryIWXXMScanner extends AbstractIWXXM30Scanner {
     private static final Logger LOG = LoggerFactory.getLogger(SpaceWeatherAdvisoryIWXXMScanner.class);

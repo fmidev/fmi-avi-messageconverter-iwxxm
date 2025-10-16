@@ -1,14 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.xml.bind.JAXBElement;
-
-import org.w3c.dom.Document;
-
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -20,23 +11,23 @@ import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Parser;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.swx.AdvisoryNumber;
-import fi.fmi.avi.model.swx.AirspaceVolume;
-import fi.fmi.avi.model.swx.IssuingCenter;
-import fi.fmi.avi.model.swx.NextAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
-import fi.fmi.avi.model.swx.SpaceWeatherPhenomenon;
-import fi.fmi.avi.model.swx.SpaceWeatherRegion;
-import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryAnalysisImpl;
-import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryImpl;
-import fi.fmi.avi.model.swx.immutable.SpaceWeatherRegionImpl;
+import fi.fmi.avi.model.swx.amd79.*;
+import fi.fmi.avi.model.swx.amd79.immutable.SpaceWeatherAdvisoryAmd79Impl;
+import fi.fmi.avi.model.swx.amd79.immutable.SpaceWeatherAdvisoryAnalysisImpl;
+import fi.fmi.avi.model.swx.amd79.immutable.SpaceWeatherRegionImpl;
 import icao.iwxxm30.SpaceWeatherAdvisoryType;
+import org.w3c.dom.Document;
 
-public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T, SpaceWeatherAdvisory> {
+import javax.xml.bind.JAXBElement;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T, SpaceWeatherAdvisoryAmd79> {
     @Override
-    protected SpaceWeatherAdvisory createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx,
-            final ConversionResult<SpaceWeatherAdvisory> result, final ConversionHints hints) {
+    protected SpaceWeatherAdvisoryAmd79 createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx,
+                                                   final ConversionResult<SpaceWeatherAdvisoryAmd79> result, final ConversionHints hints) {
         Objects.requireNonNull(source, "source cannot be null");
         final SpaceWeatherAdvisoryType input;
 
@@ -70,7 +61,7 @@ public abstract class SpaceWeatherIWXXMParser<T> extends AbstractIWXXM30Parser<T
                 .collect(toImmutableList());
 
         //ADVISORY
-        final SpaceWeatherAdvisoryImpl.Builder builder = SpaceWeatherAdvisoryImpl.builder();
+        final SpaceWeatherAdvisoryAmd79Impl.Builder builder = SpaceWeatherAdvisoryAmd79Impl.builder();
 
         builder.addAllAnalyses(analyses);
 

@@ -13,8 +13,8 @@ import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SIGMET;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAdvisoryAmd79;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAmd79Bulletin;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,28 +145,28 @@ public class IWXXMTestConfiguration {
     // Space weather
 
     @Autowired
-    private AviMessageSpecificConverter<String, SpaceWeatherAdvisory> spaceWeatherIWXXMStringParser;
+    private AviMessageSpecificConverter<String, SpaceWeatherAdvisoryAmd79> spaceWeatherIWXXMStringParser;
 
     @Autowired
-    private AviMessageSpecificConverter<Document, SpaceWeatherAdvisory> spaceWeatherIWXXMDOMParser;
+    private AviMessageSpecificConverter<Document, SpaceWeatherAdvisoryAmd79> spaceWeatherIWXXMDOMParser;
 
     @Autowired
-    private AviMessageSpecificConverter<String, SpaceWeatherBulletin> spaceWeatherBulletinIWXXMStringParser;
+    private AviMessageSpecificConverter<String, SpaceWeatherAmd79Bulletin> spaceWeatherBulletinIWXXMStringParser;
 
     @Autowired
-    private AviMessageSpecificConverter<Document, SpaceWeatherBulletin> spaceWeatherBulletinIWXXMDOMParser;
+    private AviMessageSpecificConverter<Document, SpaceWeatherAmd79Bulletin> spaceWeatherBulletinIWXXMDOMParser;
 
     @Autowired
-    private AviMessageSpecificConverter<SpaceWeatherAdvisory, String> spaceWeatherIWXXMStringSerializer;
+    private AviMessageSpecificConverter<SpaceWeatherAdvisoryAmd79, String> spaceWeatherIWXXMStringSerializer;
 
     @Autowired
-    private AviMessageSpecificConverter<SpaceWeatherAdvisory, Document> spaceWeatherIWXXMDOMSerializer;
+    private AviMessageSpecificConverter<SpaceWeatherAdvisoryAmd79, Document> spaceWeatherIWXXMDOMSerializer;
 
     @Autowired
-    private AviMessageSpecificConverter<SpaceWeatherBulletin, String> spaceWeatherBulletinIWXXMStringSerializer;
+    private AviMessageSpecificConverter<SpaceWeatherAmd79Bulletin, String> spaceWeatherBulletinIWXXMStringSerializer;
 
     @Autowired
-    private AviMessageSpecificConverter<SpaceWeatherBulletin, Document> spaceWeatherBulletinIWXXMDOMSerializer;
+    private AviMessageSpecificConverter<SpaceWeatherAmd79Bulletin, Document> spaceWeatherBulletinIWXXMDOMSerializer;
 
     // Generic bulletins
 

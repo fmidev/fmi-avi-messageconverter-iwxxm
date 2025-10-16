@@ -7,8 +7,8 @@ import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SIGMET;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAdvisoryAmd79;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAmd79Bulletin;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import icao.iwxxm21.TAFType;
@@ -238,52 +238,52 @@ public class IWXXMConverter {
     //  Space weather
     // *******************
     /**
-     * Pre-configured spec for IWXXM 3.0 XML format Space Weather Advisory document String to {@link SpaceWeatherAdvisory}.
+     * Pre-configured spec for IWXXM 3.0 XML format Space Weather Advisory document String to {@link SpaceWeatherAdvisoryAmd79}.
      */
-    public static final ConversionSpecification<String, SpaceWeatherAdvisory> IWXXM30_STRING_TO_SPACE_WEATHER_POJO = new ConversionSpecification<>(String.class,
-            SpaceWeatherAdvisory.class, "SWX, XML/IWXXM 3.0", null);
+    public static final ConversionSpecification<String, SpaceWeatherAdvisoryAmd79> IWXXM30_STRING_TO_SPACE_WEATHER_POJO = new ConversionSpecification<>(String.class,
+            SpaceWeatherAdvisoryAmd79.class, "SWX, XML/IWXXM 3.0", null);
 
     /**
-     * Pre-configured spec for IWXXM 3.0 XML format Space Weather Advisory document DOM node to {@link SpaceWeatherAdvisory}.
+     * Pre-configured spec for IWXXM 3.0 XML format Space Weather Advisory document DOM node to {@link SpaceWeatherAdvisoryAmd79}.
      */
-    public static final ConversionSpecification<Document, SpaceWeatherAdvisory> IWXXM30_DOM_TO_SPACE_WEATHER_POJO = new ConversionSpecification<>(
-            Document.class, SpaceWeatherAdvisory.class, "SWX, XML/IWXXM 3.0", null);
+    public static final ConversionSpecification<Document, SpaceWeatherAdvisoryAmd79> IWXXM30_DOM_TO_SPACE_WEATHER_POJO = new ConversionSpecification<>(
+            Document.class, SpaceWeatherAdvisoryAmd79.class, "SWX, XML/IWXXM 3.0", null);
 
     /**
-     * Pre-configured spec for {@link SpaceWeatherAdvisory} to IWXXM 3.0 XML format SWX document String.
+     * Pre-configured spec for {@link SpaceWeatherAdvisoryAmd79} to IWXXM 3.0 XML format SWX document String.
      */
-    public static final ConversionSpecification<SpaceWeatherAdvisory, String> SPACE_WEATHER_POJO_TO_IWXXM30_STRING = new ConversionSpecification<>(
-            SpaceWeatherAdvisory.class, String.class, null, "SWX, XML/IWXXM 3.0");
+    public static final ConversionSpecification<SpaceWeatherAdvisoryAmd79, String> SPACE_WEATHER_POJO_TO_IWXXM30_STRING = new ConversionSpecification<>(
+            SpaceWeatherAdvisoryAmd79.class, String.class, null, "SWX, XML/IWXXM 3.0");
 
     /**
-     * Pre-configured spec for {@link SpaceWeatherAdvisory} to IWXXM 3.0 XML format SWX document DOM node.
+     * Pre-configured spec for {@link SpaceWeatherAdvisoryAmd79} to IWXXM 3.0 XML format SWX document DOM node.
      */
-    public static final ConversionSpecification<SpaceWeatherAdvisory, Document> SPACE_WEATHER_POJO_TO_IWXXM30_DOM = new ConversionSpecification<>(
-            SpaceWeatherAdvisory.class, Document.class, null, "SWX, XML/IWXXM 3.0");
+    public static final ConversionSpecification<SpaceWeatherAdvisoryAmd79, Document> SPACE_WEATHER_POJO_TO_IWXXM30_DOM = new ConversionSpecification<>(
+            SpaceWeatherAdvisoryAmd79.class, Document.class, null, "SWX, XML/IWXXM 3.0");
 
     /**
-     * Pre-configured spec for {@link SpaceWeatherBulletin} to WMO COLLECT 1.2 XML String containing IWXXM 3.0 SpaceWeatherAdvisories.
+     * Pre-configured spec for {@link SpaceWeatherAmd79Bulletin} to WMO COLLECT 1.2 XML String containing IWXXM 3.0 SpaceWeatherAdvisories.
      */
-    public static final ConversionSpecification<SpaceWeatherBulletin, String> SWX_BULLETIN_POJO_TO_WMO_COLLECT_STRING = new ConversionSpecification<>(
-            SpaceWeatherBulletin.class, String.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX");
+    public static final ConversionSpecification<SpaceWeatherAmd79Bulletin, String> SWX_BULLETIN_POJO_TO_WMO_COLLECT_STRING = new ConversionSpecification<>(
+            SpaceWeatherAmd79Bulletin.class, String.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX");
 
     /**
-     * Pre-configured spec for {@link SpaceWeatherBulletin} to WMO COLLECT 1.2 XML DOM document containing IWXXM 3.0 SpaceWeatherAdvisories.
+     * Pre-configured spec for {@link SpaceWeatherAmd79Bulletin} to WMO COLLECT 1.2 XML DOM document containing IWXXM 3.0 SpaceWeatherAdvisories.
      */
-    public static final ConversionSpecification<SpaceWeatherBulletin, Document> SWX_BULLETIN_POJO_TO_WMO_COLLECT_DOM = new ConversionSpecification<>(
-            SpaceWeatherBulletin.class, Document.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX");
+    public static final ConversionSpecification<SpaceWeatherAmd79Bulletin, Document> SWX_BULLETIN_POJO_TO_WMO_COLLECT_DOM = new ConversionSpecification<>(
+            SpaceWeatherAmd79Bulletin.class, Document.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX");
 
     /**
-     * Pre-configured spec for WMO COLLECT 1.2 XML String containing IWXXM 3.0 SpaceWeatherAdvisories to {@link SpaceWeatherBulletin}.
+     * Pre-configured spec for WMO COLLECT 1.2 XML String containing IWXXM 3.0 SpaceWeatherAdvisories to {@link SpaceWeatherAmd79Bulletin}.
      */
-    public static final ConversionSpecification<String, SpaceWeatherBulletin> WMO_COLLECT_STRING_TO_SWX_BULLETIN_POJO = new ConversionSpecification<>(
-            String.class, SpaceWeatherBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX", null);
+    public static final ConversionSpecification<String, SpaceWeatherAmd79Bulletin> WMO_COLLECT_STRING_TO_SWX_BULLETIN_POJO = new ConversionSpecification<>(
+            String.class, SpaceWeatherAmd79Bulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX", null);
 
     /**
-     * Pre-configured spec for WMO COLLECT 1.2 XML DOM document containing IWXXM 3.0 SpaceWeatherAdvisories to {@link SpaceWeatherBulletin}.
+     * Pre-configured spec for WMO COLLECT 1.2 XML DOM document containing IWXXM 3.0 SpaceWeatherAdvisories to {@link SpaceWeatherAmd79Bulletin}.
      */
-    public static final ConversionSpecification<Document, SpaceWeatherBulletin> WMO_COLLECT_DOM_TO_SWX_BULLETIN_POJO = new ConversionSpecification<>(
-            Document.class, SpaceWeatherBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX", null);
+    public static final ConversionSpecification<Document, SpaceWeatherAmd79Bulletin> WMO_COLLECT_DOM_TO_SWX_BULLETIN_POJO = new ConversionSpecification<>(
+            Document.class, SpaceWeatherAmd79Bulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX", null);
 
     // *******************
     //  Generic aviation messages
