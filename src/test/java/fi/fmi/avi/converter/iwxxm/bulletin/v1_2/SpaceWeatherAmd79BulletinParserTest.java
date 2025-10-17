@@ -62,7 +62,7 @@ public class SpaceWeatherAmd79BulletinParserTest {
     @Test
     public void testParser() throws Exception {
         final Document input = this.getBulletinDocument("swx-bulletin.xml");
-        final ConversionResult<SpaceWeatherAmd79Bulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_BULLETIN_POJO,
+        final ConversionResult<SpaceWeatherAmd79Bulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_30_BULLETIN_POJO,
                 ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
         if (result.getConvertedMessage().isPresent()) {

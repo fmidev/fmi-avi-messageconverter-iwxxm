@@ -14,7 +14,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.util.Set;
 
-public abstract class SpaceWeatherBulletinIWXXMParser<T> extends AbstractBulletinIWXXMParser<T, SpaceWeatherAdvisoryAmd79, SpaceWeatherAmd79Bulletin> {
+public abstract class SpaceWeatherAmd79BulletinIWXXMParser<T> extends AbstractBulletinIWXXMParser<T, SpaceWeatherAdvisoryAmd79, SpaceWeatherAmd79Bulletin> {
 
     final private MeteorologicalBulletinIWXXMScanner<SpaceWeatherAdvisoryAmd79, SpaceWeatherAmd79Bulletin> scanner = new MeteorologicalBulletinIWXXMScanner<>();
 
@@ -39,14 +39,14 @@ public abstract class SpaceWeatherBulletinIWXXMParser<T> extends AbstractBulleti
         return this.scanner;
     }
 
-    public static class FromDOM extends SpaceWeatherBulletinIWXXMParser<Document> {
+    public static class FromDOM extends SpaceWeatherAmd79BulletinIWXXMParser<Document> {
         @Override
         protected Document parseAsDom(final Document input) {
             return input;
         }
     }
 
-    public static class FromString extends SpaceWeatherBulletinIWXXMParser<java.lang.String> {
+    public static class FromString extends SpaceWeatherAmd79BulletinIWXXMParser<String> {
         @Override
         protected Document parseAsDom(final java.lang.String input) throws ConversionException {
             return parseStringToDOM(input);

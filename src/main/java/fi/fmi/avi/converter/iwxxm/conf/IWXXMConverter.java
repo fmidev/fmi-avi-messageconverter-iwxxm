@@ -264,25 +264,25 @@ public class IWXXMConverter {
     /**
      * Pre-configured spec for {@link SpaceWeatherAmd79Bulletin} to WMO COLLECT 1.2 XML String containing IWXXM 3.0 SpaceWeatherAdvisories.
      */
-    public static final ConversionSpecification<SpaceWeatherAmd79Bulletin, String> SWX_BULLETIN_POJO_TO_WMO_COLLECT_STRING = new ConversionSpecification<>(
+    public static final ConversionSpecification<SpaceWeatherAmd79Bulletin, String> SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_STRING = new ConversionSpecification<>(
             SpaceWeatherAmd79Bulletin.class, String.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX");
 
     /**
      * Pre-configured spec for {@link SpaceWeatherAmd79Bulletin} to WMO COLLECT 1.2 XML DOM document containing IWXXM 3.0 SpaceWeatherAdvisories.
      */
-    public static final ConversionSpecification<SpaceWeatherAmd79Bulletin, Document> SWX_BULLETIN_POJO_TO_WMO_COLLECT_DOM = new ConversionSpecification<>(
+    public static final ConversionSpecification<SpaceWeatherAmd79Bulletin, Document> SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_DOM = new ConversionSpecification<>(
             SpaceWeatherAmd79Bulletin.class, Document.class, null, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX");
 
     /**
      * Pre-configured spec for WMO COLLECT 1.2 XML String containing IWXXM 3.0 SpaceWeatherAdvisories to {@link SpaceWeatherAmd79Bulletin}.
      */
-    public static final ConversionSpecification<String, SpaceWeatherAmd79Bulletin> WMO_COLLECT_STRING_TO_SWX_BULLETIN_POJO = new ConversionSpecification<>(
+    public static final ConversionSpecification<String, SpaceWeatherAmd79Bulletin> WMO_COLLECT_STRING_TO_SWX_30_BULLETIN_POJO = new ConversionSpecification<>(
             String.class, SpaceWeatherAmd79Bulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX", null);
 
     /**
      * Pre-configured spec for WMO COLLECT 1.2 XML DOM document containing IWXXM 3.0 SpaceWeatherAdvisories to {@link SpaceWeatherAmd79Bulletin}.
      */
-    public static final ConversionSpecification<Document, SpaceWeatherAmd79Bulletin> WMO_COLLECT_DOM_TO_SWX_BULLETIN_POJO = new ConversionSpecification<>(
+    public static final ConversionSpecification<Document, SpaceWeatherAmd79Bulletin> WMO_COLLECT_DOM_TO_SWX_30_BULLETIN_POJO = new ConversionSpecification<>(
             Document.class, SpaceWeatherAmd79Bulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX", null);
 
     // *******************

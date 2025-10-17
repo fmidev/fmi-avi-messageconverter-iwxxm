@@ -75,7 +75,7 @@ public class SpaceWeatherAmd79BulletinIWXXMSerializerTest {
     public void testBulletinStringSerialization() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         final SpaceWeatherAmd79Bulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
-        final ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.SWX_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
+        final ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         assertTrue(result.getConvertedMessage().isPresent());
@@ -112,7 +112,7 @@ public class SpaceWeatherAmd79BulletinIWXXMSerializerTest {
     public void testBulletinDOMSerialization() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
         final SpaceWeatherAmd79Bulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
-        final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.SWX_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
+        final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         final XPathFactory factory = XPathFactory.newInstance();
