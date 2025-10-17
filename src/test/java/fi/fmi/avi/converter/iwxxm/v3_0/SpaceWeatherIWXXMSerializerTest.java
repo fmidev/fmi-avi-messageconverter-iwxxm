@@ -1,15 +1,17 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
-import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.printIssues;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.Collections;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
+import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
+import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAdvisoryAmd79;
+import fi.fmi.avi.model.swx.amd79.immutable.SpaceWeatherAdvisoryAmd79Impl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,19 +21,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.xml.sax.SAXException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.io.IOException;
+import java.util.Collections;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fi.fmi.avi.converter.AviMessageConverter;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
-import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
-import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryImpl;
+import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
+import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.printIssues;
+import static org.junit.Assert.*;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -127,7 +122,7 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
     private void testParseAndSerialize(final String fileName) throws IOException, SAXException {
         final String input = readResourceToString(fileName);
 
-        final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+        final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
 
         final ConversionResult<String> message = serialize(result.getConvertedMessage().get());
@@ -143,7 +138,7 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
     public void parse_and_serialize_nil_remark_test() throws Exception {
         final String input = readResourceToString("spacewx-nil-remark.xml");
 
-        final ConversionResult<SpaceWeatherAdvisory> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
+        final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
 
         assertEquals(0, result.getConversionIssues().size());
@@ -160,12 +155,12 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
     }
 
     private ConversionResult<String> serialize(final String input) throws Exception {
-        final SpaceWeatherAdvisory swx = objectMapper.readValue(input, SpaceWeatherAdvisoryImpl.class);
+        final SpaceWeatherAdvisoryAmd79 swx = objectMapper.readValue(input, SpaceWeatherAdvisoryAmd79Impl.class);
 
         return serialize(swx);
     }
 
-    private ConversionResult<String> serialize(final SpaceWeatherAdvisory swx) {
+    private ConversionResult<String> serialize(final SpaceWeatherAdvisoryAmd79 swx) {
 
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING));
         final ConversionResult<String> message = converter.convertMessage(swx, IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING);
