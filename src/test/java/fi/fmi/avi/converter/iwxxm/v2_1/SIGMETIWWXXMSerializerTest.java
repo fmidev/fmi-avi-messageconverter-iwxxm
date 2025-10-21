@@ -1,9 +1,20 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertSame;
-import static junit.framework.TestCase.assertTrue;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
+import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.sigmet.SIGMET;
+import fi.fmi.avi.model.sigmet.immutable.SIGMETImpl;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,23 +23,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-
-import fi.fmi.avi.converter.AviMessageConverter;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
-import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.sigmet.SIGMET;
-import fi.fmi.avi.model.sigmet.immutable.SIGMETImpl;
+import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
+import static junit.framework.TestCase.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -41,7 +37,7 @@ public class SIGMETIWWXXMSerializerTest {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
-        try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
+        try (final InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
             if (inputStream != null) {
                 return objectMapper.readValue(inputStream, SIGMETImpl.class);
             } else {
@@ -53,12 +49,13 @@ public class SIGMETIWWXXMSerializerTest {
     protected String readFromFile(final String fileName) throws IOException {
         try {
             return new String(Files.readAllBytes(Paths.get(getClass().getResource(fileName).toURI())));
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
         }
     }
+
     @Test
     public void testSIGMETStringSerialization1() throws Exception {
         doTestSIGMETStringSerialization("sigmet1.json");
@@ -89,19 +86,12 @@ public class SIGMETIWWXXMSerializerTest {
         doTestSIGMETStringSerialization("sigmetMOVING.json");
     }
 
-    private String fixIds(String s){
-        if (s==null) return null;
-        return s.replaceAll("gml:id=\"(.*)\"", "gml:id=\"GMLID\"").replaceAll("xlink:href=\"(.*)\"", "xlink:href=\"XLINKHREF\"");
-    }
-
     @Test
     public void testSIGMETCleanup() throws Exception {
-        //Asserts the generated SIGMET is cleaned up correctly
-        String xml = fixIds(doTestSIGMETStringSerialization("sigmetMOVING.json"));
-        String expectedXml = fixIds(readFromFile("sigmetMOVING.IWXXM21"));
+        final String xml = doTestSIGMETStringSerialization("sigmetMOVING.json");
+        final String expectedXml = readFromFile("sigmetMOVING.IWXXM21");
 
-        assertEquals(expectedXml, xml);
-
+        assertXMLEqualsIgnoringVariables(expectedXml, xml);
     }
 
     @Test
