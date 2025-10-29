@@ -7,8 +7,8 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd"
   gml:id="uuid.dea6234c-f57f-4ccf-be7a-bb00a0265af2"
-  permissibleUsage="OPERATIONAL"
-  reportStatus="NORMAL">
+  reportStatus="NORMAL"
+  permissibleUsage="OPERATIONAL">
 
   <iwxxm:issueTime>
     <gml:TimeInstant gml:id="uuid.161d2ad1-e945-4213-84a7-8f9c2c57540f">
@@ -20,7 +20,7 @@
     <aixm:Unit gml:id="uuid.c6a51258-7c8c-4ef9-beda-fbe7e3601f30">
       <aixm:timeSlice>
         <aixm:UnitTimeSlice gml:id="uuid.64f29fac-154b-4484-a49d-7c8816e4840c">
-          <gml:validTime />
+          <gml:validTime/>
           <aixm:interpretation>SNAPSHOT</aixm:interpretation>
           <aixm:name>DONLON</aixm:name>
           <aixm:type>OTHER:SWXC</aixm:type>
@@ -33,7 +33,7 @@
 
   <iwxxm:replacedAdvisoryNumber>2016/1</iwxxm:replacedAdvisoryNumber>
 
-  <iwxxm:phenomenon xlink:href="http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_SEV" />
+  <iwxxm:phenomenon xlink:href="http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_SEV"/>
 
   <iwxxm:analysis>
     <iwxxm:SpaceWeatherAnalysis gml:id="uuid.e10181fb-ff0a-40cf-865c-bb209fc49b90" timeIndicator="OBSERVATION">
@@ -48,7 +48,7 @@
             <aixm:AirspaceVolume gml:id="uuid.7138f8d1-9854-46cb-a1b1-9d96c5cee46f">
               <aixm:horizontalProjection>
                 <aixm:Surface gml:id="uuid.3b00652b-4bed-4655-959c-1c9efd431cac" srsDimension="2" axisLabels="Lat Lon"
-                  srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                              srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
                   <gml:patches>
                     <gml:PolygonPatch>
                       <gml:exterior>
@@ -57,8 +57,8 @@
                             <gml:Curve gml:id="uuid.b7fa4047-2e78-431c-ba95-3fdf6343e3b5">
                               <gml:segments>
                                 <gml:CircleByCenterPoint numArc="1">
-                                  <gml:pos>-16.6392 160.9368</gml:pos>
-                                  <gml:radius uom="[nmi_i]">5409.75</gml:radius>
+                                  <gml:pos>-16.64 160.94</gml:pos>
+                                  <gml:radius uom="km">10100.0</gml:radius>
                                 </gml:CircleByCenterPoint>
                               </gml:segments>
                             </gml:Curve>
@@ -71,7 +71,7 @@
               </aixm:horizontalProjection>
             </aixm:AirspaceVolume>
           </iwxxm:location>
-          <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE" />
+          <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE"/>
         </iwxxm:SpaceWeatherRegion>
       </iwxxm:region>
     </iwxxm:SpaceWeatherAnalysis>
@@ -90,7 +90,7 @@
             <aixm:AirspaceVolume gml:id="uuid.f0361bc9-3f9b-4418-9983-294395f54c7b">
               <aixm:horizontalProjection>
                 <aixm:Surface gml:id="uuid.19e4face-a4cf-4cc7-9331-4d032938e28e" srsDimension="2" axisLabels="Lat Lon"
-                  srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                              srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
                   <gml:patches>
                     <gml:PolygonPatch>
                       <gml:exterior>
@@ -99,8 +99,8 @@
                             <gml:Curve gml:id="uuid.bcf98ca2-0fb0-44b9-880d-7f45a284d1b3">
                               <gml:segments>
                                 <gml:CircleByCenterPoint numArc="1">
-                                  <gml:pos>-16.7114 70.9413</gml:pos>
-                                  <gml:radius uom="[nmi_i]">5409.75</gml:radius>
+                                  <gml:pos>-16.71 70.94</gml:pos>
+                                  <gml:radius uom="km">10100.0</gml:radius>
                                 </gml:CircleByCenterPoint>
                               </gml:segments>
                             </gml:Curve>
@@ -113,7 +113,7 @@
               </aixm:horizontalProjection>
             </aixm:AirspaceVolume>
           </iwxxm:location>
-          <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE" />
+          <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE"/>
         </iwxxm:SpaceWeatherRegion>
       </iwxxm:region>
     </iwxxm:SpaceWeatherAnalysis>
@@ -132,7 +132,7 @@
             <aixm:AirspaceVolume gml:id="uuid.6dccaa55-f454-4269-a680-4173c386757f">
               <aixm:horizontalProjection>
                 <aixm:Surface gml:id="uuid.24ec6d9d-454a-4a53-be18-d3ff93a1a53a" srsDimension="2" axisLabels="Lat Lon"
-                  srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                              srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
                   <gml:patches>
                     <gml:PolygonPatch>
                       <gml:exterior>
@@ -141,8 +141,8 @@
                             <gml:Curve gml:id="uuid.08beec58-aeb2-4601-a2d7-c663296c4878">
                               <gml:segments>
                                 <gml:CircleByCenterPoint numArc="1">
-                                  <gml:pos>-16.7832 -19.0539</gml:pos>
-                                  <gml:radius uom="[nmi_i]">5409.75</gml:radius>
+                                  <gml:pos>-16.78 -19.05</gml:pos>
+                                  <gml:radius uom="km">10100.0</gml:radius>
                                 </gml:CircleByCenterPoint>
                               </gml:segments>
                             </gml:Curve>
@@ -155,7 +155,7 @@
               </aixm:horizontalProjection>
             </aixm:AirspaceVolume>
           </iwxxm:location>
-          <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE" />
+          <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE"/>
         </iwxxm:SpaceWeatherRegion>
       </iwxxm:region>
     </iwxxm:SpaceWeatherAnalysis>
@@ -174,7 +174,7 @@
             <aixm:AirspaceVolume gml:id="uuid.731cc905-f97d-436c-bb63-a6023c27aa50">
               <aixm:horizontalProjection>
                 <aixm:Surface gml:id="uuid.e1e0500b-1251-40a7-a829-d09412ba1870" srsDimension="2" axisLabels="Lat Lon"
-                  srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                              srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
                   <gml:patches>
                     <gml:PolygonPatch>
                       <gml:exterior>
@@ -183,8 +183,8 @@
                             <gml:Curve gml:id="uuid.616326dd-cc30-4420-b334-832b64a67578">
                               <gml:segments>
                                 <gml:CircleByCenterPoint numArc="1">
-                                  <gml:pos>-16.8548 -109.0489</gml:pos>
-                                  <gml:radius uom="[nmi_i]">5409.75</gml:radius>
+                                  <gml:pos>-16.86 -109.05</gml:pos>
+                                  <gml:radius uom="km">10100.0</gml:radius>
                                 </gml:CircleByCenterPoint>
                               </gml:segments>
                             </gml:Curve>
@@ -197,7 +197,7 @@
               </aixm:horizontalProjection>
             </aixm:AirspaceVolume>
           </iwxxm:location>
-          <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE" />
+          <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE"/>
         </iwxxm:SpaceWeatherRegion>
       </iwxxm:region>
     </iwxxm:SpaceWeatherAnalysis>
@@ -210,42 +210,11 @@
           <gml:timePosition>2016-11-09T01:00:00Z</gml:timePosition>
         </gml:TimeInstant>
       </iwxxm:phenomenonTime>
-      <iwxxm:region>
-        <iwxxm:SpaceWeatherRegion gml:id="uuid.921ac167-2ef8-4c76-b4b7-7d38a4d790a0">
-          <iwxxm:location>
-            <aixm:AirspaceVolume gml:id="uuid.574a57b5-3c5a-47eb-8cd1-4895a90e291c">
-              <aixm:horizontalProjection>
-                <aixm:Surface gml:id="uuid.b5c530f6-212a-4cb1-a5ea-17f30e79f31e" srsDimension="2" axisLabels="Lat Lon"
-                  srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
-                  <gml:patches>
-                    <gml:PolygonPatch>
-                      <gml:exterior>
-                        <gml:Ring>
-                          <gml:curveMember>
-                            <gml:Curve gml:id="uuid.e0025db0-7a34-49da-a66c-17757d9e1a45">
-                              <gml:segments>
-                                <gml:CircleByCenterPoint numArc="1">
-                                  <gml:pos>-16.9261 160.9563</gml:pos>
-                                  <gml:radius uom="[nmi_i]">5409.75</gml:radius>
-                                </gml:CircleByCenterPoint>
-                              </gml:segments>
-                            </gml:Curve>
-                          </gml:curveMember>
-                        </gml:Ring>
-                      </gml:exterior>
-                    </gml:PolygonPatch>
-                  </gml:patches>
-                </aixm:Surface>
-              </aixm:horizontalProjection>
-            </aixm:AirspaceVolume>
-          </iwxxm:location>
-          <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE" />
-        </iwxxm:SpaceWeatherRegion>
-      </iwxxm:region>
+      <iwxxm:region nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"/>
     </iwxxm:SpaceWeatherAnalysis>
   </iwxxm:analysis>
 
-  <iwxxm:remarks>PERIODIC HF COM ABSORPTION OBS AND LIKELY TO CONT IN THE NEAR TERM. CMPL AND PERIODIC LOSS OF HF ON THE SUNLIT SIDE OF THE EARTH EXP. CONT HF COM DEGRADATION LIKELY OVER THE NXT 7 DAYS. SEE WWW.SPACEWEATHERPROVIDER.WEB</iwxxm:remarks>
+  <iwxxm:remarks>APERIODIC HF COM ABSORPTION OBS AND LIKELY TO CONT IN THE NEAR TERM. CMPL AND PERIODIC LOSS OF HF ON THE SUNLIT SIDE OF THE EARTH EXP. CONT HF COM DEGRADATION LIKELY OVER THE NXT 7 DAYS. SEE WWW.SPACEWEATHERPROVIDER.WEB</iwxxm:remarks>
 
   <iwxxm:nextAdvisoryTime>
     <gml:TimeInstant gml:id="uuid.ff02e4b5-e54c-4ec3-b34c-842229274727">

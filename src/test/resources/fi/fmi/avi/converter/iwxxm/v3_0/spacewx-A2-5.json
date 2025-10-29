@@ -33,12 +33,12 @@
                 ]
               },
               "centerPointCoordinates": [
-                -16.6392,
-                160.9368
+                -16.64,
+                160.94
               ],
               "radius": {
-                "value": 5409.75,
-                "uom": "[nmi_i]"
+                "value": 10100,
+                "uom": "km"
               }
             }
           },
@@ -65,12 +65,12 @@
                 ]
               },
               "centerPointCoordinates": [
-                -16.7114,
-                70.9413
+                -16.71,
+                70.94
               ],
               "radius": {
-                "value": 5409.75,
-                "uom": "[nmi_i]"
+                "value": 10100,
+                "uom": "km"
               }
             }
           },
@@ -97,12 +97,12 @@
                 ]
               },
               "centerPointCoordinates": [
-                -16.7832,
-                -19.0539
+                -16.78,
+                -19.05
               ],
               "radius": {
-                "value": 5409.75,
-                "uom": "[nmi_i]"
+                "value": 10100,
+                "uom": "km"
               }
             }
           },
@@ -129,12 +129,12 @@
                 ]
               },
               "centerPointCoordinates": [
-                -16.8548,
-                -109.0489
+                -16.86,
+                -109.05
               ],
               "radius": {
-                "value": 5409.75,
-                "uom": "[nmi_i]"
+                "value": 10100,
+                "uom": "km"
               }
             }
           },
@@ -147,36 +147,12 @@
         "completeTime": "2016-11-09T01:00:00Z"
       },
       "analysisType": "FORECAST",
-      "regions": [
-        {
-          "airSpaceVolume": {
-            "horizontalProjection": {
-              "type": "CircleByCenterPoint",
-              "crs": {
-                "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
-                "dimension": 2,
-                "axisLabels": [
-                  "Lat",
-                  "Lon"
-                ]
-              },
-              "centerPointCoordinates": [
-                -16.9261,
-                160.9563
-              ],
-              "radius": {
-                "value": 5409.75,
-                "uom": "[nmi_i]"
-              }
-            }
-          },
-          "locationIndicator": "DAYLIGHT_SIDE"
-        }
-      ]
+      "regions": [],
+      "nilPhenomenonReason": "NO_PHENOMENON_EXPECTED"
     }
   ],
   "remarks": [
-    "PERIODIC HF COM ABSORPTION OBS AND LIKELY TO CONT IN THE NEAR TERM. CMPL AND PERIODIC LOSS OF HF ON THE SUNLIT SIDE OF THE EARTH EXP. CONT HF COM DEGRADATION LIKELY OVER THE NXT 7 DAYS. SEE WWW.SPACEWEATHERPROVIDER.WEB"
+    "APERIODIC HF COM ABSORPTION OBS AND LIKELY TO CONT IN THE NEAR TERM. CMPL AND PERIODIC LOSS OF HF ON THE SUNLIT SIDE OF THE EARTH EXP. CONT HF COM DEGRADATION LIKELY OVER THE NXT 7 DAYS. SEE WWW.SPACEWEATHERPROVIDER.WEB"
   ],
   "nextAdvisory": {
     "timeSpecifier": "NEXT_ADVISORY_AT",

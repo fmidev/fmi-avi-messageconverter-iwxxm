@@ -203,8 +203,8 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase implements I
         assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
         final CircleByCenterPoint geometry = (CircleByCenterPoint) airspaceVolume.getHorizontalProjection().get();
         assertEquals(Optional.of(CoordinateReferenceSystemImpl.wgs84()), CoordinateReferenceSystemImpl.immutableCopyOf(geometry.getCrs()));
-        assertEquals(Arrays.asList(-16.6392, 160.9368), geometry.getCenterPointCoordinates());
-        final NumericMeasure gnm = NumericMeasureImpl.builder().setUom("[nmi_i]").setValue(5409.75).build();
+        assertEquals(Arrays.asList(-16.64, 160.94), geometry.getCenterPointCoordinates());
+        final NumericMeasure gnm = NumericMeasureImpl.builder().setUom("km").setValue(10100.0).build();
         assertEquals(gnm, geometry.getRadius());
         assertFalse(airspaceVolume.getUpperLimitReference().isPresent());
         assertFalse(airspaceVolume.getUpperLimit().isPresent());
@@ -214,8 +214,8 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase implements I
     }
 
     @Test
-    public void testParser_daylight_side_with_nil_location() throws Exception {
-        final String input = readResourceToString("spacewx-daylight-side-nil-location.xml");
+    public void testParser_daylight_side() throws Exception {
+        final String input = readResourceToString("spacewx-daylight-side.xml");
 
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
@@ -235,7 +235,16 @@ public class SpaceWeatherIWXXMParserTest extends DOMParsingTestBase implements I
         final SpaceWeatherRegion region = swx.getAnalyses().get(0).getRegions().get(0);
         assertEquals(SpaceWeatherRegion.SpaceWeatherLocation.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxLocation/DAYLIGHT_SIDE"),
                 region.getLocationIndicator().get());
-        assertFalse(region.getAirSpaceVolume().isPresent());
+
+        final AirspaceVolume airspaceVolume = region.getAirSpaceVolume().get();
+        assertTrue(airspaceVolume.getHorizontalProjection().isPresent());
+        final CircleByCenterPoint geometry = (CircleByCenterPoint) airspaceVolume.getHorizontalProjection().get();
+        assertEquals(Optional.of(CoordinateReferenceSystemImpl.wgs84()), CoordinateReferenceSystemImpl.immutableCopyOf(geometry.getCrs()));
+        assertEquals(Arrays.asList(-16.64, 160.94), geometry.getCenterPointCoordinates());
+        final NumericMeasure gnm = NumericMeasureImpl.builder().setUom("km").setValue(10100.0).build();
+        assertEquals(gnm, geometry.getRadius());
+        assertFalse(airspaceVolume.getUpperLimitReference().isPresent());
+        assertFalse(airspaceVolume.getUpperLimit().isPresent());
 
         assertEquals(NextAdvisory.Type.NO_FURTHER_ADVISORIES, swx.getNextAdvisory().getTimeSpecifier());
     }
