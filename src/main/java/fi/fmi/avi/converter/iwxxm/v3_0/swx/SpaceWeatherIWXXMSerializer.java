@@ -5,19 +5,16 @@ import aero.aixm511.SurfacePropertyType;
 import fi.fmi.avi.converter.*;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMAixm511WxSerializer;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
-import fi.fmi.avi.converter.iwxxm.SubSolarPointUtils;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
 import fi.fmi.avi.model.swx.amd79.*;
+import fi.fmi.avi.model.swx.amd79.immutable.SpaceWeatherRegionImpl;
 import icao.iwxxm30.*;
 import icao.iwxxm30.AirspaceVolumePropertyType;
 import icao.iwxxm30.UnitPropertyType;
 import net.opengis.gml32.*;
-import net.opengis.gml32.CurvePropertyType;
-import net.opengis.gml32.CurveType;
 import net.opengis.gml32.ObjectFactory;
 import org.w3c.dom.Document;
 
@@ -25,61 +22,12 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import java.io.InputStream;
-import java.math.BigInteger;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import static fi.fmi.avi.converter.iwxxm.SubSolarPointUtils.DAYLIGHT_SIDE_RADIUS_KM;
 
 public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Serializer<SpaceWeatherAdvisoryAmd79, T> {
     private static final int REQUIRED_NUMBER_OF_ANALYSES = 5;
     private static final ObjectFactory GML_OF = new ObjectFactory();
-
-    private static void createDaylightSideAirspaceVolume(final AirspaceVolumePropertyType prop, final Instant instant) {
-        final CircleByCenterPointType circle = createDaylightSideCircle(instant);
-        final AirspaceVolumeType volume = create(AirspaceVolumeType.class);
-        volume.setId(UUID_PREFIX + UUID.randomUUID());
-        volume.setHorizontalProjection(createSurfaceFromCircle(circle));
-        prop.setAirspaceVolume(volume);
-    }
-
-    private static CircleByCenterPointType createDaylightSideCircle(final Instant instant) {
-        return create(CircleByCenterPointType.class, circle -> {
-            final double[] latLon = SubSolarPointUtils.computeSubSolarPoint(instant);
-            circle.setPos(create(DirectPositionType.class, pos -> {
-                pos.getValue().add(latLon[0]);
-                pos.getValue().add(latLon[1]);
-            }));
-            circle.setNumArc(BigInteger.ONE);
-            circle.setRadius(create(LengthType.class, r -> {
-                r.setUom("km");
-                r.setValue(DAYLIGHT_SIDE_RADIUS_KM);
-            }));
-        });
-    }
-
-    private static SurfacePropertyType createSurfaceFromCircle(final CircleByCenterPointType circle) {
-        final CurveType curveType = create(CurveType.class, curve -> {
-            curve.setId(UUID_PREFIX + UUID.randomUUID());
-            curve.setSegments(create(CurveSegmentArrayPropertyType.class, segments ->
-                    segments.getAbstractCurveSegment().add(wrap(circle, CircleByCenterPointType.class))));
-        });
-        final RingType ringType = create(RingType.class, ring ->
-                ring.getCurveMember().add(create(CurvePropertyType.class, cp ->
-                        cp.setAbstractCurve(wrap(curveType, CurveType.class)))));
-        final PolygonPatchType patchType = create(PolygonPatchType.class, patch ->
-                patch.setExterior(create(AbstractRingPropertyType.class, er ->
-                        er.setAbstractRing(wrap(ringType, AbstractRingType.class)))));
-        final SurfacePatchArrayPropertyType patchesType = create(SurfacePatchArrayPropertyType.class, patches ->
-                patches.getAbstractSurfacePatch().add(wrap(patchType, PolygonPatchType.class)));
-        return create(SurfacePropertyType.class, sp ->
-                sp.setSurface(createAndWrap(aero.aixm511.SurfaceType.class, s -> {
-                    s.setId(UUID_PREFIX + UUID.randomUUID());
-                    setCrsToType(s, CoordinateReferenceSystemImpl.wgs84());
-                    s.setPatches(wrap(patchesType, SurfacePatchArrayPropertyType.class));
-                })));
-    }
 
     private static AirspaceVolumePropertyType createNilAirspaceVolume() {
         final AirspaceVolumePropertyType airspaceVolumePropertyType = create(AirspaceVolumePropertyType.class);
@@ -90,24 +38,34 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
     private AirspaceVolumePropertyType createAirspaceVolume(final SpaceWeatherRegion region,
                                                             final SpaceWeatherAdvisoryAnalysis analysis,
                                                             final ConversionResult<?> result) {
-        // If airspace volume is present, serialize that
+        // If there is an airspace volume, use it
         if (region.getAirSpaceVolume().isPresent()) {
             return create(AirspaceVolumePropertyType.class,
                     prop -> getAirspaceVolumeProperty(prop, region.getAirSpaceVolume().get()));
         }
-        // Otherwise if location indicator is DAYLIGHT_SIDE, compute an airspace volume for it and serialize that
-        if (region.getLocationIndicator().isPresent()
-                && region.getLocationIndicator().get() == SpaceWeatherRegion.SpaceWeatherLocation.DAYLIGHT_SIDE) {
-            if (!analysis.getTime().getCompleteTime().isPresent()) {
-                result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                        "Time of analysis missing, unable to compute DAYLIGHT_SIDE sub-solar point"));
-                return createNilAirspaceVolume();
-            }
-            return create(AirspaceVolumePropertyType.class,
-                    prop -> createDaylightSideAirspaceVolume(prop,
-                            analysis.getTime().getCompleteTime().get().toInstant()));
+        // No airspace volume or DAYLIGHT_SIDE location indicator to compute it from
+        if (!region.getLocationIndicator()
+                .filter(loc -> loc == SpaceWeatherRegion.SpaceWeatherLocation.DAYLIGHT_SIDE)
+                .isPresent()) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                    "No airspace volume or DAYLIGHT_SIDE location indicator present"));
+            return createNilAirspaceVolume();
         }
-        return createNilAirspaceVolume();
+
+        if (!analysis.getTime().getCompleteTime().isPresent()) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                    "Time of analysis missing, unable to compute DAYLIGHT_SIDE sub-solar point"));
+            return createNilAirspaceVolume();
+        }
+
+        final AirspaceVolume computedAirspaceVolume = SpaceWeatherRegionImpl.Builder.from(region)
+                .withComputedDaylightSideAirspaceVolume(analysis.getTime().getCompleteTime().get().toInstant())
+                .build()
+                .getAirSpaceVolume()
+                .orElseThrow(() -> new IllegalStateException("Computed airspace volume should not be empty"));
+
+        return create(AirspaceVolumePropertyType.class,
+                prop -> getAirspaceVolumeProperty(prop, computedAirspaceVolume));
     }
 
     protected abstract T render(SpaceWeatherAdvisoryType swx, ConversionHints hints) throws ConversionException;
