@@ -10,12 +10,10 @@ import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.swx.amd79.*;
-import fi.fmi.avi.model.swx.amd79.immutable.SpaceWeatherRegionImpl;
 import icao.iwxxm30.*;
 import icao.iwxxm30.AirspaceVolumePropertyType;
 import icao.iwxxm30.UnitPropertyType;
 import net.opengis.gml32.*;
-import net.opengis.gml32.ObjectFactory;
 import org.w3c.dom.Document;
 
 import javax.xml.bind.JAXBElement;
@@ -27,46 +25,7 @@ import java.util.UUID;
 
 public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Serializer<SpaceWeatherAdvisoryAmd79, T> {
     private static final int REQUIRED_NUMBER_OF_ANALYSES = 5;
-    private static final ObjectFactory GML_OF = new ObjectFactory();
-
-    private static AirspaceVolumePropertyType createNilAirspaceVolume() {
-        final AirspaceVolumePropertyType airspaceVolumePropertyType = create(AirspaceVolumePropertyType.class);
-        airspaceVolumePropertyType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_UNKNOWN);
-        return airspaceVolumePropertyType;
-    }
-
-    private AirspaceVolumePropertyType createAirspaceVolume(final SpaceWeatherRegion region,
-                                                            final SpaceWeatherAdvisoryAnalysis analysis,
-                                                            final ConversionResult<?> result) {
-        // If there is an airspace volume, use it
-        if (region.getAirSpaceVolume().isPresent()) {
-            return create(AirspaceVolumePropertyType.class,
-                    prop -> getAirspaceVolumeProperty(prop, region.getAirSpaceVolume().get()));
-        }
-        // No airspace volume or DAYLIGHT_SIDE location indicator to compute it from
-        if (!region.getLocationIndicator()
-                .filter(loc -> loc == SpaceWeatherRegion.SpaceWeatherLocation.DAYLIGHT_SIDE)
-                .isPresent()) {
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "No airspace volume or DAYLIGHT_SIDE location indicator present"));
-            return createNilAirspaceVolume();
-        }
-
-        if (!analysis.getTime().getCompleteTime().isPresent()) {
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "Time of analysis missing, unable to compute DAYLIGHT_SIDE sub-solar point"));
-            return createNilAirspaceVolume();
-        }
-
-        final AirspaceVolume computedAirspaceVolume = SpaceWeatherRegionImpl.Builder.from(region)
-                .withComputedDaylightSideAirspaceVolume(analysis.getTime().getCompleteTime().get().toInstant())
-                .build()
-                .getAirSpaceVolume()
-                .orElseThrow(() -> new IllegalStateException("Computed airspace volume should not be empty"));
-
-        return create(AirspaceVolumePropertyType.class,
-                prop -> getAirspaceVolumeProperty(prop, computedAirspaceVolume));
-    }
+    private static final net.opengis.gml32.ObjectFactory GML_OF = new net.opengis.gml32.ObjectFactory();
 
     protected abstract T render(SpaceWeatherAdvisoryType swx, ConversionHints hints) throws ConversionException;
 
@@ -95,7 +54,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         }
 
         final StringWithNilReasonType remarkType = create(StringWithNilReasonType.class);
-        if (input.getRemarks().isPresent() && !input.getRemarks().get().isEmpty()) {
+        if (input.getRemarks().isPresent() && input.getRemarks().get().size() > 0) {
             remarkType.setValue(String.join(" ", input.getRemarks().get()));
         } else {
             remarkType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
@@ -113,7 +72,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             final SpaceWeatherRegionIdMapper regionIdList = new SpaceWeatherRegionIdMapper(input.getAnalyses());
             for (int i = 0; i < input.getAnalyses().size(); i++) {
                 final SpaceWeatherAdvisoryAnalysis analysis = input.getAnalyses().get(i);
-                swxType.getAnalysis().add(toSpaceWeatherAnalysisPropertyType(analysis, regionIdList.getRegionList(i), result));
+                swxType.getAnalysis().add(toSpaceWeatherAnalysisPropertyType(analysis, regionIdList.getRegionList(i)));
             }
         } else {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Expected 5 analysis objects, but found " + input.getAnalyses().size()));
@@ -202,7 +161,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
     }
 
     private SpaceWeatherAnalysisPropertyType toSpaceWeatherAnalysisPropertyType(final SpaceWeatherAdvisoryAnalysis analysis,
-                                                                                final List<SpaceWeatherRegionIdMapper.RegionId> regionList, final ConversionResult<?> result) {
+                                                                                final List<SpaceWeatherRegionIdMapper.RegionId> regionList) {
         final SpaceWeatherAnalysisPropertyType propertyType = create(SpaceWeatherAnalysisPropertyType.class);
         final SpaceWeatherAnalysisType analysisType = create(SpaceWeatherAnalysisType.class);
 
@@ -221,41 +180,39 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             regionProperty.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
             analysisType.getRegion().add(regionProperty);
         }
-
         for (int i = 0; i < regionsAmount; i++) {
             final SpaceWeatherRegionIdMapper.RegionId regionId = regionList.get(i);
             final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
+            if (!regionId.isDuplicate()) {
+                final SpaceWeatherRegion region = analysis.getRegions().get(i);
+                if (!region.getAirSpaceVolume().isPresent() && !region.getLocationIndicator().isPresent()) {
+                    regionProperty.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
+                } else {
+                    final SpaceWeatherRegionType regionType = create(SpaceWeatherRegionType.class);
+                    regionType.setId(regionId.getId());
 
-            if (regionId.isDuplicate()) {
-                regionProperty.setHref("#" + regionId.getId());
-                analysisType.getRegion().add(regionProperty);
-                continue;
-            }
+                    final SpaceWeatherLocationType locationType = create(SpaceWeatherLocationType.class);
+                    if (region.getLocationIndicator().isPresent()) {
+                        locationType.setHref(region.getLocationIndicator().get().asWMOCodeListValue());
+                    } else {
+                        locationType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
+                    }
+                    regionType.setLocationIndicator(locationType);
 
-            final SpaceWeatherRegion region = analysis.getRegions().get(i);
-            final boolean hasAirspaceVolume = region.getAirSpaceVolume().isPresent();
-            final boolean hasLocationIndicator = region.getLocationIndicator().isPresent();
+                    if (region.getAirSpaceVolume().isPresent()) {
+                        regionType.setGeographicLocation(
+                                create(AirspaceVolumePropertyType.class, prop -> getAirspaceVolumeProperty(prop, region.getAirSpaceVolume().get())));
+                    } else {
+                        final AirspaceVolumePropertyType airspaceVolumePropertyType = create(AirspaceVolumePropertyType.class);
+                        airspaceVolumePropertyType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_UNKNOWN);
+                        regionType.setGeographicLocation(airspaceVolumePropertyType);
+                    }
 
-            if (!hasAirspaceVolume && !hasLocationIndicator) {
-                regionProperty.getNilReason()
-                        .add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
-                analysisType.getRegion().add(regionProperty);
-                continue;
-            }
-
-            final SpaceWeatherRegionType regionType = create(SpaceWeatherRegionType.class);
-            regionType.setId(regionId.getId());
-
-            final SpaceWeatherLocationType locationType = create(SpaceWeatherLocationType.class);
-            if (region.getLocationIndicator().isPresent()) {
-                locationType.setHref(region.getLocationIndicator().get().asWMOCodeListValue());
+                    regionProperty.setSpaceWeatherRegion(regionType);
+                }
             } else {
-                locationType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
+                regionProperty.setHref("#" + regionId.getId());
             }
-            regionType.setLocationIndicator(locationType);
-            regionType.setGeographicLocation(createAirspaceVolume(region, analysis, result));
-
-            regionProperty.setSpaceWeatherRegion(regionType);
             analysisType.getRegion().add(regionProperty);
         }
 

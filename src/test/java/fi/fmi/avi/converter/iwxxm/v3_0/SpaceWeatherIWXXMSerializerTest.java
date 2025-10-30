@@ -89,17 +89,6 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
     }
 
     @Test
-    public void serialize_spacewx_partial_daylight_side() throws Exception {
-        final String input = readResourceToString("spacewx-partial-daylight-side.json");
-        final ConversionResult<String> result = serialize(input);
-
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-        assertTrue(result.getConvertedMessage().isPresent());
-        assertNotNull(result.getConvertedMessage().get());
-        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-daylight-side.xml"), result.getConvertedMessage().get());
-    }
-
-    @Test
     public void serialize_spacewx_issuing_centre() throws Exception {
         final String input = readResourceToString("spacewx-issuing-centre.json");
         final ConversionResult<String> result = serialize(input);
