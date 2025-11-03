@@ -78,14 +78,14 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
     }
 
     @Test
-    public void serialize_spacewx_daylight_side_nil_location() throws Exception {
-        final String input = readResourceToString("spacewx-daylight-side-nil-location.json");
+    public void serialize_spacewx_daylight_side() throws Exception {
+        final String input = readResourceToString("spacewx-daylight-side.json");
         final ConversionResult<String> result = serialize(input);
 
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
-        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-daylight-side-nil-location.xml"), result.getConvertedMessage().get());
+        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-daylight-side.xml"), result.getConvertedMessage().get());
     }
 
     @Test
@@ -115,8 +115,8 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
     }
 
     @Test
-    public void parse_and_serialize_test_daylight_side_nil_location() throws Exception {
-        testParseAndSerialize("spacewx-daylight-side-nil-location.xml");
+    public void parse_and_serialize_test_daylight_side() throws Exception {
+        testParseAndSerialize("spacewx-daylight-side.xml");
     }
 
     private void testParseAndSerialize(final String fileName) throws IOException, SAXException {

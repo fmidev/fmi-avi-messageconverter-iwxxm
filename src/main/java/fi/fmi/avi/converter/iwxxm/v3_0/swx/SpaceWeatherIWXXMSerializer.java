@@ -161,7 +161,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
     }
 
     private SpaceWeatherAnalysisPropertyType toSpaceWeatherAnalysisPropertyType(final SpaceWeatherAdvisoryAnalysis analysis,
-            final List<SpaceWeatherRegionIdMapper.RegionId> regionList) {
+                                                                                final List<SpaceWeatherRegionIdMapper.RegionId> regionList) {
         final SpaceWeatherAnalysisPropertyType propertyType = create(SpaceWeatherAnalysisPropertyType.class);
         final SpaceWeatherAnalysisType analysisType = create(SpaceWeatherAnalysisType.class);
 
@@ -226,8 +226,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         final TimePositionType timePositionType = create(TimePositionType.class);
         toIWXXMDateTime(time).ifPresent(t -> timePositionType.getValue().add(t));
         timeInstantType.setTimePosition(timePositionType);
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        final JAXBElement<AbstractTimeObjectType> jaxbTimeInstant = (JAXBElement) GML_OF.createTimeInstant(timeInstantType);
+        @SuppressWarnings({"unchecked", "rawtypes"}) final JAXBElement<AbstractTimeObjectType> jaxbTimeInstant = (JAXBElement) GML_OF.createTimeInstant(timeInstantType);
         prop.setAbstractTimeObject(jaxbTimeInstant);
     }
 
