@@ -19,6 +19,10 @@
         <tag>HEAD</tag>
     </scm>
 
+  <properties>
+    <fmi-avi-xmlmodel.version>2.1.0</fmi-avi-xmlmodel.version>
+  </properties>
+
     <dependencies>
         <dependency>
             <groupId>fi.fmi.avi.converter</groupId>
@@ -28,27 +32,27 @@
         <dependency>
             <groupId>fi.fmi.xmlmodel</groupId>
             <artifactId>fmi-avi-xmlmodel-iwxxm211</artifactId>
-          <version>2.0.1-SNAPSHOT</version>
+          <version>${fmi-avi-xmlmodel.version}</version>
         </dependency>
         <dependency>
             <groupId>fi.fmi.xmlmodel</groupId>
             <artifactId>fmi-avi-xmlmodel-iwxxm30</artifactId>
-          <version>2.0.1-SNAPSHOT</version>
+          <version>${fmi-avi-xmlmodel.version}</version>
         </dependency>
         <dependency>
             <groupId>fi.fmi.xmlmodel</groupId>
             <artifactId>fmi-avi-xmlmodel-iwxxm2023-1</artifactId>
-          <version>2.0.1-SNAPSHOT</version>
+          <version>${fmi-avi-xmlmodel.version}</version>
         </dependency>
       <dependency>
         <groupId>fi.fmi.xmlmodel</groupId>
         <artifactId>fmi-avi-xmlmodel-iwxxm2025-2</artifactId>
-        <version>2.0.1-SNAPSHOT</version>
+        <version>${fmi-avi-xmlmodel.version}</version>
       </dependency>
         <dependency>
             <groupId>fi.fmi.xmlmodel</groupId>
             <artifactId>fmi-avi-xmlmodel-wmo-collect2014</artifactId>
-          <version>2.0.1-SNAPSHOT</version>
+          <version>${fmi-avi-xmlmodel.version}</version>
         </dependency>
         <dependency>
             <groupId>net.sf.saxon</groupId>
