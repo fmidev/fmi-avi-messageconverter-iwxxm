@@ -31,6 +31,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - ...
 
+## [v6.0.0] - 2025-11-21
+
+### Added
+
+- Added generic IWXXM 2025-2 parsing for Space Weather Advisories [#136]
+
+### Changed
+
+- Adapted to Annex 3 Amendment 82 Space Weather Advisory model changes [#132]
+
 ## [v5.0.0-beta4] - 2024-02-02
 
 ### Added
@@ -113,7 +123,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Previous changelog entries are available
 on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases) in a more freeform format.
 
-[Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-4.2.0...HEAD
+[Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-6.0.0...HEAD
+
+[v6.0.0]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-6.0.0
 
 [v5.0.0-beta4]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-5.0.0-beta4
 
@@ -184,3 +196,7 @@ on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwx
 [#128]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/128
 
 [#130]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/130
+
+[#132]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/132
+
+[#136]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/136
