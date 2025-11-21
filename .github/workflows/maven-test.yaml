@@ -1,0 +1,50 @@
+name: Run tests with Maven
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'liberica'
+          cache: maven
+      - name: Set up Maven settings
+        uses: s4u/maven-settings-action@v3.1.0
+        with:
+          repositories: |
+            [
+              {
+                "id": "fmi-os-mvn-repo",
+                "name": "FMI OS Maven Repository",
+                "url": "https://raw.githubusercontent.com/fmidev/fmi-os-mvn-repo/master",
+                "snapshots": {
+                  "enabled": false
+                },
+                "releases": {
+                  "enabled": true
+                }
+              },
+              {
+                "id": "fmi-os-mvn-snapshot-repo",
+                "name": "FMI OS Maven Snapshot Repository",
+                "url": "https://raw.githubusercontent.com/fmidev/fmi-os-mvn-snapshot-repo/master",
+                "snapshots": {
+                  "enabled": true
+                },
+                "releases": {
+                  "enabled": false
+                }
+              }
+            ]
+      - name: Build and run tests with Maven
+        run: mvn -B clean test

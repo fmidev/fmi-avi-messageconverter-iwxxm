@@ -13,8 +13,8 @@ import fi.fmi.avi.model.metar.METAR;
 import fi.fmi.avi.model.metar.SPECI;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SIGMET;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAdvisoryAmd79;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAmd79Bulletin;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,28 +145,28 @@ public class IWXXMTestConfiguration {
     // Space weather
 
     @Autowired
-    private AviMessageSpecificConverter<String, SpaceWeatherAdvisory> spaceWeatherIWXXMStringParser;
+    private AviMessageSpecificConverter<String, SpaceWeatherAdvisoryAmd79> spaceWeatherIWXXM30StringParser;
 
     @Autowired
-    private AviMessageSpecificConverter<Document, SpaceWeatherAdvisory> spaceWeatherIWXXMDOMParser;
+    private AviMessageSpecificConverter<Document, SpaceWeatherAdvisoryAmd79> spaceWeatherIWXXM30DOMParser;
 
     @Autowired
-    private AviMessageSpecificConverter<String, SpaceWeatherBulletin> spaceWeatherBulletinIWXXMStringParser;
+    private AviMessageSpecificConverter<String, SpaceWeatherAmd79Bulletin> spaceWeatherBulletinIWXXM30StringParser;
 
     @Autowired
-    private AviMessageSpecificConverter<Document, SpaceWeatherBulletin> spaceWeatherBulletinIWXXMDOMParser;
+    private AviMessageSpecificConverter<Document, SpaceWeatherAmd79Bulletin> spaceWeatherBulletinIWXXM30DOMParser;
 
     @Autowired
-    private AviMessageSpecificConverter<SpaceWeatherAdvisory, String> spaceWeatherIWXXMStringSerializer;
+    private AviMessageSpecificConverter<SpaceWeatherAdvisoryAmd79, String> spaceWeatherIWXXM30StringSerializer;
 
     @Autowired
-    private AviMessageSpecificConverter<SpaceWeatherAdvisory, Document> spaceWeatherIWXXMDOMSerializer;
+    private AviMessageSpecificConverter<SpaceWeatherAdvisoryAmd79, Document> spaceWeatherIWXXM30DOMSerializer;
 
     @Autowired
-    private AviMessageSpecificConverter<SpaceWeatherBulletin, String> spaceWeatherBulletinIWXXMStringSerializer;
+    private AviMessageSpecificConverter<SpaceWeatherAmd79Bulletin, String> spaceWeatherBulletinIWXXM30StringSerializer;
 
     @Autowired
-    private AviMessageSpecificConverter<SpaceWeatherBulletin, Document> spaceWeatherBulletinIWXXMDOMSerializer;
+    private AviMessageSpecificConverter<SpaceWeatherAmd79Bulletin, Document> spaceWeatherBulletinIWXXM30DOMSerializer;
 
     // Generic bulletins
 
@@ -238,14 +238,14 @@ public class IWXXMTestConfiguration {
         p.setMessageSpecificConverter(IWXXMConverter.AIRMET_POJO_TO_IWXXM2023_1_STRING, airmetIWXXM20231StringSerializer);
 
         // Space weather
-        p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO, spaceWeatherIWXXMStringParser);
-        p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO, spaceWeatherIWXXMDOMParser);
-        p.setMessageSpecificConverter(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING, spaceWeatherIWXXMStringSerializer);
-        p.setMessageSpecificConverter(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_DOM, spaceWeatherIWXXMDOMSerializer);
-        p.setMessageSpecificConverter(IWXXMConverter.SWX_BULLETIN_POJO_TO_WMO_COLLECT_STRING, spaceWeatherBulletinIWXXMStringSerializer);
-        p.setMessageSpecificConverter(IWXXMConverter.SWX_BULLETIN_POJO_TO_WMO_COLLECT_DOM, spaceWeatherBulletinIWXXMDOMSerializer);
-        p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_STRING_TO_SWX_BULLETIN_POJO, spaceWeatherBulletinIWXXMStringParser);
-        p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_BULLETIN_POJO, spaceWeatherBulletinIWXXMDOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO, spaceWeatherIWXXM30StringParser);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO, spaceWeatherIWXXM30DOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING, spaceWeatherIWXXM30StringSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_DOM, spaceWeatherIWXXM30DOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_STRING, spaceWeatherBulletinIWXXM30StringSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_DOM, spaceWeatherBulletinIWXXM30DOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_STRING_TO_SWX_30_BULLETIN_POJO, spaceWeatherBulletinIWXXM30StringParser);
+        p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_30_BULLETIN_POJO, spaceWeatherBulletinIWXXM30DOMParser);
 
         // Generic bulletin messages:
         p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, genericBulletinIWXXMDOMParser);

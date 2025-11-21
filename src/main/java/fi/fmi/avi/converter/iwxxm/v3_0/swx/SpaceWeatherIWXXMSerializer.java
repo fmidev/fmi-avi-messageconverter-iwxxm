@@ -1,7 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
-import aero.aixm511.SurfacePropertyType;
 import aero.aixm511.*;
+import aero.aixm511.SurfacePropertyType;
 import fi.fmi.avi.converter.*;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMAixm511WxSerializer;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
@@ -9,10 +9,10 @@ import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v3_0.AbstractIWXXM30Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.swx.*;
+import fi.fmi.avi.model.swx.amd79.*;
+import icao.iwxxm30.*;
 import icao.iwxxm30.AirspaceVolumePropertyType;
 import icao.iwxxm30.UnitPropertyType;
-import icao.iwxxm30.*;
 import net.opengis.gml32.*;
 import org.w3c.dom.Document;
 
@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
-public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Serializer<SpaceWeatherAdvisory, T> {
+public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Serializer<SpaceWeatherAdvisoryAmd79, T> {
     private static final int REQUIRED_NUMBER_OF_ANALYSES = 5;
     private static final net.opengis.gml32.ObjectFactory GML_OF = new net.opengis.gml32.ObjectFactory();
 
@@ -32,7 +32,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
     protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
 
     @Override
-    public ConversionResult<T> convertMessage(final SpaceWeatherAdvisory input, final ConversionHints hints) {
+    public ConversionResult<T> convertMessage(final SpaceWeatherAdvisoryAmd79 input, final ConversionHints hints) {
         final ConversionResult<T> result = new ConversionResult<>();
 
         final SpaceWeatherAdvisoryType swxType = create(SpaceWeatherAdvisoryType.class);
@@ -94,7 +94,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         return result;
     }
 
-    protected void updateMessageMetadata(final SpaceWeatherAdvisory source, final ConversionResult<?> results, final SpaceWeatherAdvisoryType target)
+    protected void updateMessageMetadata(final SpaceWeatherAdvisoryAmd79 source, final ConversionResult<?> results, final SpaceWeatherAdvisoryType target)
             throws ConversionException {
         try {
             final DatatypeFactory f = DatatypeFactory.newInstance();
@@ -161,7 +161,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
     }
 
     private SpaceWeatherAnalysisPropertyType toSpaceWeatherAnalysisPropertyType(final SpaceWeatherAdvisoryAnalysis analysis,
-            final List<SpaceWeatherRegionIdMapper.RegionId> regionList) {
+                                                                                final List<SpaceWeatherRegionIdMapper.RegionId> regionList) {
         final SpaceWeatherAnalysisPropertyType propertyType = create(SpaceWeatherAnalysisPropertyType.class);
         final SpaceWeatherAnalysisType analysisType = create(SpaceWeatherAnalysisType.class);
 
@@ -226,8 +226,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         final TimePositionType timePositionType = create(TimePositionType.class);
         toIWXXMDateTime(time).ifPresent(t -> timePositionType.getValue().add(t));
         timeInstantType.setTimePosition(timePositionType);
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        final JAXBElement<AbstractTimeObjectType> jaxbTimeInstant = (JAXBElement) GML_OF.createTimeInstant(timeInstantType);
+        @SuppressWarnings({"unchecked", "rawtypes"}) final JAXBElement<AbstractTimeObjectType> jaxbTimeInstant = (JAXBElement) GML_OF.createTimeInstant(timeInstantType);
         prop.setAbstractTimeObject(jaxbTimeInstant);
     }
 
@@ -301,7 +300,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
             }
             // TODO: 'after' not supported in model; temporarily omit
             nextAdvisory.getTime()//
-                    .<String> flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                    .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                     .ifPresent(t -> timePosition.getValue().add(t));
             timeInstant.setId(UUID_PREFIX + UUID.randomUUID());
             timeInstant.setTimePosition(timePosition);

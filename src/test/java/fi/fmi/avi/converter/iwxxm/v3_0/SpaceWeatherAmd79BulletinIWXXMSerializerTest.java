@@ -1,36 +1,8 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
@@ -40,29 +12,51 @@ import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
 import fi.fmi.avi.model.bulletin.DataTypeDesignatorT2;
 import fi.fmi.avi.model.bulletin.immutable.BulletinHeadingImpl;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisory;
-import fi.fmi.avi.model.swx.SpaceWeatherBulletin;
-import fi.fmi.avi.model.swx.immutable.SpaceWeatherAdvisoryImpl;
-import fi.fmi.avi.model.swx.immutable.SpaceWeatherBulletinImpl;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAdvisoryAmd79;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAmd79Bulletin;
+import fi.fmi.avi.model.swx.amd79.immutable.SpaceWeatherAdvisoryAmd79Impl;
+import fi.fmi.avi.model.swx.amd79.immutable.SpaceWeatherAmd79BulletinImpl;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  * Created by rinne on 19/07/17.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class SpaceWeatherBulletinIWXXMSerializerTest {
+public class SpaceWeatherAmd79BulletinIWXXMSerializerTest {
 
     @Autowired
     private AviMessageConverter converter;
 
-    private SpaceWeatherBulletin getSWXBulletin(final String... fileNames) throws IOException {
-        final List<SpaceWeatherAdvisory> swxMessages = new ArrayList<>();
+    private SpaceWeatherAmd79Bulletin getSWXBulletin(final String... fileNames) throws IOException {
+        final List<SpaceWeatherAdvisoryAmd79> swxMessages = new ArrayList<>();
         for (final String fName : fileNames) {
-            final SpaceWeatherAdvisory t = readFromJSON(fName);
+            final SpaceWeatherAdvisoryAmd79 t = readFromJSON(fName);
             //Need to do any patching with external data here? (complete dates or geometries?)
             swxMessages.add(t);
         }
-        final SpaceWeatherBulletinImpl.Builder bulletinBuilder = SpaceWeatherBulletinImpl.builder()//
+        final SpaceWeatherAmd79BulletinImpl.Builder bulletinBuilder = SpaceWeatherAmd79BulletinImpl.builder()//
                 .setHeading(BulletinHeadingImpl.builder()//
                         .setDataTypeDesignatorT2(DataTypeDesignatorT2.XMLDataTypeDesignatorT2.XML_SPACE_WEATHER_ADVISORY)//
                         .setType(BulletinHeading.Type.NORMAL)//
@@ -80,8 +74,8 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
     @Test
     public void testBulletinStringSerialization() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
-        final SpaceWeatherBulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
-        final ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.SWX_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
+        final SpaceWeatherAmd79Bulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
+        final ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         assertTrue(result.getConvertedMessage().isPresent());
@@ -117,8 +111,8 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
     @Test
     public void testBulletinDOMSerialization() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
-        final SpaceWeatherBulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
-        final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.SWX_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
+        final SpaceWeatherAmd79Bulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
+        final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
 
         final XPathFactory factory = XPathFactory.newInstance();
@@ -143,13 +137,13 @@ public class SpaceWeatherBulletinIWXXMSerializerTest {
         assertEquals("90.0 -180.0 60.0 -180.0 60.0 180.0 90.0 180.0 90.0 -180.0", expr.evaluate(docElement));
     }
 
-    protected SpaceWeatherAdvisory readFromJSON(final String fileName) throws IOException {
+    protected SpaceWeatherAdvisoryAmd79 readFromJSON(final String fileName) throws IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
-        try (InputStream inputStream = SpaceWeatherBulletinIWXXMSerializerTest.class.getResourceAsStream(fileName)) {
+        try (final InputStream inputStream = SpaceWeatherAmd79BulletinIWXXMSerializerTest.class.getResourceAsStream(fileName)) {
             if (inputStream != null) {
-                return objectMapper.readValue(inputStream, SpaceWeatherAdvisoryImpl.class);
+                return objectMapper.readValue(inputStream, SpaceWeatherAdvisoryAmd79Impl.class);
             } else {
                 throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
             }

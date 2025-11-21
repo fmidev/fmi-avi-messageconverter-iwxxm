@@ -33,15 +33,16 @@ public interface IWXXMConverterTests {
     }
 
     /**
-     * A dirty hack to unify all gml:id attribute values, to ignore id in comparison while converter produces non-repeatable random ids.
+     * Set fixed id values to ignore ids in test comparisons while converter produces non-repeatable random ids.
      *
-     * @param iwxxm
-     *         IWXXM document
-     *
+     * @param iwxxm IWXXM document
      * @return an IWXXM document with fixed gml:id attributes
      */
     static String setFixedGmlIds(final String iwxxm) {
-        return iwxxm.replaceAll("\\b(xlink:href|gml:id)\\s*=\\s*\"(#)?([a-z]+[-.])?[^\"]*\"", "$1=\"$2$3fixed-gml-id\"");
+        return iwxxm.replaceAll(
+                "\\b(xlink:href|gml:id|(?:[A-Za-z_][\\w.-]*:)?volcanoId)\\s*=\\s*\"(#)?[^\"]*\"",
+                "$1=\"$2fixed-gml-id\""
+        );
     }
 
     static void assertXMLEqualsIgnoringVariables(final String input, final String actual) throws SAXException, IOException {
