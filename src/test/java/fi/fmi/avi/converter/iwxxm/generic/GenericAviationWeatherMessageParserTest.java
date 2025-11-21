@@ -1,35 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
-import static java.util.Objects.requireNonNull;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.custommonkey.xmlunit.XMLTestCase;
-import org.custommonkey.xmlunit.XMLUnit;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
@@ -44,6 +14,30 @@ import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
+import org.custommonkey.xmlunit.XMLTestCase;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.requireNonNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -468,8 +462,8 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     }
 
     @Test
-    public void swxDOMMessageTest() throws Exception {
-        final String fileName = "spacewx-A2-3.xml";
+    public void swx30DOMMessageTest() throws Exception {
+        final String fileName = "iwxxm-30-spacewx-A2-3.xml";
         final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.SPACE_WEATHER_ADVISORY;
@@ -486,6 +480,34 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
         assertFalse(message.isTranslated());
         assertEquals(ReportStatus.AMENDMENT, message.getReportStatus());
         assertPartialOrCompleteTime("2016-11-08T01:00Z", message.getIssueTime());
+        assertFalse(message.getValidityTime().isPresent());
+        final Map<LocationIndicatorType, String> expectedIndicators = Collections.singletonMap(LocationIndicatorType.ISSUING_CENTRE, "DONLON");
+        assertEquals(expectedIndicators, message.getLocationIndicators());
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        XMLUnit.setIgnoreWhitespace(true);
+        assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
+    }
+
+    @Test
+    public void swx20252DOMMessageTest() throws Exception {
+        final String fileName = "iwxxm-2025-2-spacewx-A7-3.xml";
+        final Document input = readDocumentFromResource(fileName);
+
+        final ConversionHints hints = ConversionHints.SPACE_WEATHER_ADVISORY;
+        final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
+                IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
+
+        assertEquals(result.getConversionIssues(), Collections.emptyList());
+        assertTrue(result.getConvertedMessage().isPresent());
+        final GenericAviationWeatherMessage message = result.getConvertedMessage().get();
+
+        assertEquals(Format.IWXXM, message.getMessageFormat());
+        assertEquals(IWXXM_2025_2_NAMESPACE, message.getXMLNamespace().orElse(null));
+        assertEquals(MessageType.SPACE_WEATHER_ADVISORY.toString(), message.getMessageType().map(MessageType::toString).orElse(null));
+        assertFalse(message.isTranslated());
+        assertEquals(ReportStatus.NORMAL, message.getReportStatus());
+        assertPartialOrCompleteTime("2020-11-08T01:00Z", message.getIssueTime());
         assertFalse(message.getValidityTime().isPresent());
         final Map<LocationIndicatorType, String> expectedIndicators = Collections.singletonMap(LocationIndicatorType.ISSUING_CENTRE, "DONLON");
         assertEquals(expectedIndicators, message.getLocationIndicators());
@@ -610,4 +632,5 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
         XMLUnit.setIgnoreWhitespace(true);
         assertXMLEqual(readResourceToString(fileName), message.getOriginalMessage());
     }
+
 }

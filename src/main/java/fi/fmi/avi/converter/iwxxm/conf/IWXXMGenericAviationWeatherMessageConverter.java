@@ -1,14 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.conf;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageParser;
 import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageParser.ScannerKey;
@@ -22,6 +13,14 @@ import fi.fmi.avi.converter.iwxxm.v2_1.tca.GenericTropicalCycloneAdvisoryIWXXMSc
 import fi.fmi.avi.converter.iwxxm.v2_1.vaa.GenericVolcanicAshAdvisoryIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.v3_0.swx.GenericSpaceWeatherAdvisoryIWXXMScanner;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class IWXXMGenericAviationWeatherMessageConverter {
@@ -72,14 +71,19 @@ public class IWXXMGenericAviationWeatherMessageConverter {
         final String iwxxm_2_1_NamespaceURI = "http://icao.int/iwxxm/2.1";
         final String iwxxm_3_0_NamespaceURI = "http://icao.int/iwxxm/3.0";
         final String iwxxm_2023_1_NamespaceURI = "http://icao.int/iwxxm/2023-1";
+        final String iwxxm_2025_2_NamespaceURI = "http://icao.int/iwxxm/2025-2";
 
         scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "TAF"), new GenericTAFIWXXMScanner());
         scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "TAF"), new fi.fmi.avi.converter.iwxxm.v3_0.taf.GenericTAFIWXXMScanner());
 
         scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "SpaceWeatherAdvisory"), new GenericSpaceWeatherAdvisoryIWXXMScanner());
+        scannersMap.put(new ScannerKey(iwxxm_2025_2_NamespaceURI, "SpaceWeatherAdvisory"),
+                new fi.fmi.avi.converter.iwxxm.v2025_2.swx.GenericSpaceWeatherAdvisoryIWXXMScanner());
+
         scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "TropicalCycloneAdvisory"), new GenericTropicalCycloneAdvisoryIWXXMScanner());
         scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "TropicalCycloneAdvisory"),
                 new fi.fmi.avi.converter.iwxxm.v3_0.tca.GenericTropicalCycloneAdvisoryIWXXMScanner());
+
         scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "VolcanicAshAdvisory"), new GenericVolcanicAshAdvisoryIWXXMScanner());
         scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "VolcanicAshAdvisory"),
                 new fi.fmi.avi.converter.iwxxm.v3_0.vaa.GenericVolcanicAshAdvisoryIWXXMScanner());

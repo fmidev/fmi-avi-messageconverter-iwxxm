@@ -24,6 +24,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
         m.put("http://icao.int/iwxxm/2.1", "iwxxm");
         m.put("http://icao.int/iwxxm/3.0", "iwxxm30");
         m.put("http://icao.int/iwxxm/2023-1", "iwxxm2023_1");
+        m.put("http://icao.int/iwxxm/2025-2", "iwxxm2025_2");
         m.put("http://def.wmo.int/opm/2013", "opm");
         m.put("http://def.wmo.int/metce/2013", "metce");
         m.put("http://def.wmo.int/collect/2014", "collect");
@@ -32,7 +33,7 @@ public class IWXXMNamespaceContext extends NamespacePrefixMapper implements Name
         m.put("http://www.opengis.net/samplingSpatial/2.0", "sams");
         m.put("http://purl.oclc.org/dsdl/svrl", "svrl");
         final Set<String> duplicates = findDuplicatePrefixes(m);
-        if (duplicates.size() > 0) {
+        if (!duplicates.isEmpty()) {
             throw new RuntimeException("The default namespace-prefix mapping contains duplicate prefixes, this is not allowed: " + duplicates);
         }
         DEFAULT_MAPPING = Collections.unmodifiableMap(m);

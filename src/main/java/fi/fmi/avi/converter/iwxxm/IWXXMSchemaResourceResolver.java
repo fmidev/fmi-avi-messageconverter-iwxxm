@@ -47,7 +47,8 @@ public abstract class IWXXMSchemaResourceResolver implements LSResourceResolver 
         OPM12("http://def.wmo.int/opm/2013", "int/wmo/opm/1.2/", wmo.opm2013.AbstractObservablePropertyPropertyType.class),
         IWXXM21("http://icao.int/iwxxm/2.1", "int/icao/iwxxm/2.1.1/", icao.iwxxm21.TAFType.class),
         IWXXM30("http://icao.int/iwxxm/3.0", "int/icao/iwxxm/3.0.0/", icao.iwxxm30.SpaceWeatherAdvisoryType.class),
-        IWXXM2023_1("http://icao.int/iwxxm/2023-1", "int/icao/iwxxm/2023_1/", icao.iwxxm2023_1.AIRMETType.class);
+        IWXXM2023_1("http://icao.int/iwxxm/2023-1", "int/icao/iwxxm/2023_1/", icao.iwxxm2023_1.AIRMETType.class),
+        IWXXM2025_2("http://icao.int/iwxxm/2025-2", "int/icao/iwxxm/2025_2/", icao.iwxxm2025_2.SpaceWeatherAdvisoryType.class);
 
         private final String namespaceURI;
         private final String pathPrefix;

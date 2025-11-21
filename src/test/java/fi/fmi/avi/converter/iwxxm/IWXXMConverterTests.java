@@ -14,6 +14,7 @@ import java.util.Objects;
 public interface IWXXMConverterTests {
     String IWXXM_2_1_NAMESPACE = "http://icao.int/iwxxm/2.1";
     String IWXXM_3_0_NAMESPACE = "http://icao.int/iwxxm/3.0";
+    String IWXXM_2025_2_NAMESPACE = "http://icao.int/iwxxm/2025-2";
 
     static String readResourceToString(final String fileName, final Class<? extends IWXXMConverterTests> referenceClass) throws IOException {
         try (final InputStream is = referenceClass.getResourceAsStream(fileName)) {
