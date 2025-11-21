@@ -1,30 +1,29 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Objects;
-
+import fi.fmi.avi.converter.ConversionIssue;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 import org.xml.sax.SAXException;
 
-import fi.fmi.avi.converter.ConversionIssue;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Objects;
 
 public interface IWXXMConverterTests {
     String IWXXM_2_1_NAMESPACE = "http://icao.int/iwxxm/2.1";
     String IWXXM_3_0_NAMESPACE = "http://icao.int/iwxxm/3.0";
 
     static String readResourceToString(final String fileName, final Class<? extends IWXXMConverterTests> referenceClass) throws IOException {
-        try (InputStream is = referenceClass.getResourceAsStream(fileName)) {
+        try (final InputStream is = referenceClass.getResourceAsStream(fileName)) {
             Objects.requireNonNull(is);
             return IOUtils.toString(is, "UTF-8");
         }
     }
 
     static void printIssues(final List<ConversionIssue> issues) {
-        if (issues.size() > 0) {
+        if (!issues.isEmpty()) {
             for (final ConversionIssue item : issues) {
                 System.out.println("********************************************************");
                 System.out.println(item.getMessage());
@@ -33,15 +32,16 @@ public interface IWXXMConverterTests {
     }
 
     /**
-     * A dirty hack to unify all gml:id attribute values, to ignore id in comparison while converter produces non-repeatable random ids.
+     * Set fixed id values to ignore ids in test comparisons while converter produces non-repeatable random ids.
      *
-     * @param iwxxm
-     *         IWXXM document
-     *
+     * @param iwxxm IWXXM document
      * @return an IWXXM document with fixed gml:id attributes
      */
     static String setFixedGmlIds(final String iwxxm) {
-        return iwxxm.replaceAll("\\b(xlink:href|gml:id)\\s*=\\s*\"(#)?([a-z]+[-.])?[^\"]*\"", "$1=\"$2$3fixed-gml-id\"");
+        return iwxxm.replaceAll(
+                "\\b(xlink:href|gml:id|(?:[A-Za-z_][\\w.-]*:)?volcanoId)\\s*=\\s*\"(#)?[^\"]*\"",
+                "$1=\"$2fixed-gml-id\""
+        );
     }
 
     static void assertXMLEqualsIgnoringVariables(final String input, final String actual) throws SAXException, IOException {

@@ -1,13 +1,13 @@
 package fi.fmi.avi.converter.iwxxm.v3_0.swx;
 
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherAdvisoryAnalysis;
+import fi.fmi.avi.model.swx.amd79.SpaceWeatherRegion;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
-import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
-import fi.fmi.avi.model.swx.SpaceWeatherAdvisoryAnalysis;
-import fi.fmi.avi.model.swx.SpaceWeatherRegion;
 
 public class SpaceWeatherRegionIdMapper {
 
@@ -38,7 +38,7 @@ public class SpaceWeatherRegionIdMapper {
 
         for (final RegionId r : regionList) {
             if (isEmpty(r.getId())) {
-                r.setId(IWXXMConverterBase.UUID_PREFIX + UUID.randomUUID().toString());
+                r.setId(IWXXMConverterBase.UUID_PREFIX + UUID.randomUUID());
                 for (final RegionId r2 : regionList) {
                     if (isEmpty(r2.getId()) && r2.getRegion().equals(r.getRegion())) {
                         r2.setId(r.getId());

@@ -25,7 +25,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static junit.framework.TestCase.assertEquals;
+import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -41,7 +41,7 @@ public class SIGMETIWWXXMSerializerTest {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
-        try (InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
+        try (final InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
             if (inputStream != null) {
                 return objectMapper.readValue(inputStream, SIGMETImpl.class);
             } else {
@@ -53,19 +53,11 @@ public class SIGMETIWWXXMSerializerTest {
     protected String readFromFile(final String fileName) throws IOException {
         try {
             return new String(Files.readAllBytes(Paths.get(getClass().getResource(fileName).toURI())));
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
         }
-    }
-
-
-    private String fixIds(String s){
-        if (s==null) return null;
-        return s.replaceAll("gml:id=\"(.*)\"", "gml:id=\"GMLID\"")
-            .replaceAll("xlink:href=\"(.*)\"", "xlink:href=\"XLINKHREF\"")
-            .replaceAll("volcanoId=\"(.*)\"", "volcanoId=\"VOLCANOID\"");
     }
 
     @Test
@@ -166,6 +158,7 @@ public class SIGMETIWWXXMSerializerTest {
     public void test_VA_OBS_BEFORE() throws Exception {
         doTestSIGMETStringSerialization("vasigmet1_OBSBEFORE.json", "vasigmet1_OBSBEFORE.IWXXM30");
     }
+
     @Test
     public void testABV_NOOBSTIME() throws Exception {
         doTestSIGMETStringSerialization("sigmet_ABV_FL_NOOBSTIME.json", "sigmet_ABV_FL_NOOBSTIME.IWXXM30");
@@ -197,7 +190,7 @@ public class SIGMETIWWXXMSerializerTest {
         final SIGMET s = readFromJSON(fn);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM30_STRING);
 
-        for (ConversionIssue iss : result.getConversionIssues()) {
+        for (final ConversionIssue iss : result.getConversionIssues()) {
             System.err.println("iss:" + iss.getMessage() + "===" + iss.getCause());
         }
 
@@ -206,8 +199,8 @@ public class SIGMETIWWXXMSerializerTest {
         assertTrue(result.getConvertedMessage().isPresent());
         assertNotNull(result.getConvertedMessage().get());
 
-        String expectedXml = fixIds(readFromFile(iwxxmFn));
-        assertEquals(expectedXml, fixIds(result.getConvertedMessage().get()));
+        final String expectedXml = readFromFile(iwxxmFn);
+        assertXMLEqualsIgnoringVariables(expectedXml, result.getConvertedMessage().get());
         return result.getConvertedMessage().orElse(null);
     }
 }
