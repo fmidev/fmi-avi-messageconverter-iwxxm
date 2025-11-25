@@ -55,11 +55,7 @@
                           <gml:exterior>
                             <gml:LinearRing>
                               <gml:posList>
-                                30 180
-                                60 180
-                                60 -180
-                                30 -180
-                                30 180
+                                30.0 180.0 60.0 180.0 60.0 -180.0 30.0 -180.0 30.0 180.0
                               </gml:posList>
                             </gml:LinearRing>
                           </gml:exterior>
@@ -84,11 +80,7 @@
                           <gml:exterior>
                             <gml:LinearRing>
                               <gml:posList>
-                                00 180
-                                30 180
-                                30 -180
-                                00 -180
-                                00 180
+                                0.0 180.0 30.0 180.0 30.0 -180.0 0.0 -180.0 0.0 180.0
                               </gml:posList>
                             </gml:LinearRing>
                           </gml:exterior>
@@ -113,11 +105,7 @@
                           <gml:exterior>
                             <gml:LinearRing>
                               <gml:posList>
-                                -30 180
-                                00 180
-                                00 -180
-                                -30 -180
-                                -30 180
+                                -30.0 180.0 0.0 180.0 0.0 -180.0 -30.0 -180.0 -30.0 180.0
                               </gml:posList>
                             </gml:LinearRing>
                           </gml:exterior>
@@ -142,11 +130,7 @@
                           <gml:exterior>
                             <gml:LinearRing>
                               <gml:posList>
-                                -60 180
-                                -30 180
-                                -30 -180
-                                -60 -180
-                                -60 180
+                                -60.0 180.0 -30.0 180.0 -30.0 -180.0 -60.0 -180.0 -60.0 180.0
                               </gml:posList>
                             </gml:LinearRing>
                           </gml:exterior>
@@ -175,7 +159,7 @@
                                   <gml:segments>
                                     <gml:CircleByCenterPoint numArc="1">
                                       <gml:pos>-16.71 70.94</gml:pos>
-                                      <gml:radius uom="km">10100</gml:radius>
+                                      <gml:radius uom="km">10100.0</gml:radius>
                                     </gml:CircleByCenterPoint>
                                   </gml:segments>
                                 </gml:Curve>
@@ -211,8 +195,8 @@
                                 <gml:Curve gml:id="uuid.751125de-d41a-41f5-a458-5092a6fe0200">
                                   <gml:segments>
                                     <gml:CircleByCenterPoint numArc="1">
-                                      <gml:pos>9999 9999</gml:pos>
-                                      <gml:radius uom="km">10100</gml:radius>
+                                      <gml:pos>9999.0 9999.0</gml:pos>
+                                      <gml:radius uom="km">10100.0</gml:radius>
                                     </gml:CircleByCenterPoint>
                                   </gml:segments>
                                 </gml:Curve>

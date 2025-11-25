@@ -48,21 +48,49 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
         return aixm511FullJaxbContext;
     }
 
-    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
-        final StringWriter sw = new StringWriter();
-        try {
-            final Marshaller marshaller = getAixm511FullJAXBContext().createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getCombinedSchemaLocations());
-            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", getNamespaceContext());
-            marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
-            return asCleanedUpXML(sw.toString(), hints);
-        } catch (final JAXBException e) {
-            throw new ConversionException("Exception in rendering to DOM", e);
-        }
+    protected static Optional<ValDistanceVerticalType> toValDistanceVertical(final NumericMeasure numericMeasure) {
+        return numericMeasure == null ? Optional.empty() : valDistanceVertical(numericMeasure.getValue(), numericMeasure.getUom());
     }
 
-    protected static SurfacePropertyType createAixm511fullSurface(final Geometry geom, final String id) throws IllegalArgumentException {
+    protected static Optional<ValDistanceVerticalType> valDistanceVertical(final Double value, final String uom) {
+        return valDistanceVertical(value == null ? Double.NaN : value, uom);
+    }
+
+    protected static ValDistanceVerticalType nilValDistanceVertical() {
+        final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
+        // TODO: how to set xsi:nil="true"?
+        type.setNilReason("unknown");
+        type.setUom("OTHER");
+        return type;
+    }
+
+    protected static Optional<ValDistanceVerticalType> valDistanceVertical(final double value, final String uom) {
+        if (Double.isNaN(value)) {
+            return Optional.empty();
+        }
+        final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
+        final DecimalFormat format = new DecimalFormat("", DecimalFormatSymbols.getInstance(Locale.US));
+        format.setMinimumIntegerDigits(1);
+        format.setMinimumFractionDigits(0);
+        format.setMaximumFractionDigits(4);
+        format.setGroupingUsed(false);
+        type.setValue(format.format(value));
+        if (uom != null && !uom.isEmpty()) {
+            type.setUom(uom.toUpperCase(Locale.US));
+        }
+        return Optional.of(type);
+    }
+
+    /**
+     * Decimal places to use when rendering polygon geometries.
+     *
+     * @return the number of decimal places
+     */
+    protected int decimalPlacesForPolygonGeometry() {
+        return 4;
+    }
+
+    protected SurfacePropertyType createAixm511fullSurface(final Geometry geom, final String id) throws IllegalArgumentException {
         SurfacePropertyType retval = null;
         if (geom != null) {
             retval = create(SurfacePropertyType.class, spt -> spt.setSurface(createAndWrap(SurfaceType.class, sft -> {
@@ -100,7 +128,7 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
                     final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> poly.setExterior(
                             create(AbstractRingPropertyType.class, arpt -> arpt.setAbstractRing(createAndWrap(LinearRingType.class, lrt -> {
                                 final DirectPositionListType dplt = create(DirectPositionListType.class,
-                                        dpl -> dpl.getValue().addAll(polygon.getExteriorRingPositions(Winding.COUNTERCLOCKWISE)));
+                                        dpl -> polygon.getExteriorRingPositions(Winding.COUNTERCLOCKWISE).forEach(val -> dpl.getValue().add(round(val))));
                                 lrt.setPosList(dplt);
                             })))));
                     spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", _spapt -> _spapt.getAbstractSurfacePatch().add(ppt));
@@ -115,37 +143,23 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
         return retval;
     }
 
-    protected static Optional<ValDistanceVerticalType> toValDistanceVertical(final NumericMeasure numericMeasure) {
-        return numericMeasure == null ? Optional.empty() : valDistanceVertical(numericMeasure.getValue(), numericMeasure.getUom());
+    private double round(final double value) {
+        final double scale = Math.pow(10, decimalPlacesForPolygonGeometry());
+        return Math.round(value * scale) / scale;
     }
 
-    protected static Optional<ValDistanceVerticalType> valDistanceVertical(final Double value, final String uom) {
-        return valDistanceVertical(value == null ? Double.NaN : value, uom);
-    }
-
-    protected static ValDistanceVerticalType nilValDistanceVertical() {
-        final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
-        // TODO: how to set xsi:nil="true"?
-        type.setNilReason("unknown");
-        type.setUom("OTHER");
-        return type;
-    }
-
-    protected static Optional<ValDistanceVerticalType> valDistanceVertical(final double value, final String uom) {
-        if (Double.isNaN(value)) {
-            return Optional.empty();
+    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
+        final StringWriter sw = new StringWriter();
+        try {
+            final Marshaller marshaller = getAixm511FullJAXBContext().createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getCombinedSchemaLocations());
+            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", getNamespaceContext());
+            marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
+            return asCleanedUpXML(sw.toString(), hints);
+        } catch (final JAXBException e) {
+            throw new ConversionException("Exception in rendering to DOM", e);
         }
-        final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
-        final DecimalFormat format = new DecimalFormat("", DecimalFormatSymbols.getInstance(Locale.US));
-        format.setMinimumIntegerDigits(1);
-        format.setMinimumFractionDigits(0);
-        format.setMaximumFractionDigits(4);
-        format.setGroupingUsed(false);
-        type.setValue(format.format(value));
-        if (uom != null && !uom.isEmpty()) {
-            type.setUom(uom.toUpperCase(Locale.US));
-        }
-        return Optional.of(type);
     }
 
 }

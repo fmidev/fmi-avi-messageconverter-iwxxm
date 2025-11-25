@@ -33,6 +33,11 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
     protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
 
     @Override
+    protected int decimalPlacesForPolygonGeometry() {
+        return 0;
+    }
+
+    @Override
     public ConversionResult<T> convertMessage(final SpaceWeatherAdvisoryAmd82 input, final ConversionHints hints) {
         final ConversionResult<T> result = new ConversionResult<>();
 
