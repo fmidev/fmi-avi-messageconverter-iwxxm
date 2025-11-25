@@ -9,6 +9,7 @@ import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.swx.amd79.SpaceWeatherAdvisoryAmd79;
 import fi.fmi.avi.model.swx.amd79.SpaceWeatherAmd79Bulletin;
+import fi.fmi.avi.model.swx.amd82.SpaceWeatherAdvisoryAmd82;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import icao.iwxxm21.TAFType;
@@ -284,6 +285,18 @@ public class IWXXMConverter {
      */
     public static final ConversionSpecification<Document, SpaceWeatherAmd79Bulletin> WMO_COLLECT_DOM_TO_SWX_30_BULLETIN_POJO = new ConversionSpecification<>(
             Document.class, SpaceWeatherAmd79Bulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 SWX", null);
+
+    /**
+     * Pre-configured spec for {@link SpaceWeatherAdvisoryAmd82} to IWXXM 2025-2 XML format SWX string.
+     */
+    public static final ConversionSpecification<SpaceWeatherAdvisoryAmd82, String> SPACE_WEATHER_POJO_TO_IWXXM2025_2_STRING = new ConversionSpecification<>(
+            SpaceWeatherAdvisoryAmd82.class, String.class, null, "SWX, XML/IWXXM 2025-2");
+
+    /**
+     * Pre-configured spec for {@link SpaceWeatherAdvisoryAmd82} to IWXXM 2025-2 XML format SWX document DOM node.
+     */
+    public static final ConversionSpecification<SpaceWeatherAdvisoryAmd82, Document> SPACE_WEATHER_POJO_TO_IWXXM2025_2_DOM = new ConversionSpecification<>(
+            SpaceWeatherAdvisoryAmd82.class, Document.class, null, "SWX, XML/IWXXM 2025-2");
 
     // *******************
     //  Generic aviation messages

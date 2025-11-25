@@ -41,7 +41,7 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
      */
     public static synchronized JAXBContext getAixm511FullJAXBContext() throws JAXBException {
         if (aixm511FullJaxbContext == null) {
-            aixm511FullJaxbContext = JAXBContext.newInstance("icao.iwxxm2023_1:aero.aixm511full:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
+            aixm511FullJaxbContext = JAXBContext.newInstance("icao.iwxxm2025_2:icao.iwxxm2023_1:aero.aixm511full:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
                     + ".iso19139.ogc2007.gss:org.iso19139.ogc2007.gts:org.iso19139.ogc2007.gsr:net.opengis.om20:net.opengis.sampling:net.opengis.sampling"
                     + ".spatial:wmo.metce2013:wmo.opm2013:wmo.collect2014:org.w3c.xlink11");
         }
@@ -121,6 +121,14 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
 
     protected static Optional<ValDistanceVerticalType> valDistanceVertical(final Double value, final String uom) {
         return valDistanceVertical(value == null ? Double.NaN : value, uom);
+    }
+
+    protected static ValDistanceVerticalType nilValDistanceVertical() {
+        final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
+        // TODO: how to set xsi:nil="true"?
+        type.setNilReason("unknown");
+        type.setUom("OTHER");
+        return type;
     }
 
     protected static Optional<ValDistanceVerticalType> valDistanceVertical(final double value, final String uom) {
