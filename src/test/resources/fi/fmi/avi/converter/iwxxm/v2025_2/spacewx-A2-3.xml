@@ -22,11 +22,6 @@
           <aixm:interpretation>SNAPSHOT</aixm:interpretation>
           <aixm:name>DONLON</aixm:name>
           <aixm:type>OTHER:SWXC</aixm:type>
-          <aixm:compliantICAO xsi:nil="true"/>
-          <aixm:military xsi:nil="true"/>
-          <aixm:position xsi:nil="true"/>
-          <aixm:airportLocation xsi:nil="true"/>
-          <aixm:ownerOrganisation xsi:nil="true"/>
         </aixm:UnitTimeSlice>
       </aixm:timeSlice>
     </aixm:Unit>
@@ -66,7 +61,6 @@
                       </gml:patches>
                     </aixm:Surface>
                   </aixm:horizontalProjection>
-                  <aixm:contributorAirspace xsi:nil="true"/>
                 </aixm:AirspaceVolume>
               </iwxxm:location>
               <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/HNH"/>
@@ -92,7 +86,6 @@
                       </gml:patches>
                     </aixm:Surface>
                   </aixm:horizontalProjection>
-                  <aixm:contributorAirspace xsi:nil="true"/>
                 </aixm:AirspaceVolume>
               </iwxxm:location>
               <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/HSH"/>

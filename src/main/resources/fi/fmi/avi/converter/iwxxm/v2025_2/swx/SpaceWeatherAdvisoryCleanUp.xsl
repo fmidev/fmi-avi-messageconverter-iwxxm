@@ -47,5 +47,11 @@
   <xsl:template match="//aixm:centreline[@xsi:nil='true']"/>
   <xsl:template match="//aixm:type[@xsi:nil='true']"/>
   <xsl:template match="//aixm:designator[@xsi:nil='true']"/>
+  <xsl:template match="//aixm:compliantICAO[@xsi:nil='true']"/>
+  <xsl:template match="//aixm:military[@xsi:nil='true']"/>
+  <xsl:template match="//aixm:position[@xsi:nil='true']"/>
+  <xsl:template match="//aixm:airportLocation[@xsi:nil='true']"/>
+  <xsl:template match="//aixm:ownerOrganisation[@xsi:nil='true']"/>
+  <xsl:template match="//aixm:contributorAirspace[@xsi:nil='true']"/>
 
 </xsl:stylesheet>
