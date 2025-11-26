@@ -10,6 +10,7 @@ import fi.fmi.avi.converter.iwxxm.v3_0.swx.SpaceWeatherIWXXMSerializer;
 import fi.fmi.avi.model.swx.amd79.SpaceWeatherAdvisoryAmd79;
 import fi.fmi.avi.model.swx.amd79.SpaceWeatherAmd79Bulletin;
 import fi.fmi.avi.model.swx.amd82.SpaceWeatherAdvisoryAmd82;
+import fi.fmi.avi.model.swx.amd82.SpaceWeatherAmd82Bulletin;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.w3c.dom.Document;
@@ -77,6 +78,20 @@ public class IWXXMSpaceWeatherConverter {
     @Bean
     public AbstractIWXXMSerializer<SpaceWeatherAdvisoryAmd82, Document> spaceWeatherIWXXM20252DOMSerializer() {
         return new fi.fmi.avi.converter.iwxxm.v2025_2.swx.SpaceWeatherIWXXMSerializer.ToDOM();
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<SpaceWeatherAmd82Bulletin, String> spaceWeatherBulletinIWXXM20252StringSerializer() {
+        final BulletinIWXXMStringSerializer<SpaceWeatherAdvisoryAmd82, SpaceWeatherAmd82Bulletin> retval = new BulletinIWXXMStringSerializer<>();
+        retval.setMessageConverter(spaceWeatherIWXXM20252DOMSerializer());
+        return retval;
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<SpaceWeatherAmd82Bulletin, Document> spaceWeatherBulletinIWXXM20252DOMSerializer() {
+        final BulletinIWXXMDOMSerializer<SpaceWeatherAdvisoryAmd82, SpaceWeatherAmd82Bulletin> retval = new BulletinIWXXMDOMSerializer<>();
+        retval.setMessageConverter(spaceWeatherIWXXM20252DOMSerializer());
+        return retval;
     }
 
 }
