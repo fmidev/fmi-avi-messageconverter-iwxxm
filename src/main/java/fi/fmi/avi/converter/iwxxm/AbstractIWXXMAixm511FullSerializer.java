@@ -57,14 +57,6 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
         return valDistanceVertical(value == null ? Double.NaN : value, uom);
     }
 
-    protected static ValDistanceVerticalType nilValDistanceVertical() {
-        final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
-        // TODO: how to set xsi:nil="true"?
-        type.setNilReason("unknown");
-        type.setUom("OTHER");
-        return type;
-    }
-
     protected static Optional<ValDistanceVerticalType> valDistanceVertical(final double value, final String uom) {
         if (Double.isNaN(value)) {
             return Optional.empty();
