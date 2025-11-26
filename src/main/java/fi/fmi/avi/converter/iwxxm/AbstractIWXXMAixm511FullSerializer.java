@@ -28,6 +28,7 @@ import java.util.UUID;
  */
 public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMSerializer<T, S> {
 
+    private static final int DEFAULT_POLYGON_GEOMETRY_DECIMAL_PLACES = 4;
     private static JAXBContext aixm511FullJaxbContext = null;
 
     /**
@@ -82,12 +83,12 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
     }
 
     /**
-     * Decimal places to use when rendering polygon geometries.
+     * Decimal places to use when rendering polygon geometries. Meant to be overridden in subclasses if needed.
      *
      * @return the number of decimal places
      */
     protected int decimalPlacesForPolygonGeometry() {
-        return 4;
+        return DEFAULT_POLYGON_GEOMETRY_DECIMAL_PLACES;
     }
 
     protected SurfacePropertyType createAixm511fullSurface(final Geometry geom, final String id) throws IllegalArgumentException {

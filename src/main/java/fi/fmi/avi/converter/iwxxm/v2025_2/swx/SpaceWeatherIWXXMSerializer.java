@@ -32,6 +32,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
 
     protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
 
+    // SWX polygon geometries are rounded to integers
     @Override
     protected int decimalPlacesForPolygonGeometry() {
         return 0;
@@ -84,7 +85,6 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
 
         try {
             this.updateMessageMetadata(input, result, swxType);
-            //validateDocument(swxType, SpaceWeatherAdvisoryType.class, getSchemaInfo(), hints);
             final T rendered = this.render(swxType, hints);
             result.addIssue(validate(rendered, getSchemaInfo(), hints));
             result.setConvertedMessage(rendered);
@@ -189,29 +189,26 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
             }
             analysisType.getIntensityAndRegion().add(nilProperty);
         } else {
-            // Process intensityAndRegions structure (AMD82)
+            // Process analysis intensity and regions
             int regionCounter = 0;
             for (final SpaceWeatherIntensityAndRegion intensityAndRegion : analysis.getIntensityAndRegions()) {
                 final SpaceWeatherIntensityAndRegionPropertyType iarProperty = create(SpaceWeatherIntensityAndRegionPropertyType.class);
-                final SpaceWeatherIntensityAndRegionType iarType = create(SpaceWeatherIntensityAndRegionType.class);
+                final SpaceWeatherIntensityAndRegionType intensityAndRegionType = create(SpaceWeatherIntensityAndRegionType.class);
+                intensityAndRegionType.setId(UUID_PREFIX + UUID.randomUUID());
 
-                // Set ID for SpaceWeatherIntensityAndRegion (required by schema)
-                iarType.setId(UUID_PREFIX + UUID.randomUUID());
-
-                // Set intensity
                 final SpaceWeatherIntensityType intensityType = SpaceWeatherIntensityType.fromValue(intensityAndRegion.getIntensity().getCode());
-                iarType.setIntensity(intensityType);
+                intensityAndRegionType.setIntensity(intensityType);
 
-                // Add regions for this intensity
                 for (final SpaceWeatherRegion region : intensityAndRegion.getRegions()) {
                     final SpaceWeatherRegionIdMapper.RegionId regionId = regionList.get(regionCounter);
                     final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
 
-                    if (!regionId.isDuplicate()) {
+                    if (regionId.isDuplicate()) {
+                        regionProperty.setHref("#" + regionId.getId());
+                    } else {
                         final SpaceWeatherRegionType regionType = create(SpaceWeatherRegionType.class);
                         regionType.setId(regionId.getId());
 
-                        // Set geographic location (airspace volume)
                         if (region.getAirSpaceVolume().isPresent()) {
                             regionType.setLocation(
                                     create(AirspaceVolumePropertyType.class, prop -> getAirspaceVolumeProperty(prop, region.getAirSpaceVolume().get())));
@@ -229,15 +226,13 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
                         }
                         regionType.getLocationIndicator().add(locationType);
                         regionProperty.setSpaceWeatherRegion(regionType);
-                    } else {
-                        regionProperty.setHref("#" + regionId.getId());
                     }
 
-                    iarType.getRegion().add(regionProperty);
+                    intensityAndRegionType.getRegion().add(regionProperty);
                     regionCounter++;
                 }
 
-                iarProperty.setSpaceWeatherIntensityAndRegion(iarType);
+                iarProperty.setSpaceWeatherIntensityAndRegion(intensityAndRegionType);
                 analysisType.getIntensityAndRegion().add(iarProperty);
             }
         }
@@ -302,14 +297,13 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         }
 
         volume.getLowerLimit().ifPresent(limit -> {
-            // TODO: Once xsi:nil can be set, setLowerLimit can be moved outside presence test
-            airspaceVolumeType.setLowerLimit(toValDistanceVertical(limit).orElseGet(AbstractIWXXMAixm511FullSerializer::nilValDistanceVertical));
+            AbstractIWXXMAixm511FullSerializer.toValDistanceVertical(limit).ifPresent(airspaceVolumeType::setLowerLimit);
             airspaceVolumeType.setLowerLimitReference(create(CodeVerticalReferenceType.class,
                     codeVerticalReferenceType -> volume.getLowerLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
         });
+
         volume.getUpperLimit().ifPresent(limit -> {
-            // TODO: Once xsi:nil can be set, setLowerLimit can be moved outside presence test
-            airspaceVolumeType.setUpperLimit(toValDistanceVertical(limit).orElseGet(AbstractIWXXMAixm511FullSerializer::nilValDistanceVertical));
+            AbstractIWXXMAixm511FullSerializer.toValDistanceVertical(limit).ifPresent(airspaceVolumeType::setUpperLimit);
             airspaceVolumeType.setUpperLimitReference(create(CodeVerticalReferenceType.class,
                     codeVerticalReferenceType -> volume.getUpperLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
         });
@@ -324,7 +318,6 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
             if (nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_BY) {
                 timePosition.setIndeterminatePosition(TimeIndeterminateValueType.BEFORE);
             }
-            // TODO: 'after' not supported in model; temporarily omit
             nextAdvisory.getTime()//
                     .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
                     .ifPresent(t -> timePosition.getValue().add(t));

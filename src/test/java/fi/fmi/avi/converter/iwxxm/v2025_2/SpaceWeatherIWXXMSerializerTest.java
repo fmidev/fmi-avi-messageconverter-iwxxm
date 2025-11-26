@@ -61,6 +61,17 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
         assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-A7-3.xml"), result.getConvertedMessage().get());
     }
 
+    @Test
+    public void serialize_spacewx_repeated_regions() throws Exception {
+        final String input = readResourceToString("spacewx-repeated-regions.json");
+        final ConversionResult<String> result = serialize(input);
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-repeated-regions.xml"), result.getConvertedMessage().get());
+    }
+
     private ConversionResult<String> serialize(final String input) throws Exception {
         final SpaceWeatherAdvisoryAmd82 swx = objectMapper.readValue(input, SpaceWeatherAdvisoryAmd82Impl.class);
         return serialize(swx);

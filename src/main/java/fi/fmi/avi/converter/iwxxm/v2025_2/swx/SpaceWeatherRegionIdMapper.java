@@ -2,88 +2,69 @@ package fi.fmi.avi.converter.iwxxm.v2025_2.swx;
 
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.model.swx.amd82.SpaceWeatherAdvisoryAnalysis;
-import fi.fmi.avi.model.swx.amd82.SpaceWeatherIntensityAndRegion;
 import fi.fmi.avi.model.swx.amd82.SpaceWeatherRegion;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
+/**
+ * Maps space weather regions across multiple analyses to unique identifiers for IWXXM serialization.
+ *
+ * <p>
+ * This mapper handles the deduplication of regions that appear in multiple analyses. When the same region appears in
+ * different analyses, the first occurrence gets a unique ID, while subsequent occurrences refer to that ID.
+ * </p>
+ */
 public class SpaceWeatherRegionIdMapper {
 
-    private final List<RegionId> regionList = new ArrayList<>();
+    private final List<RegionId> regionList;
 
+    /**
+     * Constructs a mapper by processing all analyses and assigning unique IDs to distinct regions.
+     *
+     * @param analyses the list of space weather advisory analyses containing regions to map
+     */
     public SpaceWeatherRegionIdMapper(final List<SpaceWeatherAdvisoryAnalysis> analyses) {
-        createIdMap(analyses);
-    }
+        final Map<SpaceWeatherRegion, String> regionToId = new HashMap<>();
+        final List<RegionId> result = new ArrayList<>();
 
-    public List<RegionId> getRegionList(final int analysisNumber) {
-        final List<RegionId> list = new ArrayList<>();
-        for (final RegionId region : regionList) {
-            if (region.getAnalysisNumber() == analysisNumber) {
-                list.add(region);
-            }
-        }
-        return list.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(list);
-    }
-
-    private void createIdMap(final List<SpaceWeatherAdvisoryAnalysis> analyses) {
         for (int analysisIndex = 0; analysisIndex < analyses.size(); analysisIndex++) {
-            final SpaceWeatherAdvisoryAnalysis analysis = analyses.get(analysisIndex);
-            int regionIndex = 0;
-            for (final SpaceWeatherIntensityAndRegion intensityAndRegion : analysis.getIntensityAndRegions()) {
-                for (final SpaceWeatherRegion region : intensityAndRegion.getRegions()) {
-                    regionList.add(new RegionId(region, analysisIndex, regionIndex++));
-                }
-            }
+            final int index = analysisIndex;
+            analyses.get(analysisIndex).getIntensityAndRegions()
+                    .forEach(intensityAndRegion -> intensityAndRegion.getRegions()
+                            .forEach(region -> {
+                                final boolean isDuplicate = regionToId.containsKey(region);
+                                final String id = regionToId.computeIfAbsent(region,
+                                        r -> IWXXMConverterBase.UUID_PREFIX + UUID.randomUUID());
+                                result.add(new RegionId(region, index, id, isDuplicate));
+                            }));
         }
 
-        for (final RegionId r : regionList) {
-            if (isEmpty(r.getId())) {
-                r.setId(IWXXMConverterBase.UUID_PREFIX + UUID.randomUUID());
-                for (final RegionId r2 : regionList) {
-                    if (isEmpty(r2.getId()) && r2.getRegion().equals(r.getRegion())) {
-                        r2.setId(r.getId());
-                        r2.setDuplicate(true);
-                    }
-                }
-            }
-        }
+        this.regionList = Collections.unmodifiableList(result);
     }
 
-    private boolean isEmpty(final String string) {
-        return string == null || string.trim().equals("");
+    /**
+     * Retrieves the list of regions with assigned IDs for a specific analysis.
+     *
+     * @param analysisNumber the zero-based index of the analysis
+     * @return a list of region id mappings for the specified analysis
+     */
+    public List<RegionId> getRegionList(final int analysisNumber) {
+        return regionList.stream()
+                .filter(region -> region.analysisNumber == analysisNumber)
+                .collect(Collectors.toList());
     }
 
     public static class RegionId {
         private final SpaceWeatherRegion region;
         private final int analysisNumber;
-        private final int regionNumber;
+        private final String id;
+        private final boolean duplicate;
 
-        private String id;
-        private boolean duplicate;
-
-        public RegionId(final SpaceWeatherRegion region, final int analysisNumber, final int regionNumber) {
+        RegionId(final SpaceWeatherRegion region, final int analysisNumber, final String id, final boolean duplicate) {
             this.region = region;
             this.analysisNumber = analysisNumber;
-            this.regionNumber = regionNumber;
-            this.id = "";
-        }
-
-        public int getAnalysisNumber() {
-            return analysisNumber;
-        }
-
-        public int getRegionNumber() {
-            return regionNumber;
-        }
-
-        public boolean isDuplicate() {
-            return duplicate;
-        }
-
-        public void setDuplicate(final boolean duplicate) {
+            this.id = id;
             this.duplicate = duplicate;
         }
 
@@ -95,9 +76,8 @@ public class SpaceWeatherRegionIdMapper {
             return id;
         }
 
-        public void setId(final String id) {
-            this.id = id;
+        public boolean isDuplicate() {
+            return duplicate;
         }
     }
-
 }
