@@ -55,16 +55,37 @@ public class SpaceWeatherRegionHandler {
                 .flatMap(volume -> volume.getHorizontalProjection()
                         .filter(geom -> geom instanceof PolygonGeometry)
                         .map(geom -> (PolygonGeometry) geom)
-                        .map(polygon -> (SpaceWeatherRegion) SpaceWeatherRegionImpl.Builder.from(region)
-                                .setAirSpaceVolume(AirspaceVolumeImpl.Builder.from(volume)
-                                        .setHorizontalProjection(PolygonGeometryImpl.Builder.from(polygon)
-                                                .setExteriorRingPositions(polygon.getExteriorRingPositions().stream()
-                                                        .map(value -> (double) Math.round(value))
-                                                        .collect(Collectors.toList()))
-                                                .build())
-                                        .build())
-                                .build()))
+                        .map(polygon -> {
+                            final List<Double> positions = polygon.getExteriorRingPositions();
+                            final List<Double> roundedPositions = roundAndRemoveConsecutiveDuplicates(positions);
+                            return (SpaceWeatherRegion) SpaceWeatherRegionImpl.Builder.from(region)
+                                    .setAirSpaceVolume(AirspaceVolumeImpl.Builder.from(volume)
+                                            .setHorizontalProjection(PolygonGeometryImpl.Builder.from(polygon)
+                                                    .setExteriorRingPositions(roundedPositions)
+                                                    .build())
+                                            .build())
+                                    .build();
+                        }))
                 .orElse(region);
+    }
+
+    private static List<Double> roundAndRemoveConsecutiveDuplicates(final List<Double> positions) {
+        final List<Double> result = new ArrayList<>();
+        Double lastLat = null;
+        Double lastLon = null;
+
+        for (int i = 0; i < positions.size() - 1; i += 2) {
+            final double roundedLat = Math.round(positions.get(i));
+            final double roundedLon = Math.round(positions.get(i + 1));
+
+            if (lastLat == null || lastLat != roundedLat || lastLon != roundedLon) {
+                result.add(roundedLat);
+                result.add(roundedLon);
+                lastLat = roundedLat;
+                lastLon = roundedLon;
+            }
+        }
+        return result;
     }
 
     /**
