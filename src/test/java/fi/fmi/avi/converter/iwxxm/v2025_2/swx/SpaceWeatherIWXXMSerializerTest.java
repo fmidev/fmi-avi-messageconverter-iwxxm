@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.v2025_2;
+package fi.fmi.avi.converter.iwxxm.v2025_2.swx;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
