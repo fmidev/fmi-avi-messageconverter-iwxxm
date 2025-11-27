@@ -195,7 +195,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
 
                 for (int i = 0; i < intensityAndRegion.getRegions().size(); i++) {
                     final SpaceWeatherRegionHandler.RegionId regionId = regionList.get(regionCounter);
-                    final SpaceWeatherRegion roundedRegion = regionId.getRegion();
+                    final SpaceWeatherRegion region = regionId.getRegion();
                     final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
 
                     if (regionId.isDuplicate()) {
@@ -204,9 +204,9 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
                         final SpaceWeatherRegionType regionType = create(SpaceWeatherRegionType.class);
                         regionType.setId(regionId.getId());
 
-                        if (roundedRegion.getAirSpaceVolume().isPresent()) {
+                        if (region.getAirSpaceVolume().isPresent()) {
                             regionType.setLocation(
-                                    create(AirspaceVolumePropertyType.class, prop -> getAirspaceVolumeProperty(prop, roundedRegion.getAirSpaceVolume().get())));
+                                    create(AirspaceVolumePropertyType.class, prop -> getAirspaceVolumeProperty(prop, region.getAirSpaceVolume().get())));
                         } else {
                             final AirspaceVolumePropertyType airspaceVolumePropertyType = create(AirspaceVolumePropertyType.class);
                             airspaceVolumePropertyType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_UNKNOWN);
@@ -214,8 +214,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
                         }
 
                         final SpaceWeatherLocationType locationType = create(SpaceWeatherLocationType.class);
-                        if (roundedRegion.getLocationIndicator().isPresent()) {
-                            locationType.setHref(roundedRegion.getLocationIndicator().get().asWMOCodeListValue());
+                        if (region.getLocationIndicator().isPresent()) {
+                            locationType.setHref(region.getLocationIndicator().get().asWMOCodeListValue());
                         } else {
                             locationType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
                         }

@@ -3,7 +3,6 @@ package fi.fmi.avi.converter.iwxxm.v2025_2.swx;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
 import fi.fmi.avi.model.PolygonGeometry;
 import fi.fmi.avi.model.immutable.PolygonGeometryImpl;
-import fi.fmi.avi.model.swx.amd82.AirspaceVolume;
 import fi.fmi.avi.model.swx.amd82.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.swx.amd82.SpaceWeatherRegion;
 import fi.fmi.avi.model.swx.amd82.immutable.AirspaceVolumeImpl;
@@ -40,7 +39,7 @@ public class SpaceWeatherRegionHandler {
             analyses.get(analysisIndex).getIntensityAndRegions()
                     .forEach(intensityAndRegion -> intensityAndRegion.getRegions()
                             .forEach(region -> {
-                                final SpaceWeatherRegion roundedRegion = roundPolygonGeometry(region);
+                                final SpaceWeatherRegion roundedRegion = roundPolygonGeometryCoordinates(region);
                                 final boolean isDuplicate = regionToId.containsKey(roundedRegion);
                                 final String id = regionToId.computeIfAbsent(roundedRegion,
                                         r -> IWXXMConverterBase.UUID_PREFIX + UUID.randomUUID());
@@ -51,32 +50,27 @@ public class SpaceWeatherRegionHandler {
         this.regionList = Collections.unmodifiableList(result);
     }
 
-    private static SpaceWeatherRegion roundPolygonGeometry(final SpaceWeatherRegion region) {
+    private static SpaceWeatherRegion roundPolygonGeometryCoordinates(final SpaceWeatherRegion region) {
         return region.getAirSpaceVolume()
                 .flatMap(volume -> volume.getHorizontalProjection()
                         .filter(geom -> geom instanceof PolygonGeometry)
                         .map(geom -> (PolygonGeometry) geom)
-                        .map(polygon -> buildRoundedRegion(region, volume, polygon)))
+                        .map(polygon -> (SpaceWeatherRegion) SpaceWeatherRegionImpl.Builder.from(region)
+                                .setAirSpaceVolume(AirspaceVolumeImpl.Builder.from(volume)
+                                        .setHorizontalProjection(PolygonGeometryImpl.Builder.from(polygon)
+                                                .setExteriorRingPositions(polygon.getExteriorRingPositions().stream()
+                                                        .map(value -> (double) Math.round(value))
+                                                        .collect(Collectors.toList()))
+                                                .build())
+                                        .build())
+                                .build()))
                 .orElse(region);
-    }
-
-    private static SpaceWeatherRegion buildRoundedRegion(final SpaceWeatherRegion region, final AirspaceVolume volume,
-                                                         final PolygonGeometry polygon) {
-        return SpaceWeatherRegionImpl.Builder.from(region)
-                .setAirSpaceVolume(AirspaceVolumeImpl.Builder.from(volume)
-                        .setHorizontalProjection(PolygonGeometryImpl.Builder.from(polygon)
-                                .setExteriorRingPositions(polygon.getExteriorRingPositions().stream()
-                                        .map(value -> (double) Math.round(value))
-                                        .collect(Collectors.toList()))
-                                .build())
-                        .build())
-                .build();
     }
 
     /**
      * Retrieves the list of regions with assigned IDs for a specific analysis.
      *
-     * @param analysisNumber the zero-based index of the analysis
+     * @param analysisNumber index of the analysis
      * @return a list of region id mappings for the specified analysis
      */
     public List<RegionId> getRegionList(final int analysisNumber) {
