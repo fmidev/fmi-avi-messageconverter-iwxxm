@@ -28,7 +28,6 @@ import java.util.UUID;
  */
 public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeatherMessageOrCollection, S> extends AbstractIWXXMSerializer<T, S> {
 
-    private static final int DEFAULT_POLYGON_GEOMETRY_DECIMAL_PLACES = 4;
     private static JAXBContext aixm511FullJaxbContext = null;
 
     /**
@@ -74,16 +73,7 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
         return Optional.of(type);
     }
 
-    /**
-     * Decimal places to use when rendering polygon geometries. Meant to be overridden in subclasses if needed.
-     *
-     * @return the number of decimal places
-     */
-    protected int decimalPlacesForPolygonGeometry() {
-        return DEFAULT_POLYGON_GEOMETRY_DECIMAL_PLACES;
-    }
-
-    protected SurfacePropertyType createAixm511fullSurface(final Geometry geom, final String id) throws IllegalArgumentException {
+    protected static SurfacePropertyType createAixm511fullSurface(final Geometry geom, final String id) throws IllegalArgumentException {
         SurfacePropertyType retval = null;
         if (geom != null) {
             retval = create(SurfacePropertyType.class, spt -> spt.setSurface(createAndWrap(SurfaceType.class, sft -> {
@@ -121,7 +111,7 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
                     final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> poly.setExterior(
                             create(AbstractRingPropertyType.class, arpt -> arpt.setAbstractRing(createAndWrap(LinearRingType.class, lrt -> {
                                 final DirectPositionListType dplt = create(DirectPositionListType.class,
-                                        dpl -> polygon.getExteriorRingPositions(Winding.COUNTERCLOCKWISE).forEach(val -> dpl.getValue().add(round(val))));
+                                        dpl -> dpl.getValue().addAll(polygon.getExteriorRingPositions(Winding.COUNTERCLOCKWISE)));
                                 lrt.setPosList(dplt);
                             })))));
                     spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", _spapt -> _spapt.getAbstractSurfacePatch().add(ppt));
@@ -134,11 +124,6 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
             })));
         }
         return retval;
-    }
-
-    private double round(final double value) {
-        final double scale = Math.pow(10, decimalPlacesForPolygonGeometry());
-        return Math.round(value * scale) / scale;
     }
 
     protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {

@@ -1,8 +1,13 @@
 package fi.fmi.avi.converter.iwxxm.v2025_2.swx;
 
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterBase;
+import fi.fmi.avi.model.PolygonGeometry;
+import fi.fmi.avi.model.immutable.PolygonGeometryImpl;
+import fi.fmi.avi.model.swx.amd82.AirspaceVolume;
 import fi.fmi.avi.model.swx.amd82.SpaceWeatherAdvisoryAnalysis;
 import fi.fmi.avi.model.swx.amd82.SpaceWeatherRegion;
+import fi.fmi.avi.model.swx.amd82.immutable.AirspaceVolumeImpl;
+import fi.fmi.avi.model.swx.amd82.immutable.SpaceWeatherRegionImpl;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -11,11 +16,13 @@ import java.util.stream.Collectors;
  * Maps space weather regions across multiple analyses to unique identifiers for IWXXM serialization.
  *
  * <p>
- * This mapper handles the deduplication of regions that appear in multiple analyses. When the same region appears in
- * different analyses, the first occurrence gets a unique ID, while subsequent occurrences refer to that ID.
+ * This mapper handles the deduplication of regions that appear in multiple analyses. Polygon geometry coordinates
+ * are rounded to the nearest integer before comparison to ensure regions that become identical after rounding are
+ * properly deduplicated. When the same region appears in different analyses, the first occurrence gets a unique ID,
+ * while subsequent occurrences refer to that ID.
  * </p>
  */
-public class SpaceWeatherRegionIdMapper {
+public class SpaceWeatherRegionHandler {
 
     private final List<RegionId> regionList;
 
@@ -24,7 +31,7 @@ public class SpaceWeatherRegionIdMapper {
      *
      * @param analyses the list of space weather advisory analyses containing regions to map
      */
-    public SpaceWeatherRegionIdMapper(final List<SpaceWeatherAdvisoryAnalysis> analyses) {
+    public SpaceWeatherRegionHandler(final List<SpaceWeatherAdvisoryAnalysis> analyses) {
         final Map<SpaceWeatherRegion, String> regionToId = new HashMap<>();
         final List<RegionId> result = new ArrayList<>();
 
@@ -33,14 +40,37 @@ public class SpaceWeatherRegionIdMapper {
             analyses.get(analysisIndex).getIntensityAndRegions()
                     .forEach(intensityAndRegion -> intensityAndRegion.getRegions()
                             .forEach(region -> {
-                                final boolean isDuplicate = regionToId.containsKey(region);
-                                final String id = regionToId.computeIfAbsent(region,
+                                final SpaceWeatherRegion roundedRegion = roundPolygonGeometry(region);
+                                final boolean isDuplicate = regionToId.containsKey(roundedRegion);
+                                final String id = regionToId.computeIfAbsent(roundedRegion,
                                         r -> IWXXMConverterBase.UUID_PREFIX + UUID.randomUUID());
-                                result.add(new RegionId(region, index, id, isDuplicate));
+                                result.add(new RegionId(roundedRegion, index, id, isDuplicate));
                             }));
         }
 
         this.regionList = Collections.unmodifiableList(result);
+    }
+
+    private static SpaceWeatherRegion roundPolygonGeometry(final SpaceWeatherRegion region) {
+        return region.getAirSpaceVolume()
+                .flatMap(volume -> volume.getHorizontalProjection()
+                        .filter(geom -> geom instanceof PolygonGeometry)
+                        .map(geom -> (PolygonGeometry) geom)
+                        .map(polygon -> buildRoundedRegion(region, volume, polygon)))
+                .orElse(region);
+    }
+
+    private static SpaceWeatherRegion buildRoundedRegion(final SpaceWeatherRegion region, final AirspaceVolume volume,
+                                                         final PolygonGeometry polygon) {
+        return SpaceWeatherRegionImpl.Builder.from(region)
+                .setAirSpaceVolume(AirspaceVolumeImpl.Builder.from(volume)
+                        .setHorizontalProjection(PolygonGeometryImpl.Builder.from(polygon)
+                                .setExteriorRingPositions(polygon.getExteriorRingPositions().stream()
+                                        .map(value -> (double) Math.round(value))
+                                        .collect(Collectors.toList()))
+                                .build())
+                        .build())
+                .build();
     }
 
     /**

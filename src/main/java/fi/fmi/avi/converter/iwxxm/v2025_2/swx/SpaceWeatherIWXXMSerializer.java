@@ -32,12 +32,6 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
 
     protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
 
-    // SWX polygon geometries are rounded to integers
-    @Override
-    protected int decimalPlacesForPolygonGeometry() {
-        return 0;
-    }
-
     @Override
     public ConversionResult<T> convertMessage(final SpaceWeatherAdvisoryAmd82 input, final ConversionHints hints) {
         final ConversionResult<T> result = new ConversionResult<>();
@@ -71,7 +65,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         swxType.getEffect().add(effectType);
 
         if (input.getAnalyses().size() == REQUIRED_NUMBER_OF_ANALYSES) {
-            final SpaceWeatherRegionIdMapper regionIdList = new SpaceWeatherRegionIdMapper(input.getAnalyses());
+            final SpaceWeatherRegionHandler regionIdList = new SpaceWeatherRegionHandler(input.getAnalyses());
             for (int i = 0; i < input.getAnalyses().size(); i++) {
                 final SpaceWeatherAdvisoryAnalysis analysis = input.getAnalyses().get(i);
                 swxType.getAnalysis().add(toSpaceWeatherAnalysisPropertyType(analysis, regionIdList.getRegionList(i)));
@@ -163,7 +157,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
 
     private SpaceWeatherAnalysisPropertyType toSpaceWeatherAnalysisPropertyType(
             final SpaceWeatherAdvisoryAnalysis analysis,
-            final List<SpaceWeatherRegionIdMapper.RegionId> regionList) {
+            final List<SpaceWeatherRegionHandler.RegionId> regionList) {
         final SpaceWeatherAnalysisPropertyType propertyType = create(SpaceWeatherAnalysisPropertyType.class);
         final SpaceWeatherAnalysisType analysisType = create(SpaceWeatherAnalysisType.class);
 
@@ -199,8 +193,9 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
                 final SpaceWeatherIntensityType intensityType = SpaceWeatherIntensityType.fromValue(intensityAndRegion.getIntensity().getCode());
                 intensityAndRegionType.setIntensity(intensityType);
 
-                for (final SpaceWeatherRegion region : intensityAndRegion.getRegions()) {
-                    final SpaceWeatherRegionIdMapper.RegionId regionId = regionList.get(regionCounter);
+                for (int i = 0; i < intensityAndRegion.getRegions().size(); i++) {
+                    final SpaceWeatherRegionHandler.RegionId regionId = regionList.get(regionCounter);
+                    final SpaceWeatherRegion roundedRegion = regionId.getRegion();
                     final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
 
                     if (regionId.isDuplicate()) {
@@ -209,9 +204,9 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
                         final SpaceWeatherRegionType regionType = create(SpaceWeatherRegionType.class);
                         regionType.setId(regionId.getId());
 
-                        if (region.getAirSpaceVolume().isPresent()) {
+                        if (roundedRegion.getAirSpaceVolume().isPresent()) {
                             regionType.setLocation(
-                                    create(AirspaceVolumePropertyType.class, prop -> getAirspaceVolumeProperty(prop, region.getAirSpaceVolume().get())));
+                                    create(AirspaceVolumePropertyType.class, prop -> getAirspaceVolumeProperty(prop, roundedRegion.getAirSpaceVolume().get())));
                         } else {
                             final AirspaceVolumePropertyType airspaceVolumePropertyType = create(AirspaceVolumePropertyType.class);
                             airspaceVolumePropertyType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_UNKNOWN);
@@ -219,8 +214,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
                         }
 
                         final SpaceWeatherLocationType locationType = create(SpaceWeatherLocationType.class);
-                        if (region.getLocationIndicator().isPresent()) {
-                            locationType.setHref(region.getLocationIndicator().get().asWMOCodeListValue());
+                        if (roundedRegion.getLocationIndicator().isPresent()) {
+                            locationType.setHref(roundedRegion.getLocationIndicator().get().asWMOCodeListValue());
                         } else {
                             locationType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
                         }
