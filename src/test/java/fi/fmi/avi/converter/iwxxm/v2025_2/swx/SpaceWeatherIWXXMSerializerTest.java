@@ -94,6 +94,17 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
         assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-nil-reasons.xml"), result.getConvertedMessage().get());
     }
 
+    @Test
+    public void serialize_too_many_replace_nrs() throws Exception {
+        final String input = readResourceToString("spacewx-too-many-replace-nrs.json");
+        final ConversionResult<String> result = serialize(input);
+
+        assertEquals(ConversionResult.Status.WITH_ERRORS, result.getStatus());
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-too-many-replace-nrs.xml"), result.getConvertedMessage().get());
+    }
+
     private ConversionResult<String> serialize(final String input) throws Exception {
         final SpaceWeatherAdvisoryAmd82 swx = objectMapper.readValue(input, SpaceWeatherAdvisoryAmd82Impl.class);
         return serialize(swx);
