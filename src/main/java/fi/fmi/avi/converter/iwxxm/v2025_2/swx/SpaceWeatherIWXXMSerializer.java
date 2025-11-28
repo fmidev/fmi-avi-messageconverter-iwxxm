@@ -46,7 +46,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         return remarkType;
     }
 
-    private static SpaceWeatherIntensityAndRegionPropertyType createNilReasonProperty(final SpaceWeatherAdvisoryAnalysis.NilReason nilReason) {
+    private static SpaceWeatherIntensityAndRegionPropertyType createNilReasonProperty(
+            final SpaceWeatherAdvisoryAnalysis.NilReason nilReason) {
         final SpaceWeatherIntensityAndRegionPropertyType nilProperty = create(SpaceWeatherIntensityAndRegionPropertyType.class);
         switch (nilReason) {
             case NO_INFORMATION_AVAILABLE:
@@ -147,7 +148,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         }
 
         analysisType.setId(UUID_PREFIX + UUID.randomUUID());
-        analysisType.setPhenomenonTime(create(AbstractTimeObjectPropertyType.class, prop -> getAnalysisTime(prop, analysis.getTime())));
+        analysisType.setPhenomenonTime(create(AbstractTimeObjectPropertyType.class, prop ->
+                getAnalysisTime(prop, analysis.getTime())));
 
         if (analysis.getNilReason().isPresent()) {
             analysisType.getIntensityAndRegion().add(createNilReasonProperty(analysis.getNilReason().get()));
@@ -170,7 +172,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         final AirspaceVolumeType airspaceVolumeType = create(AirspaceVolumeType.class);
         if (volume.getHorizontalProjection().isPresent()) {
             airspaceVolumeType.setId(UUID_PREFIX + UUID.randomUUID());
-            final SurfacePropertyType surfaceProperty = createAixm511fullSurface(volume.getHorizontalProjection().get(), UUID_PREFIX + UUID.randomUUID());
+            final SurfacePropertyType surfaceProperty =
+                    createAixm511fullSurface(volume.getHorizontalProjection().get(), UUID_PREFIX + UUID.randomUUID());
             airspaceVolumeType.setHorizontalProjection(surfaceProperty);
         }
 
@@ -204,7 +207,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
                 source.getPermissibleUsageSupplementary().ifPresent(target::setPermissibleUsageSupplementary);
             }
         } else {
-            results.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "PermissibleUsage is required"));
+            results.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                    "PermissibleUsage is required"));
         }
     }
 
@@ -232,26 +236,27 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
     private static void getIssuingCenter(final UnitPropertyType prop, final IssuingCenter issuingCenter) {
         final UnitType unitType = create(UnitType.class, unit -> {
             unit.setId(UUID_PREFIX + UUID.randomUUID());
-            unit.getTimeSlice().add(create(UnitTimeSlicePropertyType.class, sliceProp -> {
-                sliceProp.setUnitTimeSlice(create(UnitTimeSliceType.class, slice -> {
-                    slice.setId(UUID_PREFIX + UUID.randomUUID());
-                    slice.setInterpretation("SNAPSHOT");
-                    slice.setValidTime(new TimePrimitivePropertyType());
-                    issuingCenter.getName().ifPresent(name ->
-                            slice.setUnitName(create(TextNameType.class, tnt -> tnt.setValue(name))));
-                    issuingCenter.getType().ifPresent(type ->
-                            slice.setType(create(CodeUnitType.class, cut -> cut.setValue(type))));
-                    issuingCenter.getDesignator().ifPresent(designator ->
-                            slice.setDesignator(create(CodeOrganisationDesignatorType.class, codt -> codt.setValue(designator))));
-                }));
-            }));
+            unit.getTimeSlice().add(create(UnitTimeSlicePropertyType.class, sliceProp ->
+                    sliceProp.setUnitTimeSlice(create(UnitTimeSliceType.class, slice -> {
+                        slice.setId(UUID_PREFIX + UUID.randomUUID());
+                        slice.setInterpretation("SNAPSHOT");
+                        slice.setValidTime(new TimePrimitivePropertyType());
+                        issuingCenter.getName().ifPresent(name ->
+                                slice.setUnitName(create(TextNameType.class, tnt -> tnt.setValue(name))));
+                        issuingCenter.getType().ifPresent(type ->
+                                slice.setType(create(CodeUnitType.class, cut -> cut.setValue(type))));
+                        issuingCenter.getDesignator().ifPresent(designator ->
+                                slice.setDesignator(create(CodeOrganisationDesignatorType.class, codt ->
+                                        codt.setValue(designator))));
+                    }))));
         });
         prop.setUnit(unitType);
     }
 
     protected abstract T render(SpaceWeatherAdvisoryType swx, ConversionHints hints) throws ConversionException;
 
-    protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException;
+    protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints)
+            throws ConversionException;
 
     @Override
     public ConversionResult<T> convertMessage(final SpaceWeatherAdvisoryAmd82 input, final ConversionHints hints) {
@@ -268,9 +273,12 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
             return result;
         }
 
-        swxType.setIssuingSpaceWeatherCentre(create(UnitPropertyType.class, prop -> getIssuingCenter(prop, input.getIssuingCenter())));
-        swxType.setAdvisoryNumber(create(StringWithNilReasonType.class, prop -> prop.setValue(input.getAdvisoryNumber().asAdvisoryNumber())));
-        input.getReplaceAdvisoryNumbers().forEach(advisoryNumber -> swxType.getReplacedAdvisoryNumber().add(advisoryNumber.asAdvisoryNumber()));
+        swxType.setIssuingSpaceWeatherCentre(create(UnitPropertyType.class, prop ->
+                getIssuingCenter(prop, input.getIssuingCenter())));
+        swxType.setAdvisoryNumber(create(StringWithNilReasonType.class, prop ->
+                prop.setValue(input.getAdvisoryNumber().asAdvisoryNumber())));
+        input.getReplaceAdvisoryNumbers().forEach(advisoryNumber ->
+                swxType.getReplacedAdvisoryNumber().add(advisoryNumber.asAdvisoryNumber()));
         swxType.setRemarks(createRemarksType(input.getRemarks().orElse(Collections.emptyList())));
 
         final SpaceWeatherEffectType effectType = SpaceWeatherEffectType.fromValue(input.getEffect().getCode());
@@ -283,11 +291,13 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
                 swxType.getAnalysis().add(toSpaceWeatherAnalysisPropertyType(analysis, regionIdList.getRegionList(i)));
             }
         } else {
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Expected 5 analysis objects, but found " + input.getAnalyses().size()));
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
+                    "Expected 5 analysis objects, but found " + input.getAnalyses().size()));
             return result;
         }
 
-        swxType.setNextAdvisoryTime(create(TimeInstantPropertyType.class, prop -> getNextAdvisory(prop, input.getNextAdvisory())));
+        swxType.setNextAdvisoryTime(create(TimeInstantPropertyType.class, prop ->
+                getNextAdvisory(prop, input.getNextAdvisory())));
 
         try {
             this.updateMessageMetadata(input, result, swxType);
@@ -301,7 +311,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         return result;
     }
 
-    protected void updateMessageMetadata(final SpaceWeatherAdvisoryAmd82 source, final ConversionResult<?> results, final SpaceWeatherAdvisoryType target)
+    protected void updateMessageMetadata(final SpaceWeatherAdvisoryAmd82 source, final ConversionResult<?> results,
+                                         final SpaceWeatherAdvisoryType target)
             throws ConversionException {
         try {
             final DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
