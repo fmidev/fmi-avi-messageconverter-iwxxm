@@ -1,0 +1,121 @@
+{
+  "issueTime": {
+    "completeTime": "2020-11-08T01:00:00Z"
+  },
+  "issuingCenter": {
+    "name": "DONLON",
+    "type": "OTHER:SWXC"
+  },
+  "effect": "HF_COMMUNICATIONS",
+  "advisoryNumber": {
+    "year": 2020,
+    "serialNumber": 1
+  },
+  "analyses": [
+    {
+      "time": {
+        "completeTime": "2020-11-08T01:00:00Z"
+      },
+      "analysisType": "OBSERVATION",
+      "intensityAndRegions": [
+        {
+          "intensity": "MODERATE",
+          "regions": [
+            {
+              "airSpaceVolume": {
+                "horizontalProjection": {
+                  "type": "CircleByCenterPoint",
+                  "crs": {
+                    "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                    "dimension": 2,
+                    "axisLabels": [
+                      "Lat",
+                      "Long"
+                    ]
+                  },
+                  "centerPointCoordinates": [
+                    9999.0,
+                    9999.0
+                  ],
+                  "radius": {
+                    "value": 10100,
+                    "uom": "km"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2020-11-08T07:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "intensityAndRegions": [
+        {
+          "intensity": "SEVERE",
+          "regions": [
+            {
+              "airSpaceVolume": {
+                "horizontalProjection": {
+                  "type": "Polygon",
+                  "crs": {
+                    "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                    "dimension": 2,
+                    "axisLabels": [
+                      "Lat",
+                      "Long"
+                    ]
+                  },
+                  "exteriorRingPositions": [
+                    30.0,
+                    180.0,
+                    60.0,
+                    180.0,
+                    60.0,
+                    -180.0,
+                    30.0,
+                    -180.0,
+                    30.0,
+                    180.0
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2020-11-08T13:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "intensityAndRegions": [],
+      "nilReason": "NO_SWX_EXPECTED"
+    },
+    {
+      "time": {
+        "completeTime": "2020-11-08T19:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "intensityAndRegions": [],
+      "nilReason": "NO_INFORMATION_AVAILABLE"
+    },
+    {
+      "time": {
+        "completeTime": "2020-11-09T01:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "intensityAndRegions": [],
+      "nilReason": "NO_SWX_EXPECTED"
+    }
+  ],
+  "nextAdvisory": {
+    "timeSpecifier": "NO_FURTHER_ADVISORIES"
+  },
+  "permissibleUsage": "OPERATIONAL",
+  "reportStatus": "NORMAL"
+}

@@ -83,6 +83,17 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
         assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-polygon-coordinate-rounding.xml"), result.getConvertedMessage().get());
     }
 
+    @Test
+    public void serialize_nil_reasons() throws Exception {
+        final String input = readResourceToString("spacewx-nil-reasons.json");
+        final ConversionResult<String> result = serialize(input);
+
+        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
+        assertTrue(result.getConvertedMessage().isPresent());
+        assertNotNull(result.getConvertedMessage().get());
+        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-nil-reasons.xml"), result.getConvertedMessage().get());
+    }
+
     private ConversionResult<String> serialize(final String input) throws Exception {
         final SpaceWeatherAdvisoryAmd82 swx = objectMapper.readValue(input, SpaceWeatherAdvisoryAmd82Impl.class);
         return serialize(swx);
