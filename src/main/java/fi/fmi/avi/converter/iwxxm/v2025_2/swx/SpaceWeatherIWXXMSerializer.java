@@ -4,29 +4,250 @@ import aero.aixm511full.*;
 import aero.aixm511full.SurfacePropertyType;
 import fi.fmi.avi.converter.*;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMAixm511FullSerializer;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v2025_2.AbstractIWXXM20252Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
+import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.swx.amd82.*;
 import icao.iwxxm2025_2.*;
 import icao.iwxxm2025_2.AirspaceVolumePropertyType;
 import icao.iwxxm2025_2.UnitPropertyType;
 import net.opengis.gml32.*;
-import net.opengis.gml32.ObjectFactory;
 import org.w3c.dom.Document;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252Serializer<SpaceWeatherAdvisoryAmd82, T> {
     private static final int REQUIRED_NUMBER_OF_ANALYSES = 5;
-    private static final ObjectFactory GML_OF = new ObjectFactory();
+
+    private static TimeInstantType createTimeInstant(final PartialOrCompleteTimeInstant time) {
+        final TimeInstantType timeInstant = create(TimeInstantType.class);
+        timeInstant.setId(UUID_PREFIX + UUID.randomUUID());
+        final TimePositionType timePosition = create(TimePositionType.class);
+        toIWXXMDateTime(time).ifPresent(t -> timePosition.getValue().add(t));
+        timeInstant.setTimePosition(timePosition);
+        return timeInstant;
+    }
+
+    private static StringWithNilReasonType createRemarksType(final List<String> remarks) {
+        final StringWithNilReasonType remarkType = create(StringWithNilReasonType.class);
+        if (!remarks.isEmpty()) {
+            remarkType.setValue(String.join(" ", remarks));
+        } else {
+            remarkType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
+        }
+        return remarkType;
+    }
+
+    private static SpaceWeatherIntensityAndRegionPropertyType createNilReasonProperty(final SpaceWeatherAdvisoryAnalysis.NilReason nilReason) {
+        final SpaceWeatherIntensityAndRegionPropertyType nilProperty = create(SpaceWeatherIntensityAndRegionPropertyType.class);
+        switch (nilReason) {
+            case NO_INFORMATION_AVAILABLE:
+                nilProperty.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING);
+                break;
+            case NO_SWX_EXPECTED:
+                nilProperty.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
+                break;
+        }
+        return nilProperty;
+    }
+
+    private static AirspaceVolumePropertyType createAirspaceVolumeProperty(final SpaceWeatherRegion region) {
+        return create(AirspaceVolumePropertyType.class, prop -> {
+            if (region.getAirSpaceVolume().isPresent()) {
+                getAirspaceVolumeProperty(prop, region.getAirSpaceVolume().get());
+            } else {
+                prop.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_UNKNOWN);
+            }
+        });
+    }
+
+    private static SpaceWeatherLocationType createLocationType(final SpaceWeatherRegion region) {
+        return create(SpaceWeatherLocationType.class, locationType -> {
+            if (region.getLocationIndicator().isPresent()) {
+                locationType.setHref(region.getLocationIndicator().get().asWMOCodeListValue());
+            } else {
+                locationType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
+            }
+        });
+    }
+
+    private static SpaceWeatherRegionPropertyType createRegionProperty(final SpaceWeatherRegionHandler.RegionId regionId) {
+        final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
+
+        if (regionId.isDuplicate()) {
+            regionProperty.setHref("#" + regionId.getId());
+        } else {
+            final SpaceWeatherRegion region = regionId.getRegion();
+            final SpaceWeatherRegionType regionType = create(SpaceWeatherRegionType.class, type -> {
+                type.setId(regionId.getId());
+                type.setLocation(createAirspaceVolumeProperty(region));
+                type.getLocationIndicator().add(createLocationType(region));
+            });
+            regionProperty.setSpaceWeatherRegion(regionType);
+        }
+
+        return regionProperty;
+    }
+
+    private static void processIntensityAndRegions(
+            final SpaceWeatherAdvisoryAnalysis analysis,
+            final List<SpaceWeatherRegionHandler.RegionId> regionList,
+            final SpaceWeatherAnalysisType analysisType) {
+        int regionCounter = 0;
+        for (final SpaceWeatherIntensityAndRegion intensityAndRegion : analysis.getIntensityAndRegions()) {
+            final SpaceWeatherIntensityAndRegionPropertyType iarProperty = create(SpaceWeatherIntensityAndRegionPropertyType.class);
+            final SpaceWeatherIntensityAndRegionType intensityAndRegionType = create(SpaceWeatherIntensityAndRegionType.class);
+            intensityAndRegionType.setId(UUID_PREFIX + UUID.randomUUID());
+
+            final SpaceWeatherIntensityType intensityType = SpaceWeatherIntensityType.fromValue(intensityAndRegion.getIntensity().getCode());
+            intensityAndRegionType.setIntensity(intensityType);
+
+            for (int i = 0; i < intensityAndRegion.getRegions().size(); i++) {
+                final SpaceWeatherRegionHandler.RegionId regionId = regionList.get(regionCounter);
+                intensityAndRegionType.getRegion().add(createRegionProperty(regionId));
+                regionCounter++;
+            }
+
+            iarProperty.setSpaceWeatherIntensityAndRegion(intensityAndRegionType);
+            analysisType.getIntensityAndRegion().add(iarProperty);
+        }
+    }
+
+    private static ReportStatusType mapReportStatus(final AviationWeatherMessage.ReportStatus reportStatus) {
+        switch (reportStatus) {
+            case AMENDMENT:
+                return ReportStatusType.AMENDMENT;
+            case CORRECTION:
+                return ReportStatusType.CORRECTION;
+            case NORMAL:
+                return ReportStatusType.NORMAL;
+            default:
+                throw new IllegalArgumentException("Unknown report status: " + reportStatus);
+        }
+    }
+
+    private static SpaceWeatherAnalysisPropertyType toSpaceWeatherAnalysisPropertyType(
+            final SpaceWeatherAdvisoryAnalysis analysis,
+            final List<SpaceWeatherRegionHandler.RegionId> regionList) {
+        final SpaceWeatherAnalysisPropertyType propertyType = create(SpaceWeatherAnalysisPropertyType.class);
+        final SpaceWeatherAnalysisType analysisType = create(SpaceWeatherAnalysisType.class);
+
+        if (analysis.getAnalysisType() == SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION) {
+            analysisType.setTimeIndicator(TimeIndicatorType.OBSERVATION);
+        } else {
+            analysisType.setTimeIndicator(TimeIndicatorType.FORECAST);
+        }
+
+        analysisType.setId(UUID_PREFIX + UUID.randomUUID());
+        analysisType.setPhenomenonTime(create(AbstractTimeObjectPropertyType.class, prop -> getAnalysisTime(prop, analysis.getTime())));
+
+        if (analysis.getNilReason().isPresent()) {
+            analysisType.getIntensityAndRegion().add(createNilReasonProperty(analysis.getNilReason().get()));
+        } else {
+            processIntensityAndRegions(analysis, regionList, analysisType);
+        }
+
+        propertyType.setSpaceWeatherAnalysis(analysisType);
+        return propertyType;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void getAnalysisTime(final AbstractTimeObjectPropertyType prop, final PartialOrCompleteTimeInstant time) {
+        final TimeInstantType timeInstant = createTimeInstant(time);
+        final JAXBElement<?> jaxbTimeInstant = wrap(timeInstant, TimeInstantType.class);
+        prop.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) jaxbTimeInstant);
+    }
+
+    private static void getAirspaceVolumeProperty(final AirspaceVolumePropertyType prop, final AirspaceVolume volume) {
+        final AirspaceVolumeType airspaceVolumeType = create(AirspaceVolumeType.class);
+        if (volume.getHorizontalProjection().isPresent()) {
+            airspaceVolumeType.setId(UUID_PREFIX + UUID.randomUUID());
+            final SurfacePropertyType surfaceProperty = createAixm511fullSurface(volume.getHorizontalProjection().get(), UUID_PREFIX + UUID.randomUUID());
+            airspaceVolumeType.setHorizontalProjection(surfaceProperty);
+        }
+
+        volume.getLowerLimit().ifPresent(limit -> {
+            AbstractIWXXMAixm511FullSerializer.toValDistanceVertical(limit).ifPresent(airspaceVolumeType::setLowerLimit);
+            airspaceVolumeType.setLowerLimitReference(create(CodeVerticalReferenceType.class,
+                    codeVerticalReferenceType -> volume.getLowerLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
+        });
+
+        volume.getUpperLimit().ifPresent(limit -> {
+            AbstractIWXXMAixm511FullSerializer.toValDistanceVertical(limit).ifPresent(airspaceVolumeType::setUpperLimit);
+            airspaceVolumeType.setUpperLimitReference(create(CodeVerticalReferenceType.class,
+                    codeVerticalReferenceType -> volume.getUpperLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
+        });
+
+        prop.setAirspaceVolume(airspaceVolumeType);
+    }
+
+    private static void setPermissibleUsageMetadata(
+            final SpaceWeatherAdvisoryAmd82 source,
+            final SpaceWeatherAdvisoryType target,
+            final ConversionResult<?> results) {
+        if (source.getPermissibleUsage().isPresent()) {
+            final AviationCodeListUser.PermissibleUsage usage = source.getPermissibleUsage().get();
+            if (usage == AviationCodeListUser.PermissibleUsage.OPERATIONAL) {
+                target.setPermissibleUsage(PermissibleUsageType.OPERATIONAL);
+            } else {
+                target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
+                source.getPermissibleUsageReason().ifPresent(reason ->
+                        target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(reason.name())));
+                source.getPermissibleUsageSupplementary().ifPresent(target::setPermissibleUsageSupplementary);
+            }
+        } else {
+            results.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "PermissibleUsage is required"));
+        }
+    }
+
+    private static void setTranslationMetadata(
+            final SpaceWeatherAdvisoryAmd82 source,
+            final SpaceWeatherAdvisoryType target,
+            final DatatypeFactory datatypeFactory,
+            final ConversionResult<?> results) {
+        if (source.isTranslated()) {
+            source.getTranslatedBulletinID().ifPresent(target::setTranslatedBulletinID);
+            source.getTranslatedBulletinReceptionTime()
+                    .map(time -> datatypeFactory.newXMLGregorianCalendar(toIWXXMDateTime(time)))
+                    .ifPresent(target::setTranslatedBulletinReceptionTime);
+            source.getTranslationCentreDesignator().ifPresent(target::setTranslationCentreDesignator);
+            source.getTranslationCentreName().ifPresent(target::setTranslationCentreName);
+            source.getTranslationTime()
+                    .map(time -> datatypeFactory.newXMLGregorianCalendar(toIWXXMDateTime(time)))
+                    .ifPresent(target::setTranslationTime);
+            if (results.getStatus() != ConversionResult.Status.SUCCESS) {
+                source.getTranslatedTAC().ifPresent(target::setTranslationFailedTAC);
+            }
+        }
+    }
+
+    private static void getIssuingCenter(final UnitPropertyType prop, final IssuingCenter issuingCenter) {
+        final UnitType unitType = create(UnitType.class, unit -> {
+            unit.setId(UUID_PREFIX + UUID.randomUUID());
+            unit.getTimeSlice().add(create(UnitTimeSlicePropertyType.class, sliceProp -> {
+                sliceProp.setUnitTimeSlice(create(UnitTimeSliceType.class, slice -> {
+                    slice.setId(UUID_PREFIX + UUID.randomUUID());
+                    slice.setInterpretation("SNAPSHOT");
+                    slice.setValidTime(new TimePrimitivePropertyType());
+                    issuingCenter.getName().ifPresent(name ->
+                            slice.setUnitName(create(TextNameType.class, tnt -> tnt.setValue(name))));
+                    issuingCenter.getType().ifPresent(type ->
+                            slice.setType(create(CodeUnitType.class, cut -> cut.setValue(type))));
+                    issuingCenter.getDesignator().ifPresent(designator ->
+                            slice.setDesignator(create(CodeOrganisationDesignatorType.class, codt -> codt.setValue(designator))));
+                }));
+            }));
+        });
+        prop.setUnit(unitType);
+    }
 
     protected abstract T render(SpaceWeatherAdvisoryType swx, ConversionHints hints) throws ConversionException;
 
@@ -40,26 +261,17 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         swxType.setId(UUID_PREFIX + UUID.randomUUID());
 
         if (input.getIssueTime().isPresent()) {
-            swxType.setIssueTime(create(TimeInstantPropertyType.class, prop -> getIssueTime(prop, input.getIssueTime().get())));
+            swxType.setIssueTime(create(TimeInstantPropertyType.class, prop ->
+                    prop.setTimeInstant(createTimeInstant(input.getIssueTime().get()))));
         } else {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "Issue time is missing"));
             return result;
         }
 
         swxType.setIssuingSpaceWeatherCentre(create(UnitPropertyType.class, prop -> getIssuingCenter(prop, input.getIssuingCenter())));
-
         swxType.setAdvisoryNumber(create(StringWithNilReasonType.class, prop -> prop.setValue(input.getAdvisoryNumber().asAdvisoryNumber())));
-
-        input.getReplaceAdvisoryNumbers()
-                .forEach(advisoryNumber -> swxType.getReplacedAdvisoryNumber().add(advisoryNumber.asAdvisoryNumber()));
-
-        final StringWithNilReasonType remarkType = create(StringWithNilReasonType.class);
-        if (input.getRemarks().isPresent() && !input.getRemarks().get().isEmpty()) {
-            remarkType.setValue(String.join(" ", input.getRemarks().get()));
-        } else {
-            remarkType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
-        }
-        swxType.setRemarks(remarkType);
+        input.getReplaceAdvisoryNumbers().forEach(advisoryNumber -> swxType.getReplacedAdvisoryNumber().add(advisoryNumber.asAdvisoryNumber()));
+        swxType.setRemarks(createRemarksType(input.getRemarks().orElse(Collections.emptyList())));
 
         final SpaceWeatherEffectType effectType = SpaceWeatherEffectType.fromValue(input.getEffect().getCode());
         swxType.getEffect().add(effectType);
@@ -92,233 +304,24 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
     protected void updateMessageMetadata(final SpaceWeatherAdvisoryAmd82 source, final ConversionResult<?> results, final SpaceWeatherAdvisoryType target)
             throws ConversionException {
         try {
-            final DatatypeFactory f = DatatypeFactory.newInstance();
-
-            switch (source.getReportStatus()) {
-                case AMENDMENT:
-                    target.setReportStatus(ReportStatusType.AMENDMENT);
-                    break;
-                case CORRECTION:
-                    target.setReportStatus(ReportStatusType.CORRECTION);
-                    break;
-                case NORMAL:
-                    target.setReportStatus(ReportStatusType.NORMAL);
-                    break;
-            }
-
-            if (source.getPermissibleUsage().isPresent()) {
-                if (source.getPermissibleUsage().get().equals(AviationCodeListUser.PermissibleUsage.OPERATIONAL)) {
-                    target.setPermissibleUsage(PermissibleUsageType.OPERATIONAL);
-                } else {
-                    target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
-                }
-            } else {
-                results.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "PermissibleUsage is required"));
-            }
-
-            if (source.getPermissibleUsageReason().isPresent()) {
-                if (source.getPermissibleUsageReason().get().equals(AviationCodeListUser.PermissibleUsageReason.TEST)) {
-                    target.setPermissibleUsageReason(PermissibleUsageReasonType.TEST);
-                } else {
-                    target.setPermissibleUsageReason(PermissibleUsageReasonType.EXERCISE);
-                }
-            }
-
-            source.getPermissibleUsage().ifPresent(us -> {
-                if (us == AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL) {
-                    target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
-                    if (source.getPermissibleUsageReason().isPresent()) {
-                        target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(source.getPermissibleUsageReason().get().name()));
-                    }
-                    if ((source.getPermissibleUsageSupplementary() != null) && (source.getPermissibleUsageSupplementary().isPresent())) {
-                        target.setPermissibleUsageSupplementary(source.getPermissibleUsageSupplementary().get());
-                    }
-                }
-            });
-
-            if (source.isTranslated()) {
-                source.getTranslatedBulletinID().ifPresent(target::setTranslatedBulletinID);
-                source.getTranslatedBulletinReceptionTime()//
-                        .map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time)))//
-                        .ifPresent(target::setTranslatedBulletinReceptionTime);
-                source.getTranslationCentreDesignator().ifPresent(target::setTranslationCentreDesignator);
-                source.getTranslationCentreName().ifPresent(target::setTranslationCentreName);
-                source.getTranslationTime()//
-                        .map(time -> f.newXMLGregorianCalendar(toIWXXMDateTime(time)))//
-                        .ifPresent(target::setTranslationTime);
-                if (results.getStatus() != ConversionResult.Status.SUCCESS) {
-                    source.getTranslatedTAC().ifPresent(target::setTranslationFailedTAC);
-                }
-            }
+            final DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+            target.setReportStatus(mapReportStatus(source.getReportStatus()));
+            setPermissibleUsageMetadata(source, target, results);
+            setTranslationMetadata(source, target, datatypeFactory, results);
         } catch (final DatatypeConfigurationException e) {
-            throw new ConversionException("Exception in setting the translation time", e);
+            throw new ConversionException("Exception in setting message metadata", e);
         }
-    }
-
-    private SpaceWeatherAnalysisPropertyType toSpaceWeatherAnalysisPropertyType(
-            final SpaceWeatherAdvisoryAnalysis analysis,
-            final List<SpaceWeatherRegionHandler.RegionId> regionList) {
-        final SpaceWeatherAnalysisPropertyType propertyType = create(SpaceWeatherAnalysisPropertyType.class);
-        final SpaceWeatherAnalysisType analysisType = create(SpaceWeatherAnalysisType.class);
-
-        if (analysis.getAnalysisType() == SpaceWeatherAdvisoryAnalysis.Type.OBSERVATION) {
-            analysisType.setTimeIndicator(TimeIndicatorType.OBSERVATION);
-        } else {
-            analysisType.setTimeIndicator(TimeIndicatorType.FORECAST);
-        }
-
-        analysisType.setId(UUID_PREFIX + UUID.randomUUID());
-        analysisType.setPhenomenonTime(create(AbstractTimeObjectPropertyType.class, prop -> getAnalysisTime(prop, analysis.getTime())));
-
-        // Handle NIL reasons for the entire analysis
-        if (analysis.getNilReason().isPresent()) {
-            final SpaceWeatherIntensityAndRegionPropertyType nilProperty = create(SpaceWeatherIntensityAndRegionPropertyType.class);
-            switch (analysis.getNilReason().get()) {
-                case NO_INFORMATION_AVAILABLE:
-                    nilProperty.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_MISSING);
-                    break;
-                case NO_SWX_EXPECTED:
-                    nilProperty.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
-                    break;
-            }
-            analysisType.getIntensityAndRegion().add(nilProperty);
-        } else {
-            // Process analysis intensity and regions
-            int regionCounter = 0;
-            for (final SpaceWeatherIntensityAndRegion intensityAndRegion : analysis.getIntensityAndRegions()) {
-                final SpaceWeatherIntensityAndRegionPropertyType iarProperty = create(SpaceWeatherIntensityAndRegionPropertyType.class);
-                final SpaceWeatherIntensityAndRegionType intensityAndRegionType = create(SpaceWeatherIntensityAndRegionType.class);
-                intensityAndRegionType.setId(UUID_PREFIX + UUID.randomUUID());
-
-                final SpaceWeatherIntensityType intensityType = SpaceWeatherIntensityType.fromValue(intensityAndRegion.getIntensity().getCode());
-                intensityAndRegionType.setIntensity(intensityType);
-
-                for (int i = 0; i < intensityAndRegion.getRegions().size(); i++) {
-                    final SpaceWeatherRegionHandler.RegionId regionId = regionList.get(regionCounter);
-                    final SpaceWeatherRegion region = regionId.getRegion();
-                    final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
-
-                    if (regionId.isDuplicate()) {
-                        regionProperty.setHref("#" + regionId.getId());
-                    } else {
-                        final SpaceWeatherRegionType regionType = create(SpaceWeatherRegionType.class);
-                        regionType.setId(regionId.getId());
-
-                        if (region.getAirSpaceVolume().isPresent()) {
-                            regionType.setLocation(
-                                    create(AirspaceVolumePropertyType.class, prop -> getAirspaceVolumeProperty(prop, region.getAirSpaceVolume().get())));
-                        } else {
-                            final AirspaceVolumePropertyType airspaceVolumePropertyType = create(AirspaceVolumePropertyType.class);
-                            airspaceVolumePropertyType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_UNKNOWN);
-                            regionType.setLocation(airspaceVolumePropertyType);
-                        }
-
-                        final SpaceWeatherLocationType locationType = create(SpaceWeatherLocationType.class);
-                        if (region.getLocationIndicator().isPresent()) {
-                            locationType.setHref(region.getLocationIndicator().get().asWMOCodeListValue());
-                        } else {
-                            locationType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
-                        }
-                        regionType.getLocationIndicator().add(locationType);
-                        regionProperty.setSpaceWeatherRegion(regionType);
-                    }
-
-                    intensityAndRegionType.getRegion().add(regionProperty);
-                    regionCounter++;
-                }
-
-                iarProperty.setSpaceWeatherIntensityAndRegion(intensityAndRegionType);
-                analysisType.getIntensityAndRegion().add(iarProperty);
-            }
-        }
-
-        propertyType.setSpaceWeatherAnalysis(analysisType);
-        return propertyType;
-    }
-
-    private void getAnalysisTime(final AbstractTimeObjectPropertyType prop, final PartialOrCompleteTimeInstant time) {
-        final TimeInstantType timeInstantType = create(TimeInstantType.class);
-        timeInstantType.setId(UUID_PREFIX + UUID.randomUUID());
-        final TimePositionType timePositionType = create(TimePositionType.class);
-        toIWXXMDateTime(time).ifPresent(t -> timePositionType.getValue().add(t));
-        timeInstantType.setTimePosition(timePositionType);
-        @SuppressWarnings({"unchecked", "rawtypes"}) final JAXBElement<AbstractTimeObjectType> jaxbTimeInstant = (JAXBElement) GML_OF.createTimeInstant(timeInstantType);
-        prop.setAbstractTimeObject(jaxbTimeInstant);
-    }
-
-    private void getIssuingCenter(final UnitPropertyType prop, final IssuingCenter issuingCenter) {
-        final UnitType unitType = create(UnitType.class);
-        unitType.setId(UUID_PREFIX + UUID.randomUUID());
-        final UnitTimeSlicePropertyType unitTimeSlicePropertyType = create(UnitTimeSlicePropertyType.class);
-        final UnitTimeSliceType unitTimeSliceType = create(UnitTimeSliceType.class);
-        unitTimeSliceType.setId(UUID_PREFIX + UUID.randomUUID());
-        final TextNameType textNameType = create(TextNameType.class);
-        if (issuingCenter.getName().isPresent()) {
-            textNameType.setValue(issuingCenter.getName().get());
-            unitTimeSliceType.setUnitName(textNameType);
-        }
-        final CodeUnitType codeUnitType = create(CodeUnitType.class);
-        if (issuingCenter.getType().isPresent()) {
-            codeUnitType.setValue(issuingCenter.getType().get());
-            unitTimeSliceType.setType(codeUnitType);
-        }
-        if (issuingCenter.getDesignator().isPresent()) {
-            final CodeOrganisationDesignatorType designator = new CodeOrganisationDesignatorType();
-            designator.setValue(issuingCenter.getDesignator().get());
-            unitTimeSliceType.setDesignator(designator);
-        }
-        unitTimeSliceType.setInterpretation("SNAPSHOT");
-        unitTimeSliceType.setValidTime(new TimePrimitivePropertyType());
-        unitTimeSlicePropertyType.setUnitTimeSlice(unitTimeSliceType);
-        unitType.getTimeSlice().add(unitTimeSlicePropertyType);
-        prop.setUnit(unitType);
-    }
-
-    private void getIssueTime(final TimeInstantPropertyType prop, final PartialOrCompleteTimeInstant time) {
-        final TimeInstantType ti = create(TimeInstantType.class);
-        final TimePositionType tp = create(TimePositionType.class);
-        toIWXXMDateTime(time).ifPresent(t -> tp.getValue().add(t));
-        ti.setTimePosition(tp);
-        ti.setId(UUID_PREFIX + UUID.randomUUID());
-        prop.setTimeInstant(ti);
-    }
-
-    private void getAirspaceVolumeProperty(final AirspaceVolumePropertyType prop, final AirspaceVolume volume) {
-        final AirspaceVolumeType airspaceVolumeType = create(AirspaceVolumeType.class);
-        if (volume.getHorizontalProjection().isPresent()) {
-            airspaceVolumeType.setId(UUID_PREFIX + UUID.randomUUID());
-            final SurfacePropertyType surfaceProperty = createAixm511fullSurface(volume.getHorizontalProjection().get(), UUID_PREFIX + UUID.randomUUID());
-            airspaceVolumeType.setHorizontalProjection(surfaceProperty);
-        }
-
-        volume.getLowerLimit().ifPresent(limit -> {
-            AbstractIWXXMAixm511FullSerializer.toValDistanceVertical(limit).ifPresent(airspaceVolumeType::setLowerLimit);
-            airspaceVolumeType.setLowerLimitReference(create(CodeVerticalReferenceType.class,
-                    codeVerticalReferenceType -> volume.getLowerLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
-        });
-
-        volume.getUpperLimit().ifPresent(limit -> {
-            AbstractIWXXMAixm511FullSerializer.toValDistanceVertical(limit).ifPresent(airspaceVolumeType::setUpperLimit);
-            airspaceVolumeType.setUpperLimitReference(create(CodeVerticalReferenceType.class,
-                    codeVerticalReferenceType -> volume.getUpperLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
-        });
-
-        prop.setAirspaceVolume(airspaceVolumeType);
     }
 
     private void getNextAdvisory(final TimeInstantPropertyType prop, final NextAdvisory nextAdvisory) {
         if (nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_AT || nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_BY) {
-            final TimeInstantType timeInstant = create(TimeInstantType.class);
-            final TimePositionType timePosition = create(TimePositionType.class);
-            if (nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_BY) {
-                timePosition.setIndeterminatePosition(TimeIndeterminateValueType.BEFORE);
-            }
-            nextAdvisory.getTime()//
-                    .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
-                    .ifPresent(t -> timePosition.getValue().add(t));
-            timeInstant.setId(UUID_PREFIX + UUID.randomUUID());
-            timeInstant.setTimePosition(timePosition);
-            prop.setTimeInstant(timeInstant);
+            nextAdvisory.getTime().ifPresent(time -> {
+                final TimeInstantType timeInstant = createTimeInstant(time);
+                if (nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_BY) {
+                    timeInstant.getTimePosition().setIndeterminatePosition(TimeIndeterminateValueType.BEFORE);
+                }
+                prop.setTimeInstant(timeInstant);
+            });
         } else {
             prop.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
         }

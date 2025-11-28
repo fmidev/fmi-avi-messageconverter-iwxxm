@@ -9,7 +9,6 @@ import fi.fmi.avi.model.swx.amd82.immutable.AirspaceVolumeImpl;
 import fi.fmi.avi.model.swx.amd82.immutable.SpaceWeatherRegionImpl;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Maps space weather regions across multiple analyses to unique identifiers for IWXXM serialization.
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class SpaceWeatherRegionHandler {
 
-    private final List<RegionId> regionList;
+    private final Map<Integer, List<RegionId>> regionsByAnalysis;
 
     /**
      * Constructs a mapper by processing all analyses and assigning unique IDs to distinct regions.
@@ -32,10 +31,11 @@ public class SpaceWeatherRegionHandler {
      */
     public SpaceWeatherRegionHandler(final List<SpaceWeatherAdvisoryAnalysis> analyses) {
         final Map<SpaceWeatherRegion, String> regionToId = new HashMap<>();
-        final List<RegionId> result = new ArrayList<>();
+        final Map<Integer, List<RegionId>> result = new HashMap<>();
 
         for (int analysisIndex = 0; analysisIndex < analyses.size(); analysisIndex++) {
-            final int index = analysisIndex;
+            final List<RegionId> analysisRegions = new ArrayList<>();
+
             analyses.get(analysisIndex).getIntensityAndRegions()
                     .forEach(intensityAndRegion -> intensityAndRegion.getRegions()
                             .forEach(region -> {
@@ -43,11 +43,13 @@ public class SpaceWeatherRegionHandler {
                                 final boolean isDuplicate = regionToId.containsKey(roundedRegion);
                                 final String id = regionToId.computeIfAbsent(roundedRegion,
                                         r -> IWXXMConverterBase.UUID_PREFIX + UUID.randomUUID());
-                                result.add(new RegionId(roundedRegion, index, id, isDuplicate));
+                                analysisRegions.add(new RegionId(roundedRegion, id, isDuplicate));
                             }));
+
+            result.put(analysisIndex, Collections.unmodifiableList(analysisRegions));
         }
 
-        this.regionList = Collections.unmodifiableList(result);
+        this.regionsByAnalysis = Collections.unmodifiableMap(result);
     }
 
     private static SpaceWeatherRegion roundPolygonGeometryCoordinates(final SpaceWeatherRegion region) {
@@ -95,20 +97,16 @@ public class SpaceWeatherRegionHandler {
      * @return a list of region id mappings for the specified analysis
      */
     public List<RegionId> getRegionList(final int analysisNumber) {
-        return regionList.stream()
-                .filter(region -> region.analysisNumber == analysisNumber)
-                .collect(Collectors.toList());
+        return regionsByAnalysis.getOrDefault(analysisNumber, Collections.emptyList());
     }
 
     public static class RegionId {
         private final SpaceWeatherRegion region;
-        private final int analysisNumber;
         private final String id;
         private final boolean duplicate;
 
-        RegionId(final SpaceWeatherRegion region, final int analysisNumber, final String id, final boolean duplicate) {
+        RegionId(final SpaceWeatherRegion region, final String id, final boolean duplicate) {
             this.region = region;
-            this.analysisNumber = analysisNumber;
             this.id = id;
             this.duplicate = duplicate;
         }
