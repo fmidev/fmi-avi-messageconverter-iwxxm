@@ -38,14 +38,14 @@ public class BulletinIWXXMStringSerializer<U extends AviationWeatherMessage, S e
     @Override
     protected String aggregateAsBulletin(final Document collection, final List<Document> messages, final ConversionHints hints) throws ConversionException {
         final String collectionString = renderDOMToString(collection, hints);
-        final int documentsInsertionIndex = collectionString.indexOf('>', collectionString.indexOf('<' + collection.getDocumentElement().getTagName())) + 1;
+        final int documentsInsertionIndex = collectionString.indexOf(">", collectionString.indexOf("<" + collection.getDocumentElement().getTagName())) + 1;
         final int baseIndentation = baseIndentation(collectionString, documentsInsertionIndex);
         final String metInfoElementFQN = documentElementPrefix(collection) + "meteorologicalInformation";
         final StringBuilder builder = new StringBuilder(collectionString.substring(0, documentsInsertionIndex));
         for (final Document message : messages) {
             try (final BufferedReader reader = new BufferedReader(new StringReader(removeXmlDeclaration(renderDOMToString(message, hints))))) {
                 appendNewLineWithIndent(builder, baseIndentation);
-                builder.append('<').append(metInfoElementFQN).append('>');
+                builder.append("<").append(metInfoElementFQN).append(">");
                 String line = reader.readLine();
                 while (line != null) {
                     appendNewLineWithIndent(builder, baseIndentation + INDENT_LENGTH);
@@ -53,7 +53,7 @@ public class BulletinIWXXMStringSerializer<U extends AviationWeatherMessage, S e
                     line = reader.readLine();
                 }
                 appendNewLineWithIndent(builder, baseIndentation);
-                builder.append("</").append(metInfoElementFQN).append('>');
+                builder.append("</").append(metInfoElementFQN).append(">");
             } catch (final IOException e) {
                 throw new ConversionException("Error reading input messages", e);
             }
