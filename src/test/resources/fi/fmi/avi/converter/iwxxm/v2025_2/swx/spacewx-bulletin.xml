@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collect:MeteorologicalBulletin xmlns:collect="http://def.wmo.int/collect/2014"
+                                xmlns:gml="http://www.opengis.net/gml/3.2"
+                                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                gml:id="uuid.bcfa1902-a0df-48c2-90d6-a1c3df6c3c2f"
+                                xsi:schemaLocation="http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd">
+  <collect:meteorologicalInformation>
+    <iwxxm:SpaceWeatherAdvisory xmlns:iwxxm="http://icao.int/iwxxm/2025-2"
+                                xmlns:gml="http://www.opengis.net/gml/3.2"
+                                xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                gml:id="uuid.43641384-acd9-4cc1-b406-f4182744e1f8"
+                                permissibleUsage="NON-OPERATIONAL"
+                                permissibleUsageReason="TEST"
+                                reportStatus="NORMAL"
+                                xsi:schemaLocation="http://icao.int/iwxxm/2025-2 http://schemas.wmo.int/iwxxm/2025-2/iwxxm.xsd">
+      <iwxxm:issueTime>
+        <gml:TimeInstant gml:id="uuid.12bac8bf-f3c4-46af-9c1c-b182ed589dfe">
+          <gml:timePosition>2016-11-08T01:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:issueTime>
+      <iwxxm:issuingSpaceWeatherCentre>
+        <aixm:Unit gml:id="uuid.7a1ff90e-0a6f-48d4-82c5-cf9ba7efcb0b">
+          <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.46d2370e-73e0-4b3a-a156-158e2e8a9e79">
+              <gml:validTime/>
+              <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+              <aixm:name>DONLON</aixm:name>
+              <aixm:type>OTHER:SWXC</aixm:type>
+            </aixm:UnitTimeSlice>
+          </aixm:timeSlice>
+        </aixm:Unit>
+      </iwxxm:issuingSpaceWeatherCentre>
+      <iwxxm:advisoryNumber>2016/3</iwxxm:advisoryNumber>
+      <iwxxm:replacedAdvisoryNumber>2016/1</iwxxm:replacedAdvisoryNumber>
+      <iwxxm:replacedAdvisoryNumber>2016/2</iwxxm:replacedAdvisoryNumber>
+      <iwxxm:effect>HF_COM</iwxxm:effect>
+      <iwxxm:analysis>
+        <iwxxm:SpaceWeatherAnalysis gml:id="uuid.31e87f08-4159-4b1a-8586-5f8edf1bf96f"
+                                    timeIndicator="OBSERVATION">
+          <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.d94f62dd-36d0-4de3-ace8-0bed5333c9b1">
+              <gml:timePosition>2016-11-08T01:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+          </iwxxm:phenomenonTime>
+          <iwxxm:intensityAndRegion>
+            <iwxxm:SpaceWeatherIntensityAndRegion gml:id="uuid.71e89d2d-3f7f-48bd-a7f6-8afa202c863f">
+              <iwxxm:intensity>MOD</iwxxm:intensity>
+              <iwxxm:region>
+                <iwxxm:SpaceWeatherRegion gml:id="uuid.af93531b-0a3c-4851-b1a6-a180af6d9fda">
+                  <iwxxm:location>
+                    <aixm:AirspaceVolume gml:id="uuid.66076c7e-7dc0-45be-bd99-41691a0e5a5e">
+                      <aixm:horizontalProjection>
+                        <aixm:Surface axisLabels="Lat Lon"
+                                      gml:id="uuid.22e5e091-ab37-4239-90d7-26034d512b70"
+                                      srsDimension="2"
+                                      srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                          <gml:patches>
+                            <gml:PolygonPatch>
+                              <gml:exterior>
+                                <gml:LinearRing>
+                                  <gml:posList>-180.0 90.0 180.0 90.0 180.0 60.0 -180.0 60.0 -180.0 90.0</gml:posList>
+                                </gml:LinearRing>
+                              </gml:exterior>
+                            </gml:PolygonPatch>
+                          </gml:patches>
+                        </aixm:Surface>
+                      </aixm:horizontalProjection>
+                    </aixm:AirspaceVolume>
+                  </iwxxm:location>
+                  <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/HNH"/>
+                </iwxxm:SpaceWeatherRegion>
+              </iwxxm:region>
+              <iwxxm:region>
+                <iwxxm:SpaceWeatherRegion gml:id="uuid.7f83ca57-6375-4116-8a0f-b1b30338adb0">
+                  <iwxxm:location>
+                    <aixm:AirspaceVolume gml:id="uuid.9dbeceb3-a8c2-4942-8f04-8f151f2c945a">
+                      <aixm:horizontalProjection>
+                        <aixm:Surface axisLabels="Lat Lon"
+                                      gml:id="uuid.da28b799-3af5-4481-a49e-c933d1fbba23"
+                                      srsDimension="2"
+                                      srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                          <gml:patches>
+                            <gml:PolygonPatch>
+                              <gml:exterior>
+                                <gml:LinearRing>
+                                  <gml:posList>-180.0 -90.0 -180.0 -60.0 180.0 -60.0 180.0 -90.0 -180.0 -90.0
+                                  </gml:posList>
+                                </gml:LinearRing>
+                              </gml:exterior>
+                            </gml:PolygonPatch>
+                          </gml:patches>
+                        </aixm:Surface>
+                      </aixm:horizontalProjection>
+                    </aixm:AirspaceVolume>
+                  </iwxxm:location>
+                  <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/HSH"/>
+                </iwxxm:SpaceWeatherRegion>
+              </iwxxm:region>
+            </iwxxm:SpaceWeatherIntensityAndRegion>
+          </iwxxm:intensityAndRegion>
+        </iwxxm:SpaceWeatherAnalysis>
+      </iwxxm:analysis>
+      <iwxxm:analysis>
+        <iwxxm:SpaceWeatherAnalysis gml:id="uuid.63ea3017-ba80-41a4-950d-9f4373adc181"
+                                    timeIndicator="FORECAST">
+          <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.964de19e-eba0-497e-8264-e8c7d14122e7">
+              <gml:timePosition>2016-11-08T07:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+          </iwxxm:phenomenonTime>
+          <iwxxm:intensityAndRegion>
+            <iwxxm:SpaceWeatherIntensityAndRegion gml:id="uuid.1242a28a-8715-46f0-bf4a-7ae3bc451417">
+              <iwxxm:intensity>MOD</iwxxm:intensity>
+              <iwxxm:region xlink:href="#uuid.af93531b-0a3c-4851-b1a6-a180af6d9fda"/>
+              <iwxxm:region xlink:href="#uuid.7f83ca57-6375-4116-8a0f-b1b30338adb0"/>
+            </iwxxm:SpaceWeatherIntensityAndRegion>
+          </iwxxm:intensityAndRegion>
+        </iwxxm:SpaceWeatherAnalysis>
+      </iwxxm:analysis>
+      <iwxxm:analysis>
+        <iwxxm:SpaceWeatherAnalysis gml:id="uuid.65935b0a-e19a-4ca4-bc8a-1baac5fdfd03"
+                                    timeIndicator="FORECAST">
+          <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.6cc8bbb6-9eea-4574-9f3c-4a18c935bb9c">
+              <gml:timePosition>2016-11-08T13:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+          </iwxxm:phenomenonTime>
+          <iwxxm:intensityAndRegion>
+            <iwxxm:SpaceWeatherIntensityAndRegion gml:id="uuid.ae4048e0-d8cb-4e40-a568-edd763dfc1b6">
+              <iwxxm:intensity>MOD</iwxxm:intensity>
+              <iwxxm:region xlink:href="#uuid.af93531b-0a3c-4851-b1a6-a180af6d9fda"/>
+              <iwxxm:region xlink:href="#uuid.7f83ca57-6375-4116-8a0f-b1b30338adb0"/>
+            </iwxxm:SpaceWeatherIntensityAndRegion>
+          </iwxxm:intensityAndRegion>
+        </iwxxm:SpaceWeatherAnalysis>
+      </iwxxm:analysis>
+      <iwxxm:analysis>
+        <iwxxm:SpaceWeatherAnalysis gml:id="uuid.0201ee5f-3416-4a16-aa9e-b4a1ba0b9068"
+                                    timeIndicator="FORECAST">
+          <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.c7828171-c3dd-4879-8fe1-25aa32636b8a">
+              <gml:timePosition>2016-11-08T19:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+          </iwxxm:phenomenonTime>
+          <iwxxm:intensityAndRegion>
+            <iwxxm:SpaceWeatherIntensityAndRegion gml:id="uuid.535de393-c0e8-4b43-bed2-732096036b38">
+              <iwxxm:intensity>MOD</iwxxm:intensity>
+              <iwxxm:region xlink:href="#uuid.af93531b-0a3c-4851-b1a6-a180af6d9fda"/>
+              <iwxxm:region xlink:href="#uuid.7f83ca57-6375-4116-8a0f-b1b30338adb0"/>
+            </iwxxm:SpaceWeatherIntensityAndRegion>
+          </iwxxm:intensityAndRegion>
+        </iwxxm:SpaceWeatherAnalysis>
+      </iwxxm:analysis>
+      <iwxxm:analysis>
+        <iwxxm:SpaceWeatherAnalysis gml:id="uuid.17d7b03f-895b-41cd-bbfd-ec7076c9eb68"
+                                    timeIndicator="FORECAST">
+          <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.2fdba279-29d9-4565-a13b-dc7f3a348610">
+              <gml:timePosition>2016-11-09T01:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+          </iwxxm:phenomenonTime>
+          <iwxxm:intensityAndRegion nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"/>
+        </iwxxm:SpaceWeatherAnalysis>
+      </iwxxm:analysis>
+      <iwxxm:remarks>TEST SWX ADVISORY</iwxxm:remarks>
+      <iwxxm:nextAdvisoryTime nilReason="http://codes.wmo.int/common/nil/inapplicable"/>
+    </iwxxm:SpaceWeatherAdvisory>
+  </collect:meteorologicalInformation>
+  <collect:meteorologicalInformation>
+    <iwxxm:SpaceWeatherAdvisory xmlns:iwxxm="http://icao.int/iwxxm/2025-2"
+                                xmlns:gml="http://www.opengis.net/gml/3.2"
+                                xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                gml:id="uuid.2b8f2470-87f4-48cb-9236-fe3da5eef7d1"
+                                permissibleUsage="OPERATIONAL"
+                                reportStatus="NORMAL"
+                                xsi:schemaLocation="http://icao.int/iwxxm/2025-2 http://schemas.wmo.int/iwxxm/2025-2/iwxxm.xsd">
+      <iwxxm:issueTime>
+        <gml:TimeInstant gml:id="uuid.0f6a22ea-5856-4bec-9b50-936916927653">
+          <gml:timePosition>2020-11-08T01:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:issueTime>
+      <iwxxm:issuingSpaceWeatherCentre>
+        <aixm:Unit gml:id="uuid.c6041bab-a17a-4097-9edd-15b2ddf8a903">
+          <aixm:timeSlice>
+            <aixm:UnitTimeSlice gml:id="uuid.2a86a11d-66c1-49d9-8622-8534b1ef9237">
+              <gml:validTime/>
+              <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+              <aixm:name>DONLON</aixm:name>
+              <aixm:type>OTHER:SWXC</aixm:type>
+            </aixm:UnitTimeSlice>
+          </aixm:timeSlice>
+        </aixm:Unit>
+      </iwxxm:issuingSpaceWeatherCentre>
+      <iwxxm:advisoryNumber>2020/1</iwxxm:advisoryNumber>
+      <iwxxm:effect>HF_COM</iwxxm:effect>
+      <iwxxm:analysis>
+        <iwxxm:SpaceWeatherAnalysis gml:id="uuid.fd97679b-e1ed-4c41-b490-677b9f4a3d7a"
+                                    timeIndicator="OBSERVATION">
+          <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.7e61eb9d-e792-40d2-ac85-23332be8afbb">
+              <gml:timePosition>2020-11-08T01:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+          </iwxxm:phenomenonTime>
+          <iwxxm:intensityAndRegion>
+            <iwxxm:SpaceWeatherIntensityAndRegion gml:id="uuid.9bf60198-a25f-4217-8a4f-a9b0211ce5c5">
+              <iwxxm:intensity>SEV</iwxxm:intensity>
+              <iwxxm:region>
+                <iwxxm:SpaceWeatherRegion gml:id="uuid.77bcb886-ce9d-4316-9454-3565e765253e">
+                  <iwxxm:location>
+                    <aixm:AirspaceVolume gml:id="uuid.6dd8fa67-66c8-4629-a028-187b7c8f3ed7">
+                      <aixm:horizontalProjection>
+                        <aixm:Surface axisLabels="Lat Long"
+                                      gml:id="uuid.bb01fa1b-911a-4ad3-9008-e8b32c269f92"
+                                      srsDimension="2"
+                                      srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                          <gml:patches>
+                            <gml:PolygonPatch>
+                              <gml:exterior>
+                                <gml:LinearRing>
+                                  <gml:posList>30.0 180.0 60.0 180.0 60.0 -180.0 30.0 -180.0 30.0 180.0</gml:posList>
+                                </gml:LinearRing>
+                              </gml:exterior>
+                            </gml:PolygonPatch>
+                          </gml:patches>
+                        </aixm:Surface>
+                      </aixm:horizontalProjection>
+                    </aixm:AirspaceVolume>
+                  </iwxxm:location>
+                  <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/MNH"/>
+                </iwxxm:SpaceWeatherRegion>
+              </iwxxm:region>
+              <iwxxm:region>
+                <iwxxm:SpaceWeatherRegion gml:id="uuid.d33e9567-fb96-4846-b6e6-40c26510999d">
+                  <iwxxm:location>
+                    <aixm:AirspaceVolume gml:id="uuid.df39c018-0fcc-415b-9800-73d695b513d2">
+                      <aixm:horizontalProjection>
+                        <aixm:Surface axisLabels="Lat Long"
+                                      gml:id="uuid.88734ced-5f82-4bfc-bc94-f1b95f4aeac1"
+                                      srsDimension="2"
+                                      srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                          <gml:patches>
+                            <gml:PolygonPatch>
+                              <gml:exterior>
+                                <gml:LinearRing>
+                                  <gml:posList>0.0 180.0 30.0 180.0 30.0 -180.0 0.0 -180.0 0.0 180.0</gml:posList>
+                                </gml:LinearRing>
+                              </gml:exterior>
+                            </gml:PolygonPatch>
+                          </gml:patches>
+                        </aixm:Surface>
+                      </aixm:horizontalProjection>
+                    </aixm:AirspaceVolume>
+                  </iwxxm:location>
+                  <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/EQN"/>
+                </iwxxm:SpaceWeatherRegion>
+              </iwxxm:region>
+              <iwxxm:region>
+                <iwxxm:SpaceWeatherRegion gml:id="uuid.fdd424a1-2e99-4538-a17a-0f97c432738a">
+                  <iwxxm:location>
+                    <aixm:AirspaceVolume gml:id="uuid.760057b3-c65f-4b73-b361-9a1064e4c8f4">
+                      <aixm:horizontalProjection>
+                        <aixm:Surface axisLabels="Lat Long"
+                                      gml:id="uuid.e0a2375a-54eb-4845-9b6c-7dea6863e36a"
+                                      srsDimension="2"
+                                      srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                          <gml:patches>
+                            <gml:PolygonPatch>
+                              <gml:exterior>
+                                <gml:LinearRing>
+                                  <gml:posList>-30.0 180.0 0.0 180.0 0.0 -180.0 -30.0 -180.0 -30.0 180.0</gml:posList>
+                                </gml:LinearRing>
+                              </gml:exterior>
+                            </gml:PolygonPatch>
+                          </gml:patches>
+                        </aixm:Surface>
+                      </aixm:horizontalProjection>
+                    </aixm:AirspaceVolume>
+                  </iwxxm:location>
+                  <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/EQS"/>
+                </iwxxm:SpaceWeatherRegion>
+              </iwxxm:region>
+              <iwxxm:region>
+                <iwxxm:SpaceWeatherRegion gml:id="uuid.ad1d0521-6397-4510-9cff-b0330f3f1bd1">
+                  <iwxxm:location>
+                    <aixm:AirspaceVolume gml:id="uuid.1f38259f-2356-4ef7-a515-79770ea350a6">
+                      <aixm:horizontalProjection>
+                        <aixm:Surface axisLabels="Lat Long"
+                                      gml:id="uuid.a97eadb3-ede1-472f-8001-442a2aa95e5c"
+                                      srsDimension="2"
+                                      srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                          <gml:patches>
+                            <gml:PolygonPatch>
+                              <gml:exterior>
+                                <gml:LinearRing>
+                                  <gml:posList>-60.0 180.0 -30.0 180.0 -30.0 -180.0 -60.0 -180.0 -60.0 180.0
+                                  </gml:posList>
+                                </gml:LinearRing>
+                              </gml:exterior>
+                            </gml:PolygonPatch>
+                          </gml:patches>
+                        </aixm:Surface>
+                      </aixm:horizontalProjection>
+                    </aixm:AirspaceVolume>
+                  </iwxxm:location>
+                  <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/MSH"/>
+                </iwxxm:SpaceWeatherRegion>
+              </iwxxm:region>
+              <iwxxm:region>
+                <iwxxm:SpaceWeatherRegion gml:id="uuid.1f86ac2c-dc79-4a07-9a25-3f2d447935a1">
+                  <iwxxm:location>
+                    <aixm:AirspaceVolume gml:id="uuid.7a31ad95-4fb7-430a-9283-1fb59209305e">
+                      <aixm:horizontalProjection>
+                        <aixm:Surface axisLabels="Lat Long"
+                                      gml:id="uuid.d2ae0b21-e831-47bc-9b47-11e398db033e"
+                                      srsDimension="2"
+                                      srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                          <gml:patches>
+                            <gml:PolygonPatch>
+                              <gml:exterior>
+                                <gml:Ring>
+                                  <gml:curveMember>
+                                    <gml:Curve gml:id="uuid.86fcb7f2-6482-432b-8926-2466b289a01d">
+                                      <gml:segments>
+                                        <gml:CircleByCenterPoint numArc="1">
+                                          <gml:pos>-16.71 70.94</gml:pos>
+                                          <gml:radius uom="km">10100.0</gml:radius>
+                                        </gml:CircleByCenterPoint>
+                                      </gml:segments>
+                                    </gml:Curve>
+                                  </gml:curveMember>
+                                </gml:Ring>
+                              </gml:exterior>
+                            </gml:PolygonPatch>
+                          </gml:patches>
+                        </aixm:Surface>
+                      </aixm:horizontalProjection>
+                    </aixm:AirspaceVolume>
+                  </iwxxm:location>
+                  <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/DAYSIDE"/>
+                </iwxxm:SpaceWeatherRegion>
+              </iwxxm:region>
+            </iwxxm:SpaceWeatherIntensityAndRegion>
+          </iwxxm:intensityAndRegion>
+          <iwxxm:intensityAndRegion>
+            <iwxxm:SpaceWeatherIntensityAndRegion gml:id="uuid.c2ea715f-b99e-49ae-858e-ae5037101bd7">
+              <iwxxm:intensity>MOD</iwxxm:intensity>
+              <iwxxm:region>
+                <iwxxm:SpaceWeatherRegion gml:id="uuid.f8821a80-6ccb-43af-b758-36bdd25a7bd7">
+                  <iwxxm:location>
+                    <aixm:AirspaceVolume gml:id="uuid.f9eb3e88-2ed5-46f7-8728-4731fdd0d44d">
+                      <aixm:horizontalProjection>
+                        <aixm:Surface axisLabels="Lat Long"
+                                      gml:id="uuid.9fdfd6b3-45be-4b8c-a333-65812f51a6b5"
+                                      srsDimension="2"
+                                      srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                          <gml:patches>
+                            <gml:PolygonPatch>
+                              <gml:exterior>
+                                <gml:Ring>
+                                  <gml:curveMember>
+                                    <gml:Curve gml:id="uuid.b9375b9b-e2dd-4ac6-a889-81ec3727af93">
+                                      <gml:segments>
+                                        <gml:CircleByCenterPoint numArc="1">
+                                          <gml:pos>9999.0 9999.0</gml:pos>
+                                          <gml:radius uom="km">10100.0</gml:radius>
+                                        </gml:CircleByCenterPoint>
+                                      </gml:segments>
+                                    </gml:Curve>
+                                  </gml:curveMember>
+                                </gml:Ring>
+                              </gml:exterior>
+                            </gml:PolygonPatch>
+                          </gml:patches>
+                        </aixm:Surface>
+                      </aixm:horizontalProjection>
+                    </aixm:AirspaceVolume>
+                  </iwxxm:location>
+                  <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/NIGHTSIDE"/>
+                </iwxxm:SpaceWeatherRegion>
+              </iwxxm:region>
+            </iwxxm:SpaceWeatherIntensityAndRegion>
+          </iwxxm:intensityAndRegion>
+        </iwxxm:SpaceWeatherAnalysis>
+      </iwxxm:analysis>
+      <iwxxm:analysis>
+        <iwxxm:SpaceWeatherAnalysis gml:id="uuid.12b9178e-9062-4239-82f9-1d9828ecf55b"
+                                    timeIndicator="FORECAST">
+          <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.a15843e1-45cb-42de-b7e5-7bfbb0c47ff0">
+              <gml:timePosition>2020-11-08T07:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+          </iwxxm:phenomenonTime>
+          <iwxxm:intensityAndRegion nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"/>
+        </iwxxm:SpaceWeatherAnalysis>
+      </iwxxm:analysis>
+      <iwxxm:analysis>
+        <iwxxm:SpaceWeatherAnalysis gml:id="uuid.97c1cf32-c792-48ba-9ae4-a24030d2ae90"
+                                    timeIndicator="FORECAST">
+          <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.78289e35-9e7a-4335-ad97-d77e205addd8">
+              <gml:timePosition>2020-11-08T13:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+          </iwxxm:phenomenonTime>
+          <iwxxm:intensityAndRegion nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"/>
+        </iwxxm:SpaceWeatherAnalysis>
+      </iwxxm:analysis>
+      <iwxxm:analysis>
+        <iwxxm:SpaceWeatherAnalysis gml:id="uuid.71934157-5ba0-46cc-bff7-d0fd7d630493"
+                                    timeIndicator="FORECAST">
+          <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.0ca82476-89c1-4974-b336-5e133b26ae6e">
+              <gml:timePosition>2020-11-08T19:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+          </iwxxm:phenomenonTime>
+          <iwxxm:intensityAndRegion nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"/>
+        </iwxxm:SpaceWeatherAnalysis>
+      </iwxxm:analysis>
+      <iwxxm:analysis>
+        <iwxxm:SpaceWeatherAnalysis gml:id="uuid.e23e155b-b296-4354-a001-52e29b0f3ea2"
+                                    timeIndicator="FORECAST">
+          <iwxxm:phenomenonTime>
+            <gml:TimeInstant gml:id="uuid.f4d05352-71a3-43f9-9fd4-86fdc83eb5d0">
+              <gml:timePosition>2020-11-09T01:00:00Z</gml:timePosition>
+            </gml:TimeInstant>
+          </iwxxm:phenomenonTime>
+          <iwxxm:intensityAndRegion nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"/>
+        </iwxxm:SpaceWeatherAnalysis>
+      </iwxxm:analysis>
+      <iwxxm:remarks>SWX EVENT IMPACTING LOWER HF COM FREQ BAND. SEE WWW.SPACEWEATHERPROVIDER.WEB</iwxxm:remarks>
+      <iwxxm:nextAdvisoryTime>
+        <gml:TimeInstant gml:id="uuid.66681ab2-fd6d-4b5e-982c-c8c144c19635">
+          <gml:timePosition>2020-11-08T07:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:nextAdvisoryTime>
+    </iwxxm:SpaceWeatherAdvisory>
+  </collect:meteorologicalInformation>
+  <collect:bulletinIdentifier>A_LNXX31TEST180815_C_TEST_2020051808----.xml</collect:bulletinIdentifier>
+</collect:MeteorologicalBulletin>

@@ -3,8 +3,10 @@ package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMAixm511WxSerializer;
+import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.profile.IWXXMSchemaProfile;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 import org.w3c.dom.Document;
@@ -17,21 +19,33 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BulletinIWXXMStringSerializer<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>>
-        extends AbstractBulletinIWXXMAixm511WxSerializer<String, U, S> {
-    private static final Pattern XML_DECLARATION_PATTERN = Pattern.compile("^\\s*<\\?xml\\s[^>]*\\?>(?:[ \t]*(?:\r\n|\r|\n))?");
+        extends AbstractBulletinIWXXMSerializer<String, U, S> {
+
+    private static final Pattern XML_DECLARATION_PATTERN = Pattern.compile("^\\s*<\\?xml\\s[^>]*\\?>(?:[ \\t]*(?:\\r\\n|\\r|\\n))?");
     private static final int INDENT_LENGTH = 2;
+    private final IWXXMSchemaProfile schemaProfile;
+
+    public BulletinIWXXMStringSerializer(final IWXXMSchemaProfile schemaProfile, final AbstractIWXXMSerializer<U, Document> contentConverter) {
+        this.schemaProfile = schemaProfile;
+        this.setMessageConverter(contentConverter);
+    }
+
+    @Override
+    protected XMLSchemaInfo getSchemaInfo() {
+        return schemaProfile.createSchemaInfo(F_SECURE_PROCESSING);
+    }
 
     @Override
     protected String aggregateAsBulletin(final Document collection, final List<Document> messages, final ConversionHints hints) throws ConversionException {
         final String collectionString = renderDOMToString(collection, hints);
-        final int documentsInsertionIndex = collectionString.indexOf(">", collectionString.indexOf("<" + collection.getDocumentElement().getTagName())) + 1;
+        final int documentsInsertionIndex = collectionString.indexOf('>', collectionString.indexOf('<' + collection.getDocumentElement().getTagName())) + 1;
         final int baseIndentation = baseIndentation(collectionString, documentsInsertionIndex);
         final String metInfoElementFQN = documentElementPrefix(collection) + "meteorologicalInformation";
         final StringBuilder builder = new StringBuilder(collectionString.substring(0, documentsInsertionIndex));
         for (final Document message : messages) {
             try (final BufferedReader reader = new BufferedReader(new StringReader(removeXmlDeclaration(renderDOMToString(message, hints))))) {
                 appendNewLineWithIndent(builder, baseIndentation);
-                builder.append("<").append(metInfoElementFQN).append(">");
+                builder.append('<').append(metInfoElementFQN).append('>');
                 String line = reader.readLine();
                 while (line != null) {
                     appendNewLineWithIndent(builder, baseIndentation + INDENT_LENGTH);
@@ -39,7 +53,7 @@ public class BulletinIWXXMStringSerializer<U extends AviationWeatherMessage, S e
                     line = reader.readLine();
                 }
                 appendNewLineWithIndent(builder, baseIndentation);
-                builder.append("</").append(metInfoElementFQN).append(">");
+                builder.append("</").append(metInfoElementFQN).append('>');
             } catch (final IOException e) {
                 throw new ConversionException("Error reading input messages", e);
             }
@@ -78,6 +92,6 @@ public class BulletinIWXXMStringSerializer<U extends AviationWeatherMessage, S e
 
     @Override
     protected IssueList validate(final String output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
-        return BulletinIWXXMStringSerializer.validateStringAgainstSchemaAndSchematron(output, schemaInfo, hints);
+        return validateStringAgainstSchemaAndSchematron(output, schemaInfo, hints);
     }
 }
