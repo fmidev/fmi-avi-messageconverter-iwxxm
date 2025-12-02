@@ -57,10 +57,10 @@ public class SpaceWeatherRegionHandler {
                 .flatMap(volume -> volume.getHorizontalProjection()
                         .filter(geom -> geom instanceof PolygonGeometry)
                         .map(geom -> (PolygonGeometry) geom)
-                        .map(polygon -> {
+                        .<SpaceWeatherRegion>map(polygon -> {
                             final List<Double> positions = polygon.getExteriorRingPositions();
                             final List<Double> roundedPositions = roundAndRemoveConsecutiveDuplicates(positions);
-                            return (SpaceWeatherRegion) SpaceWeatherRegionImpl.Builder.from(region)
+                            return SpaceWeatherRegionImpl.Builder.from(region)
                                     .setAirSpaceVolume(AirspaceVolumeImpl.Builder.from(volume)
                                             .setHorizontalProjection(PolygonGeometryImpl.Builder.from(polygon)
                                                     .setExteriorRingPositions(roundedPositions)
