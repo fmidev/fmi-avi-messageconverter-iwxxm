@@ -301,7 +301,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
         assertEquals(MessageType.AIRMET.toString(), message.getMessageType().map(MessageType::toString).orElse(null));
         assertFalse(message.isTranslated());
         assertEquals(ReportStatus.NORMAL, message.getReportStatus());
-        assertFalse(message.getIssueTime().isPresent());
+        assertPartialOrCompleteTime("2014-05-15T15:20Z", message.getIssueTime());
         assertPartialOrCompletePeriod("2014-05-15T15:20Z", "2014-05-15T18:00Z", message.getValidityTime());
         final Map<LocationIndicatorType, String> expectedIndicators = new HashMap<>();
         expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUCC");

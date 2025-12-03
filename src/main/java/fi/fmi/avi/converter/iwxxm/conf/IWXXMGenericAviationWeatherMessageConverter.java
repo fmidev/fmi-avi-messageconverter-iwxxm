@@ -1,17 +1,20 @@
 package fi.fmi.avi.converter.iwxxm.conf;
 
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
-import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageParser;
+import fi.fmi.avi.converter.iwxxm.generic.*;
 import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageParser.ScannerKey;
-import fi.fmi.avi.converter.iwxxm.generic.GenericAviationWeatherMessageScanner;
-import fi.fmi.avi.converter.iwxxm.generic.GenericBulletinIWXXMParser;
-import fi.fmi.avi.converter.iwxxm.generic.IWXXMGenericBulletinScanner;
-import fi.fmi.avi.converter.iwxxm.v2_1.metar.GenericMETARSPECIIWXXMScanner;
-import fi.fmi.avi.converter.iwxxm.v2_1.sigmet.GenericSIGMETAIRMETIWXXMScanner;
-import fi.fmi.avi.converter.iwxxm.v2_1.taf.GenericTAFIWXXMScanner;
-import fi.fmi.avi.converter.iwxxm.v2_1.tca.GenericTropicalCycloneAdvisoryIWXXMScanner;
-import fi.fmi.avi.converter.iwxxm.v2_1.vaa.GenericVolcanicAshAdvisoryIWXXMScanner;
-import fi.fmi.avi.converter.iwxxm.v3_0.swx.GenericSpaceWeatherAdvisoryIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.generic.metar.GenericMETARSPECIIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.generic.metar.METARSPECIFieldXPathProvider;
+import fi.fmi.avi.converter.iwxxm.generic.sigmet.GenericSIGMETAIRMETIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.generic.sigmet.SIGMETAIRMETFieldXPathProvider;
+import fi.fmi.avi.converter.iwxxm.generic.swx.GenericSWXIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.generic.swx.SWXFieldXPathProvider;
+import fi.fmi.avi.converter.iwxxm.generic.taf.GenericTAFIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.generic.taf.TAFFieldXPathProvider;
+import fi.fmi.avi.converter.iwxxm.generic.tca.GenericTCAIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.generic.tca.TCAFieldXPathProvider;
+import fi.fmi.avi.converter.iwxxm.generic.vaa.GenericVAAIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.generic.vaa.VAAFieldXPathProvider;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -68,53 +71,37 @@ public class IWXXMGenericAviationWeatherMessageConverter {
     public Map<ScannerKey, GenericAviationWeatherMessageScanner> genericAviationMessageScannerMap() {
         final Map<ScannerKey, GenericAviationWeatherMessageScanner> scannersMap = new HashMap<>();
 
-        final String iwxxm_2_1_NamespaceURI = "http://icao.int/iwxxm/2.1";
-        final String iwxxm_3_0_NamespaceURI = "http://icao.int/iwxxm/3.0";
-        final String iwxxm_2023_1_NamespaceURI = "http://icao.int/iwxxm/2023-1";
-        final String iwxxm_2025_2_NamespaceURI = "http://icao.int/iwxxm/2025-2";
+        // XPath field providers
+        final FieldXPathProvider tafFieldProvider = new TAFFieldXPathProvider();
+        final FieldXPathProvider sigmetAirmetFieldProvider = new SIGMETAIRMETFieldXPathProvider();
+        final FieldXPathProvider vaaFieldProvider = new VAAFieldXPathProvider();
+        final FieldXPathProvider tcaFieldProvider = new TCAFieldXPathProvider();
+        final FieldXPathProvider metarFieldProvider = new METARSPECIFieldXPathProvider();
+        final FieldXPathProvider swxFieldProvider = new SWXFieldXPathProvider();
 
-        scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "TAF"), new GenericTAFIWXXMScanner());
-        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "TAF"), new fi.fmi.avi.converter.iwxxm.v3_0.taf.GenericTAFIWXXMScanner());
+        final GenericTAFIWXXMScanner genericTafScanner = new GenericTAFIWXXMScanner(tafFieldProvider);
+        scannersMap.put(new ScannerKey("TAF"), genericTafScanner);
 
-        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "SpaceWeatherAdvisory"), new GenericSpaceWeatherAdvisoryIWXXMScanner());
-        scannersMap.put(new ScannerKey(iwxxm_2025_2_NamespaceURI, "SpaceWeatherAdvisory"),
-                new fi.fmi.avi.converter.iwxxm.v2025_2.swx.GenericSpaceWeatherAdvisoryIWXXMScanner());
+        final GenericSWXIWXXMScanner genericSpaceWeatherScanner = new GenericSWXIWXXMScanner(swxFieldProvider);
+        scannersMap.put(new ScannerKey("SpaceWeatherAdvisory"), genericSpaceWeatherScanner);
 
-        scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "TropicalCycloneAdvisory"), new GenericTropicalCycloneAdvisoryIWXXMScanner());
-        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "TropicalCycloneAdvisory"),
-                new fi.fmi.avi.converter.iwxxm.v3_0.tca.GenericTropicalCycloneAdvisoryIWXXMScanner());
+        final GenericTCAIWXXMScanner genericTcaScanner = new GenericTCAIWXXMScanner(tcaFieldProvider);
+        scannersMap.put(new ScannerKey("TropicalCycloneAdvisory"), genericTcaScanner);
 
-        scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "VolcanicAshAdvisory"), new GenericVolcanicAshAdvisoryIWXXMScanner());
-        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "VolcanicAshAdvisory"),
-                new fi.fmi.avi.converter.iwxxm.v3_0.vaa.GenericVolcanicAshAdvisoryIWXXMScanner());
+        final GenericVAAIWXXMScanner genericVaaScanner = new GenericVAAIWXXMScanner(vaaFieldProvider);
+        scannersMap.put(new ScannerKey("VolcanicAshAdvisory"), genericVaaScanner);
 
-        final GenericSIGMETAIRMETIWXXMScanner genericSIGMETIWXXM21Scanner = new GenericSIGMETAIRMETIWXXMScanner();
-        scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "SIGMET"), genericSIGMETIWXXM21Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "TropicalCycloneSIGMET"), genericSIGMETIWXXM21Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "VolcanicAshSIGMET"), genericSIGMETIWXXM21Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "AIRMET"), genericSIGMETIWXXM21Scanner);
+        final GenericSIGMETAIRMETIWXXMScanner genericSigmetScanner = new GenericSIGMETAIRMETIWXXMScanner(sigmetAirmetFieldProvider);
+        scannersMap.put(new ScannerKey("SIGMET"), genericSigmetScanner);
+        scannersMap.put(new ScannerKey("TropicalCycloneSIGMET"), genericSigmetScanner);
+        scannersMap.put(new ScannerKey("VolcanicAshSIGMET"), genericSigmetScanner);
+        scannersMap.put(new ScannerKey("AIRMET"), genericSigmetScanner);
 
-        final fi.fmi.avi.converter.iwxxm.v3_0.sigmet.GenericSIGMETAIRMETIWXXMScanner genericSIGMETIWXXM30Scanner = new fi.fmi.avi.converter.iwxxm.v3_0.sigmet.GenericSIGMETAIRMETIWXXMScanner();
-        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "TropicalCycloneSIGMET"), genericSIGMETIWXXM30Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "VolcanicAshSIGMET"), genericSIGMETIWXXM30Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "SIGMET"), genericSIGMETIWXXM30Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "AIRMET"), genericSIGMETIWXXM30Scanner);
-
-        final fi.fmi.avi.converter.iwxxm.v2023_1.sigmet.GenericSIGMETAIRMETIWXXMScanner genericSIGMETIWXXM20231Scanner = new fi.fmi.avi.converter.iwxxm.v2023_1.sigmet.GenericSIGMETAIRMETIWXXMScanner();
-        scannersMap.put(new ScannerKey(iwxxm_2023_1_NamespaceURI, "TropicalCycloneSIGMET"), genericSIGMETIWXXM20231Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_2023_1_NamespaceURI, "VolcanicAshSIGMET"), genericSIGMETIWXXM20231Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_2023_1_NamespaceURI, "SIGMET"), genericSIGMETIWXXM20231Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_2023_1_NamespaceURI, "AIRMET"), genericSIGMETIWXXM20231Scanner);
-
-        final GenericMETARSPECIIWXXMScanner genericMETARSPECIIWXXM21Scanner = new GenericMETARSPECIIWXXMScanner();
-        final fi.fmi.avi.converter.iwxxm.v3_0.metar.GenericMETARSPECIIWXXMScanner genericMETARSPECIIWXXM30Scanner = new fi.fmi.avi.converter.iwxxm.v3_0.metar.GenericMETARSPECIIWXXMScanner();
-        scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "METAR"), genericMETARSPECIIWXXM21Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "METAR"), genericMETARSPECIIWXXM30Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_2_1_NamespaceURI, "SPECI"), genericMETARSPECIIWXXM21Scanner);
-        scannersMap.put(new ScannerKey(iwxxm_3_0_NamespaceURI, "SPECI"), genericMETARSPECIIWXXM30Scanner);
+        final GenericMETARSPECIIWXXMScanner genericMetarScanner = new GenericMETARSPECIIWXXMScanner(metarFieldProvider);
+        scannersMap.put(new ScannerKey("METAR"), genericMetarScanner);
+        scannersMap.put(new ScannerKey("SPECI"), genericMetarScanner);
 
         return scannersMap;
     }
 
-    // Serializers:
 }

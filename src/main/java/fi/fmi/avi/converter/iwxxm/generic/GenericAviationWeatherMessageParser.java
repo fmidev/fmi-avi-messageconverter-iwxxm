@@ -1,26 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
-import static java.util.Objects.requireNonNull;
-
-import java.io.StringWriter;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Result;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
@@ -31,12 +10,27 @@ import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.StringWriter;
+import java.util.Map;
+import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWXXMParser<T, GenericAviationWeatherMessage> {
 
     private final Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners;
 
-    protected GenericAviationWeatherMessageParser(final Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
+    protected GenericAviationWeatherMessageParser(final Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
         this.scanners = requireNonNull(scanners, "scanners");
     }
 
@@ -70,12 +64,12 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
         builder.setNullableXMLNamespace(featureElement.getNamespaceURI());
 
-        final GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getNamespaceURI(), featureElement.getLocalName()));
+        final GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getLocalName()));
         try {
             collectTranslationStatus(featureElement, xpath, builder);
             if (scanner == null) {
                 retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                        "Unknown message type '" + featureElement.getLocalName() + "' and/or namespace '" + featureElement.getNamespaceURI() + "'"));
+                        "Unknown message type '" + featureElement.getLocalName() + "'"));
             } else {
                 retval.addIssue(scanner.collectMessage(featureElement, xpath, builder));
             }
@@ -107,7 +101,7 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
 
     @Override
     protected GenericAviationWeatherMessage createPOJO(final Object source, final ReferredObjectRetrievalContext refCtx,
-            final ConversionResult<GenericAviationWeatherMessage> result, final ConversionHints hints) {
+                                                       final ConversionResult<GenericAviationWeatherMessage> result, final ConversionHints hints) {
         return null;
     }
 
@@ -154,16 +148,10 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class ScannerKey {
-        private final String namespaceURI;
         private final String documentElementName;
 
-        public ScannerKey(final String namespaceURI, final String documentElementName) {
-            this.namespaceURI = namespaceURI;
+        public ScannerKey(final String documentElementName) {
             this.documentElementName = documentElementName;
-        }
-
-        public String getNamespaceURI() {
-            return namespaceURI;
         }
 
         public String getDocumentElementName() {
@@ -179,12 +167,12 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
                 return false;
             }
             final ScannerKey that = (ScannerKey) o;
-            return Objects.equals(getNamespaceURI(), that.getNamespaceURI()) && Objects.equals(getDocumentElementName(), that.getDocumentElementName());
+            return Objects.equals(getDocumentElementName(), that.getDocumentElementName());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getNamespaceURI(), getDocumentElementName());
+            return Objects.hash(getDocumentElementName());
         }
     }
 
