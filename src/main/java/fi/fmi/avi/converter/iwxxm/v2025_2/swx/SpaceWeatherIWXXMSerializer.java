@@ -80,15 +80,15 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         });
     }
 
-    private static SpaceWeatherRegionPropertyType createRegionProperty(final SpaceWeatherRegionHandler.RegionId regionId) {
+    private static SpaceWeatherRegionPropertyType createRegionProperty(final SpaceWeatherRegionHandler.RegionAndId regionAndId) {
         final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
 
-        if (regionId.isDuplicate()) {
-            regionProperty.setHref("#" + regionId.getId());
+        if (regionAndId.isDuplicate()) {
+            regionProperty.setHref("#" + regionAndId.getId());
         } else {
-            final SpaceWeatherRegion region = regionId.getRegion();
+            final SpaceWeatherRegion region = regionAndId.getRegion();
             final SpaceWeatherRegionType regionType = create(SpaceWeatherRegionType.class, type -> {
-                type.setId(regionId.getId());
+                type.setId(regionAndId.getId());
                 type.setLocation(createAirspaceVolumeProperty(region));
                 type.getLocationIndicator().add(createLocationType(region));
             });
@@ -100,7 +100,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
 
     private static void processIntensityAndRegions(
             final SpaceWeatherAdvisoryAnalysis analysis,
-            final List<SpaceWeatherRegionHandler.RegionId> regionList,
+            final List<SpaceWeatherRegionHandler.RegionAndId> regionList,
             final SpaceWeatherAnalysisType analysisType) {
         int regionCounter = 0;
         for (final SpaceWeatherIntensityAndRegion intensityAndRegion : analysis.getIntensityAndRegions()) {
@@ -112,8 +112,8 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
             intensityAndRegionType.setIntensity(intensityType);
 
             for (int i = 0; i < intensityAndRegion.getRegions().size(); i++) {
-                final SpaceWeatherRegionHandler.RegionId regionId = regionList.get(regionCounter);
-                intensityAndRegionType.getRegion().add(createRegionProperty(regionId));
+                final SpaceWeatherRegionHandler.RegionAndId regionAndId = regionList.get(regionCounter);
+                intensityAndRegionType.getRegion().add(createRegionProperty(regionAndId));
                 regionCounter++;
             }
 
@@ -137,7 +137,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
 
     private static SpaceWeatherAnalysisPropertyType toSpaceWeatherAnalysisPropertyType(
             final SpaceWeatherAdvisoryAnalysis analysis,
-            final List<SpaceWeatherRegionHandler.RegionId> regionList) {
+            final List<SpaceWeatherRegionHandler.RegionAndId> regionList) {
         final SpaceWeatherAnalysisPropertyType propertyType = create(SpaceWeatherAnalysisPropertyType.class);
         final SpaceWeatherAnalysisType analysisType = create(SpaceWeatherAnalysisType.class);
 
@@ -288,7 +288,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
             final SpaceWeatherRegionHandler regionIdList = new SpaceWeatherRegionHandler(input.getAnalyses());
             for (int i = 0; i < input.getAnalyses().size(); i++) {
                 final SpaceWeatherAdvisoryAnalysis analysis = input.getAnalyses().get(i);
-                swxType.getAnalysis().add(toSpaceWeatherAnalysisPropertyType(analysis, regionIdList.getRegionList(i)));
+                swxType.getAnalysis().add(toSpaceWeatherAnalysisPropertyType(analysis, regionIdList.getRegionAndIds(i)));
             }
         } else {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
