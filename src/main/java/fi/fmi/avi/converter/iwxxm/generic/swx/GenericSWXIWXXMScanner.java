@@ -31,7 +31,7 @@ public class GenericSWXIWXXMScanner extends AbstractGenericAviationWeatherMessag
         builder.setMessageType(MessageType.SPACE_WEATHER_ADVISORY);
         final IssueList retval = new IssueList();
 
-        collectReportStatus(featureElement, xpath, builder).ifPresent(retval::add);
+        collectReportStatus(featureElement, xpath, builder, retval);
         collectIssueTimeUsingFieldProvider(featureElement, xpath, builder, retval);
 
         // Map location indicators -> semantic fields for this message type

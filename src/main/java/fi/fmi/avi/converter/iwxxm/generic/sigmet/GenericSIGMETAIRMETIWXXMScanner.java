@@ -1,12 +1,9 @@
 package fi.fmi.avi.converter.iwxxm.generic.sigmet;
 
-import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
 import fi.fmi.avi.converter.iwxxm.generic.FieldXPathProvider;
 import fi.fmi.avi.converter.iwxxm.generic.IWXXMField;
-import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
@@ -16,7 +13,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Version-agnostic generic IWXXM scanner for SIGMET and AIRMET messages.
@@ -42,7 +38,7 @@ public class GenericSIGMETAIRMETIWXXMScanner extends AbstractGenericAviationWeat
             builder.setMessageType(MessageType.SIGMET);
         }
 
-        collectSIGMETAirmetStatus(featureElement, xpath, builder, issues);
+        collectReportStatus(featureElement, xpath, builder, issues);
 
         // Issue time via provider
         collectIssueTimeUsingFieldProvider(featureElement, xpath, builder, issues);
@@ -62,28 +58,5 @@ public class GenericSIGMETAIRMETIWXXMScanner extends AbstractGenericAviationWeat
         collectLocationIndicatorsUsingFieldProvider(featureElement, xpath, builder, fieldByLocationType, issues);
 
         return issues;
-    }
-
-    private void collectSIGMETAirmetStatus(final Element element,
-                                           final XPath xpath,
-                                           final GenericAviationWeatherMessageImpl.Builder builder,
-                                           final IssueList issues) throws XPathExpressionException {
-        // Prefer IWXXM @reportStatus (3.0, 2023-1) first
-        final Optional<AviationWeatherMessage.ReportStatus> reportStatus =
-                evaluateEnumeration(element, xpath, "@reportStatus", AviationWeatherMessage.ReportStatus.class);
-        if (reportStatus.isPresent()) {
-            builder.setReportStatus(reportStatus.get());
-            return;
-        }
-
-        // Fallback to IWXXM 2.1 @status as SigmetAirmetReportStatus
-        final Optional<AviationCodeListUser.SigmetAirmetReportStatus> legacyStatus =
-                evaluateEnumeration(element, xpath, "@status", AviationCodeListUser.SigmetAirmetReportStatus.class);
-        if (legacyStatus.isPresent()) {
-            builder.setReportStatus(legacyStatus.get().getReportStatus());
-        } else {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    "The report status could not be parsed"));
-        }
     }
 }

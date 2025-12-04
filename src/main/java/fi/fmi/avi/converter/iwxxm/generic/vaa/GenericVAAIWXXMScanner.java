@@ -13,7 +13,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Version-agnostic generic IWXXM scanner for Volcanic Ash Advisory messages.
@@ -22,17 +21,6 @@ public class GenericVAAIWXXMScanner extends AbstractGenericAviationWeatherMessag
 
     public GenericVAAIWXXMScanner(final FieldXPathProvider fieldXPathProvider) {
         super(fieldXPathProvider);
-    }
-
-    private static void collectOptionalReportStatus(final Element element,
-                                                    final XPath xpath,
-                                                    final GenericAviationWeatherMessageImpl.Builder builder)
-            throws XPathExpressionException {
-        // Try @reportStatus first (IWXXM 3.x)
-        final Optional<fi.fmi.avi.model.AviationWeatherMessage.ReportStatus> reportStatus =
-                evaluateEnumeration(element, xpath, "@reportStatus",
-                        fi.fmi.avi.model.AviationWeatherMessage.ReportStatus.class);
-        reportStatus.ifPresent(builder::setReportStatus);
     }
 
     @Override

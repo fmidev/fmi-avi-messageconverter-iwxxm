@@ -5,7 +5,6 @@ import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
 import fi.fmi.avi.converter.iwxxm.generic.FieldXPathProvider;
 import fi.fmi.avi.converter.iwxxm.generic.IWXXMField;
-import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
@@ -49,7 +48,7 @@ public class GenericMETARSPECIIWXXMScanner extends AbstractGenericAviationWeathe
         }
         builder.setMessageType(messageType);
 
-        collectStatus(featureElement, xpath, builder, retval);
+        collectReportStatus(featureElement, xpath, builder, retval);
         collectIssueTimeUsingFieldProvider(featureElement, xpath, builder, retval);
 
         // Collect AERODROME location indicator via field-centric provider
@@ -59,29 +58,5 @@ public class GenericMETARSPECIIWXXMScanner extends AbstractGenericAviationWeathe
         collectLocationIndicatorsUsingFieldProvider(featureElement, xpath, builder, fieldByLocationType, retval);
 
         return retval;
-    }
-
-    protected void collectStatus(final Element element,
-                                 final XPath xpath,
-                                 final GenericAviationWeatherMessageImpl.Builder builder,
-                                 final IssueList issues)
-            throws XPathExpressionException {
-        // Prefer IWXXM-style @reportStatus first
-        final fi.fmi.avi.model.AviationWeatherMessage.ReportStatus reportStatus =
-                evaluateEnumeration(element, xpath, "@reportStatus",
-                        fi.fmi.avi.model.AviationWeatherMessage.ReportStatus.class).orElse(null);
-        if (reportStatus != null) {
-            builder.setReportStatus(reportStatus);
-            return;
-        }
-
-        // Fallback to legacy METAR 2.1 @status mapping
-        final AviationCodeListUser.MetarStatus metarStatus =
-                evaluateEnumeration(element, xpath, "@status", AviationCodeListUser.MetarStatus.class).orElse(null);
-        if (metarStatus == null) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, "status could not be parsed"));
-        } else {
-            builder.setReportStatus(metarStatus.getReportStatus());
-        }
     }
 }

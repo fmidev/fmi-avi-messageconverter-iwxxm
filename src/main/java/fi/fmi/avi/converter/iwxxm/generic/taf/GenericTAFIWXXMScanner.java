@@ -1,11 +1,9 @@
 package fi.fmi.avi.converter.iwxxm.generic.taf;
 
-import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
 import fi.fmi.avi.converter.iwxxm.generic.AbstractGenericAviationWeatherMessageScanner;
 import fi.fmi.avi.converter.iwxxm.generic.FieldXPathProvider;
 import fi.fmi.avi.converter.iwxxm.generic.IWXXMField;
-import fi.fmi.avi.model.AviationCodeListUser;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.MessageType;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
@@ -34,7 +32,7 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
 
         builder.setMessageType(MessageType.TAF);
 
-        collectStatus(featureElement, xpath, builder, retval);
+        collectReportStatus(featureElement, xpath, builder, retval);
         collectIssueTimeUsingFieldProvider(featureElement, xpath, builder, retval);
 
         // Validity time via field-centric provider (3.0 validPeriod, 3.0 cancellation,
@@ -48,28 +46,5 @@ public class GenericTAFIWXXMScanner extends AbstractGenericAviationWeatherMessag
         collectLocationIndicatorsUsingFieldProvider(featureElement, xpath, builder, fieldByLocationType, retval);
 
         return retval;
-    }
-
-    private void collectStatus(final Element element,
-                               final XPath xpath,
-                               final GenericAviationWeatherMessageImpl.Builder builder,
-                               final IssueList issues) throws XPathExpressionException {
-        // IWXXM 3.0+ uses @reportStatus on the root TAF element.
-        final fi.fmi.avi.model.AviationWeatherMessage.ReportStatus reportStatus =
-                evaluateEnumeration(element, xpath, "@reportStatus",
-                        fi.fmi.avi.model.AviationWeatherMessage.ReportStatus.class).orElse(null);
-        if (reportStatus != null) {
-            builder.setReportStatus(reportStatus);
-            return;
-        }
-
-        // IWXXM 2.1 used @status with TAFStatus; keep that as a fallback.
-        final AviationCodeListUser.TAFStatus tafStatus =
-                evaluateEnumeration(element, xpath, "@status", AviationCodeListUser.TAFStatus.class).orElse(null);
-        if (tafStatus == null) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, "status could not be parsed"));
-        } else {
-            builder.setReportStatus(tafStatus.getReportStatus());
-        }
     }
 }

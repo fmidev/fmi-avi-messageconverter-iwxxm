@@ -16,21 +16,35 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Version-agnostic IWXXM generic base for field-centric scanning using a message-type-specific FieldXPathProvider.
  */
 public abstract class AbstractGenericAviationWeatherMessageScanner implements GenericAviationWeatherMessageScanner {
 
+    /**
+     * Maps IWXXM 2.1 @status attribute values to ReportStatus.
+     * This avoids using deprecated message-type-specific status enums (MetarStatus, TAFStatus, SigmetAirmetReportStatus).
+     */
+    private static final Map<String, AviationWeatherMessage.ReportStatus> IWXXM_21_STATUS_TO_REPORT_STATUS;
+
+    static {
+        final Map<String, AviationWeatherMessage.ReportStatus> map = new HashMap<>();
+        map.put("NORMAL", AviationWeatherMessage.ReportStatus.NORMAL);
+        map.put("CORRECTION", AviationWeatherMessage.ReportStatus.CORRECTION);
+        map.put("AMENDMENT", AviationWeatherMessage.ReportStatus.AMENDMENT);
+        map.put("MISSING", AviationWeatherMessage.ReportStatus.NORMAL);
+        map.put("CANCELLATION", AviationWeatherMessage.ReportStatus.AMENDMENT);
+        IWXXM_21_STATUS_TO_REPORT_STATUS = Collections.unmodifiableMap(map);
+    }
+
     private final FieldXPathProvider fieldXPathProvider;
 
     protected AbstractGenericAviationWeatherMessageScanner(final FieldXPathProvider fieldXPathProvider) {
         this.fieldXPathProvider = Objects.requireNonNull(fieldXPathProvider, "fieldXPathProvider");
     }
+
 
     protected static String nullToEmpty(final String nullableString) {
         return nullableString == null ? "" : nullableString;
@@ -59,6 +73,71 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
             return Optional.of(Enum.valueOf(enumType, value));
         } catch (final IllegalArgumentException e) {
             return Optional.empty();
+        }
+    }
+
+    /**
+     * Collects report status from IWXXM message, trying @reportStatus (3.0+) first,
+     * then falling back to @status (2.1) with direct string mapping.
+     *
+     * @param element the message element
+     * @param xpath   XPath instance
+     * @param builder the builder to set report status on
+     * @param issues  list to add conversion issues to
+     * @throws XPathExpressionException if XPath evaluation fails
+     */
+    protected static void collectReportStatus(final Element element,
+                                              final XPath xpath,
+                                              final GenericAviationWeatherMessageImpl.Builder builder,
+                                              final IssueList issues) throws XPathExpressionException {
+        // Try IWXXM 3.0+ @reportStatus first
+        final Optional<AviationWeatherMessage.ReportStatus> reportStatus =
+                evaluateEnumeration(element, xpath, "@reportStatus", AviationWeatherMessage.ReportStatus.class);
+        if (reportStatus.isPresent()) {
+            builder.setReportStatus(reportStatus.get());
+            return;
+        }
+
+        // Fallback to IWXXM 2.1 @status with direct string mapping
+        final String legacyStatus = xpath.compile("@status").evaluate(element);
+        if (legacyStatus != null && !legacyStatus.isEmpty()) {
+            final AviationWeatherMessage.ReportStatus mappedStatus = IWXXM_21_STATUS_TO_REPORT_STATUS.get(legacyStatus);
+            if (mappedStatus != null) {
+                builder.setReportStatus(mappedStatus);
+                return;
+            }
+        }
+
+        issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, "The report status could not be parsed"));
+    }
+
+    /**
+     * Collects report status from IWXXM message where status is optional (e.g., VAA, TCA in IWXXM 2.1).
+     * Tries @reportStatus (3.0+) first, then @status (2.1). No error is added if status is missing.
+     *
+     * @param element the message element
+     * @param xpath   XPath instance
+     * @param builder the builder to set report status on
+     * @throws XPathExpressionException if XPath evaluation fails
+     */
+    protected static void collectOptionalReportStatus(final Element element,
+                                                      final XPath xpath,
+                                                      final GenericAviationWeatherMessageImpl.Builder builder) throws XPathExpressionException {
+        // Try IWXXM 3.0+ @reportStatus first
+        final Optional<AviationWeatherMessage.ReportStatus> reportStatus =
+                evaluateEnumeration(element, xpath, "@reportStatus", AviationWeatherMessage.ReportStatus.class);
+        if (reportStatus.isPresent()) {
+            builder.setReportStatus(reportStatus.get());
+            return;
+        }
+
+        // Fallback to IWXXM 2.1 @status with direct string mapping
+        final String legacyStatus = xpath.compile("@status").evaluate(element);
+        if (legacyStatus != null && !legacyStatus.isEmpty()) {
+            final AviationWeatherMessage.ReportStatus mappedStatus = IWXXM_21_STATUS_TO_REPORT_STATUS.get(legacyStatus);
+            if (mappedStatus != null) {
+                builder.setReportStatus(mappedStatus);
+            }
         }
     }
 
@@ -97,19 +176,6 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
         return issues;
     }
 
-    protected Optional<ConversionIssue> collectReportStatus(final Element element, final XPath xpath,
-                                                            final GenericAviationWeatherMessageImpl.Builder builder)
-            throws XPathExpressionException {
-        final Optional<AviationWeatherMessage.ReportStatus> reportStatus =
-                evaluateEnumeration(element, xpath, "@reportStatus", AviationWeatherMessage.ReportStatus.class);
-        if (reportStatus.isPresent()) {
-            builder.setReportStatus(reportStatus.get());
-            return Optional.empty();
-        } else {
-            return Optional.of(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    "The report status could not be parsed"));
-        }
-    }
 
     protected void collectIssueTimeUsingFieldProvider(final Element element,
                                                       final XPath xpath,
@@ -170,8 +236,7 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
                                                          final GenericAviationWeatherMessageImpl.Builder builder,
                                                          final IssueList issues) {
         for (final String expression : fieldXPathProvider.getXPaths(IWXXMField.VALID_TIME)) {
-            final IssueList localIssues = collectValidTime(element, expression, xpath, builder);
-            issues.addAll(localIssues);
+            collectValidTime(element, expression, xpath, builder);
             if (builder.getValidityTime().isPresent()) {
                 return;
             }
