@@ -80,17 +80,19 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         });
     }
 
-    private static SpaceWeatherRegionPropertyType createRegionProperty(final SpaceWeatherRegionHandler.RegionAndId regionAndId) {
+    private static SpaceWeatherRegionPropertyType createRegionProperty(
+            final SpaceWeatherRegion region,
+            final SpaceWeatherIntensityAndRegionHandler handler) {
         final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
+        final SpaceWeatherIntensityAndRegionHandler.RegionIdAssignment regionIdAssignment = handler.registerRegion(region);
 
-        if (regionAndId.isDuplicate()) {
-            regionProperty.setHref("#" + regionAndId.getId());
+        if (!regionIdAssignment.isNew()) {
+            regionProperty.setHref("#" + regionIdAssignment.getId());
         } else {
-            final SpaceWeatherRegion region = regionAndId.getRegion();
             final SpaceWeatherRegionType regionType = create(SpaceWeatherRegionType.class, type -> {
-                type.setId(regionAndId.getId());
-                type.setLocation(createAirspaceVolumeProperty(region));
-                type.getLocationIndicator().add(createLocationType(region));
+                type.setId(regionIdAssignment.getId());
+                type.setLocation(createAirspaceVolumeProperty(regionIdAssignment.getRegion()));
+                type.getLocationIndicator().add(createLocationType(regionIdAssignment.getRegion()));
             });
             regionProperty.setSpaceWeatherRegion(regionType);
         }
@@ -99,25 +101,29 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
     }
 
     private static void processIntensityAndRegions(
-            final SpaceWeatherAdvisoryAnalysis analysis,
-            final List<SpaceWeatherRegionHandler.RegionAndId> regionList,
-            final SpaceWeatherAnalysisType analysisType) {
-        int regionCounter = 0;
-        for (final SpaceWeatherIntensityAndRegion intensityAndRegion : analysis.getIntensityAndRegions()) {
+            final List<SpaceWeatherIntensityAndRegion> intensityAndRegions,
+            final SpaceWeatherAnalysisType analysisType,
+            final SpaceWeatherIntensityAndRegionHandler handler) {
+        for (final SpaceWeatherIntensityAndRegion iar : intensityAndRegions) {
             final SpaceWeatherIntensityAndRegionPropertyType iarProperty = create(SpaceWeatherIntensityAndRegionPropertyType.class);
-            final SpaceWeatherIntensityAndRegionType intensityAndRegionType = create(SpaceWeatherIntensityAndRegionType.class);
-            intensityAndRegionType.setId(UUID_PREFIX + UUID.randomUUID());
+            final SpaceWeatherIntensityAndRegionHandler.IdAssignment idAssignment = handler.register(iar.getIntensity(), iar.getRegions());
 
-            final SpaceWeatherIntensityType intensityType = SpaceWeatherIntensityType.fromValue(intensityAndRegion.getIntensity().getCode());
-            intensityAndRegionType.setIntensity(intensityType);
+            if (!idAssignment.isNew()) {
+                iarProperty.setHref("#" + idAssignment.getId());
+            } else {
+                final SpaceWeatherIntensityAndRegionType intensityAndRegionType = create(SpaceWeatherIntensityAndRegionType.class);
+                intensityAndRegionType.setId(idAssignment.getId());
 
-            for (int i = 0; i < intensityAndRegion.getRegions().size(); i++) {
-                final SpaceWeatherRegionHandler.RegionAndId regionAndId = regionList.get(regionCounter);
-                intensityAndRegionType.getRegion().add(createRegionProperty(regionAndId));
-                regionCounter++;
+                final SpaceWeatherIntensityType intensityType = SpaceWeatherIntensityType.fromValue(iar.getIntensity().getCode());
+                intensityAndRegionType.setIntensity(intensityType);
+
+                for (final SpaceWeatherRegion region : iar.getRegions()) {
+                    intensityAndRegionType.getRegion().add(createRegionProperty(region, handler));
+                }
+
+                iarProperty.setSpaceWeatherIntensityAndRegion(intensityAndRegionType);
             }
 
-            iarProperty.setSpaceWeatherIntensityAndRegion(intensityAndRegionType);
             analysisType.getIntensityAndRegion().add(iarProperty);
         }
     }
@@ -137,7 +143,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
 
     private static SpaceWeatherAnalysisPropertyType toSpaceWeatherAnalysisPropertyType(
             final SpaceWeatherAdvisoryAnalysis analysis,
-            final List<SpaceWeatherRegionHandler.RegionAndId> regionList) {
+            final SpaceWeatherIntensityAndRegionHandler handler) {
         final SpaceWeatherAnalysisPropertyType propertyType = create(SpaceWeatherAnalysisPropertyType.class);
         final SpaceWeatherAnalysisType analysisType = create(SpaceWeatherAnalysisType.class);
 
@@ -154,7 +160,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         if (analysis.getNilReason().isPresent()) {
             analysisType.getIntensityAndRegion().add(createNilReasonProperty(analysis.getNilReason().get()));
         } else {
-            processIntensityAndRegions(analysis, regionList, analysisType);
+            processIntensityAndRegions(analysis.getIntensityAndRegions(), analysisType, handler);
         }
 
         propertyType.setSpaceWeatherAnalysis(analysisType);
@@ -285,10 +291,9 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         swxType.getEffect().add(effectType);
 
         if (input.getAnalyses().size() == REQUIRED_NUMBER_OF_ANALYSES) {
-            final SpaceWeatherRegionHandler regionIdList = new SpaceWeatherRegionHandler(input.getAnalyses());
-            for (int i = 0; i < input.getAnalyses().size(); i++) {
-                final SpaceWeatherAdvisoryAnalysis analysis = input.getAnalyses().get(i);
-                swxType.getAnalysis().add(toSpaceWeatherAnalysisPropertyType(analysis, regionIdList.getRegionAndIds(i)));
+            final SpaceWeatherIntensityAndRegionHandler handler = new SpaceWeatherIntensityAndRegionHandler();
+            for (final SpaceWeatherAdvisoryAnalysis analysis : input.getAnalyses()) {
+                swxType.getAnalysis().add(toSpaceWeatherAnalysisPropertyType(analysis, handler));
             }
         } else {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
