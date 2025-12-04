@@ -55,10 +55,10 @@ public class SpaceWeatherRegionHandlerTest {
         final SpaceWeatherAdvisoryAnalysis analysis = createAnalysis(region);
 
         final SpaceWeatherRegionHandler handler = new SpaceWeatherRegionHandler(Collections.singletonList(analysis));
-        final List<SpaceWeatherRegionHandler.RegionId> regionList = handler.getRegionList(0);
+        final List<SpaceWeatherRegionHandler.RegionAndId> regionAndIds = handler.getRegionAndIds(0);
 
-        assertThat(regionList).hasSize(1);
-        assertThat(regionList.get(0).isDuplicate()).isFalse();
+        assertThat(regionAndIds).hasSize(1);
+        assertThat(regionAndIds.get(0).isDuplicate()).isFalse();
     }
 
     @Test
@@ -68,12 +68,12 @@ public class SpaceWeatherRegionHandlerTest {
         final SpaceWeatherAdvisoryAnalysis analysis = createAnalysis(region1, region2);
 
         final SpaceWeatherRegionHandler handler = new SpaceWeatherRegionHandler(Collections.singletonList(analysis));
-        final List<SpaceWeatherRegionHandler.RegionId> regionList = handler.getRegionList(0);
+        final List<SpaceWeatherRegionHandler.RegionAndId> regionAndIds = handler.getRegionAndIds(0);
 
-        assertThat(regionList).hasSize(2);
-        assertThat(regionList.get(0).isDuplicate()).isFalse();
-        assertThat(regionList.get(1).isDuplicate()).isFalse();
-        assertThat(regionList.get(0).getId()).isNotEqualTo(regionList.get(1).getId());
+        assertThat(regionAndIds).hasSize(2);
+        assertThat(regionAndIds.get(0).isDuplicate()).isFalse();
+        assertThat(regionAndIds.get(1).isDuplicate()).isFalse();
+        assertThat(regionAndIds.get(0).getId()).isNotEqualTo(regionAndIds.get(1).getId());
     }
 
     @Test
@@ -83,14 +83,14 @@ public class SpaceWeatherRegionHandlerTest {
         final SpaceWeatherAdvisoryAnalysis analysis2 = createAnalysis(region);
 
         final SpaceWeatherRegionHandler handler = new SpaceWeatherRegionHandler(Arrays.asList(analysis1, analysis2));
-        final List<SpaceWeatherRegionHandler.RegionId> regionList1 = handler.getRegionList(0);
-        final List<SpaceWeatherRegionHandler.RegionId> regionList2 = handler.getRegionList(1);
+        final List<SpaceWeatherRegionHandler.RegionAndId> regionAndIds1 = handler.getRegionAndIds(0);
+        final List<SpaceWeatherRegionHandler.RegionAndId> regionAndIds2 = handler.getRegionAndIds(1);
 
-        assertThat(regionList1).hasSize(1);
-        assertThat(regionList2).hasSize(1);
-        assertThat(regionList1.get(0).isDuplicate()).isFalse();
-        assertThat(regionList2.get(0).isDuplicate()).isTrue();
-        assertThat(regionList1.get(0).getId()).isEqualTo(regionList2.get(0).getId());
+        assertThat(regionAndIds1).hasSize(1);
+        assertThat(regionAndIds2).hasSize(1);
+        assertThat(regionAndIds1.get(0).isDuplicate()).isFalse();
+        assertThat(regionAndIds2.get(0).isDuplicate()).isTrue();
+        assertThat(regionAndIds1.get(0).getId()).isEqualTo(regionAndIds2.get(0).getId());
     }
 
     @Test
@@ -102,12 +102,12 @@ public class SpaceWeatherRegionHandlerTest {
         final SpaceWeatherAdvisoryAnalysis analysis2 = createAnalysis(region2);
 
         final SpaceWeatherRegionHandler handler = new SpaceWeatherRegionHandler(Arrays.asList(analysis1, analysis2));
-        final List<SpaceWeatherRegionHandler.RegionId> regionList1 = handler.getRegionList(0);
-        final List<SpaceWeatherRegionHandler.RegionId> regionList2 = handler.getRegionList(1);
+        final List<SpaceWeatherRegionHandler.RegionAndId> regionAndIds1 = handler.getRegionAndIds(0);
+        final List<SpaceWeatherRegionHandler.RegionAndId> regionAndIds2 = handler.getRegionAndIds(1);
 
-        assertThat(regionList1.get(0).isDuplicate()).isFalse();
-        assertThat(regionList2.get(0).isDuplicate()).isTrue();
-        assertThat(regionList1.get(0).getId()).isEqualTo(regionList2.get(0).getId());
+        assertThat(regionAndIds1.get(0).isDuplicate()).isFalse();
+        assertThat(regionAndIds2.get(0).isDuplicate()).isTrue();
+        assertThat(regionAndIds1.get(0).getId()).isEqualTo(regionAndIds2.get(0).getId());
     }
 
     @Test
@@ -117,10 +117,10 @@ public class SpaceWeatherRegionHandlerTest {
         final SpaceWeatherAdvisoryAnalysis analysis = createAnalysis(region);
 
         final SpaceWeatherRegionHandler handler = new SpaceWeatherRegionHandler(Collections.singletonList(analysis));
-        final List<SpaceWeatherRegionHandler.RegionId> regionList = handler.getRegionList(0);
+        final List<SpaceWeatherRegionHandler.RegionAndId> regionAndIds = handler.getRegionAndIds(0);
 
-        assertThat(regionList).hasSize(1);
-        final SpaceWeatherRegion roundedRegion = regionList.get(0).getRegion();
+        assertThat(regionAndIds).hasSize(1);
+        final SpaceWeatherRegion roundedRegion = regionAndIds.get(0).getRegion();
         final PolygonGeometry polygon = (PolygonGeometry) roundedRegion.getAirSpaceVolume()
                 .get().getHorizontalProjection().get();
 
@@ -148,10 +148,10 @@ public class SpaceWeatherRegionHandlerTest {
         final SpaceWeatherAdvisoryAnalysis analysis = createAnalysis(region);
 
         final SpaceWeatherRegionHandler handler = new SpaceWeatherRegionHandler(Collections.singletonList(analysis));
-        final List<SpaceWeatherRegionHandler.RegionId> regionList = handler.getRegionList(0);
+        final List<SpaceWeatherRegionHandler.RegionAndId> regionAndIds = handler.getRegionAndIds(0);
 
-        assertThat(regionList).hasSize(1);
-        final SpaceWeatherRegion resultRegion = regionList.get(0).getRegion();
+        assertThat(regionAndIds).hasSize(1);
+        final SpaceWeatherRegion resultRegion = regionAndIds.get(0).getRegion();
         assertThat(resultRegion.getLocationIndicator())
                 .hasValue(SpaceWeatherRegion.SpaceWeatherLocation.DAYSIDE);
         assertThat(resultRegion.getAirSpaceVolume()).isPresent();
@@ -172,18 +172,17 @@ public class SpaceWeatherRegionHandlerTest {
 
         final SpaceWeatherRegionHandler handler = new SpaceWeatherRegionHandler(Arrays.asList(analysis1, analysis2));
 
-        final List<SpaceWeatherRegionHandler.RegionId> regionList1 = handler.getRegionList(0);
-        final List<SpaceWeatherRegionHandler.RegionId> regionList2 = handler.getRegionList(1);
+        final List<SpaceWeatherRegionHandler.RegionAndId> regionAndIds1 = handler.getRegionAndIds(0);
+        final List<SpaceWeatherRegionHandler.RegionAndId> regionAndIds2 = handler.getRegionAndIds(1);
 
-        assertThat(regionList1).hasSize(2);
-        assertThat(regionList2).hasSize(1);
+        assertThat(regionAndIds1).hasSize(2);
+        assertThat(regionAndIds2).hasSize(1);
 
-        assertThat(regionList1.get(0).isDuplicate()).isFalse();
-        assertThat(regionList1.get(1).isDuplicate()).isFalse();
+        assertThat(regionAndIds1.get(0).isDuplicate()).isFalse();
+        assertThat(regionAndIds1.get(1).isDuplicate()).isFalse();
 
-        assertThat(regionList2.get(0).isDuplicate()).isTrue();
-        assertThat(regionList2.get(0).getId()).isEqualTo(regionList1.get(0).getId());
+        assertThat(regionAndIds2.get(0).isDuplicate()).isTrue();
+        assertThat(regionAndIds2.get(0).getId()).isEqualTo(regionAndIds1.get(0).getId());
     }
 
 }
-
