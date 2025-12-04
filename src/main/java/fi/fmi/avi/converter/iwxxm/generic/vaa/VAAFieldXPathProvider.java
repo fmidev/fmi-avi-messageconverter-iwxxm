@@ -21,11 +21,18 @@ public class VAAFieldXPathProvider implements FieldXPathProvider {
 
         // ISSUE_TIME for VAA: root issueTime/TimeInstant/timePosition covers both 2.1 and 3.x
         map.put(IWXXMField.ISSUE_TIME, Collections.singletonList(
-                XPathBuilder.text("/iwxxm:VolcanicAshAdvisory/iwxxm:issueTime/gml:TimeInstant/gml:timePosition")));
+                XPathBuilder.text("/iwxxm:VolcanicAshAdvisory"
+                        + "/iwxxm:issueTime"
+                        + "/gml:TimeInstant"
+                        + "/gml:timePosition")));
 
         // ISSUING_CENTRE: issuingVolcanicAshAdvisoryCentre/Unit/timeSlice/UnitTimeSlice
         map.put(IWXXMField.ISSUING_CENTRE, Collections.singletonList(
-                XPathBuilder.node("/iwxxm:VolcanicAshAdvisory/iwxxm:issuingVolcanicAshAdvisoryCentre/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice")));
+                XPathBuilder.node("/iwxxm:VolcanicAshAdvisory"
+                        + "/iwxxm:issuingVolcanicAshAdvisoryCentre"
+                        + "/aixm:Unit"
+                        + "/aixm:timeSlice"
+                        + "/aixm:UnitTimeSlice")));
 
         this.expressions = Collections.unmodifiableMap(map);
     }

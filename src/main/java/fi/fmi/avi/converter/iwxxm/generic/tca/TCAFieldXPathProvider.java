@@ -21,11 +21,18 @@ public class TCAFieldXPathProvider implements FieldXPathProvider {
 
         // ISSUE_TIME: root issueTime/TimeInstant/timePosition covers both 2.1 and 3.x
         map.put(IWXXMField.ISSUE_TIME, Collections.singletonList(
-                XPathBuilder.text("/iwxxm:TropicalCycloneAdvisory/iwxxm:issueTime/gml:TimeInstant/gml:timePosition")));
+                XPathBuilder.text("/iwxxm:TropicalCycloneAdvisory"
+                        + "/iwxxm:issueTime"
+                        + "/gml:TimeInstant"
+                        + "/gml:timePosition")));
 
         // ISSUING_CENTRE: issuingTropicalCycloneAdvisoryCentre/Unit/timeSlice/UnitTimeSlice
         map.put(IWXXMField.ISSUING_CENTRE, Collections.singletonList(
-                XPathBuilder.node("/iwxxm:TropicalCycloneAdvisory/iwxxm:issuingTropicalCycloneAdvisoryCentre/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice")));
+                XPathBuilder.node("/iwxxm:TropicalCycloneAdvisory"
+                        + "/iwxxm:issuingTropicalCycloneAdvisoryCentre"
+                        + "/aixm:Unit"
+                        + "/aixm:timeSlice"
+                        + "/aixm:UnitTimeSlice")));
 
         this.expressions = Collections.unmodifiableMap(map);
     }

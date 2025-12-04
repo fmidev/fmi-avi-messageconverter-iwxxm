@@ -21,28 +21,48 @@ public final class METARSPECIFieldXPathProvider implements FieldXPathProvider {
     public METARSPECIFieldXPathProvider() {
         final Map<IWXXMField, List<String>> map = new EnumMap<>(IWXXMField.class);
 
-        // ISSUE_TIME for METAR/SPECI.
-        // 1) IWXXM 3.0: issueTime/TimeInstant/timePosition directly under METAR/SPECI.
-        // 2) IWXXM 2.1: observation/OM_Observation/phenomenonTime/TimeInstant/timePosition.
+        // ISSUE_TIME for METAR/SPECI:
+        // 1) IWXXM 3.0: issueTime/TimeInstant/timePosition directly under METAR/SPECI
+        // 2) IWXXM 2.1: observation/OM_Observation/phenomenonTime/TimeInstant/timePosition
         map.put(IWXXMField.ISSUE_TIME, Arrays.asList(
                 // IWXXM 3.0 style
                 "normalize-space((" + METAR_OR_SPECI
-                        + XPathBuilder.toVersionAgnostic("/iwxxm:issueTime/gml:TimeInstant/gml:timePosition") + ")[1])",
+                        + XPathBuilder.toVersionAgnostic("/iwxxm:issueTime"
+                        + "/gml:TimeInstant"
+                        + "/gml:timePosition")
+                        + ")[1])",
                 // IWXXM 2.1 style
                 "normalize-space((" + METAR_OR_SPECI
-                        + XPathBuilder.toVersionAgnostic("/iwxxm:observation/om:OM_Observation/om:phenomenonTime/gml:TimeInstant/gml:timePosition") + ")[1])"));
+                        + XPathBuilder.toVersionAgnostic("/iwxxm:observation"
+                        + "/om:OM_Observation"
+                        + "/om:phenomenonTime"
+                        + "/gml:TimeInstant"
+                        + "/gml:timePosition")
+                        + ")[1])"));
 
-        // AERODROME location indicator.
-        // 1) IWXXM 3.0: aerodrome/AirportHeliport/timeSlice/AirportHeliportTimeSlice.
+        // AERODROME location indicator:
+        // 1) IWXXM 3.0: aerodrome/AirportHeliport/timeSlice/AirportHeliportTimeSlice
         // 2) IWXXM 2.1: observation/OM_Observation/featureOfInterest/SF_SpatialSamplingFeature/
-        //               sampledFeature/AirportHeliport/timeSlice/AirportHeliportTimeSlice.
+        //               sampledFeature/AirportHeliport/timeSlice/AirportHeliportTimeSlice
         map.put(IWXXMField.AERODROME, Arrays.asList(
                 // IWXXM 3.0 style
                 "(" + METAR_OR_SPECI
-                        + XPathBuilder.toVersionAgnostic("/iwxxm:aerodrome/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice") + ")[1]",
+                        + XPathBuilder.toVersionAgnostic("/iwxxm:aerodrome"
+                        + "/aixm:AirportHeliport"
+                        + "/aixm:timeSlice"
+                        + "/aixm:AirportHeliportTimeSlice")
+                        + ")[1]",
                 // IWXXM 2.1 style
                 "(" + METAR_OR_SPECI
-                        + XPathBuilder.toVersionAgnostic("/iwxxm:observation/om:OM_Observation/om:featureOfInterest/sams:SF_SpatialSamplingFeature/sam:sampledFeature/aixm:AirportHeliport/aixm:timeSlice/aixm:AirportHeliportTimeSlice") + ")[1]"));
+                        + XPathBuilder.toVersionAgnostic("/iwxxm:observation"
+                        + "/om:OM_Observation"
+                        + "/om:featureOfInterest"
+                        + "/sams:SF_SpatialSamplingFeature"
+                        + "/sam:sampledFeature"
+                        + "/aixm:AirportHeliport"
+                        + "/aixm:timeSlice"
+                        + "/aixm:AirportHeliportTimeSlice")
+                        + ")[1]"));
 
         this.expressions = Collections.unmodifiableMap(map);
     }

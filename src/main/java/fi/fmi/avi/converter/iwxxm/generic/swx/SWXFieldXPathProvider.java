@@ -21,11 +21,18 @@ public final class SWXFieldXPathProvider implements FieldXPathProvider {
 
         // ISSUE_TIME for SpaceWeatherAdvisory
         map.put(IWXXMField.ISSUE_TIME, Collections.singletonList(
-                XPathBuilder.text("/iwxxm:SpaceWeatherAdvisory/iwxxm:issueTime/gml:TimeInstant/gml:timePosition")));
+                XPathBuilder.text("/iwxxm:SpaceWeatherAdvisory"
+                        + "/iwxxm:issueTime"
+                        + "/gml:TimeInstant"
+                        + "/gml:timePosition")));
 
         // ISSUING_CENTRE for SpaceWeatherAdvisory
         map.put(IWXXMField.ISSUING_CENTRE, Collections.singletonList(
-                XPathBuilder.node("/iwxxm:SpaceWeatherAdvisory/iwxxm:issuingSpaceWeatherCentre/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice")));
+                XPathBuilder.node("/iwxxm:SpaceWeatherAdvisory"
+                        + "/iwxxm:issuingSpaceWeatherCentre"
+                        + "/aixm:Unit"
+                        + "/aixm:timeSlice"
+                        + "/aixm:UnitTimeSlice")));
 
         this.expressions = Collections.unmodifiableMap(map);
     }
