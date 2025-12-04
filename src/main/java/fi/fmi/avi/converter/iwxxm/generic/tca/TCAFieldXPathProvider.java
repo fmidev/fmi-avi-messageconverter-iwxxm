@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.generic.tca;
 
 import fi.fmi.avi.converter.iwxxm.generic.FieldXPathProvider;
 import fi.fmi.avi.converter.iwxxm.generic.IWXXMField;
+import fi.fmi.avi.converter.iwxxm.generic.XPathBuilder;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -12,9 +13,6 @@ import java.util.Map;
  * Field-XPath provider for generic IWXXM Tropical Cyclone Advisory messages.
  */
 public class TCAFieldXPathProvider implements FieldXPathProvider {
-    private static final String IWXXM_NS_PREFIX = "://icao.int/iwxxm/";
-    private static final String GML_NS_PREFIX = "://www.opengis.net/gml/";
-    private static final String AIXM_NS_PREFIX = "://www.aixm.aero/schema/";
 
     private final Map<IWXXMField, List<String>> expressions;
 
@@ -22,21 +20,12 @@ public class TCAFieldXPathProvider implements FieldXPathProvider {
         final Map<IWXXMField, List<String>> map = new EnumMap<>(IWXXMField.class);
 
         // ISSUE_TIME: root issueTime/TimeInstant/timePosition covers both 2.1 and 3.x
-        map.put(IWXXMField.ISSUE_TIME, Collections.singletonList(String.format(
-                "normalize-space((/*[contains(namespace-uri(),'%1$s') and local-name()='TropicalCycloneAdvisory']"
-                        + "/*[contains(namespace-uri(),'%1$s') and local-name()='issueTime']"
-                        + "/*[contains(namespace-uri(),'%2$s') and local-name()='TimeInstant']"
-                        + "/*[contains(namespace-uri(),'%2$s') and local-name()='timePosition'])[1])",
-                IWXXM_NS_PREFIX, GML_NS_PREFIX)));
+        map.put(IWXXMField.ISSUE_TIME, Collections.singletonList(
+                XPathBuilder.text("/iwxxm:TropicalCycloneAdvisory/iwxxm:issueTime/gml:TimeInstant/gml:timePosition")));
 
         // ISSUING_CENTRE: issuingTropicalCycloneAdvisoryCentre/Unit/timeSlice/UnitTimeSlice
-        map.put(IWXXMField.ISSUING_CENTRE, Collections.singletonList(String.format(
-                "(/*[contains(namespace-uri(),'%1$s') and local-name()='TropicalCycloneAdvisory']"
-                        + "/*[contains(namespace-uri(),'%1$s') and local-name()='issuingTropicalCycloneAdvisoryCentre']"
-                        + "/*[contains(namespace-uri(),'%3$s') and local-name()='Unit']"
-                        + "/*[contains(namespace-uri(),'%3$s') and local-name()='timeSlice']"
-                        + "/*[contains(namespace-uri(),'%3$s') and local-name()='UnitTimeSlice'])[1]",
-                IWXXM_NS_PREFIX, GML_NS_PREFIX, AIXM_NS_PREFIX)));
+        map.put(IWXXMField.ISSUING_CENTRE, Collections.singletonList(
+                XPathBuilder.node("/iwxxm:TropicalCycloneAdvisory/iwxxm:issuingTropicalCycloneAdvisoryCentre/aixm:Unit/aixm:timeSlice/aixm:UnitTimeSlice")));
 
         this.expressions = Collections.unmodifiableMap(map);
     }
