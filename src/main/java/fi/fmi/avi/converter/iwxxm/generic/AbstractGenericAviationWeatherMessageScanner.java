@@ -25,7 +25,6 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
 
     /**
      * Maps IWXXM 2.1 @status attribute values to ReportStatus.
-     * This avoids using deprecated message-type-specific status enums (MetarStatus, TAFStatus, SigmetAirmetReportStatus).
      */
     private static final Map<String, AviationWeatherMessage.ReportStatus> IWXXM_21_STATUS_TO_REPORT_STATUS;
 
