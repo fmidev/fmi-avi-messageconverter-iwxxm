@@ -124,7 +124,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
     @Test
     public void taf21StringMessageTest() throws Exception {
-        final String input = readResourceToString("taf.xml");
+        final String input = readResourceToString("iwxxm-21-taf.xml");
 
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
                 IWXXMConverter.IWXXM_STRING_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO);
@@ -147,7 +147,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
     @Test
     public void taf21DOMMessageTest() throws Exception {
-        final String fileName = "taf.xml";
+        final String fileName = "iwxxm-21-taf.xml";
         final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.TAF;
@@ -221,12 +221,12 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
     @Test
     public void sigmetDOMTest() throws Exception {
-        assertSIGMET21Xml("sigmet.xml");
+        assertSIGMET21Xml("iwxxm-21-sigmet.xml");
     }
 
     @Test
     public void sigmetWithEmptyBulletinIdTest() throws Exception {
-        assertSIGMET21Xml("sigmet-with-empty-translationid.xml");
+        assertSIGMET21Xml("iwxxm-21-sigmet-with-empty-translationid.xml");
     }
 
     private void assertSIGMET21Xml(final String fileName) throws Exception {
@@ -399,7 +399,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
     @Test
     public void speci21DOMMessageTest() throws Exception {
-        final String fileName = "speci-A3-2-21.xml";
+        final String fileName = "iwxxm-21-speci-A3-2.xml";
         final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.SPECI;
@@ -424,7 +424,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
     @Test
     public void speci30DOMMessageTest() throws Exception {
-        final String fileName = "speci-A3-2-30.xml";
+        final String fileName = "iwxxm-30-speci-A3-2.xml";
         final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = ConversionHints.SPECI;
@@ -499,7 +499,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
     @Test
     public void tca21DOMMessageTest() throws Exception {
-        final String fileName = "tc-advisory-A2-2-21.xml";
+        final String fileName = "iwxxm-21-tc-advisory-A2-2.xml";
         final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = new ConversionHints();
@@ -525,7 +525,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
     @Test
     public void tca30DOMMessageTest() throws Exception {
-        final String fileName = "tc-advisory-A2-2-30.xml";
+        final String fileName = "iwxxm-30-tc-advisory-A2-2.xml";
         final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = new ConversionHints();
@@ -551,7 +551,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
     @Test
     public void vaa21DOMMessageTest() throws Exception {
-        final String fileName = "va-advisory-A2-1-21.xml";
+        final String fileName = "iwxxm-21-va-advisory-A2-1.xml";
         final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = new ConversionHints();
@@ -577,7 +577,7 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
     @Test
     public void vaa30DOMMessageTest() throws Exception {
-        final String fileName = "va-advisory-A2-1-30.xml";
+        final String fileName = "iwxxm-30-va-advisory-A2-1.xml";
         final Document input = readDocumentFromResource(fileName);
 
         final ConversionHints hints = new ConversionHints();
