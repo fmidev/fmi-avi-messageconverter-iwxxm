@@ -96,6 +96,55 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .sigmetLocationIndicators("YUDD", "YUDD", "YUSO")
                         .build(),
 
+                sigmet().fileName("iwxxm-30-sigmet-A6-2-TC.xml")
+                        .namespace(IWXXM_3_0_NAMESPACE)
+                        .issueTime("2012-08-25T16:00Z")
+                        .validityPeriod("2012-08-25T16:00Z", "2012-08-25T22:00Z")
+                        .sigmetLocationIndicators("YUCC", "YUCC", "YUDO")
+                        .build(),
+
+                sigmet().fileName("iwxxm-2021-2-sigmet-A6-1a-TS.xml")
+                        .namespace(IWXXM_2021_2_NAMESPACE)
+                        .issueTime("2012-08-10T12:00Z")
+                        .validityPeriod("2012-08-10T12:00Z", "2012-08-10T16:00Z")
+                        .sigmetLocationIndicators("YUDD", "YUDD", "YUSO")
+                        .build(),
+
+                sigmet().fileName("iwxxm-2021-2-sigmet-A6-2-TC.xml")
+                        .namespace(IWXXM_2021_2_NAMESPACE)
+                        .issueTime("2012-08-25T16:00Z")
+                        .validityPeriod("2012-08-25T16:00Z", "2012-08-25T22:00Z")
+                        .sigmetLocationIndicators("YUCC", "YUCC", "YUDO")
+                        .build(),
+
+                sigmet().fileName("iwxxm-2023-1-sigmet-A6-1a-TS.xml")
+                        .namespace(IWXXM_2023_1_NAMESPACE)
+                        .issueTime("2012-08-10T12:00Z")
+                        .validityPeriod("2012-08-10T12:00Z", "2012-08-10T16:00Z")
+                        .sigmetLocationIndicators("YUDD", "YUDD", "YUSO")
+                        .build(),
+
+                sigmet().fileName("iwxxm-2023-1-sigmet-A6-2-TC.xml")
+                        .namespace(IWXXM_2023_1_NAMESPACE)
+                        .issueTime("2012-08-25T16:00Z")
+                        .validityPeriod("2012-08-25T16:00Z", "2012-08-25T22:00Z")
+                        .sigmetLocationIndicators("YUCC", "YUCC", "YUDO")
+                        .build(),
+
+                sigmet().fileName("iwxxm-2025-2-sigmet-A6-1a-TS.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-10T12:00Z")
+                        .validityPeriod("2012-08-10T12:00Z", "2012-08-10T16:00Z")
+                        .sigmetLocationIndicators("YUDD", "YUDD", "YUSO")
+                        .build(),
+
+                sigmet().fileName("iwxxm-2025-2-sigmet-A6-2-TC.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-25T16:00Z")
+                        .validityPeriod("2012-08-25T16:00Z", "2012-08-25T22:00Z")
+                        .sigmetLocationIndicators("YUCC", "YUCC", "YUDO")
+                        .build(),
+
                 // AIRMET tests
                 airmet().fileName("iwxxm-21-airmet.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
