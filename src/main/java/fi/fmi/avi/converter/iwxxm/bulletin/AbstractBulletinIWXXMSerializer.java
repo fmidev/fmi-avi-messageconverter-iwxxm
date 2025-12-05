@@ -26,11 +26,9 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 /**
- * @param <S>
- *         bulletin content model type
+ * @param <S> bulletin content model type
  */
 public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>> extends IWXXMConverterBase
         implements AviMessageSpecificConverter<S, T> {
@@ -44,11 +42,8 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
     /**
      * Converts a single message.
      *
-     * @param input
-     *         input message
-     * @param hints
-     *         parsing hints
-     *
+     * @param input input message
+     * @param hints parsing hints
      * @return the {@link ConversionResult} with the contentMessageConverter message and the possible conversion issues
      */
     @Override
@@ -73,13 +68,13 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
                 documentBuilderFactory.setNamespaceAware(true);
                 documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
                 final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-                try (InputStream inputStream = this.getClass().getResourceAsStream("collect-template.xml")) {
+                try (final InputStream inputStream = this.getClass().getResourceAsStream("collect-template.xml")) {
                     dom = documentBuilder.parse(inputStream);
                 }
                 final Element collect = dom.getDocumentElement();
                 final Attr id = dom.createAttributeNS(IWXXMNamespaceContext.getDefaultURI("gml"), "id");
                 id.setPrefix("gml");
-                id.setValue(UUID_PREFIX + UUID.randomUUID().toString());
+                id.setValue(getUUID());
                 collect.setAttributeNodeNS(id);
 
                 final List<Document> outputMessages = new ArrayList<>();

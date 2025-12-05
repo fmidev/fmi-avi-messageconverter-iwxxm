@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:SpaceWeatherAdvisory xmlns:iwxxm="http://icao.int/iwxxm/2025-2"
+                            xmlns:gml="http://www.opengis.net/gml/3.2"
+                            xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                            gml:id="uuid.4cf1ebe4-8d7c-4431-91f9-eb3cd1f17a72"
+                            permissibleUsage="NON-OPERATIONAL"
+                            permissibleUsageReason="TEST"
+                            reportStatus="NORMAL"
+                            xsi:schemaLocation="http://icao.int/iwxxm/2025-2 http://schemas.wmo.int/iwxxm/2025-2/iwxxm.xsd">
+  <iwxxm:issueTime>
+    <gml:TimeInstant gml:id="uuid.86e6c25c-dc19-4f22-a35d-bf4743f3023b">
+      <gml:timePosition>2016-11-08T01:00:00Z</gml:timePosition>
+    </gml:TimeInstant>
+  </iwxxm:issueTime>
+  <iwxxm:issuingSpaceWeatherCentre>
+    <aixm:Unit gml:id="uuid.604e7ae8-a751-4310-980c-8a47b02c49c5">
+      <aixm:timeSlice>
+        <aixm:UnitTimeSlice gml:id="uuid.a27ea848-7d76-42e1-8ad8-4175fe2b4229">
+          <gml:validTime/>
+          <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+          <aixm:name>DONLON</aixm:name>
+          <aixm:type>OTHER:SWXC</aixm:type>
+        </aixm:UnitTimeSlice>
+      </aixm:timeSlice>
+    </aixm:Unit>
+  </iwxxm:issuingSpaceWeatherCentre>
+  <iwxxm:advisoryNumber>2016/118</iwxxm:advisoryNumber>
+  <iwxxm:replacedAdvisoryNumber>2016/110</iwxxm:replacedAdvisoryNumber>
+  <iwxxm:replacedAdvisoryNumber>2016/111</iwxxm:replacedAdvisoryNumber>
+  <iwxxm:replacedAdvisoryNumber>2016/112</iwxxm:replacedAdvisoryNumber>
+  <iwxxm:replacedAdvisoryNumber>2016/113</iwxxm:replacedAdvisoryNumber>
+  <iwxxm:replacedAdvisoryNumber>2016/114</iwxxm:replacedAdvisoryNumber>
+  <iwxxm:replacedAdvisoryNumber>2016/115</iwxxm:replacedAdvisoryNumber>
+  <iwxxm:replacedAdvisoryNumber>2016/116</iwxxm:replacedAdvisoryNumber>
+  <iwxxm:replacedAdvisoryNumber>2016/117</iwxxm:replacedAdvisoryNumber>
+  <iwxxm:effect>HF_COM</iwxxm:effect>
+  <iwxxm:analysis>
+    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.87c411ae-2bca-4a90-b60a-55cce2e346c0"
+                                timeIndicator="OBSERVATION">
+      <iwxxm:phenomenonTime>
+        <gml:TimeInstant gml:id="uuid.d5eb1ac3-68f0-4446-bf9d-503d6cd30983">
+          <gml:timePosition>2016-11-08T01:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:phenomenonTime>
+      <iwxxm:intensityAndRegion>
+        <iwxxm:SpaceWeatherIntensityAndRegion gml:id="uuid.41b9910f-6829-4f42-a236-4f5e1d5778c6">
+          <iwxxm:intensity>MOD</iwxxm:intensity>
+          <iwxxm:region>
+            <iwxxm:SpaceWeatherRegion gml:id="uuid.167626b9-c0d6-482b-a0b8-c4a77f7e17b3">
+              <iwxxm:location>
+                <aixm:AirspaceVolume gml:id="uuid.46b546ab-7d36-4f56-9352-ea53613e46d4">
+                  <aixm:horizontalProjection>
+                    <aixm:Surface axisLabels="Lat Lon"
+                                  gml:id="uuid.79503ca9-e1f4-4514-a33d-2246149acd8d"
+                                  srsDimension="2"
+                                  srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+                      <gml:patches>
+                        <gml:PolygonPatch>
+                          <gml:exterior>
+                            <gml:LinearRing>
+                              <gml:posList>-180.0 90.0 180.0 90.0 180.0 60.0 -180.0 60.0 -180.0 90.0</gml:posList>
+                            </gml:LinearRing>
+                          </gml:exterior>
+                        </gml:PolygonPatch>
+                      </gml:patches>
+                    </aixm:Surface>
+                  </aixm:horizontalProjection>
+                </aixm:AirspaceVolume>
+              </iwxxm:location>
+              <iwxxm:locationIndicator xlink:href="http://codes.wmo.int/49-2/SpaceWxLocation/HNH"/>
+            </iwxxm:SpaceWeatherRegion>
+          </iwxxm:region>
+        </iwxxm:SpaceWeatherIntensityAndRegion>
+      </iwxxm:intensityAndRegion>
+    </iwxxm:SpaceWeatherAnalysis>
+  </iwxxm:analysis>
+  <iwxxm:analysis>
+    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.dc83d087-d88d-486d-ac7f-a994c586eadf"
+                                timeIndicator="FORECAST">
+      <iwxxm:phenomenonTime>
+        <gml:TimeInstant gml:id="uuid.2b4757fe-69cb-4a91-a19f-ed3784e01c4b">
+          <gml:timePosition>2016-11-08T07:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:phenomenonTime>
+      <iwxxm:intensityAndRegion xlink:href="#uuid.41b9910f-6829-4f42-a236-4f5e1d5778c6"/>
+    </iwxxm:SpaceWeatherAnalysis>
+  </iwxxm:analysis>
+  <iwxxm:analysis>
+    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.3aba50a4-0ab5-4e42-b55b-cce26c388673"
+                                timeIndicator="FORECAST">
+      <iwxxm:phenomenonTime>
+        <gml:TimeInstant gml:id="uuid.ed32c70b-b17d-40c9-b912-1f65a31c2472">
+          <gml:timePosition>2016-11-08T13:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:phenomenonTime>
+      <iwxxm:intensityAndRegion xlink:href="#uuid.41b9910f-6829-4f42-a236-4f5e1d5778c6"/>
+    </iwxxm:SpaceWeatherAnalysis>
+  </iwxxm:analysis>
+  <iwxxm:analysis>
+    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.2201a53e-d3db-4579-acf2-60e34cb113b1"
+                                timeIndicator="FORECAST">
+      <iwxxm:phenomenonTime>
+        <gml:TimeInstant gml:id="uuid.c9ce832e-d1a4-40f0-a37b-ddd32ecc6225">
+          <gml:timePosition>2016-11-08T19:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:phenomenonTime>
+      <iwxxm:intensityAndRegion xlink:href="#uuid.41b9910f-6829-4f42-a236-4f5e1d5778c6"/>
+    </iwxxm:SpaceWeatherAnalysis>
+  </iwxxm:analysis>
+  <iwxxm:analysis>
+    <iwxxm:SpaceWeatherAnalysis gml:id="uuid.b154b218-cde6-43b4-b3a5-a9b62508fb00"
+                                timeIndicator="FORECAST">
+      <iwxxm:phenomenonTime>
+        <gml:TimeInstant gml:id="uuid.ac936d69-a17e-4a3d-893a-4743482f136f">
+          <gml:timePosition>2016-11-09T01:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:phenomenonTime>
+      <iwxxm:intensityAndRegion nilReason="http://codes.wmo.int/common/nil/nothingOfOperationalSignificance"/>
+    </iwxxm:SpaceWeatherAnalysis>
+  </iwxxm:analysis>
+  <iwxxm:remarks>TEST SWX ADVISORY</iwxxm:remarks>
+  <iwxxm:nextAdvisoryTime nilReason="http://codes.wmo.int/common/nil/inapplicable"/>
+</iwxxm:SpaceWeatherAdvisory>

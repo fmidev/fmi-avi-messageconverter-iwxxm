@@ -3,9 +3,11 @@ package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.IssueList;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
-import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMAixm511WxSerializer;
+import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMSerializer;
+import fi.fmi.avi.converter.iwxxm.profile.IWXXMSchemaProfile;
 import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
 import org.w3c.dom.Document;
@@ -19,7 +21,19 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.util.List;
 
 public class BulletinIWXXMDOMSerializer<U extends AviationWeatherMessage, S extends MeteorologicalBulletin<U>>
-        extends AbstractBulletinIWXXMAixm511WxSerializer<Document, U, S> {
+        extends AbstractBulletinIWXXMSerializer<Document, U, S> {
+
+    private final IWXXMSchemaProfile schemaProfile;
+
+    public BulletinIWXXMDOMSerializer(final IWXXMSchemaProfile schemaProfile, final AbstractIWXXMSerializer<U, Document> contentConverter) {
+        this.schemaProfile = schemaProfile;
+        this.setMessageConverter(contentConverter);
+    }
+
+    @Override
+    protected XMLSchemaInfo getSchemaInfo() {
+        return schemaProfile.createSchemaInfo(F_SECURE_PROCESSING);
+    }
 
     @Override
     protected Document aggregateAsBulletin(final Document collection, final List<Document> messages, final ConversionHints hints) {
@@ -53,6 +67,6 @@ public class BulletinIWXXMDOMSerializer<U extends AviationWeatherMessage, S exte
 
     @Override
     protected IssueList validate(final Document output, final XMLSchemaInfo schemaInfo, final ConversionHints hints) throws ConversionException {
-        return BulletinIWXXMDOMSerializer.validateDOMAgainstSchemaAndSchematron(output, schemaInfo, hints);
+        return validateDOMAgainstSchemaAndSchematron(output, schemaInfo, hints);
     }
 }

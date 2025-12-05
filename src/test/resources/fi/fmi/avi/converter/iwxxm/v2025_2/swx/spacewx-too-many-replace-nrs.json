@@ -1,0 +1,232 @@
+{
+  "issueTime": {
+    "completeTime": "2016-11-08T01:00:00Z"
+  },
+  "issuingCenter": {
+    "name": "DONLON",
+    "type": "OTHER:SWXC"
+  },
+  "effect": "HF_COMMUNICATIONS",
+  "advisoryNumber": {
+    "year": 2016,
+    "serialNumber": 118
+  },
+  "analyses": [
+    {
+      "time": {
+        "completeTime": "2016-11-08T01:00:00Z"
+      },
+      "analysisType": "OBSERVATION",
+      "intensityAndRegions": [
+        {
+          "intensity": "MODERATE",
+          "regions": [
+            {
+              "airSpaceVolume": {
+                "horizontalProjection": {
+                  "type": "Polygon",
+                  "crs": {
+                    "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                    "dimension": 2,
+                    "axisLabels": [
+                      "Lat",
+                      "Lon"
+                    ]
+                  },
+                  "exteriorRingPositions": [
+                    -180.0,
+                    90.0,
+                    -180.0,
+                    60.0,
+                    180.0,
+                    60.0,
+                    180.0,
+                    90.0,
+                    -180.0,
+                    90.0
+                  ]
+                }
+              },
+              "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T07:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "intensityAndRegions": [
+        {
+          "intensity": "MODERATE",
+          "regions": [
+            {
+              "airSpaceVolume": {
+                "horizontalProjection": {
+                  "type": "Polygon",
+                  "crs": {
+                    "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                    "dimension": 2,
+                    "axisLabels": [
+                      "Lat",
+                      "Lon"
+                    ]
+                  },
+                  "exteriorRingPositions": [
+                    -180.0,
+                    90.0,
+                    -180.0,
+                    60.0,
+                    180.0,
+                    60.0,
+                    180.0,
+                    90.0,
+                    -180.0,
+                    90.0
+                  ]
+                }
+              },
+              "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T13:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "intensityAndRegions": [
+        {
+          "intensity": "MODERATE",
+          "regions": [
+            {
+              "airSpaceVolume": {
+                "horizontalProjection": {
+                  "type": "Polygon",
+                  "crs": {
+                    "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                    "dimension": 2,
+                    "axisLabels": [
+                      "Lat",
+                      "Lon"
+                    ]
+                  },
+                  "exteriorRingPositions": [
+                    -180.0,
+                    90.0,
+                    -180.0,
+                    60.0,
+                    180.0,
+                    60.0,
+                    180.0,
+                    90.0,
+                    -180.0,
+                    90.0
+                  ]
+                }
+              },
+              "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-08T19:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "intensityAndRegions": [
+        {
+          "intensity": "MODERATE",
+          "regions": [
+            {
+              "airSpaceVolume": {
+                "horizontalProjection": {
+                  "type": "Polygon",
+                  "crs": {
+                    "name": "http://www.opengis.net/def/crs/EPSG/0/4326",
+                    "dimension": 2,
+                    "axisLabels": [
+                      "Lat",
+                      "Lon"
+                    ]
+                  },
+                  "exteriorRingPositions": [
+                    -180.0,
+                    90.0,
+                    -180.0,
+                    60.0,
+                    180.0,
+                    60.0,
+                    180.0,
+                    90.0,
+                    -180.0,
+                    90.0
+                  ]
+                }
+              },
+              "locationIndicator": "HIGH_NORTHERN_HEMISPHERE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "time": {
+        "completeTime": "2016-11-09T01:00:00Z"
+      },
+      "analysisType": "FORECAST",
+      "intensityAndRegions": [
+      ],
+      "nilReason": "NO_SWX_EXPECTED"
+    }
+  ],
+  "remarks": [
+    "TEST SWX ADVISORY"
+  ],
+  "nextAdvisory": {
+    "timeSpecifier": "NO_FURTHER_ADVISORIES"
+  },
+  "permissibleUsage": "NON_OPERATIONAL",
+  "permissibleUsageReason": "TEST",
+  "replaceAdvisoryNumbers": [
+    {
+      "year": 2016,
+      "serialNumber": 110
+    },
+    {
+      "year": 2016,
+      "serialNumber": 111
+    },
+    {
+      "year": 2016,
+      "serialNumber": 112
+    },
+    {
+      "year": 2016,
+      "serialNumber": 113
+    },
+    {
+      "year": 2016,
+      "serialNumber": 114
+    },
+    {
+      "year": 2016,
+      "serialNumber": 115
+    },
+    {
+      "year": 2016,
+      "serialNumber": 116
+    },
+    {
+      "year": 2016,
+      "serialNumber": 117
+    }
+  ],
+  "reportStatus": "NORMAL"
+}

@@ -23,7 +23,6 @@ import java.io.StringReader;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM.
@@ -62,6 +61,41 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         return period.getEndTime().flatMap(AbstractIWXXMSerializer::toIWXXMDateTime);
     }
 
+    public static boolean checkCompleteTimeReferences(final TAF input, final ConversionResult<?> result) {
+        boolean referencesComplete = true;
+        if (!input.areAllTimeReferencesComplete()) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "All time references must be completed before converting to IWXXM"));
+            referencesComplete = false;
+        }
+        return referencesComplete;
+    }
+
+    protected static TimeInstantType createTimeInstant(final PartialOrCompleteTimeInstant time) {
+        final TimeInstantType timeInstant = create(TimeInstantType.class);
+        timeInstant.setId(getUUID());
+        final TimePositionType timePosition = create(TimePositionType.class);
+        toIWXXMDateTime(time).ifPresent(t -> timePosition.getValue().add(t));
+        timeInstant.setTimePosition(timePosition);
+        return timeInstant;
+    }
+
+    public static void createTimePeriodPropertyType(final TimePeriodPropertyType prop, final PartialOrCompleteTimeInstant start,
+                                                    final PartialOrCompleteTimeInstant end, final String id) {
+        final TimePeriodType tp = create(TimePeriodType.class);
+        tp.setId(id);
+        final TimePositionType beginPos = create(TimePositionType.class);
+        start.getCompleteTime()//
+                .map(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                .ifPresent(time -> beginPos.getValue().add(time));
+        final TimePositionType endPos = create(TimePositionType.class);
+        end.getCompleteTime()//
+                .map(AbstractIWXXMSerializer::toIWXXMDateTime)//
+                .ifPresent(time -> endPos.getValue().add(time));
+        tp.setBeginPosition(beginPos);
+        tp.setEndPosition(endPos);
+        prop.setTimePeriod(tp);
+    }
+
     protected abstract Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException;
 
     protected Document asCleanedUpXML(final String input, final ConversionHints hints) throws ConversionException {
@@ -81,54 +115,6 @@ public abstract class AbstractIWXXMSerializer<T extends AviationWeatherMessageOr
         } catch (final ParserConfigurationException | SAXException | IOException | TransformerException e) {
             throw new ConversionException("Exception in cleaning up", e);
         }
-    }
-
-    public boolean checkCompleteTimeReferences(final TAF input, final ConversionResult<?> result) {
-        boolean referencesComplete = true;
-        if (!input.areAllTimeReferencesComplete()) {
-            result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA, "All time references must be completed before converting to IWXXM"));
-            referencesComplete = false;
-        }
-        return referencesComplete;
-    }
-
-    public void checkAerodromeReferencePositions(final TAF input, final ConversionResult<?> result) {
-        if (!input.allAerodromeReferencesContainPosition()) {
-            result.addIssue(new ConversionIssue(ConversionIssue.Severity.INFO, ConversionIssue.Type.MISSING_DATA,
-                    "At least one of the Aerodrome references does not contain reference point location"));
-        }
-    }
-
-    public void createTimeInstantProperty(final TAF input, final TimeInstantPropertyType prop, final String id) {
-        final TimeInstantType ti = create(TimeInstantType.class);
-        final TimePositionType tp = create(TimePositionType.class);
-        input.getIssueTime()//
-                .flatMap(AbstractIWXXMSerializer::toIWXXMDateTime)//
-                .ifPresent(time -> tp.getValue().add(time));
-        ti.setTimePosition(tp);
-        ti.setId(id);
-        prop.setTimeInstant(ti);
-    }
-
-    public void createTimePeriodPropertyType(final TimePeriodPropertyType prop, final PartialOrCompleteTimeInstant start,
-                                             final PartialOrCompleteTimeInstant end, final String id) {
-        final TimePeriodType tp = create(TimePeriodType.class);
-        tp.setId(id);
-        final TimePositionType beginPos = create(TimePositionType.class);
-        start.getCompleteTime()//
-                .map(AbstractIWXXMSerializer::toIWXXMDateTime)//
-                .ifPresent(time -> beginPos.getValue().add(time));
-        final TimePositionType endPos = create(TimePositionType.class);
-        end.getCompleteTime()//
-                .map(AbstractIWXXMSerializer::toIWXXMDateTime)//
-                .ifPresent(time -> endPos.getValue().add(time));
-        tp.setBeginPosition(beginPos);
-        tp.setEndPosition(endPos);
-        prop.setTimePeriod(tp);
-    }
-
-    protected static String getUUID() {
-        return "uuid." + UUID.randomUUID();
     }
 
     protected abstract InputStream getCleanupTransformationStylesheet(final ConversionHints hints) throws ConversionException;

@@ -88,6 +88,7 @@ public abstract class IWXXMConverterBase {
             F_SECURE_PROCESSING = false;
         }
     }
+
     public static <T> T create(final Class<T> clz) throws IllegalArgumentException {
         return create(clz, null);
     }
@@ -112,7 +113,8 @@ public abstract class IWXXMConverterBase {
         try {
             final Method toCall = objectFactory.getClass().getMethod(methodName);
             result = toCall.invoke(objectFactory);
-        } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InvocationTargetException | IllegalArgumentException e) {
+        } catch (final ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError |
+                       InvocationTargetException | IllegalArgumentException e) {
             throw new IllegalArgumentException("Unable to create JAXB element object for type " + clz, e);
         }
         if (consumer != null) {
@@ -152,7 +154,8 @@ public abstract class IWXXMConverterBase {
         try {
             final Method toCall = objectFactory.getClass().getMethod(methodName, clz);
             result = toCall.invoke(objectFactory, element);
-        } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InvocationTargetException | IllegalArgumentException e) {
+        } catch (final ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError |
+                       InvocationTargetException | IllegalArgumentException e) {
             throw new IllegalArgumentException("Unable to create JAXBElement wrapper", e);
         }
         if (consumer != null) {
@@ -230,11 +233,8 @@ public abstract class IWXXMConverterBase {
      * Checks the DOM Document against the official IWXXM Schematron validation rules.
      * Uses a pre-generated XLS transformation files producing Schematron SVRL reports.
      *
-     * @param input
-     *         IWXXM message Document
-     * @param hints
-     *         conversion hints to guide the validaton
-     *
+     * @param input IWXXM message Document
+     * @param hints conversion hints to guide the validaton
      * @return the list of Schematron validation issues (failed asserts)
      */
     protected static IssueList validateAgainstIWXXMSchematron(final Document input, final XMLSchemaInfo schemaInfo, final ConversionHints hints) {
@@ -300,7 +300,7 @@ public abstract class IWXXMConverterBase {
             final String ruleURLString = ruleURL.toString();
             synchronized (IWXXM_TEMPLATES) {
                 if (!IWXXM_TEMPLATES.containsKey(ruleURLString)) {
-                    try (InputStream inputStream = ruleURL.openStream()) {
+                    try (final InputStream inputStream = ruleURL.openStream()) {
                         IWXXM_TEMPLATES.put(ruleURLString, transformerFactory.newTemplates(new StreamSource(inputStream, ruleURLString)));
                     } catch (final IOException e) {
                         LOG.warn("Unable to create StreamSource for the schematron rule from '{}'", ruleURL.toExternalForm(), e);
@@ -346,7 +346,8 @@ public abstract class IWXXMConverterBase {
                     CLASS_TO_OBJECT_FACTORY.put(clz.getCanonicalName(), objectFactory);
                 }
             }
-        } catch (ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError | InstantiationException | InvocationTargetException e) {
+        } catch (final ClassCastException | NoSuchMethodException | IllegalAccessException | IllegalAccessError |
+                       InstantiationException | InvocationTargetException e) {
             throw new IllegalArgumentException("Unable to get ObjectFactory for " + clz.getCanonicalName(), e);
         }
         if (objectFactory == null) {
@@ -361,7 +362,7 @@ public abstract class IWXXMConverterBase {
 
     @SuppressWarnings("unchecked")
     public static <T> Optional<T> resolveProperty(final Object prop, final String propertyName, final Class<T> clz,
-            final ReferredObjectRetrievalContext refCtx) {
+                                                  final ReferredObjectRetrievalContext refCtx) {
         if (prop == null) {
             return Optional.empty();
         }
@@ -425,7 +426,7 @@ public abstract class IWXXMConverterBase {
     }
 
     protected static Optional<PartialOrCompleteTimePeriod> getCompleteTimePeriod(final TimePeriodPropertyType timePeriodPropertyType,
-            final ReferredObjectRetrievalContext refCtx) {
+                                                                                 final ReferredObjectRetrievalContext refCtx) {
         final Optional<TimePeriodType> tp = resolveProperty(timePeriodPropertyType, TimePeriodType.class, refCtx);
         if (tp.isPresent()) {
             final PartialOrCompleteTimePeriod.Builder retval = PartialOrCompleteTimePeriod.builder();
@@ -440,7 +441,7 @@ public abstract class IWXXMConverterBase {
     }
 
     protected static Optional<PartialOrCompleteTimeInstant> getCompleteTimeInstant(final TimeInstantPropertyType timeInstantPropertyType,
-            final ReferredObjectRetrievalContext refCtx) {
+                                                                                   final ReferredObjectRetrievalContext refCtx) {
         return getTime(timeInstantPropertyType, refCtx)//
                 .map(zonedDateTime -> PartialOrCompleteTimeInstant.builder().setCompleteTime(zonedDateTime).build());
     }
@@ -489,7 +490,7 @@ public abstract class IWXXMConverterBase {
         try {
             documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, F_SECURE_PROCESSING);
             final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            try (ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8))) {
+            try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8))) {
                 retval = documentBuilder.parse(inputStream);
             }
         } catch (final RuntimeException | ParserConfigurationException | IOException | SAXException e) {
@@ -526,7 +527,7 @@ public abstract class IWXXMConverterBase {
     }
 
     protected static <E> Collector<E, ?, List<E>> toImmutableList() {
-        return Collectors.collectingAndThen(Collectors.<E> toList(), IWXXMConverterBase::toUnmodifiableList);
+        return Collectors.collectingAndThen(Collectors.<E>toList(), IWXXMConverterBase::toUnmodifiableList);
     }
 
     protected static Document copyAsDocument(final Element sourceElement) throws ParserConfigurationException {
@@ -546,9 +547,7 @@ public abstract class IWXXMConverterBase {
     /**
      * Scans provided {@code nodeToScan}, its attributes and child nodes recursively and returns a set of found namespace URIs.
      *
-     * @param nodeToScan
-     *         node to scan
-     *
+     * @param nodeToScan node to scan
      * @return set of found namespace URIs
      */
     private static Set<String> scanReferredNamespaces(final Node nodeToScan) {
@@ -658,6 +657,10 @@ public abstract class IWXXMConverterBase {
             final String prefix = Optional.ofNullable(sourceElement.lookupPrefix(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI)).orElse("xsi");
             targetElement.setAttributeNS(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, prefix + ":" + XMLSchemaInfo.SCHEMA_LOCATION_ATTRIBUTE, schemaLocation);
         }
+    }
+
+    public static String getUUID() {
+        return UUID_PREFIX + UUID.randomUUID();
     }
 
     protected static class ConverterValidationEventHandler implements ValidationEventHandler {
