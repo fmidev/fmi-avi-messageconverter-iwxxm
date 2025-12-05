@@ -318,6 +318,66 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
     }
 
     @Test
+    public void airmet20212MDOMTest() throws Exception {
+        final String fileName = "iwxxm-2021-2-airmet-A6-1a-TS.xml";
+        final Document input = readDocumentFromResource(fileName);
+
+        final ConversionHints hints = ConversionHints.AIRMET;
+        final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
+                IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
+
+        final Map<LocationIndicatorType, String> expectedIndicators = new HashMap<>();
+        expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUCC");
+        expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUDD");
+        expectedIndicators.put(LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUDD");
+
+        assertMessage(result)
+                .hasNoIssues()
+                .isPresent()
+                .hasFormat(Format.IWXXM)
+                .hasNamespace(IWXXM_2021_2_NAMESPACE)
+                .hasMessageType(MessageType.AIRMET)
+                .isNotTranslated()
+                .hasReportStatus(ReportStatus.NORMAL)
+                .hasIssueTime("2014-05-15T15:20Z")
+                .hasValidityPeriod("2014-05-15T15:20Z", "2014-05-15T18:00Z")
+                .hasLocationIndicators(expectedIndicators);
+
+        XMLUnit.setIgnoreWhitespace(true);
+        assertXMLEqual(readResourceToString(fileName), result.getConvertedMessage().get().getOriginalMessage());
+    }
+
+    @Test
+    public void airmet20231MDOMTest() throws Exception {
+        final String fileName = "iwxxm-2023-1-airmet-A6-1a-TS.xml";
+        final Document input = readDocumentFromResource(fileName);
+
+        final ConversionHints hints = ConversionHints.AIRMET;
+        final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
+                IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, hints);
+
+        final Map<LocationIndicatorType, String> expectedIndicators = new HashMap<>();
+        expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUDD");
+        expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUDD");
+        expectedIndicators.put(LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, "YUDD");
+
+        assertMessage(result)
+                .hasNoIssues()
+                .isPresent()
+                .hasFormat(Format.IWXXM)
+                .hasNamespace(IWXXM_2023_1_NAMESPACE)
+                .hasMessageType(MessageType.AIRMET)
+                .isNotTranslated()
+                .hasReportStatus(ReportStatus.NORMAL)
+                .hasIssueTime("2014-05-15T15:20Z")
+                .hasValidityPeriod("2014-05-15T15:20Z", "2014-05-15T18:00Z")
+                .hasLocationIndicators(expectedIndicators);
+
+        XMLUnit.setIgnoreWhitespace(true);
+        assertXMLEqual(readResourceToString(fileName), result.getConvertedMessage().get().getOriginalMessage());
+    }
+
+    @Test
     public void airmet20252MDOMTest() throws Exception {
         final String fileName = "iwxxm-2025-2-airmet-A6-1a-TS.xml";
         final Document input = readDocumentFromResource(fileName);
