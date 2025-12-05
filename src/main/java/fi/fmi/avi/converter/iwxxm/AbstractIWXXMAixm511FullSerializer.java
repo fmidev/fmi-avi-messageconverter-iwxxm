@@ -21,7 +21,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM. Uses the full AIXM 5.1.1 schema.
@@ -97,7 +96,7 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
                     final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> poly.setExterior(
                             create(AbstractRingPropertyType.class, arpt -> arpt.setAbstractRing(createAndWrap(RingType.class, rt -> rt.getCurveMember()
                                     .add(create(CurvePropertyType.class, curvept -> curvept.setAbstractCurve(createAndWrap(CurveType.class, curvet -> {
-                                        curvet.setId(UUID_PREFIX + UUID.randomUUID());
+                                        curvet.setId(getUUID());
                                         curvet.setSegments(create(CurveSegmentArrayPropertyType.class,
                                                 curvesat -> curvesat.getAbstractCurveSegment().add(createAndWrap(CircleByCenterPointType.class, cbcpt -> {
                                                     cbcpt.setPos(create(DirectPositionType.class, dpt -> dpt.getValue().addAll(centerPointCoords)));

@@ -69,7 +69,7 @@ public class SpaceWeatherIntensityAndRegionHandler {
         if (existing != null) {
             return new IdAssignment(existing, false);
         }
-        final String newId = IWXXMConverterBase.UUID_PREFIX + UUID.randomUUID();
+        final String newId = IWXXMConverterBase.getUUID();
         registry.put(key, newId);
         return new IdAssignment(newId, true);
     }

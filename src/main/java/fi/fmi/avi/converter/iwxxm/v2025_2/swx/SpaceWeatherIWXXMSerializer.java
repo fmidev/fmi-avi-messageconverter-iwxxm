@@ -7,7 +7,6 @@ import fi.fmi.avi.converter.iwxxm.AbstractIWXXMAixm511FullSerializer;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.converter.iwxxm.v2025_2.AbstractIWXXM20252Serializer;
 import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationWeatherMessage;
 import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.swx.amd82.*;
 import icao.iwxxm2025_2.*;
@@ -17,31 +16,19 @@ import net.opengis.gml32.*;
 import org.w3c.dom.Document;
 
 import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252Serializer<SpaceWeatherAdvisoryAmd82, T> {
     private static final int REQUIRED_NUMBER_OF_ANALYSES = 5;
 
-    private static TimeInstantType createTimeInstant(final PartialOrCompleteTimeInstant time) {
-        final TimeInstantType timeInstant = create(TimeInstantType.class);
-        timeInstant.setId(UUID_PREFIX + UUID.randomUUID());
-        final TimePositionType timePosition = create(TimePositionType.class);
-        toIWXXMDateTime(time).ifPresent(t -> timePosition.getValue().add(t));
-        timeInstant.setTimePosition(timePosition);
-        return timeInstant;
-    }
-
     private static StringWithNilReasonType createRemarksType(final List<String> remarks) {
         final StringWithNilReasonType remarkType = create(StringWithNilReasonType.class);
-        if (!remarks.isEmpty()) {
-            remarkType.setValue(String.join(" ", remarks));
-        } else {
+        if (remarks.isEmpty()) {
             remarkType.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
+        } else {
+            remarkType.setValue(String.join(" ", remarks));
         }
         return remarkType;
     }
@@ -63,7 +50,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
     private static AirspaceVolumePropertyType createAirspaceVolumeProperty(final SpaceWeatherRegion region) {
         return create(AirspaceVolumePropertyType.class, prop -> {
             if (region.getAirSpaceVolume().isPresent()) {
-                getAirspaceVolumeProperty(prop, region.getAirSpaceVolume().get());
+                setAirspaceVolume(prop, region.getAirSpaceVolume().get());
             } else {
                 prop.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_UNKNOWN);
             }
@@ -86,15 +73,15 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         final SpaceWeatherRegionPropertyType regionProperty = create(SpaceWeatherRegionPropertyType.class);
         final SpaceWeatherIntensityAndRegionHandler.RegionIdAssignment regionIdAssignment = handler.registerRegion(region);
 
-        if (!regionIdAssignment.isNew()) {
-            regionProperty.setHref("#" + regionIdAssignment.getId());
-        } else {
+        if (regionIdAssignment.isNew()) {
             final SpaceWeatherRegionType regionType = create(SpaceWeatherRegionType.class, type -> {
                 type.setId(regionIdAssignment.getId());
                 type.setLocation(createAirspaceVolumeProperty(regionIdAssignment.getRegion()));
                 type.getLocationIndicator().add(createLocationType(regionIdAssignment.getRegion()));
             });
             regionProperty.setSpaceWeatherRegion(regionType);
+        } else {
+            regionProperty.setHref("#" + regionIdAssignment.getId());
         }
 
         return regionProperty;
@@ -108,9 +95,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
             final SpaceWeatherIntensityAndRegionPropertyType iarProperty = create(SpaceWeatherIntensityAndRegionPropertyType.class);
             final SpaceWeatherIntensityAndRegionHandler.IdAssignment idAssignment = handler.register(iar.getIntensity(), iar.getRegions());
 
-            if (!idAssignment.isNew()) {
-                iarProperty.setHref("#" + idAssignment.getId());
-            } else {
+            if (idAssignment.isNew()) {
                 final SpaceWeatherIntensityAndRegionType intensityAndRegionType = create(SpaceWeatherIntensityAndRegionType.class);
                 intensityAndRegionType.setId(idAssignment.getId());
 
@@ -122,22 +107,11 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
                 }
 
                 iarProperty.setSpaceWeatherIntensityAndRegion(intensityAndRegionType);
+            } else {
+                iarProperty.setHref("#" + idAssignment.getId());
             }
 
             analysisType.getIntensityAndRegion().add(iarProperty);
-        }
-    }
-
-    private static ReportStatusType mapReportStatus(final AviationWeatherMessage.ReportStatus reportStatus) {
-        switch (reportStatus) {
-            case AMENDMENT:
-                return ReportStatusType.AMENDMENT;
-            case CORRECTION:
-                return ReportStatusType.CORRECTION;
-            case NORMAL:
-                return ReportStatusType.NORMAL;
-            default:
-                throw new IllegalArgumentException("Unknown report status: " + reportStatus);
         }
     }
 
@@ -153,9 +127,9 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
             analysisType.setTimeIndicator(TimeIndicatorType.FORECAST);
         }
 
-        analysisType.setId(UUID_PREFIX + UUID.randomUUID());
+        analysisType.setId(getUUID());
         analysisType.setPhenomenonTime(create(AbstractTimeObjectPropertyType.class, prop ->
-                getAnalysisTime(prop, analysis.getTime())));
+                setAnalysisTime(prop, analysis.getTime())));
 
         if (analysis.getNilReason().isPresent()) {
             analysisType.getIntensityAndRegion().add(createNilReasonProperty(analysis.getNilReason().get()));
@@ -168,18 +142,18 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
     }
 
     @SuppressWarnings("unchecked")
-    private static void getAnalysisTime(final AbstractTimeObjectPropertyType prop, final PartialOrCompleteTimeInstant time) {
+    private static void setAnalysisTime(final AbstractTimeObjectPropertyType prop, final PartialOrCompleteTimeInstant time) {
         final TimeInstantType timeInstant = createTimeInstant(time);
         final JAXBElement<?> jaxbTimeInstant = wrap(timeInstant, TimeInstantType.class);
         prop.setAbstractTimeObject((JAXBElement<AbstractTimeObjectType>) jaxbTimeInstant);
     }
 
-    private static void getAirspaceVolumeProperty(final AirspaceVolumePropertyType prop, final AirspaceVolume volume) {
+    private static void setAirspaceVolume(final AirspaceVolumePropertyType prop, final AirspaceVolume volume) {
         final AirspaceVolumeType airspaceVolumeType = create(AirspaceVolumeType.class);
         if (volume.getHorizontalProjection().isPresent()) {
-            airspaceVolumeType.setId(UUID_PREFIX + UUID.randomUUID());
+            airspaceVolumeType.setId(getUUID());
             final SurfacePropertyType surfaceProperty =
-                    createAixm511fullSurface(volume.getHorizontalProjection().get(), UUID_PREFIX + UUID.randomUUID());
+                    createAixm511fullSurface(volume.getHorizontalProjection().get(), getUUID());
             airspaceVolumeType.setHorizontalProjection(surfaceProperty);
         }
 
@@ -198,53 +172,12 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         prop.setAirspaceVolume(airspaceVolumeType);
     }
 
-    private static void setPermissibleUsageMetadata(
-            final SpaceWeatherAdvisoryAmd82 source,
-            final SpaceWeatherAdvisoryType target,
-            final ConversionResult<?> results) {
-        if (source.getPermissibleUsage().isPresent()) {
-            final AviationCodeListUser.PermissibleUsage usage = source.getPermissibleUsage().get();
-            if (usage == AviationCodeListUser.PermissibleUsage.OPERATIONAL) {
-                target.setPermissibleUsage(PermissibleUsageType.OPERATIONAL);
-            } else {
-                target.setPermissibleUsage(PermissibleUsageType.NON_OPERATIONAL);
-                source.getPermissibleUsageReason().ifPresent(reason ->
-                        target.setPermissibleUsageReason(PermissibleUsageReasonType.valueOf(reason.name())));
-                source.getPermissibleUsageSupplementary().ifPresent(target::setPermissibleUsageSupplementary);
-            }
-        } else {
-            results.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                    "PermissibleUsage is required"));
-        }
-    }
-
-    private static void setTranslationMetadata(
-            final SpaceWeatherAdvisoryAmd82 source,
-            final SpaceWeatherAdvisoryType target,
-            final DatatypeFactory datatypeFactory,
-            final ConversionResult<?> results) {
-        if (source.isTranslated()) {
-            source.getTranslatedBulletinID().ifPresent(target::setTranslatedBulletinID);
-            source.getTranslatedBulletinReceptionTime()
-                    .map(time -> datatypeFactory.newXMLGregorianCalendar(toIWXXMDateTime(time)))
-                    .ifPresent(target::setTranslatedBulletinReceptionTime);
-            source.getTranslationCentreDesignator().ifPresent(target::setTranslationCentreDesignator);
-            source.getTranslationCentreName().ifPresent(target::setTranslationCentreName);
-            source.getTranslationTime()
-                    .map(time -> datatypeFactory.newXMLGregorianCalendar(toIWXXMDateTime(time)))
-                    .ifPresent(target::setTranslationTime);
-            if (results.getStatus() != ConversionResult.Status.SUCCESS) {
-                source.getTranslatedTAC().ifPresent(target::setTranslationFailedTAC);
-            }
-        }
-    }
-
-    private static void getIssuingCenter(final UnitPropertyType prop, final IssuingCenter issuingCenter) {
+    private static void setIssuingCenter(final UnitPropertyType prop, final IssuingCenter issuingCenter) {
         final UnitType unitType = create(UnitType.class, unit -> {
-            unit.setId(UUID_PREFIX + UUID.randomUUID());
+            unit.setId(getUUID());
             unit.getTimeSlice().add(create(UnitTimeSlicePropertyType.class, sliceProp ->
                     sliceProp.setUnitTimeSlice(create(UnitTimeSliceType.class, slice -> {
-                        slice.setId(UUID_PREFIX + UUID.randomUUID());
+                        slice.setId(getUUID());
                         slice.setInterpretation("SNAPSHOT");
                         slice.setValidTime(new TimePrimitivePropertyType());
                         issuingCenter.getName().ifPresent(name ->
@@ -259,6 +192,20 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         prop.setUnit(unitType);
     }
 
+    private static void setNextAdvisory(final TimeInstantPropertyType prop, final NextAdvisory nextAdvisory) {
+        if (nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_AT || nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_BY) {
+            nextAdvisory.getTime().ifPresent(time -> {
+                final TimeInstantType timeInstant = createTimeInstant(time);
+                if (nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_BY) {
+                    timeInstant.getTimePosition().setIndeterminatePosition(TimeIndeterminateValueType.BEFORE);
+                }
+                prop.setTimeInstant(timeInstant);
+            });
+        } else {
+            prop.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
+        }
+    }
+
     protected abstract T render(SpaceWeatherAdvisoryType swx, ConversionHints hints) throws ConversionException;
 
     protected abstract IssueList validate(final T output, final XMLSchemaInfo schemaInfo, final ConversionHints hints)
@@ -269,7 +216,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         final ConversionResult<T> result = new ConversionResult<>();
 
         final SpaceWeatherAdvisoryType swxType = create(SpaceWeatherAdvisoryType.class);
-        swxType.setId(UUID_PREFIX + UUID.randomUUID());
+        swxType.setId(getUUID());
 
         if (input.getIssueTime().isPresent()) {
             swxType.setIssueTime(create(TimeInstantPropertyType.class, prop ->
@@ -280,7 +227,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         }
 
         swxType.setIssuingSpaceWeatherCentre(create(UnitPropertyType.class, prop ->
-                getIssuingCenter(prop, input.getIssuingCenter())));
+                setIssuingCenter(prop, input.getIssuingCenter())));
         swxType.setAdvisoryNumber(create(StringWithNilReasonType.class, prop ->
                 prop.setValue(input.getAdvisoryNumber().asAdvisoryNumber())));
         input.getReplaceAdvisoryNumbers().forEach(advisoryNumber ->
@@ -297,16 +244,16 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
             }
         } else {
             result.addIssue(new ConversionIssue(ConversionIssue.Type.MISSING_DATA,
-                    "Expected 5 analysis objects, but found " + input.getAnalyses().size()));
+                    "Expected " + REQUIRED_NUMBER_OF_ANALYSES + " analysis objects, but found " + input.getAnalyses().size()));
             return result;
         }
 
         swxType.setNextAdvisoryTime(create(TimeInstantPropertyType.class, prop ->
-                getNextAdvisory(prop, input.getNextAdvisory())));
+                setNextAdvisory(prop, input.getNextAdvisory())));
 
         try {
-            this.updateMessageMetadata(input, result, swxType);
-            final T rendered = this.render(swxType, hints);
+            setReportCommonMetadata(input, result, swxType);
+            final T rendered = render(swxType, hints);
             result.addIssue(validate(rendered, getSchemaInfo(), hints));
             result.setConvertedMessage(rendered);
         } catch (final ConversionException e) {
@@ -314,33 +261,6 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
             result.addIssue(new ConversionIssue(ConversionIssue.Type.OTHER, "Unable to render IWXXM message", e));
         }
         return result;
-    }
-
-    protected void updateMessageMetadata(final SpaceWeatherAdvisoryAmd82 source, final ConversionResult<?> results,
-                                         final SpaceWeatherAdvisoryType target)
-            throws ConversionException {
-        try {
-            final DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
-            target.setReportStatus(mapReportStatus(source.getReportStatus()));
-            setPermissibleUsageMetadata(source, target, results);
-            setTranslationMetadata(source, target, datatypeFactory, results);
-        } catch (final DatatypeConfigurationException e) {
-            throw new ConversionException("Exception in setting message metadata", e);
-        }
-    }
-
-    private void getNextAdvisory(final TimeInstantPropertyType prop, final NextAdvisory nextAdvisory) {
-        if (nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_AT || nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_BY) {
-            nextAdvisory.getTime().ifPresent(time -> {
-                final TimeInstantType timeInstant = createTimeInstant(time);
-                if (nextAdvisory.getTimeSpecifier() == NextAdvisory.Type.NEXT_ADVISORY_BY) {
-                    timeInstant.getTimePosition().setIndeterminatePosition(TimeIndeterminateValueType.BEFORE);
-                }
-                prop.setTimeInstant(timeInstant);
-            });
-        } else {
-            prop.getNilReason().add(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_INAPPLICABLE);
-        }
     }
 
     @Override
