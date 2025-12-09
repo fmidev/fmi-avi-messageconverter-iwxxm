@@ -5,14 +5,13 @@
       TAF AMD YUDO 161500Z 1600/1618 CNL
 -->
 <iwxxm:TAF xmlns:iwxxm="http://icao.int/iwxxm/2.1" xmlns:gml="http://www.opengis.net/gml/3.2"
-  xmlns:xlink="http://www.w3.org/1999/xlink"
-  xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1RC1/iwxxm.xsd"
+           xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://icao.int/iwxxm/2.1 http://schemas.wmo.int/iwxxm/2.1.1RC1/iwxxm.xsd"
 
-  gml:id="taf-YUDO-20120816150000Z"
-  permissibleUsage="OPERATIONAL"
-  status="CANCELLATION">
+           gml:id="taf-YUDO-20120816150000Z"
+           permissibleUsage="OPERATIONAL"
+           status="CANCELLATION">
 
   <iwxxm:issueTime>
     <gml:TimeInstant gml:id="ti-20120816150000Z">

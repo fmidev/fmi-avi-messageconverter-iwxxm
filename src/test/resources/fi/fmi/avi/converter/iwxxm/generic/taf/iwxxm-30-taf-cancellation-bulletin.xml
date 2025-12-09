@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <collect:MeteorologicalBulletin xmlns:collect="http://def.wmo.int/collect/2014"
-  xmlns:gml="http://www.opengis.net/gml/3.2"
-  xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
-  xmlns:iwxxm="http://icao.int/iwxxm/3.0"
-  xmlns:xlink="http://www.w3.org/1999/xlink"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  gml:id="bulletin-12345"
-  xsi:schemaLocation="http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd">
+                                xmlns:gml="http://www.opengis.net/gml/3.2"
+                                xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+                                xmlns:iwxxm="http://icao.int/iwxxm/3.0"
+                                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                gml:id="bulletin-12345"
+                                xsi:schemaLocation="http://icao.int/iwxxm/3.0 http://schemas.wmo.int/iwxxm/3.0/iwxxm.xsd http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd">
   <collect:meteorologicalInformation>
 <iwxxm:TAF
   gml:id="uuid.dfbfe27c-3478-4efc-9800-124b90030e39"

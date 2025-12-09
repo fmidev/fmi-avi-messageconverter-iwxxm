@@ -48,6 +48,10 @@ public final class GenericMessageAssertion {
         this.message = message;
     }
 
+    private void assertMessageNotNull() {
+        assertThat(message).as("message").isNotNull();
+    }
+
     /**
      * Creates a new assertion for the given conversion result.
      *
@@ -96,7 +100,7 @@ public final class GenericMessageAssertion {
      * Asserts the message format.
      */
     public GenericMessageAssertion hasFormat(final Format expected) {
-        assertThat(message).as("message").isNotNull();
+        assertMessageNotNull();
         assertThat(message.getMessageFormat()).as("messageFormat").isEqualTo(expected);
         return this;
     }
@@ -105,7 +109,7 @@ public final class GenericMessageAssertion {
      * Asserts the XML namespace.
      */
     public GenericMessageAssertion hasNamespace(final String expected) {
-        assertThat(message).as("message").isNotNull();
+        assertMessageNotNull();
         assertThat(message.getXMLNamespace()).as("xmlNamespace").hasValue(expected);
         return this;
     }
@@ -114,7 +118,7 @@ public final class GenericMessageAssertion {
      * Asserts the message type.
      */
     public GenericMessageAssertion hasMessageType(final MessageType expected) {
-        assertThat(message).as("message").isNotNull();
+        assertMessageNotNull();
         assertThat(message.getMessageType()).as("messageType").hasValue(expected);
         return this;
     }
@@ -123,7 +127,7 @@ public final class GenericMessageAssertion {
      * Asserts that the message is translated.
      */
     public GenericMessageAssertion isTranslated() {
-        assertThat(message).as("message").isNotNull();
+        assertMessageNotNull();
         assertThat(message.isTranslated()).as("translated").isTrue();
         return this;
     }
@@ -132,7 +136,7 @@ public final class GenericMessageAssertion {
      * Asserts that the message is not translated.
      */
     public GenericMessageAssertion isNotTranslated() {
-        assertThat(message).as("message").isNotNull();
+        assertMessageNotNull();
         assertThat(message.isTranslated()).as("translated").isFalse();
         return this;
     }
@@ -141,7 +145,7 @@ public final class GenericMessageAssertion {
      * Asserts the report status.
      */
     public GenericMessageAssertion hasReportStatus(final ReportStatus expected) {
-        assertThat(message).as("message").isNotNull();
+        assertMessageNotNull();
         assertThat(message.getReportStatus()).as("reportStatus").isEqualTo(expected);
         return this;
     }
@@ -152,7 +156,7 @@ public final class GenericMessageAssertion {
      * @param expected ISO-8601 formatted time string (e.g., "2017-07-30T11:30Z")
      */
     public GenericMessageAssertion hasIssueTime(final String expected) {
-        assertThat(message).as("message").isNotNull();
+        assertMessageNotNull();
         assertThat(message.getIssueTime()
                 .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
                 .orElse(null))
@@ -168,7 +172,7 @@ public final class GenericMessageAssertion {
      * @param end   ISO-8601 formatted end time
      */
     public GenericMessageAssertion hasValidityPeriod(final String start, final String end) {
-        assertThat(message).as("message").isNotNull();
+        assertMessageNotNull();
         assertThat(message.getValidityTime()).as("validityTime").isPresent();
         assertThat(message.getValidityTime()
                 .flatMap(PartialOrCompleteTimePeriod::getStartTime)
@@ -189,7 +193,7 @@ public final class GenericMessageAssertion {
      * Asserts that there is no validity period.
      */
     public GenericMessageAssertion hasNoValidityPeriod() {
-        assertThat(message).as("message").isNotNull();
+        assertMessageNotNull();
         assertThat(message.getValidityTime()).as("validityTime").isEmpty();
         return this;
     }
@@ -198,18 +202,14 @@ public final class GenericMessageAssertion {
      * Asserts a single location indicator.
      */
     public GenericMessageAssertion hasLocationIndicator(final LocationIndicatorType type, final String value) {
-        assertThat(message).as("message").isNotNull();
-        assertThat(message.getLocationIndicators())
-                .as("locationIndicators")
-                .isEqualTo(Collections.singletonMap(type, value));
-        return this;
+        return hasLocationIndicators(Collections.singletonMap(type, value));
     }
 
     /**
      * Asserts all location indicators.
      */
     public GenericMessageAssertion hasLocationIndicators(final Map<LocationIndicatorType, String> expected) {
-        assertThat(message).as("message").isNotNull();
+        assertMessageNotNull();
         assertThat(message.getLocationIndicators()).as("locationIndicators").isEqualTo(expected);
         return this;
     }

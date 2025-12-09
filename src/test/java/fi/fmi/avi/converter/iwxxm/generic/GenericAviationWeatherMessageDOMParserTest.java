@@ -9,7 +9,6 @@ import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.AviationWeatherMessage.ReportStatus;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage.Format;
-import fi.fmi.avi.model.GenericAviationWeatherMessage.LocationIndicatorType;
 import fi.fmi.avi.model.MessageType;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -31,24 +30,25 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertMessage;
+import static fi.fmi.avi.model.MessageType.*;
 import static java.util.Objects.requireNonNull;
 
 @RunWith(Parameterized.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
 public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase implements IWXXMConverterTests {
 
-    private final GenericAviationWeatherMessageParserDOMTestCase testCase;
+    private final GenericAviationWeatherMessageDOMParserTestCase testCase;
 
     @Autowired
     private AviMessageConverter converter;
 
-    public GenericAviationWeatherMessageDOMParserTest(final GenericAviationWeatherMessageParserDOMTestCase testCase) throws Exception {
+    public GenericAviationWeatherMessageDOMParserTest(final GenericAviationWeatherMessageDOMParserTestCase testCase) throws Exception {
         this.testCase = testCase;
         new TestContextManager(getClass()).prepareTestInstance(this);
     }
 
     @Parameters(name = "{0}")
-    public static Collection<GenericAviationWeatherMessageParserDOMTestCase> testCases() {
+    public static Collection<GenericAviationWeatherMessageDOMParserTestCase> testCases() {
         return Arrays.asList(
                 // TAF tests
                 taf().fileName("iwxxm-21-taf.xml")
@@ -72,6 +72,34 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .issueTime("2012-08-16T15:00Z")
                         .noValidityPeriod()
                         .aerodrome("YUDA")
+                        .build(),
+
+                taf().fileName("iwxxm-30-taf-A5-1.xml")
+                        .namespace(IWXXM_3_0_NAMESPACE)
+                        .issueTime("2012-08-15T18:00Z")
+                        .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
+                        .aerodrome("YUDO")
+                        .build(),
+
+                taf().fileName("iwxxm-2021-2-taf-A5-1.xml")
+                        .namespace(IWXXM_2021_2_NAMESPACE)
+                        .issueTime("2012-08-15T18:00Z")
+                        .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
+                        .aerodrome("YUDO")
+                        .build(),
+
+                taf().fileName("iwxxm-2023-1-taf-A5-1.xml")
+                        .namespace(IWXXM_2023_1_NAMESPACE)
+                        .issueTime("2012-08-15T18:00Z")
+                        .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
+                        .aerodrome("YUDO")
+                        .build(),
+
+                taf().fileName("iwxxm-2025-2-taf-A5-1.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-15T18:00Z")
+                        .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
+                        .aerodrome("YUDO")
                         .build(),
 
                 // SIGMET tests
@@ -145,6 +173,13 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .sigmetLocationIndicators("YUCC", "YUCC", "YUDO")
                         .build(),
 
+                sigmet().fileName("iwxxm-2025-2-sigmet-VA-EGGX.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2018-07-25T16:00:00Z")
+                        .validityPeriod("2018-07-25T16:00Z", "2018-07-25T22:00Z")
+                        .sigmetLocationIndicators("EGGX", "EGGX", "EGRR")
+                        .build(),
+
                 // AIRMET tests
                 airmet().fileName("iwxxm-21-airmet.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
@@ -189,8 +224,29 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .aerodrome("YUDO")
                         .build(),
 
-                metar().fileName("iwxxm-30-metar.xml")
+                metar().fileName("iwxxm-30-metar-A3-1.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .issueTime("2012-08-22T16:30Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .build(),
+
+                metar().fileName("iwxxm-2021-2-metar-A3-1.xml")
+                        .namespace(IWXXM_2021_2_NAMESPACE)
+                        .issueTime("2012-08-22T16:30Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .build(),
+
+                metar().fileName("iwxxm-2023-1-metar-A3-1.xml")
+                        .namespace(IWXXM_2023_1_NAMESPACE)
+                        .issueTime("2012-08-22T16:30Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .build(),
+
+                metar().fileName("iwxxm-2025-2-metar-A3-1.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
                         .issueTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
@@ -211,7 +267,50 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .aerodrome("YUDO")
                         .build(),
 
+                speci().fileName("iwxxm-2021-2-speci-A3-2.xml")
+                        .namespace(IWXXM_2021_2_NAMESPACE)
+                        .issueTime("2012-08-15T11:15Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .build(),
+
+                speci().fileName("iwxxm-2023-1-speci-A3-2.xml")
+                        .namespace(IWXXM_2023_1_NAMESPACE)
+                        .issueTime("2012-08-15T11:15Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .build(),
+
+                speci().fileName("iwxxm-2025-2-speci-A3-2.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-15T11:15Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .build(),
+
                 // Space Weather Advisory tests
+                swx().fileName("iwxxm-30-spacewx-A2-3.xml")
+                        .namespace(IWXXM_3_0_NAMESPACE)
+                        .reportStatus(ReportStatus.AMENDMENT)
+                        .issueTime("2016-11-08T01:00Z")
+                        .noValidityPeriod()
+                        .issuingCentre("DONLON")
+                        .build(),
+
+                swx().fileName("iwxxm-2021-2-spacewx-A2-3.xml")
+                        .namespace(IWXXM_2021_2_NAMESPACE)
+                        .issueTime("2016-11-08T01:00Z")
+                        .noValidityPeriod()
+                        .issuingCentre("DONLON")
+                        .build(),
+
+                swx().fileName("iwxxm-2023-1-spacewx-A2-3.xml")
+                        .namespace(IWXXM_2023_1_NAMESPACE)
+                        .issueTime("2016-11-08T01:00Z")
+                        .noValidityPeriod()
+                        .issuingCentre("DONLON")
+                        .build(),
+
                 swx().fileName("iwxxm-30-spacewx-A2-3.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
                         .reportStatus(ReportStatus.AMENDMENT)
@@ -226,6 +325,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .noValidityPeriod()
                         .issuingCentre("DONLON")
                         .build(),
+
 
                 // Tropical Cyclone Advisory tests
                 tca().fileName("iwxxm-21-tc-advisory-A2-2.xml")
@@ -243,6 +343,28 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .issuingCentre("YUFO")
                         .build(),
 
+                tca().fileName("iwxxm-2021-2-tc-advisory-A2-2.xml")
+                        .namespace(IWXXM_2021_2_NAMESPACE)
+                        .issueTime("2004-09-25T16:00:00Z")
+                        .noValidityPeriod()
+                        .issuingCentre("YUFO")
+                        .build(),
+
+                tca().fileName("iwxxm-2023-1-tc-advisory-A2-2.xml")
+                        .namespace(IWXXM_2023_1_NAMESPACE)
+                        .issueTime("2004-09-25T16:00:00Z")
+                        .noValidityPeriod()
+                        .issuingCentre("YUFO")
+                        .build(),
+
+                tca().fileName("iwxxm-2025-2-tc-advisory-A2-2.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2004-09-25T19:00:00Z")
+                        .noValidityPeriod()
+                        .issuingCentre("YUFO")
+                        .build(),
+
+
                 // Volcanic Ash Advisory tests
                 vaa().fileName("iwxxm-21-va-advisory-A2-1.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
@@ -257,65 +379,91 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .issueTime("2008-09-23T01:30:00Z")
                         .noValidityPeriod()
                         .issuingCentre("TOKYO")
+                        .build(),
+
+                vaa().fileName("iwxxm-2021-2-va-advisory-A2-1.xml")
+                        .namespace(IWXXM_2021_2_NAMESPACE)
+                        .issueTime("2008-09-23T01:30:00Z")
+                        .noValidityPeriod()
+                        .issuingCentre("TOKYO")
+                        .build(),
+
+                vaa().fileName("iwxxm-2023-1-va-advisory-A2-1.xml")
+                        .namespace(IWXXM_2023_1_NAMESPACE)
+                        .issueTime("2008-09-23T01:30:00Z")
+                        .noValidityPeriod()
+                        .issuingCentre("TOKYO")
+                        .build(),
+
+                vaa().fileName("iwxxm-2025-2-va-advisory-A7-2.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2024-09-23T01:30:00Z")
+                        .noValidityPeriod()
+                        .issuingCentre("TOKYO")
                         .build()
         );
     }
 
-    private static GenericAviationWeatherMessageParserDOMTestCase.Builder taf() {
-        return GenericAviationWeatherMessageParserDOMTestCase.builder()
+    private static GenericAviationWeatherMessageDOMParserTestCase.Builder taf() {
+        return GenericAviationWeatherMessageDOMParserTestCase.builder()
                 .messageType(MessageType.TAF)
                 .hints(ConversionHints.TAF);
     }
 
-    private static GenericAviationWeatherMessageParserDOMTestCase.Builder sigmet() {
-        return GenericAviationWeatherMessageParserDOMTestCase.builder()
+    private static GenericAviationWeatherMessageDOMParserTestCase.Builder sigmet() {
+        return GenericAviationWeatherMessageDOMParserTestCase.builder()
                 .messageType(MessageType.SIGMET)
                 .hints(ConversionHints.SIGMET);
     }
 
-    private static GenericAviationWeatherMessageParserDOMTestCase.Builder airmet() {
-        return GenericAviationWeatherMessageParserDOMTestCase.builder()
+    private static GenericAviationWeatherMessageDOMParserTestCase.Builder airmet() {
+        return GenericAviationWeatherMessageDOMParserTestCase.builder()
                 .messageType(MessageType.AIRMET)
                 .hints(ConversionHints.AIRMET);
     }
 
-    private static GenericAviationWeatherMessageParserDOMTestCase.Builder metar() {
-        return GenericAviationWeatherMessageParserDOMTestCase.builder()
+    private static GenericAviationWeatherMessageDOMParserTestCase.Builder metar() {
+        return GenericAviationWeatherMessageDOMParserTestCase.builder()
                 .messageType(MessageType.METAR)
                 .hints(ConversionHints.METAR);
     }
 
-    private static GenericAviationWeatherMessageParserDOMTestCase.Builder speci() {
-        return GenericAviationWeatherMessageParserDOMTestCase.builder()
+    private static GenericAviationWeatherMessageDOMParserTestCase.Builder speci() {
+        return GenericAviationWeatherMessageDOMParserTestCase.builder()
                 .messageType(MessageType.SPECI)
                 .hints(ConversionHints.SPECI);
     }
 
-    private static GenericAviationWeatherMessageParserDOMTestCase.Builder swx() {
-        return GenericAviationWeatherMessageParserDOMTestCase.builder()
-                .messageType(MessageType.SPACE_WEATHER_ADVISORY)
+    private static GenericAviationWeatherMessageDOMParserTestCase.Builder swx() {
+        return GenericAviationWeatherMessageDOMParserTestCase.builder()
+                .messageType(SPACE_WEATHER_ADVISORY)
                 .hints(ConversionHints.SPACE_WEATHER_ADVISORY);
     }
 
-    private static GenericAviationWeatherMessageParserDOMTestCase.Builder tca() {
+    private static GenericAviationWeatherMessageDOMParserTestCase.Builder tca() {
         final ConversionHints hints = new ConversionHints();
-        hints.put(ConversionHints.KEY_MESSAGE_TYPE, MessageType.TROPICAL_CYCLONE_ADVISORY);
-        return GenericAviationWeatherMessageParserDOMTestCase.builder()
-                .messageType(MessageType.TROPICAL_CYCLONE_ADVISORY)
+        hints.put(ConversionHints.KEY_MESSAGE_TYPE, TROPICAL_CYCLONE_ADVISORY);
+        return GenericAviationWeatherMessageDOMParserTestCase.builder()
+                .messageType(TROPICAL_CYCLONE_ADVISORY)
                 .hints(hints);
     }
 
-    private static GenericAviationWeatherMessageParserDOMTestCase.Builder vaa() {
+    private static GenericAviationWeatherMessageDOMParserTestCase.Builder vaa() {
         final ConversionHints hints = new ConversionHints();
-        hints.put(ConversionHints.KEY_MESSAGE_TYPE, MessageType.VOLCANIC_ASH_ADVISORY);
-        return GenericAviationWeatherMessageParserDOMTestCase.builder()
-                .messageType(MessageType.VOLCANIC_ASH_ADVISORY)
+        hints.put(ConversionHints.KEY_MESSAGE_TYPE, VOLCANIC_ASH_ADVISORY);
+        return GenericAviationWeatherMessageDOMParserTestCase.builder()
+                .messageType(VOLCANIC_ASH_ADVISORY)
                 .hints(hints);
     }
 
-    private Document readDocumentFromResource(final String name) throws Exception {
-        try (final InputStream inputStream = getClass().getResourceAsStream(name)) {
-            requireNonNull(inputStream, name);
+    private String getResourcePath(final String fileName, final MessageType messageType) {
+        return messageType.name().toLowerCase() + "/" + fileName;
+    }
+
+    private Document readDocumentFromResource(final String name, final MessageType messageType) throws Exception {
+        final String resourcePath = getResourcePath(name, messageType);
+        try (final InputStream inputStream = getClass().getResourceAsStream(resourcePath)) {
+            requireNonNull(inputStream, resourcePath);
             final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
             documentBuilderFactory.setNamespaceAware(true);
             documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -326,7 +474,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
 
     @Test
     public void testDOMParsing() throws Exception {
-        final Document input = readDocumentFromResource(testCase.getFileName());
+        final Document input = readDocumentFromResource(testCase.getFileName(), testCase.getMessageType());
 
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
                 IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, testCase.getHints());
@@ -353,21 +501,11 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
         }
 
         if (!testCase.getLocationIndicators().isEmpty()) {
-            if (testCase.getLocationIndicators().size() == 1
-                    && testCase.getLocationIndicators().containsKey(LocationIndicatorType.AERODROME)) {
-                assertion.hasLocationIndicator(LocationIndicatorType.AERODROME,
-                        testCase.getLocationIndicators().get(LocationIndicatorType.AERODROME));
-            } else if (testCase.getLocationIndicators().size() == 1
-                    && testCase.getLocationIndicators().containsKey(LocationIndicatorType.ISSUING_CENTRE)) {
-                assertion.hasLocationIndicator(LocationIndicatorType.ISSUING_CENTRE,
-                        testCase.getLocationIndicators().get(LocationIndicatorType.ISSUING_CENTRE));
-            } else {
-                assertion.hasLocationIndicators(testCase.getLocationIndicators());
-            }
+            assertion.hasLocationIndicators(testCase.getLocationIndicators());
         }
 
         XMLUnit.setIgnoreWhitespace(true);
-        assertXMLEqual(readResourceToString(testCase.getFileName()),
+        assertXMLEqual(readResourceToString(getResourcePath(testCase.getFileName(), testCase.getMessageType())),
                 result.getConvertedMessage().get().getOriginalMessage());
     }
 }

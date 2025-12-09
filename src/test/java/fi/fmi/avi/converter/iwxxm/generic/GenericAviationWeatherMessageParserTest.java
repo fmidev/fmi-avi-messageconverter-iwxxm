@@ -66,8 +66,8 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
     @Test
     public void namespacesAreCopiedFromCollectToMessage() throws Exception {
-        final String bulletinResourceName = "iwxxm-30-taf-bulletin-namespaces-collect.xml";
-        final String expectedResultResourceName = "iwxxm-30-taf-namespaces-collect.xml";
+        final String bulletinResourceName = "taf/iwxxm-30-taf-bulletin-namespaces-collect.xml";
+        final String expectedResultResourceName = "taf/iwxxm-30-taf-namespaces-collect.xml";
         testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
     }
 
@@ -95,22 +95,22 @@ public final class GenericAviationWeatherMessageParserTest extends XMLTestCase i
 
     @Test
     public void namespacesAreRetainedInMessage() throws Exception {
-        final String bulletinResourceName = "iwxxm-30-taf-bulletin-namespaces-message.xml";
-        final String expectedResultResourceName = "iwxxm-30-taf-namespaces-message.xml";
+        final String bulletinResourceName = "taf/iwxxm-30-taf-bulletin-namespaces-message.xml";
+        final String expectedResultResourceName = "taf/iwxxm-30-taf-namespaces-message.xml";
         testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
     }
 
     @Test
     public void extraNamespacesAreRetainedInMessage() throws Exception {
-        final String bulletinResourceName = "iwxxm-30-taf-bulletin-namespaces-extra.xml";
-        final String expectedResultResourceName = "iwxxm-30-taf-namespaces-extra.xml";
+        final String bulletinResourceName = "taf/iwxxm-30-taf-bulletin-namespaces-extra.xml";
+        final String expectedResultResourceName = "taf/iwxxm-30-taf-namespaces-extra.xml";
         testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
     }
 
     @Test
     public void namespacesAreMergedIfNeeded() throws Exception {
-        final String bulletinResourceName = "iwxxm-30-taf-bulletin-namespaces-mixed.xml";
-        final String expectedResultResourceName = "iwxxm-30-taf-namespaces-mixed.xml";
+        final String bulletinResourceName = "taf/iwxxm-30-taf-bulletin-namespaces-mixed.xml";
+        final String expectedResultResourceName = "taf/iwxxm-30-taf-namespaces-mixed.xml";
         testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
     }
 }

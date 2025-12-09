@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public final class GenericAviationWeatherMessageParserDOMTestCase {
+public final class GenericAviationWeatherMessageDOMParserTestCase {
 
     private final String fileName;
     private final String namespace;
@@ -23,7 +23,7 @@ public final class GenericAviationWeatherMessageParserDOMTestCase {
     private final String validityEnd;
     private final Map<LocationIndicatorType, String> locationIndicators;
 
-    private GenericAviationWeatherMessageParserDOMTestCase(final Builder builder) {
+    private GenericAviationWeatherMessageDOMParserTestCase(final Builder builder) {
         this.fileName = Objects.requireNonNull(builder.fileName, "fileName");
         this.namespace = Objects.requireNonNull(builder.namespace, "namespace");
         this.messageType = Objects.requireNonNull(builder.messageType, "messageType");
@@ -179,8 +179,8 @@ public final class GenericAviationWeatherMessageParserDOMTestCase {
                     .locationIndicator(LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, mwo);
         }
 
-        public GenericAviationWeatherMessageParserDOMTestCase build() {
-            return new GenericAviationWeatherMessageParserDOMTestCase(this);
+        public GenericAviationWeatherMessageDOMParserTestCase build() {
+            return new GenericAviationWeatherMessageDOMParserTestCase(this);
         }
     }
 }
