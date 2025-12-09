@@ -21,7 +21,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM. Uses the full AIXM 5.1.1 schema.
@@ -41,25 +40,36 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
      */
     public static synchronized JAXBContext getAixm511FullJAXBContext() throws JAXBException {
         if (aixm511FullJaxbContext == null) {
-            aixm511FullJaxbContext = JAXBContext.newInstance("icao.iwxxm2023_1:aero.aixm511full:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
+            aixm511FullJaxbContext = JAXBContext.newInstance("icao.iwxxm2025_2:icao.iwxxm2023_1:aero.aixm511full:net.opengis.gml32:org.iso19139.ogc2007.gmd:org.iso19139.ogc2007.gco:org"
                     + ".iso19139.ogc2007.gss:org.iso19139.ogc2007.gts:org.iso19139.ogc2007.gsr:net.opengis.om20:net.opengis.sampling:net.opengis.sampling"
                     + ".spatial:wmo.metce2013:wmo.opm2013:wmo.collect2014:org.w3c.xlink11");
         }
         return aixm511FullJaxbContext;
     }
 
-    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
-        final StringWriter sw = new StringWriter();
-        try {
-            final Marshaller marshaller = getAixm511FullJAXBContext().createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getCombinedSchemaLocations());
-            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", getNamespaceContext());
-            marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
-            return asCleanedUpXML(sw.toString(), hints);
-        } catch (final JAXBException e) {
-            throw new ConversionException("Exception in rendering to DOM", e);
+    protected static Optional<ValDistanceVerticalType> toValDistanceVertical(final NumericMeasure numericMeasure) {
+        return numericMeasure == null ? Optional.empty() : valDistanceVertical(numericMeasure.getValue(), numericMeasure.getUom());
+    }
+
+    protected static Optional<ValDistanceVerticalType> valDistanceVertical(final Double value, final String uom) {
+        return valDistanceVertical(value == null ? Double.NaN : value, uom);
+    }
+
+    protected static Optional<ValDistanceVerticalType> valDistanceVertical(final double value, final String uom) {
+        if (Double.isNaN(value)) {
+            return Optional.empty();
         }
+        final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
+        final DecimalFormat format = new DecimalFormat("", DecimalFormatSymbols.getInstance(Locale.US));
+        format.setMinimumIntegerDigits(1);
+        format.setMinimumFractionDigits(0);
+        format.setMaximumFractionDigits(4);
+        format.setGroupingUsed(false);
+        type.setValue(format.format(value));
+        if (uom != null && !uom.isEmpty()) {
+            type.setUom(uom.toUpperCase(Locale.US));
+        }
+        return Optional.of(type);
     }
 
     protected static SurfacePropertyType createAixm511fullSurface(final Geometry geom, final String id) throws IllegalArgumentException {
@@ -86,7 +96,7 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
                     final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> poly.setExterior(
                             create(AbstractRingPropertyType.class, arpt -> arpt.setAbstractRing(createAndWrap(RingType.class, rt -> rt.getCurveMember()
                                     .add(create(CurvePropertyType.class, curvept -> curvept.setAbstractCurve(createAndWrap(CurveType.class, curvet -> {
-                                        curvet.setId(UUID_PREFIX + UUID.randomUUID());
+                                        curvet.setId(getUUID());
                                         curvet.setSegments(create(CurveSegmentArrayPropertyType.class,
                                                 curvesat -> curvesat.getAbstractCurveSegment().add(createAndWrap(CircleByCenterPointType.class, cbcpt -> {
                                                     cbcpt.setPos(create(DirectPositionType.class, dpt -> dpt.getValue().addAll(centerPointCoords)));
@@ -115,29 +125,18 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
         return retval;
     }
 
-    protected static Optional<ValDistanceVerticalType> toValDistanceVertical(final NumericMeasure numericMeasure) {
-        return numericMeasure == null ? Optional.empty() : valDistanceVertical(numericMeasure.getValue(), numericMeasure.getUom());
-    }
-
-    protected static Optional<ValDistanceVerticalType> valDistanceVertical(final Double value, final String uom) {
-        return valDistanceVertical(value == null ? Double.NaN : value, uom);
-    }
-
-    protected static Optional<ValDistanceVerticalType> valDistanceVertical(final double value, final String uom) {
-        if (Double.isNaN(value)) {
-            return Optional.empty();
+    protected Document renderXMLDocument(final Object input, final ConversionHints hints) throws ConversionException {
+        final StringWriter sw = new StringWriter();
+        try {
+            final Marshaller marshaller = getAixm511FullJAXBContext().createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, getSchemaInfo().getCombinedSchemaLocations());
+            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", getNamespaceContext());
+            marshaller.marshal(wrap(input, (Class<Object>) input.getClass()), sw);
+            return asCleanedUpXML(sw.toString(), hints);
+        } catch (final JAXBException e) {
+            throw new ConversionException("Exception in rendering to DOM", e);
         }
-        final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
-        final DecimalFormat format = new DecimalFormat("", DecimalFormatSymbols.getInstance(Locale.US));
-        format.setMinimumIntegerDigits(1);
-        format.setMinimumFractionDigits(0);
-        format.setMaximumFractionDigits(4);
-        format.setGroupingUsed(false);
-        type.setValue(format.format(value));
-        if (uom != null && !uom.isEmpty()) {
-            type.setUom(uom.toUpperCase(Locale.US));
-        }
-        return Optional.of(type);
     }
 
 }

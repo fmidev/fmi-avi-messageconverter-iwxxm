@@ -1,15 +1,15 @@
 package fi.fmi.avi.converter.iwxxm;
 
+import aero.aixm511.*;
 import aero.aixm511.SurfacePropertyType;
 import aero.aixm511.SurfaceType;
-import aero.aixm511.*;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.model.*;
 import fi.fmi.avi.model.immutable.NumericMeasureImpl;
+import net.opengis.gml32.*;
 import net.opengis.gml32.CurvePropertyType;
 import net.opengis.gml32.CurveType;
-import net.opengis.gml32.*;
 import org.w3c.dom.Document;
 
 import javax.xml.bind.JAXBContext;
@@ -86,7 +86,7 @@ public abstract class AbstractIWXXMAixm511WxSerializer<T extends AviationWeather
                     }
 
                     final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> poly.setExterior(create(AbstractRingPropertyType.class, arpt -> arpt.setAbstractRing(createAndWrap(RingType.class, rt -> rt.getCurveMember().add(create(CurvePropertyType.class, curvept -> curvept.setAbstractCurve(createAndWrap(CurveType.class, curvet -> {
-                        curvet.setId(UUID_PREFIX + UUID.randomUUID());
+                        curvet.setId(getUUID());
                         curvet.setSegments(create(CurveSegmentArrayPropertyType.class, curvesat -> curvesat.getAbstractCurveSegment().add(createAndWrap(CircleByCenterPointType.class, cbcpt -> {
                             cbcpt.setPos(create(DirectPositionType.class, dpt -> dpt.getValue().addAll(centerPointCoords)));
                             cbcpt.setNumArc(BigInteger.valueOf(1));
