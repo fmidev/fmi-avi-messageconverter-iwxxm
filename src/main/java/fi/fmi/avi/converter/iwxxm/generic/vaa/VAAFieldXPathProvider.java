@@ -19,14 +19,14 @@ public class VAAFieldXPathProvider implements FieldXPathProvider {
     public VAAFieldXPathProvider() {
         final Map<IWXXMField, List<String>> map = new EnumMap<>(IWXXMField.class);
 
-        // ISSUE_TIME for VAA: root issueTime/TimeInstant/timePosition covers both 2.1 and 3.x
+        // ISSUE_TIME for VAA (same structure across all IWXXM versions)
         map.put(IWXXMField.ISSUE_TIME, Collections.singletonList(
                 XPathBuilder.text("/iwxxm:VolcanicAshAdvisory"
                         + "/iwxxm:issueTime"
                         + "/gml:TimeInstant"
                         + "/gml:timePosition")));
 
-        // ISSUING_CENTRE: issuingVolcanicAshAdvisoryCentre/Unit/timeSlice/UnitTimeSlice
+        // ISSUING_CENTRE (same structure across all IWXXM versions)
         map.put(IWXXMField.ISSUING_CENTRE, Collections.singletonList(
                 XPathBuilder.node("/iwxxm:VolcanicAshAdvisory"
                         + "/iwxxm:issuingVolcanicAshAdvisoryCentre"

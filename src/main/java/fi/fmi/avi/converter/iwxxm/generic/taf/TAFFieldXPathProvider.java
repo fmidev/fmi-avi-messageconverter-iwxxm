@@ -24,12 +24,12 @@ public final class TAFFieldXPathProvider implements FieldXPathProvider {
                         + "/gml:timePosition")));
 
         // AERODROME location indicator:
-        // 1) IWXXM 3.0: TAF/aerodrome/AirportHeliport/timeSlice/AirportHeliportTimeSlice
+        // 1) IWXXM 3.0+: TAF/aerodrome/AirportHeliport/timeSlice/AirportHeliportTimeSlice
         // 2) IWXXM 2.1: TAF/baseForecast/OM_Observation/featureOfInterest/SF_SpatialSamplingFeature/
         //               sampledFeature/AirportHeliport/timeSlice/AirportHeliportTimeSlice
         // 3) IWXXM 2.1 cancellation: TAF/previousReportAerodrome/AirportHeliport/timeSlice/AirportHeliportTimeSlice
         map.put(IWXXMField.AERODROME, Arrays.asList(
-                // IWXXM 3.0 style
+                // IWXXM 3.0+ style
                 XPathBuilder.node("/iwxxm:TAF"
                         + "/iwxxm:aerodrome"
                         + "/aixm:AirportHeliport"
@@ -53,8 +53,8 @@ public final class TAFFieldXPathProvider implements FieldXPathProvider {
                         + "/aixm:AirportHeliportTimeSlice")));
 
         // Validity time for TAF:
-        //  - IWXXM 3.0 normal reports: validPeriod on the root
-        //  - IWXXM 3.0 cancellations: cancelledReportValidPeriod on the root
+        //  - IWXXM 3.0+ normal reports: validPeriod on the root
+        //  - IWXXM 3.0+ cancellations: cancelledReportValidPeriod on the root
         //  - IWXXM 2.1: validTime on the root
         map.put(IWXXMField.VALID_TIME, Arrays.asList(
                 XPathBuilder.relative("./iwxxm:validPeriod"),

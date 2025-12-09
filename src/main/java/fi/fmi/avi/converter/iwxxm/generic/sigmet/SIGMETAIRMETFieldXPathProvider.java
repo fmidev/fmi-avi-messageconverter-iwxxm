@@ -22,8 +22,8 @@ public final class SIGMETAIRMETFieldXPathProvider implements FieldXPathProvider 
         final Map<IWXXMField, List<String>> map = new EnumMap<>(IWXXMField.class);
 
         // ISSUE_TIME for SIGMET/AIRMET:
-        // 1) IWXXM 3.0 and 2023-1: root/issueTime/TimeInstant/timePosition
-        // 2) IWXXM 2.1 SIGMET and AIRMET: analysis/OM_Observation/resultTime/TimeInstant/timePosition
+        // 1) IWXXM 3.0+: root/issueTime/TimeInstant/timePosition
+        // 2) IWXXM 2.1: analysis/OM_Observation/resultTime/TimeInstant/timePosition
         map.put(IWXXMField.ISSUE_TIME, Arrays.asList(
                 // IWXXM 3.0+ style
                 "normalize-space((" + SIGMET_OR_AIRMET
@@ -31,7 +31,7 @@ public final class SIGMETAIRMETFieldXPathProvider implements FieldXPathProvider 
                         + "/gml:TimeInstant"
                         + "/gml:timePosition")
                         + ")[1])",
-                // IWXXM 2.1 SIGMET and AIRMET analysis/resultTime style
+                // IWXXM 2.1 analysis/resultTime style
                 "normalize-space((" + SIGMET_OR_AIRMET
                         + XPathBuilder.toVersionAgnostic("/iwxxm:analysis"
                         + "/om:OM_Observation"
@@ -40,9 +40,9 @@ public final class SIGMETAIRMETFieldXPathProvider implements FieldXPathProvider 
                         + "/gml:timePosition")
                         + ")[1])"));
 
-        // ORIGINATING_MWO location indicator UnitTimeSlice across versions
+        // ORIGINATING_MWO location indicator UnitTimeSlice (same structure across all versions)
         map.put(IWXXMField.ORIGINATING_MWO, Collections.singletonList(
-                // IWXXM 3.0+/2023-1 and 2.1 share the same structural pattern
+                // Same structural pattern across all IWXXM versions
                 "(" + SIGMET_OR_AIRMET
                         + XPathBuilder.toVersionAgnostic("/iwxxm:originatingMeteorologicalWatchOffice"
                         + "/aixm:Unit"
@@ -50,7 +50,7 @@ public final class SIGMETAIRMETFieldXPathProvider implements FieldXPathProvider 
                         + "/aixm:UnitTimeSlice")
                         + ")[1]"));
 
-        // ISSUING_ATS_UNIT: issuingAirTrafficServicesUnit/Unit/timeSlice/UnitTimeSlice
+        // ISSUING_ATS_UNIT (same structure across all IWXXM versions)
         map.put(IWXXMField.ISSUING_ATS_UNIT, Collections.singletonList(
                 "(" + SIGMET_OR_AIRMET
                         + XPathBuilder.toVersionAgnostic("/iwxxm:issuingAirTrafficServicesUnit"
