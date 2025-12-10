@@ -62,6 +62,57 @@ public class IWXXMGenericAviationWeatherMessageConverter {
         }
     };
 
+    private static final GenericIWXXMScanner TAF_SCANNER = GenericIWXXMScanner.builder()
+            .fieldProvider(new TAFFieldXPathProvider())
+            .messageType(MessageType.TAF)
+            .requireReportStatus(true)
+            .extractValidityTime(true)
+            .locationIndicator(LocationIndicatorType.AERODROME, IWXXMField.AERODROME)
+            .build();
+
+    private static final GenericIWXXMScanner METAR_SPECI_SCANNER = GenericIWXXMScanner.builder()
+            .fieldProvider(new METARSPECIFieldXPathProvider())
+            .messageTypeResolver(METAR_SPECI_TYPE_RESOLVER)
+            .requireReportStatus(true)
+            .extractValidityTime(false)
+            .extractObservationTime(true)
+            .locationIndicator(LocationIndicatorType.AERODROME, IWXXMField.AERODROME)
+            .build();
+
+    private static final GenericIWXXMScanner SIGMET_AIRMET_SCANNER = GenericIWXXMScanner.builder()
+            .fieldProvider(new SIGMETAIRMETFieldXPathProvider())
+            .messageTypeResolver(SIGMET_AIRMET_TYPE_RESOLVER)
+            .requireReportStatus(true)
+            .extractValidityTime(true)
+            .locationIndicator(LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, IWXXMField.ORIGINATING_MWO)
+            .locationIndicator(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, IWXXMField.ISSUING_ATS_UNIT)
+            .locationIndicator(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, IWXXMField.ISSUING_ATS_REGION)
+            .build();
+
+    private static final GenericIWXXMScanner SWX_SCANNER = GenericIWXXMScanner.builder()
+            .fieldProvider(new SWXFieldXPathProvider())
+            .messageType(MessageType.SPACE_WEATHER_ADVISORY)
+            .requireReportStatus(true)
+            .extractValidityTime(false)
+            .locationIndicator(LocationIndicatorType.ISSUING_CENTRE, IWXXMField.ISSUING_CENTRE)
+            .build();
+
+    private static final GenericIWXXMScanner VAA_SCANNER = GenericIWXXMScanner.builder()
+            .fieldProvider(new VAAFieldXPathProvider())
+            .messageType(MessageType.VOLCANIC_ASH_ADVISORY)
+            .requireReportStatus(false)
+            .extractValidityTime(false)
+            .locationIndicator(LocationIndicatorType.ISSUING_CENTRE, IWXXMField.ISSUING_CENTRE)
+            .build();
+
+    private static final GenericIWXXMScanner TCA_SCANNER = GenericIWXXMScanner.builder()
+            .fieldProvider(new TCAFieldXPathProvider())
+            .messageType(MessageType.TROPICAL_CYCLONE_ADVISORY)
+            .requireReportStatus(false)
+            .extractValidityTime(false)
+            .locationIndicator(LocationIndicatorType.ISSUING_CENTRE, IWXXMField.ISSUING_CENTRE)
+            .build();
+
     @Bean
     public IWXXMGenericBulletinScanner iwxxmGenericBulletinScanner(
             @Qualifier("genericAviationWeatherMessageIWXXMElementParser") final GenericAviationWeatherMessageParser<Element> messageParser) {
@@ -104,74 +155,16 @@ public class IWXXMGenericAviationWeatherMessageConverter {
     @Qualifier("genericAviationMessageScannerMap")
     public Map<ScannerKey, GenericAviationWeatherMessageScanner> genericAviationMessageScannerMap() {
         final Map<ScannerKey, GenericAviationWeatherMessageScanner> scannersMap = new HashMap<>();
-
-        // TAF scanner
-        final GenericIWXXMScanner tafScanner = GenericIWXXMScanner.builder()
-                .fieldProvider(new TAFFieldXPathProvider())
-                .messageType(MessageType.TAF)
-                .requireReportStatus(true)
-                .extractValidityTime(true)
-                .locationIndicator(LocationIndicatorType.AERODROME, IWXXMField.AERODROME)
-                .build();
-        scannersMap.put(new ScannerKey("TAF"), tafScanner);
-
-        // METAR/SPECI scanner
-        final GenericIWXXMScanner metarSpeciScanner = GenericIWXXMScanner.builder()
-                .fieldProvider(new METARSPECIFieldXPathProvider())
-                .messageTypeResolver(METAR_SPECI_TYPE_RESOLVER)
-                .requireReportStatus(true)
-                .extractValidityTime(false)
-                .extractObservationTime(true)
-                .locationIndicator(LocationIndicatorType.AERODROME, IWXXMField.AERODROME)
-                .build();
-        scannersMap.put(new ScannerKey("METAR"), metarSpeciScanner);
-        scannersMap.put(new ScannerKey("SPECI"), metarSpeciScanner);
-
-        // SIGMET/AIRMET scanner
-        final GenericIWXXMScanner sigmetAirmetScanner = GenericIWXXMScanner.builder()
-                .fieldProvider(new SIGMETAIRMETFieldXPathProvider())
-                .messageTypeResolver(SIGMET_AIRMET_TYPE_RESOLVER)
-                .requireReportStatus(true)
-                .extractValidityTime(true)
-                .locationIndicator(LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, IWXXMField.ORIGINATING_MWO)
-                .locationIndicator(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, IWXXMField.ISSUING_ATS_UNIT)
-                .locationIndicator(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, IWXXMField.ISSUING_ATS_REGION)
-                .build();
-        scannersMap.put(new ScannerKey("SIGMET"), sigmetAirmetScanner);
-        scannersMap.put(new ScannerKey("TropicalCycloneSIGMET"), sigmetAirmetScanner);
-        scannersMap.put(new ScannerKey("VolcanicAshSIGMET"), sigmetAirmetScanner);
-        scannersMap.put(new ScannerKey("AIRMET"), sigmetAirmetScanner);
-
-        // Space Weather Advisory scanner
-        final GenericIWXXMScanner swxScanner = GenericIWXXMScanner.builder()
-                .fieldProvider(new SWXFieldXPathProvider())
-                .messageType(MessageType.SPACE_WEATHER_ADVISORY)
-                .requireReportStatus(true)
-                .extractValidityTime(false)
-                .locationIndicator(LocationIndicatorType.ISSUING_CENTRE, IWXXMField.ISSUING_CENTRE)
-                .build();
-        scannersMap.put(new ScannerKey("SpaceWeatherAdvisory"), swxScanner);
-
-        // Volcanic Ash Advisory scanner
-        final GenericIWXXMScanner vaaScanner = GenericIWXXMScanner.builder()
-                .fieldProvider(new VAAFieldXPathProvider())
-                .messageType(MessageType.VOLCANIC_ASH_ADVISORY)
-                .requireReportStatus(false)
-                .extractValidityTime(false)
-                .locationIndicator(LocationIndicatorType.ISSUING_CENTRE, IWXXMField.ISSUING_CENTRE)
-                .build();
-        scannersMap.put(new ScannerKey("VolcanicAshAdvisory"), vaaScanner);
-
-        // Tropical Cyclone Advisory scanner
-        final GenericIWXXMScanner tcaScanner = GenericIWXXMScanner.builder()
-                .fieldProvider(new TCAFieldXPathProvider())
-                .messageType(MessageType.TROPICAL_CYCLONE_ADVISORY)
-                .requireReportStatus(false)
-                .extractValidityTime(false)
-                .locationIndicator(LocationIndicatorType.ISSUING_CENTRE, IWXXMField.ISSUING_CENTRE)
-                .build();
-        scannersMap.put(new ScannerKey("TropicalCycloneAdvisory"), tcaScanner);
-
+        scannersMap.put(new ScannerKey("TAF"), TAF_SCANNER);
+        scannersMap.put(new ScannerKey("METAR"), METAR_SPECI_SCANNER);
+        scannersMap.put(new ScannerKey("SPECI"), METAR_SPECI_SCANNER);
+        scannersMap.put(new ScannerKey("SIGMET"), SIGMET_AIRMET_SCANNER);
+        scannersMap.put(new ScannerKey("TropicalCycloneSIGMET"), SIGMET_AIRMET_SCANNER);
+        scannersMap.put(new ScannerKey("VolcanicAshSIGMET"), SIGMET_AIRMET_SCANNER);
+        scannersMap.put(new ScannerKey("AIRMET"), SIGMET_AIRMET_SCANNER);
+        scannersMap.put(new ScannerKey("SpaceWeatherAdvisory"), SWX_SCANNER);
+        scannersMap.put(new ScannerKey("VolcanicAshAdvisory"), VAA_SCANNER);
+        scannersMap.put(new ScannerKey("TropicalCycloneAdvisory"), TCA_SCANNER);
         return scannersMap;
     }
 
