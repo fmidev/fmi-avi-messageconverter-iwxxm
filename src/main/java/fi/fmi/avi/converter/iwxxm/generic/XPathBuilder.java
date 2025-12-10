@@ -57,9 +57,14 @@ public final class XPathBuilder {
      * <pre>/iwxxm:TAF/iwxxm:issueTime/gml:TimeInstant/gml:timePosition</pre>
      * <p>
      * Example output:
-     * <pre>/*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='TAF']/*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='issueTime']/*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='TimeInstant']/*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='timePosition']</pre>
+     * <pre>
+     *   /*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='TAF']
+     *   /*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='issueTime']
+     *   /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='TimeInstant']
+     *   /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='timePosition']
+     * </pre>
      *
-     * @param readableXPath XPath with namespace prefixes (e.g., iwxxm:, gml:, aixm:)
+     * @param readableXPath XPath with namespace prefixes (e.g. iwxxm:, gml:, aixm:)
      * @return version-agnostic XPath using local-name() and contains(namespace-uri(), ...)
      */
     public static String toVersionAgnostic(final String readableXPath) {

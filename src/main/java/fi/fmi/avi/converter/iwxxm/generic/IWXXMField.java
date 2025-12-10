@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.generic;
 
 public enum IWXXMField {
     ISSUE_TIME,
+    OBSERVATION_TIME,
     ISSUING_CENTRE,
     AERODROME,
     ORIGINATING_MWO,

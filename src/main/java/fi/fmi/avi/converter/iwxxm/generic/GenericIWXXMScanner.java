@@ -44,6 +44,7 @@ public class GenericIWXXMScanner extends AbstractGenericAviationWeatherMessageSc
     private final Function<Element, MessageType> messageTypeResolver;
     private final boolean requireReportStatus;
     private final boolean extractValidityTime;
+    private final boolean extractObservationTime;
     private final Map<GenericAviationWeatherMessage.LocationIndicatorType, IWXXMField> locationIndicatorFields;
 
     private GenericIWXXMScanner(final Builder builder) {
@@ -51,6 +52,7 @@ public class GenericIWXXMScanner extends AbstractGenericAviationWeatherMessageSc
         this.messageTypeResolver = Objects.requireNonNull(builder.messageTypeResolver, "messageTypeResolver");
         this.requireReportStatus = builder.requireReportStatus;
         this.extractValidityTime = builder.extractValidityTime;
+        this.extractObservationTime = builder.extractObservationTime;
         this.locationIndicatorFields = Collections.unmodifiableMap(
                 new EnumMap<>(builder.locationIndicatorFields));
     }
@@ -71,7 +73,6 @@ public class GenericIWXXMScanner extends AbstractGenericAviationWeatherMessageSc
             throws XPathExpressionException {
         final IssueList issues = new IssueList();
 
-        // 1. Resolve message type
         final MessageType messageType = messageTypeResolver.apply(featureElement);
         if (messageType == null) {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
@@ -81,22 +82,22 @@ public class GenericIWXXMScanner extends AbstractGenericAviationWeatherMessageSc
         }
         builder.setMessageType(messageType);
 
-        // 2. Report status (required or optional based on config)
         if (requireReportStatus) {
             collectReportStatus(featureElement, xpath, builder, issues);
         } else {
             collectOptionalReportStatus(featureElement, xpath, builder);
         }
 
-        // 3. Issue time (always extracted)
         collectIssueTimeUsingFieldProvider(featureElement, xpath, builder, issues);
 
-        // 4. Validity time (if configured)
+        if (extractObservationTime) {
+            collectObservationTimeUsingFieldProvider(featureElement, xpath, builder);
+        }
+
         if (extractValidityTime) {
             collectValidityTimeUsingFieldProvider(featureElement, xpath, builder, issues);
         }
 
-        // 5. Location indicators (based on config)
         if (!locationIndicatorFields.isEmpty()) {
             collectLocationIndicatorsUsingFieldProvider(featureElement, xpath, builder,
                     locationIndicatorFields, issues);
@@ -115,6 +116,7 @@ public class GenericIWXXMScanner extends AbstractGenericAviationWeatherMessageSc
         private Function<Element, MessageType> messageTypeResolver;
         private boolean requireReportStatus = true;
         private boolean extractValidityTime = false;
+        private boolean extractObservationTime = false;
 
         private Builder() {
         }
@@ -146,7 +148,7 @@ public class GenericIWXXMScanner extends AbstractGenericAviationWeatherMessageSc
 
         /**
          * Sets a dynamic message type resolver for this scanner.
-         * Use this when the scanner handles multiple message types (e.g., METAR/SPECI).
+         * Use this when the scanner handles multiple message types (e.g. METAR/SPECI).
          *
          * @param resolver function that determines message type from the root element
          * @return this builder
@@ -178,6 +180,18 @@ public class GenericIWXXMScanner extends AbstractGenericAviationWeatherMessageSc
          */
         public Builder extractValidityTime(final boolean extract) {
             this.extractValidityTime = extract;
+            return this;
+        }
+
+        /**
+         * Sets whether to extract observation time.
+         * Default is false. Should be enabled for METAR/SPECI messages.
+         *
+         * @param extract whether to extract observation time
+         * @return this builder
+         */
+        public Builder extractObservationTime(final boolean extract) {
+            this.extractObservationTime = extract;
             return this;
         }
 

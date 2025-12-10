@@ -19,6 +19,7 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
     private final boolean translated;
     private final ReportStatus reportStatus;
     private final String issueTime;
+    private final String observationTime;
     private final String validityStart;
     private final String validityEnd;
     private final Map<LocationIndicatorType, String> locationIndicators;
@@ -31,6 +32,7 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         this.translated = builder.translated;
         this.reportStatus = Objects.requireNonNull(builder.reportStatus, "reportStatus");
         this.issueTime = Objects.requireNonNull(builder.issueTime, "issueTime");
+        this.observationTime = builder.observationTime;
         this.validityStart = builder.validityStart;
         this.validityEnd = builder.validityEnd;
         this.locationIndicators = builder.locationIndicators != null
@@ -70,6 +72,14 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         return issueTime;
     }
 
+    public boolean hasObservationTime() {
+        return observationTime != null;
+    }
+
+    public String getObservationTime() {
+        return observationTime;
+    }
+
     public boolean hasValidityPeriod() {
         return validityStart != null && validityEnd != null;
     }
@@ -99,6 +109,7 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         private boolean translated;
         private ReportStatus reportStatus = ReportStatus.NORMAL;
         private String issueTime;
+        private String observationTime;
         private String validityStart;
         private String validityEnd;
         private Map<LocationIndicatorType, String> locationIndicators;
@@ -142,6 +153,11 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
 
         public Builder issueTime(final String issueTime) {
             this.issueTime = issueTime;
+            return this;
+        }
+
+        public Builder observationTime(final String observationTime) {
+            this.observationTime = observationTime;
             return this;
         }
 

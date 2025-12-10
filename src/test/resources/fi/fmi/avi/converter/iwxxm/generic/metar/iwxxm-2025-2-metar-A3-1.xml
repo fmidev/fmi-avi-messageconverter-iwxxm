@@ -41,7 +41,7 @@
 
   <iwxxm:observationTime>
     <gml:TimeInstant gml:id="uuid.85802aab-b4e5-4c4b-9303-10a02064e243">
-      <gml:timePosition>2012-08-22T16:30:00Z</gml:timePosition>
+      <gml:timePosition>2012-08-22T16:25:00Z</gml:timePosition>
     </gml:TimeInstant>
   </iwxxm:observationTime>
 

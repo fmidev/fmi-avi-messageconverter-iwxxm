@@ -220,6 +220,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 metar().fileName("iwxxm-21-metar.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
                         .issueTime("2012-08-22T16:30Z")
+                        .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .build(),
@@ -227,6 +228,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 metar().fileName("iwxxm-30-metar-A3-1.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
                         .issueTime("2012-08-22T16:30Z")
+                        .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .build(),
@@ -234,6 +236,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 metar().fileName("iwxxm-2021-2-metar-A3-1.xml")
                         .namespace(IWXXM_2021_2_NAMESPACE)
                         .issueTime("2012-08-22T16:30Z")
+                        .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .build(),
@@ -241,6 +244,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 metar().fileName("iwxxm-2023-1-metar-A3-1.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
                         .issueTime("2012-08-22T16:30Z")
+                        .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .build(),
@@ -248,6 +252,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 metar().fileName("iwxxm-2025-2-metar-A3-1.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
                         .issueTime("2012-08-22T16:30Z")
+                        .observationTime("2012-08-22T16:25Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .build(),
@@ -256,6 +261,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 speci().fileName("iwxxm-21-speci-A3-2.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
                         .issueTime("2012-08-15T11:15Z")
+                        .observationTime("2012-08-15T11:15Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .build(),
@@ -263,6 +269,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 speci().fileName("iwxxm-30-speci-A3-2.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
                         .issueTime("2012-08-15T11:15Z")
+                        .observationTime("2012-08-15T11:15Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .build(),
@@ -270,6 +277,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 speci().fileName("iwxxm-2021-2-speci-A3-2.xml")
                         .namespace(IWXXM_2021_2_NAMESPACE)
                         .issueTime("2012-08-15T11:15Z")
+                        .observationTime("2012-08-15T11:15Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .build(),
@@ -277,6 +285,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 speci().fileName("iwxxm-2023-1-speci-A3-2.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
                         .issueTime("2012-08-15T11:15Z")
+                        .observationTime("2012-08-15T11:15Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .build(),
@@ -284,6 +293,7 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 speci().fileName("iwxxm-2025-2-speci-A3-2.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
                         .issueTime("2012-08-15T11:15Z")
+                        .observationTime("2012-08-15T11:10Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .build(),
@@ -498,6 +508,12 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
             assertion.hasValidityPeriod(testCase.getValidityStart(), testCase.getValidityEnd());
         } else {
             assertion.hasNoValidityPeriod();
+        }
+
+        if (testCase.hasObservationTime()) {
+            assertion.hasObservationTime(testCase.getObservationTime());
+        } else {
+            assertion.hasNoObservationTime();
         }
 
         if (!testCase.getLocationIndicators().isEmpty()) {

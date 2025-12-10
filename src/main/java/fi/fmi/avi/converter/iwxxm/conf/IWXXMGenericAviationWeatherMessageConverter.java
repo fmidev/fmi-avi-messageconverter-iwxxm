@@ -121,6 +121,7 @@ public class IWXXMGenericAviationWeatherMessageConverter {
                 .messageTypeResolver(METAR_SPECI_TYPE_RESOLVER)
                 .requireReportStatus(true)
                 .extractValidityTime(false)
+                .extractObservationTime(true)
                 .locationIndicator(LocationIndicatorType.AERODROME, IWXXMField.AERODROME)
                 .build();
         scannersMap.put(new ScannerKey("METAR"), metarSpeciScanner);

@@ -40,6 +40,25 @@ public final class METARSPECIFieldXPathProvider implements FieldXPathProvider {
                         + "/gml:timePosition")
                         + ")[1])"));
 
+        // OBSERVATION_TIME for METAR/SPECI:
+        // 1) IWXXM 3.0+: observationTime/TimeInstant/timePosition directly under METAR/SPECI
+        // 2) IWXXM 2.1: observation/OM_Observation/phenomenonTime/TimeInstant/timePosition
+        map.put(IWXXMField.OBSERVATION_TIME, Arrays.asList(
+                // IWXXM 3.0+ style
+                "normalize-space((" + METAR_OR_SPECI
+                        + XPathBuilder.toVersionAgnostic("/iwxxm:observationTime"
+                        + "/gml:TimeInstant"
+                        + "/gml:timePosition")
+                        + ")[1])",
+                // IWXXM 2.1 style (same as issue time - phenomenonTime is the observation time)
+                "normalize-space((" + METAR_OR_SPECI
+                        + XPathBuilder.toVersionAgnostic("/iwxxm:observation"
+                        + "/om:OM_Observation"
+                        + "/om:phenomenonTime"
+                        + "/gml:TimeInstant"
+                        + "/gml:timePosition")
+                        + ")[1])"));
+
         // AERODROME location indicator:
         // 1) IWXXM 3.0+: aerodrome/AirportHeliport/timeSlice/AirportHeliportTimeSlice
         // 2) IWXXM 2.1: observation/OM_Observation/featureOfInterest/SF_SpatialSamplingFeature/

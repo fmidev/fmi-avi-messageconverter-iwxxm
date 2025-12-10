@@ -153,7 +153,7 @@ public final class GenericMessageAssertion {
     /**
      * Asserts the issue time.
      *
-     * @param expected ISO-8601 formatted time string (e.g., "2017-07-30T11:30Z")
+     * @param expected ISO-8601 formatted time string (e.g. "2017-07-30T11:30Z")
      */
     public GenericMessageAssertion hasIssueTime(final String expected) {
         assertMessageNotNull();
@@ -162,6 +162,30 @@ public final class GenericMessageAssertion {
                 .orElse(null))
                 .as("issueTime")
                 .isEqualTo(ZonedDateTime.parse(expected));
+        return this;
+    }
+
+    /**
+     * Asserts the observation time.
+     *
+     * @param expected ISO-8601 formatted time string (e.g. "2012-08-22T16:30Z")
+     */
+    public GenericMessageAssertion hasObservationTime(final String expected) {
+        assertMessageNotNull();
+        assertThat(message.getObservationTime()
+                .flatMap(PartialOrCompleteTimeInstant::getCompleteTime)
+                .orElse(null))
+                .as("observationTime")
+                .isEqualTo(ZonedDateTime.parse(expected));
+        return this;
+    }
+
+    /**
+     * Asserts that there is no observation time.
+     */
+    public GenericMessageAssertion hasNoObservationTime() {
+        assertMessageNotNull();
+        assertThat(message.getObservationTime()).as("observationTime").isEmpty();
         return this;
     }
 

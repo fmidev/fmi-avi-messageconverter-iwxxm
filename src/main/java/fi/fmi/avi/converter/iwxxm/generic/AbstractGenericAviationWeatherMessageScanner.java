@@ -192,6 +192,19 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
                 "No issue time found for IWXXM message"));
     }
 
+    protected void collectObservationTimeUsingFieldProvider(final Element element,
+                                                            final XPath xpath,
+                                                            final GenericAviationWeatherMessageImpl.Builder builder)
+            throws XPathExpressionException {
+        for (final String expression : fieldXPathProvider.getXPaths(IWXXMField.OBSERVATION_TIME)) {
+            final Optional<ZonedDateTime> time = evaluateZonedDateTime(element, xpath, expression);
+            if (time.isPresent()) {
+                builder.setObservationTime(PartialOrCompleteTimeInstant.of(time.get()));
+                return;
+            }
+        }
+    }
+
     protected void collectLocationIndicatorsUsingFieldProvider(
             final Element featureElement,
             final XPath xpath,
