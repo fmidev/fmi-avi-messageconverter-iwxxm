@@ -1,14 +1,12 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
 import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.model.AviationWeatherMessage.ReportStatus;
 import fi.fmi.avi.model.GenericAviationWeatherMessage.LocationIndicatorType;
 import fi.fmi.avi.model.MessageType;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public final class GenericAviationWeatherMessageDOMParserTestCase {
 
@@ -23,6 +21,7 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
     private final String validityStart;
     private final String validityEnd;
     private final Map<LocationIndicatorType, String> locationIndicators;
+    private final List<ExpectedIssue> expectedIssues;
 
     private GenericAviationWeatherMessageDOMParserTestCase(final Builder builder) {
         this.fileName = Objects.requireNonNull(builder.fileName, "fileName");
@@ -30,14 +29,17 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         this.messageType = Objects.requireNonNull(builder.messageType, "messageType");
         this.hints = builder.hints != null ? builder.hints : new ConversionHints();
         this.translated = builder.translated;
-        this.reportStatus = Objects.requireNonNull(builder.reportStatus, "reportStatus");
-        this.issueTime = Objects.requireNonNull(builder.issueTime, "issueTime");
+        this.reportStatus = builder.reportStatus;
+        this.issueTime = builder.issueTime;
         this.observationTime = builder.observationTime;
         this.validityStart = builder.validityStart;
         this.validityEnd = builder.validityEnd;
         this.locationIndicators = builder.locationIndicators != null
                 ? Collections.unmodifiableMap(new HashMap<>(builder.locationIndicators))
                 : Collections.emptyMap();
+        this.expectedIssues = builder.expectedIssues != null
+                ? Collections.unmodifiableList(new ArrayList<>(builder.expectedIssues))
+                : Collections.emptyList();
     }
 
     public static Builder builder() {
@@ -68,8 +70,16 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         return reportStatus;
     }
 
+    public boolean hasReportStatus() {
+        return reportStatus != null;
+    }
+
     public String getIssueTime() {
         return issueTime;
+    }
+
+    public boolean hasIssueTime() {
+        return issueTime != null;
     }
 
     public boolean hasObservationTime() {
@@ -96,9 +106,61 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         return locationIndicators;
     }
 
+    public boolean expectsIssues() {
+        return !expectedIssues.isEmpty();
+    }
+
+    public List<ExpectedIssue> getExpectedIssues() {
+        return expectedIssues;
+    }
+
     @Override
     public String toString() {
         return fileName;
+    }
+
+    /**
+     * Represents an expected conversion issue for test verification.
+     */
+    public static final class ExpectedIssue {
+        private final ConversionIssue.Severity severity;
+        private final ConversionIssue.Type type;
+        private final String messageSubstring;
+
+        private ExpectedIssue(final ConversionIssue.Severity severity,
+                              final ConversionIssue.Type type,
+                              final String messageSubstring) {
+            this.severity = severity;
+            this.type = type;
+            this.messageSubstring = messageSubstring;
+        }
+
+        public static ExpectedIssue of(final ConversionIssue.Severity severity,
+                                       final ConversionIssue.Type type,
+                                       final String messageSubstring) {
+            return new ExpectedIssue(severity, type, messageSubstring);
+        }
+
+        public static ExpectedIssue of(final ConversionIssue.Severity severity,
+                                       final ConversionIssue.Type type) {
+            return new ExpectedIssue(severity, type, null);
+        }
+
+        public ConversionIssue.Severity getSeverity() {
+            return severity;
+        }
+
+        public ConversionIssue.Type getType() {
+            return type;
+        }
+
+        public String getMessageSubstring() {
+            return messageSubstring;
+        }
+
+        public boolean hasMessageSubstring() {
+            return messageSubstring != null;
+        }
     }
 
     public static final class Builder {
@@ -113,6 +175,7 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         private String validityStart;
         private String validityEnd;
         private Map<LocationIndicatorType, String> locationIndicators;
+        private List<ExpectedIssue> expectedIssues;
 
         private Builder() {
         }
@@ -193,6 +256,30 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
             return locationIndicator(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, atsUnit)
                     .locationIndicator(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, atsRegion)
                     .locationIndicator(LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, mwo);
+        }
+
+        /**
+         * Adds an expected issue with the specified severity and type.
+         */
+        public Builder expectedIssue(final ConversionIssue.Severity severity, final ConversionIssue.Type type) {
+            if (this.expectedIssues == null) {
+                this.expectedIssues = new ArrayList<>();
+            }
+            this.expectedIssues.add(ExpectedIssue.of(severity, type));
+            return this;
+        }
+
+        /**
+         * Adds an expected issue with the specified severity, type, and message substring.
+         */
+        public Builder expectedIssue(final ConversionIssue.Severity severity,
+                                     final ConversionIssue.Type type,
+                                     final String messageSubstring) {
+            if (this.expectedIssues == null) {
+                this.expectedIssues = new ArrayList<>();
+            }
+            this.expectedIssues.add(ExpectedIssue.of(severity, type, messageSubstring));
+            return this;
         }
 
         public GenericAviationWeatherMessageDOMParserTestCase build() {

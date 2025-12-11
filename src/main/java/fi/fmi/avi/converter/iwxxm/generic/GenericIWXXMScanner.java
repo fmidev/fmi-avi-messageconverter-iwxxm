@@ -8,7 +8,6 @@ import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 import org.w3c.dom.Element;
 
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpressionException;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
@@ -69,8 +68,7 @@ public class GenericIWXXMScanner extends AbstractGenericAviationWeatherMessageSc
     @Override
     public IssueList collectMessage(final Element featureElement,
                                     final XPath xpath,
-                                    final GenericAviationWeatherMessageImpl.Builder builder)
-            throws XPathExpressionException {
+                                    final GenericAviationWeatherMessageImpl.Builder builder) {
         final IssueList issues = new IssueList();
 
         final MessageType messageType = messageTypeResolver.apply(featureElement);
@@ -85,13 +83,13 @@ public class GenericIWXXMScanner extends AbstractGenericAviationWeatherMessageSc
         if (requireReportStatus) {
             collectReportStatus(featureElement, xpath, builder, issues);
         } else {
-            collectOptionalReportStatus(featureElement, xpath, builder);
+            collectOptionalReportStatus(featureElement, xpath, builder, issues);
         }
 
         collectIssueTimeUsingFieldProvider(featureElement, xpath, builder, issues);
 
         if (extractObservationTime) {
-            collectObservationTimeUsingFieldProvider(featureElement, xpath, builder);
+            collectObservationTimeUsingFieldProvider(featureElement, xpath, builder, issues);
         }
 
         if (extractValidityTime) {

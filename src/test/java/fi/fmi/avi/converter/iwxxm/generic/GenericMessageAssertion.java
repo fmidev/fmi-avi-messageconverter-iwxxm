@@ -1,5 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.model.AviationWeatherMessage.ReportStatus;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
@@ -85,6 +86,82 @@ public final class GenericMessageAssertion {
     public GenericMessageAssertion hasNoIssues() {
         assertThat(result.getConversionIssues()).as("conversionIssues").isEmpty();
         assertThat(result.getStatus()).as("status").isEqualTo(ConversionResult.Status.SUCCESS);
+        return this;
+    }
+
+    /**
+     * Asserts that the conversion has issues (but still produced a result).
+     */
+    public GenericMessageAssertion hasIssues() {
+        assertThat(result.getConversionIssues()).as("conversionIssues").isNotEmpty();
+        return this;
+    }
+
+    /**
+     * Asserts that the conversion has an issue with the specified severity.
+     *
+     * @param severity the expected issue severity
+     */
+    public GenericMessageAssertion hasIssueWithSeverity(final ConversionIssue.Severity severity) {
+        assertThat(result.getConversionIssues())
+                .as("conversionIssues with severity " + severity)
+                .anyMatch(issue -> issue.getSeverity() == severity);
+        return this;
+    }
+
+    /**
+     * Asserts that the conversion has an issue with the specified type.
+     *
+     * @param type the expected issue type
+     */
+    public GenericMessageAssertion hasIssueWithType(final ConversionIssue.Type type) {
+        assertThat(result.getConversionIssues())
+                .as("conversionIssues with type " + type)
+                .anyMatch(issue -> issue.getType() == type);
+        return this;
+    }
+
+    /**
+     * Asserts that the conversion has an issue whose message contains the specified substring.
+     *
+     * @param messageSubstring the substring expected in an issue message
+     */
+    public GenericMessageAssertion hasIssueContaining(final String messageSubstring) {
+        assertThat(result.getConversionIssues())
+                .as("conversionIssues containing '" + messageSubstring + "'")
+                .anyMatch(issue -> issue.getMessage() != null && issue.getMessage().contains(messageSubstring));
+        return this;
+    }
+
+    /**
+     * Asserts that the conversion has an issue with the specified severity and type.
+     *
+     * @param severity the expected issue severity
+     * @param type     the expected issue type
+     */
+    public GenericMessageAssertion hasIssue(final ConversionIssue.Severity severity, final ConversionIssue.Type type) {
+        assertThat(result.getConversionIssues())
+                .as("conversionIssues with severity " + severity + " and type " + type)
+                .anyMatch(issue -> issue.getSeverity() == severity && issue.getType() == type);
+        return this;
+    }
+
+    /**
+     * Asserts that the conversion has an issue with the specified severity, type, and message substring.
+     *
+     * @param severity         the expected issue severity
+     * @param type             the expected issue type
+     * @param messageSubstring the substring expected in the issue message
+     */
+    public GenericMessageAssertion hasIssue(final ConversionIssue.Severity severity,
+                                            final ConversionIssue.Type type,
+                                            final String messageSubstring) {
+        assertThat(result.getConversionIssues())
+                .as("conversionIssues with severity " + severity + ", type " + type + ", containing '" + messageSubstring + "'")
+                .anyMatch(issue -> issue.getSeverity() == severity
+                        && issue.getType() == type
+                        && issue.getMessage() != null
+                        && issue.getMessage().contains(messageSubstring));
         return this;
     }
 

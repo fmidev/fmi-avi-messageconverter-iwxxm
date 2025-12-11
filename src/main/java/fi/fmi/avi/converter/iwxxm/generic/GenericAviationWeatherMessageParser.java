@@ -18,7 +18,6 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.StringWriter;
 import java.util.Map;
@@ -34,10 +33,18 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         this.scanners = requireNonNull(scanners, "scanners");
     }
 
-    protected static void collectTranslationStatus(final Element featureElement, final XPath xpath, final GenericAviationWeatherMessageImpl.Builder builder)
-            throws XPathExpressionException {
-        final String translatedBulletinID = xpath.compile("@translatedBulletinID").evaluate(featureElement);
-        builder.setTranslated(translatedBulletinID != null && !translatedBulletinID.isEmpty());
+    protected static void collectTranslationStatus(final Element featureElement,
+                                                   final XPath xpath,
+                                                   final GenericAviationWeatherMessageImpl.Builder builder,
+                                                   final ConversionResult<GenericAviationWeatherMessage> result) {
+        try {
+            final String translatedBulletinID = xpath.compile("@translatedBulletinID").evaluate(featureElement);
+            builder.setTranslated(translatedBulletinID != null && !translatedBulletinID.isEmpty());
+        } catch (final Exception ex) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR,
+                    ConversionIssue.Type.OTHER,
+                    "Unable to parse translation status", ex));
+        }
     }
 
     @Override
@@ -65,37 +72,37 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         builder.setNullableXMLNamespace(featureElement.getNamespaceURI());
 
         final GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getLocalName()));
-        try {
-            collectTranslationStatus(featureElement, xpath, builder);
-            if (scanner == null) {
-                retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                        "Unknown message type '" + featureElement.getLocalName() + "'"));
-            } else {
-                retval.addIssue(scanner.collectMessage(featureElement, xpath, builder));
-            }
-            try {
-                final StringWriter sw = new StringWriter();
-                final Result output = new StreamResult(sw);
-                final TransformerFactory tFactory = TransformerFactory.newInstance();
-                final Transformer transformer = tFactory.newTransformer();
 
-                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+        collectTranslationStatus(featureElement, xpath, builder, retval);
 
-                final DOMSource dsource = new DOMSource(featureElement);
-                transformer.transform(dsource, output);
-                builder.setOriginalMessage(sw.toString());
-            } catch (final TransformerException e) {
-                retval.addIssue(
-                        new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Unable to write the message content as " + "string",
-                                e));
-            }
-            retval.setConvertedMessage(builder.build());
-        } catch (final XPathExpressionException xpee) {
-            retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER,
-                    "Error in parsing content as a GenericAviationWeatherMessage", xpee));
+        if (scanner == null) {
+            retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                    "Unknown message type '" + featureElement.getLocalName() + "'"));
+        } else {
+            retval.addIssue(scanner.collectMessage(featureElement, xpath, builder));
         }
+
+        try {
+            final StringWriter sw = new StringWriter();
+            final Result output = new StreamResult(sw);
+            final TransformerFactory tFactory = TransformerFactory.newInstance();
+            final Transformer transformer = tFactory.newTransformer();
+
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+            final DOMSource dsource = new DOMSource(featureElement);
+            transformer.transform(dsource, output);
+            builder.setOriginalMessage(sw.toString());
+        } catch (final TransformerException e) {
+            retval.addIssue(
+                    new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER,
+                            "Unable to write the message content as string", e));
+        }
+
+        retval.setConvertedMessage(builder.build());
+
         return retval;
     }
 

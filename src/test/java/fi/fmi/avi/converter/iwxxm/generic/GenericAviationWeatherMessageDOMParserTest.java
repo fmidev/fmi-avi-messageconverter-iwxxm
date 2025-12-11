@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.generic;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
@@ -102,6 +103,32 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .aerodrome("YUDO")
                         .build(),
 
+                // TAF error cases
+                taf().fileName("iwxxm-2025-2-taf-invalid-issue-time.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .reportStatus(ReportStatus.NORMAL)
+                        .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
+                        .aerodrome("YUDO")
+                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "issue time")
+                        .build(),
+
+                taf().fileName("iwxxm-2025-2-taf-invalid-validity-time.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .reportStatus(ReportStatus.NORMAL)
+                        .issueTime("2012-08-15T18:00Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "valid time")
+                        .build(),
+
+                taf().fileName("iwxxm-2025-2-taf-missing-aerodrome.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .reportStatus(ReportStatus.NORMAL)
+                        .issueTime("2012-08-15T18:00Z")
+                        .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
+                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "location indicator")
+                        .build(),
+
                 // SIGMET tests
                 sigmet().fileName("iwxxm-21-sigmet.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
@@ -178,6 +205,15 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .issueTime("2018-07-25T16:00:00Z")
                         .validityPeriod("2018-07-25T16:00Z", "2018-07-25T22:00Z")
                         .sigmetLocationIndicators("EGGX", "EGGX", "EGRR")
+                        .build(),
+
+                // SIGMET error cases
+                sigmet().fileName("iwxxm-2025-2-sigmet-missing-mwo.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .reportStatus(ReportStatus.NORMAL)
+                        .issueTime("2012-08-10T12:00Z")
+                        .validityPeriod("2012-08-10T12:00Z", "2012-08-10T16:00Z")
+                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "ORIGINATING_METEOROLOGICAL_WATCH_OFFICE")
                         .build(),
 
                 // AIRMET tests
@@ -257,6 +293,14 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .aerodrome("YUDO")
                         .build(),
 
+                metar().fileName("iwxxm-2025-2-metar-invalid-observation-time.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-22T16:30Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "observation time")
+                        .build(),
+
                 // SPECI tests
                 speci().fileName("iwxxm-21-speci-A3-2.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
@@ -334,6 +378,15 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .issueTime("2020-11-08T01:00Z")
                         .noValidityPeriod()
                         .issuingCentre("DONLON")
+                        .build(),
+
+                // Space Weather Advisory error cases
+                swx().fileName("iwxxm-2025-2-spacewx-missing-issuing-centre.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .reportStatus(ReportStatus.NORMAL)
+                        .issueTime("2016-11-08T01:00Z")
+                        .noValidityPeriod()
+                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "ISSUING_CENTRE")
                         .build(),
 
 
@@ -489,14 +542,33 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
                 IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, testCase.getHints());
 
-        final GenericMessageAssertion assertion = assertMessage(result)
-                .hasNoIssues()
-                .isPresent()
+        final GenericMessageAssertion assertion = assertMessage(result);
+
+        if (testCase.expectsIssues()) {
+            assertion.hasIssues();
+            for (final GenericAviationWeatherMessageDOMParserTestCase.ExpectedIssue expectedIssue : testCase.getExpectedIssues()) {
+                if (expectedIssue.hasMessageSubstring()) {
+                    assertion.hasIssue(expectedIssue.getSeverity(), expectedIssue.getType(), expectedIssue.getMessageSubstring());
+                } else {
+                    assertion.hasIssue(expectedIssue.getSeverity(), expectedIssue.getType());
+                }
+            }
+        } else {
+            assertion.hasNoIssues();
+        }
+
+        assertion.isPresent()
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(testCase.getNamespace())
-                .hasMessageType(testCase.getMessageType())
-                .hasReportStatus(testCase.getReportStatus())
-                .hasIssueTime(testCase.getIssueTime());
+                .hasMessageType(testCase.getMessageType());
+
+        if (testCase.hasReportStatus()) {
+            assertion.hasReportStatus(testCase.getReportStatus());
+        }
+
+        if (testCase.hasIssueTime()) {
+            assertion.hasIssueTime(testCase.getIssueTime());
+        }
 
         if (testCase.isTranslated()) {
             assertion.isTranslated();
