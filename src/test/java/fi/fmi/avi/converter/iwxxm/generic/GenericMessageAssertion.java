@@ -98,42 +98,6 @@ public final class GenericMessageAssertion {
     }
 
     /**
-     * Asserts that the conversion has an issue with the specified severity.
-     *
-     * @param severity the expected issue severity
-     */
-    public GenericMessageAssertion hasIssueWithSeverity(final ConversionIssue.Severity severity) {
-        assertThat(result.getConversionIssues())
-                .as("conversionIssues with severity " + severity)
-                .anyMatch(issue -> issue.getSeverity() == severity);
-        return this;
-    }
-
-    /**
-     * Asserts that the conversion has an issue with the specified type.
-     *
-     * @param type the expected issue type
-     */
-    public GenericMessageAssertion hasIssueWithType(final ConversionIssue.Type type) {
-        assertThat(result.getConversionIssues())
-                .as("conversionIssues with type " + type)
-                .anyMatch(issue -> issue.getType() == type);
-        return this;
-    }
-
-    /**
-     * Asserts that the conversion has an issue whose message contains the specified substring.
-     *
-     * @param messageSubstring the substring expected in an issue message
-     */
-    public GenericMessageAssertion hasIssueContaining(final String messageSubstring) {
-        assertThat(result.getConversionIssues())
-                .as("conversionIssues containing '" + messageSubstring + "'")
-                .anyMatch(issue -> issue.getMessage() != null && issue.getMessage().contains(messageSubstring));
-        return this;
-    }
-
-    /**
      * Asserts that the conversion has an issue with the specified severity and type.
      *
      * @param severity the expected issue severity
