@@ -5,7 +5,6 @@ import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMParser;
-import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.ReferredObjectRetrievalContext;
 import fi.fmi.avi.converter.iwxxm.XMLSchemaInfo;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
@@ -66,7 +65,6 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         final ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
-        xpath.setNamespaceContext(new IWXXMNamespaceContext());
         final GenericAviationWeatherMessageImpl.Builder builder = GenericAviationWeatherMessageImpl.builder();
         builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
         builder.setNullableXMLNamespace(featureElement.getNamespaceURI());

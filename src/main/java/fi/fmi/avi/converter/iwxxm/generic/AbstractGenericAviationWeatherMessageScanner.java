@@ -166,9 +166,9 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
                 final Element validTimeElement = (Element) results.item(0);
 
                 final Optional<ZonedDateTime> startTime = evaluateZonedDateTime(validTimeElement, xpath,
-                        "./gml:TimePeriod/gml:beginPosition");
+                        XPathBuilder.text("./gml:TimePeriod/gml:beginPosition"));
                 final Optional<ZonedDateTime> endTime = evaluateZonedDateTime(validTimeElement, xpath,
-                        "./gml:TimePeriod/gml:endPosition");
+                        XPathBuilder.text("./gml:TimePeriod/gml:endPosition"));
 
                 if (startTime.isPresent() && endTime.isPresent()) {
                     builder.setValidityTime(PartialOrCompleteTimePeriod.builder()
@@ -239,8 +239,8 @@ public abstract class AbstractGenericAviationWeatherMessageScanner implements Ge
             final IssueList issues) {
 
         try {
-            final XPathExpression designatorExpression = xpath.compile("./aixm:designator");
-            final XPathExpression nameExpression = xpath.compile("./aixm:name");
+            final XPathExpression designatorExpression = xpath.compile(XPathBuilder.text("./aixm:designator"));
+            final XPathExpression nameExpression = xpath.compile(XPathBuilder.text("./aixm:name"));
 
             for (final Map.Entry<GenericAviationWeatherMessage.LocationIndicatorType, IWXXMField> entry
                     : fieldByLocationType.entrySet()) {
