@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Field-XPath provider for generic IWXXM Space Weather Advisory messages.
+ * Version agnostic XPath provider for Space Weather Advisories.
  */
 public final class SWXFieldXPathProvider implements FieldXPathProvider {
 

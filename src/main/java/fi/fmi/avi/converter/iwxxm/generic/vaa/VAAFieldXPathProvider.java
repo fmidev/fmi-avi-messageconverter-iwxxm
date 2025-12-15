@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Field-XPath provider for generic IWXXM Volcanic Ash Advisory messages.
+ * Version agnostic XPath provider for Volcanic Ash Advisories.
  */
 public final class VAAFieldXPathProvider implements FieldXPathProvider {
 

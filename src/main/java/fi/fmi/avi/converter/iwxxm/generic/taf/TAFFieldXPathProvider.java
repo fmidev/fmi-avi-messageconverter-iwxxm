@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Field-XPath provider for generic IWXXM TAF messages.
+ * Version agnostic XPath provider for TAF messages.
  */
 public final class TAFFieldXPathProvider implements FieldXPathProvider {
 

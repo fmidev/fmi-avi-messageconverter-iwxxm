@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Field-XPath provider for generic IWXXM METAR/SPECI messages.
+ * Version agnostic XPath provider for METAR/SPECI messages.
  */
 public final class METARSPECIFieldXPathProvider implements FieldXPathProvider {
 

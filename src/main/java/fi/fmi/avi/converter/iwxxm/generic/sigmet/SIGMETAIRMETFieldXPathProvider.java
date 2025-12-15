@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Field-XPath provider for generic IWXXM SIGMET and AIRMET messages.
+ * Version agnostic XPath provider for SIGMET and AIRMET messages.
  */
 public final class SIGMETAIRMETFieldXPathProvider implements FieldXPathProvider {
 
