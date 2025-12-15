@@ -12,27 +12,23 @@ import java.util.Map;
 /**
  * Field-XPath provider for generic IWXXM Tropical Cyclone Advisory messages.
  */
-public class TCAFieldXPathProvider implements FieldXPathProvider {
+public final class TCAFieldXPathProvider implements FieldXPathProvider {
 
     private final Map<IWXXMField, List<String>> expressions;
 
     public TCAFieldXPathProvider() {
         final Map<IWXXMField, List<String>> map = new EnumMap<>(IWXXMField.class);
 
-        // ISSUE_TIME for TCA (same structure across all IWXXM versions)
-        map.put(IWXXMField.ISSUE_TIME, Collections.singletonList(
-                XPathBuilder.text("/iwxxm:TropicalCycloneAdvisory"
-                        + "/iwxxm:issueTime"
+        XPathBuilder.put(map, IWXXMField.ISSUE_TIME,
+                "./iwxxm:issueTime"
                         + "/gml:TimeInstant"
-                        + "/gml:timePosition")));
+                        + "/gml:timePosition");
 
-        // ISSUING_CENTRE (same structure across all IWXXM versions)
-        map.put(IWXXMField.ISSUING_CENTRE, Collections.singletonList(
-                XPathBuilder.node("/iwxxm:TropicalCycloneAdvisory"
-                        + "/iwxxm:issuingTropicalCycloneAdvisoryCentre"
+        XPathBuilder.put(map, IWXXMField.ISSUING_CENTRE,
+                "./iwxxm:issuingTropicalCycloneAdvisoryCentre"
                         + "/aixm:Unit"
                         + "/aixm:timeSlice"
-                        + "/aixm:UnitTimeSlice")));
+                        + "/aixm:UnitTimeSlice");
 
         this.expressions = Collections.unmodifiableMap(map);
     }

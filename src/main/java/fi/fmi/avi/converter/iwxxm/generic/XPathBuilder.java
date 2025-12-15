@@ -1,8 +1,6 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,59 +10,51 @@ import java.util.regex.Pattern;
  * <p>
  * This allows writing readable XPaths like:
  * <pre>
- *   /iwxxm:TAF/iwxxm:issueTime/gml:TimeInstant/gml:timePosition
+ *   ./iwxxm:issueTime/gml:TimeInstant/gml:timePosition
  * </pre>
  * Which get converted to:
  * <pre>
- *   /*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='TAF']
- *   /*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='issueTime']
- *   /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='TimeInstant']
- *   /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='timePosition']
+ *   ./*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='issueTime']
+ *    /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='TimeInstant']
+ *    /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='timePosition']
  * </pre>
+ * Both relative paths (starting with ./) and absolute paths (starting with /) are supported.
  */
 public final class XPathBuilder {
 
-    public static final String IWXXM = "://icao.int/iwxxm/";
-    public static final String GML = "://www.opengis.net/gml/";
-    public static final String AIXM = "://www.aixm.aero/schema/";
-    public static final String OM = "://www.opengis.net/om/";
-    public static final String SAMS = "://www.opengis.net/samplingSpatial/";
-    public static final String SAM = "://www.opengis.net/sampling/";
-
     private static final Map<String, String> PREFIX_TO_NS_PATTERN;
-    // Matches path elements like /prefix:localName or /prefix:localName[predicate]
-    private static final Pattern PREFIXED_ELEMENT = Pattern.compile("/([a-z]+):([A-Za-z_][A-Za-z0-9_]*)");
+    // Matches /prefix:localName or ./prefix:localName in XPath expressions. Predicates like [1] are not matched and remain untouched.
+    private static final Pattern PREFIXED_ELEMENT = Pattern.compile("(\\.)?/([a-zA-Z]+):([A-Za-z_][A-Za-z0-9_]*)");
 
     static {
         final Map<String, String> map = new HashMap<>();
-        map.put("iwxxm", IWXXM);
-        map.put("gml", GML);
-        map.put("aixm", AIXM);
-        map.put("om", OM);
-        map.put("sams", SAMS);
-        map.put("sam", SAM);
+        map.put("iwxxm", "://icao.int/iwxxm/");
+        map.put("gml", "://www.opengis.net/gml/");
+        map.put("aixm", "://www.aixm.aero/schema/");
+        map.put("om", "://www.opengis.net/om/");
+        map.put("sams", "://www.opengis.net/samplingSpatial/");
+        map.put("sam", "://www.opengis.net/sampling/");
+        map.put("collect", "://def.wmo.int/collect/");
         PREFIX_TO_NS_PATTERN = Collections.unmodifiableMap(map);
     }
 
     private XPathBuilder() {
-        // Utility class
     }
 
     /**
      * Converts a human-readable XPath with namespace prefixes into a version-agnostic XPath.
      * <p>
      * Example input:
-     * <pre>/iwxxm:TAF/iwxxm:issueTime/gml:TimeInstant/gml:timePosition</pre>
+     * <pre>./iwxxm:issueTime/gml:TimeInstant/gml:timePosition</pre>
      * <p>
      * Example output:
      * <pre>
-     *   /*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='TAF']
-     *   /*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='issueTime']
-     *   /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='TimeInstant']
-     *   /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='timePosition']
+     *   ./*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='issueTime']
+     *    /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='TimeInstant']
+     *    /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='timePosition']
      * </pre>
      *
-     * @param readableXPath XPath with namespace prefixes (e.g. iwxxm:, gml:, aixm:)
+     * @param readableXPath XPath with namespace prefixes (e.g. iwxxm:, gml:, aixm:), can be relative (./) or absolute (/)
      * @return version-agnostic XPath using local-name() and contains(namespace-uri(), ...)
      */
     public static String toVersionAgnostic(final String readableXPath) {
@@ -72,17 +62,19 @@ public final class XPathBuilder {
         final StringBuffer result = new StringBuffer();
 
         while (matcher.find()) {
-            final String prefix = matcher.group(1);
-            final String localName = matcher.group(2);
+            final String dot = matcher.group(1);  // Optional leading "." for relative paths
+            final String prefix = matcher.group(2);
+            final String localName = matcher.group(3);
             final String nsPattern = PREFIX_TO_NS_PATTERN.get(prefix);
 
             final String replacement;
+            final String pathStart = dot != null ? "./*" : "/*";
             if (nsPattern != null) {
-                replacement = String.format("/*[contains(namespace-uri(),'%s') and local-name()='%s']",
-                        nsPattern, localName);
+                replacement = String.format("%s[contains(namespace-uri(),'%s') and local-name()='%s']",
+                        pathStart, nsPattern, localName);
             } else {
                 // Unknown prefix, just match by local name
-                replacement = "/*[local-name()='" + localName + "']";
+                replacement = pathStart + "[local-name()='" + localName + "']";
             }
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
@@ -114,60 +106,37 @@ public final class XPathBuilder {
     }
 
     /**
-     * Creates a relative XPath for selecting child elements (starting with ./ instead of /).
-     * Useful for XPaths evaluated relative to an already-selected node.
+     * Converts a human-readable XPath and wraps it according to the field type.
      *
-     * @param readableXPath XPath with namespace prefixes, starting with ./
-     * @return version-agnostic relative XPath
+     * @param readableXPath XPath with namespace prefixes
+     * @param field the field being queried, determines wrapping style
+     * @return version-agnostic XPath with appropriate wrapper
      */
-    public static String relative(final String readableXPath) {
-        if (!readableXPath.startsWith("./")) {
-            throw new IllegalArgumentException("Relative XPath must start with './': " + readableXPath);
+    public static String wrap(final String readableXPath, final IWXXMField field) {
+        switch (field.getType()) {
+            case TEXT:
+                return text(readableXPath);
+            case NODE:
+                return node(readableXPath);
+            default:
+                throw new IllegalArgumentException("Unknown field type: " + field.getType());
         }
-        // Convert ./prefix:element to ./*[...]
-        return "." + toVersionAgnostic(readableXPath.substring(1));
     }
 
     /**
-     * Creates an element selector that matches any of the given local names within a namespace.
-     * Useful for METAR/SPECI where either root element is valid.
-     * <p>
-     * Example:
-     * <pre>
-     *   anyOf("iwxxm", "METAR", "SPECI")
-     * </pre>
-     * Produces:
-     * <pre>
-     *   *[contains(namespace-uri(),'://icao.int/iwxxm/') and (local-name()='METAR' or local-name()='SPECI')]
-     * </pre>
+     * Helper method for building field XPath maps in FieldXPathProvider implementations.
+     * Wraps each path according to the field's type and adds them to the map.
      *
-     * @param prefix     namespace prefix (e.g., "iwxxm")
-     * @param localNames possible local names
-     * @return XPath element selector matching any of the local names
+     * @param map   the map to add the field expressions to
+     * @param field the field being mapped
+     * @param paths one or more XPath expressions for this field
      */
-    public static String anyOf(final String prefix, final String... localNames) {
-        if (localNames.length == 0) {
-            throw new IllegalArgumentException("At least one local name required");
+    public static void put(final Map<IWXXMField, List<String>> map, final IWXXMField field, final String... paths) {
+        final List<String> wrapped = new ArrayList<>(paths.length);
+        for (final String path : paths) {
+            wrapped.add(wrap(path, field));
         }
-        final String nsPattern = PREFIX_TO_NS_PATTERN.get(prefix);
-        if (nsPattern == null) {
-            throw new IllegalArgumentException("Unknown prefix: " + prefix);
-        }
-
-        if (localNames.length == 1) {
-            return String.format("*[contains(namespace-uri(),'%s') and local-name()='%s']", nsPattern, localNames[0]);
-        }
-
-        final StringBuilder localNameCondition = new StringBuilder("(");
-        for (int i = 0; i < localNames.length; i++) {
-            if (i > 0) {
-                localNameCondition.append(" or ");
-            }
-            localNameCondition.append("local-name()='").append(localNames[i]).append("'");
-        }
-        localNameCondition.append(")");
-
-        return String.format("*[contains(namespace-uri(),'%s') and %s]", nsPattern, localNameCondition);
+        map.put(field, wrapped);
     }
 }
 

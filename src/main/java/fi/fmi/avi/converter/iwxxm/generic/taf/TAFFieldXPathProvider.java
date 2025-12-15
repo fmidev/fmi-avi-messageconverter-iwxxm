@@ -4,7 +4,10 @@ import fi.fmi.avi.converter.iwxxm.generic.FieldXPathProvider;
 import fi.fmi.avi.converter.iwxxm.generic.IWXXMField;
 import fi.fmi.avi.converter.iwxxm.generic.XPathBuilder;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Field-XPath provider for generic IWXXM TAF messages.
@@ -17,49 +20,45 @@ public final class TAFFieldXPathProvider implements FieldXPathProvider {
         final Map<IWXXMField, List<String>> map = new EnumMap<>(IWXXMField.class);
 
         // ISSUE_TIME for TAF (structure is the same in 2.1 and 3.0)
-        map.put(IWXXMField.ISSUE_TIME, Collections.singletonList(
-                XPathBuilder.text("/iwxxm:TAF"
-                        + "/iwxxm:issueTime"
+        XPathBuilder.put(map, IWXXMField.ISSUE_TIME,
+                "./iwxxm:issueTime"
                         + "/gml:TimeInstant"
-                        + "/gml:timePosition")));
+                        + "/gml:timePosition");
 
         // AERODROME location indicator:
-        // 1) IWXXM 3.0+: TAF/aerodrome/AirportHeliport/timeSlice/AirportHeliportTimeSlice
-        // 2) IWXXM 2.1: TAF/baseForecast/OM_Observation/featureOfInterest/SF_SpatialSamplingFeature/
+        // 1) IWXXM 3.0+: aerodrome/AirportHeliport/timeSlice/AirportHeliportTimeSlice
+        // 2) IWXXM 2.1: baseForecast/OM_Observation/featureOfInterest/SF_SpatialSamplingFeature/
         //               sampledFeature/AirportHeliport/timeSlice/AirportHeliportTimeSlice
-        // 3) IWXXM 2.1 cancellation: TAF/previousReportAerodrome/AirportHeliport/timeSlice/AirportHeliportTimeSlice
-        map.put(IWXXMField.AERODROME, Arrays.asList(
+        // 3) IWXXM 2.1 cancellation: previousReportAerodrome/AirportHeliport/timeSlice/AirportHeliportTimeSlice
+        XPathBuilder.put(map, IWXXMField.AERODROME,
                 // IWXXM 3.0+ style
-                XPathBuilder.node("/iwxxm:TAF"
-                        + "/iwxxm:aerodrome"
+                "./iwxxm:aerodrome"
                         + "/aixm:AirportHeliport"
                         + "/aixm:timeSlice"
-                        + "/aixm:AirportHeliportTimeSlice"),
+                        + "/aixm:AirportHeliportTimeSlice",
                 // IWXXM 2.1 baseForecast style
-                XPathBuilder.node("/iwxxm:TAF"
-                        + "/iwxxm:baseForecast"
+                "./iwxxm:baseForecast"
                         + "/om:OM_Observation"
                         + "/om:featureOfInterest"
                         + "/sams:SF_SpatialSamplingFeature"
                         + "/sam:sampledFeature"
                         + "/aixm:AirportHeliport"
                         + "/aixm:timeSlice"
-                        + "/aixm:AirportHeliportTimeSlice"),
-                // IWXXM 2.1 cancellation style (previousReportAerodrome)
-                XPathBuilder.node("/iwxxm:TAF"
-                        + "/iwxxm:previousReportAerodrome"
+                        + "/aixm:AirportHeliportTimeSlice",
+                // IWXXM 2.1 cancellation style
+                "./iwxxm:previousReportAerodrome"
                         + "/aixm:AirportHeliport"
                         + "/aixm:timeSlice"
-                        + "/aixm:AirportHeliportTimeSlice")));
+                        + "/aixm:AirportHeliportTimeSlice");
 
         // Validity time for TAF:
-        //  - IWXXM 3.0+ normal reports: validPeriod on the root
-        //  - IWXXM 3.0+ cancellations: cancelledReportValidPeriod on the root
-        //  - IWXXM 2.1: validTime on the root
-        map.put(IWXXMField.VALID_TIME, Arrays.asList(
-                XPathBuilder.relative("./iwxxm:validPeriod"),
-                XPathBuilder.relative("./iwxxm:cancelledReportValidPeriod"),
-                XPathBuilder.relative("./iwxxm:validTime")));
+        //  - IWXXM 3.0+ normal reports: validPeriod
+        //  - IWXXM 3.0+ cancellations: cancelledReportValidPeriod
+        //  - IWXXM 2.1: validTime
+        XPathBuilder.put(map, IWXXMField.VALID_TIME,
+                "./iwxxm:validPeriod",
+                "./iwxxm:cancelledReportValidPeriod",
+                "./iwxxm:validTime");
 
         this.expressions = Collections.unmodifiableMap(map);
     }

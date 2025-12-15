@@ -12,27 +12,23 @@ import java.util.Map;
 /**
  * Field-XPath provider for generic IWXXM Volcanic Ash Advisory messages.
  */
-public class VAAFieldXPathProvider implements FieldXPathProvider {
+public final class VAAFieldXPathProvider implements FieldXPathProvider {
 
     private final Map<IWXXMField, List<String>> expressions;
 
     public VAAFieldXPathProvider() {
         final Map<IWXXMField, List<String>> map = new EnumMap<>(IWXXMField.class);
 
-        // ISSUE_TIME for VAA (same structure across all IWXXM versions)
-        map.put(IWXXMField.ISSUE_TIME, Collections.singletonList(
-                XPathBuilder.text("/iwxxm:VolcanicAshAdvisory"
-                        + "/iwxxm:issueTime"
+        XPathBuilder.put(map, IWXXMField.ISSUE_TIME,
+                "./iwxxm:issueTime"
                         + "/gml:TimeInstant"
-                        + "/gml:timePosition")));
+                        + "/gml:timePosition");
 
-        // ISSUING_CENTRE (same structure across all IWXXM versions)
-        map.put(IWXXMField.ISSUING_CENTRE, Collections.singletonList(
-                XPathBuilder.node("/iwxxm:VolcanicAshAdvisory"
-                        + "/iwxxm:issuingVolcanicAshAdvisoryCentre"
+        XPathBuilder.put(map, IWXXMField.ISSUING_CENTRE,
+                "./iwxxm:issuingVolcanicAshAdvisoryCentre"
                         + "/aixm:Unit"
                         + "/aixm:timeSlice"
-                        + "/aixm:UnitTimeSlice")));
+                        + "/aixm:UnitTimeSlice");
 
         this.expressions = Collections.unmodifiableMap(map);
     }

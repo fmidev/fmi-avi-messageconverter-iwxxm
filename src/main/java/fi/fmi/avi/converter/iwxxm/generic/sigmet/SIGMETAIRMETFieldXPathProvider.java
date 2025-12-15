@@ -4,17 +4,15 @@ import fi.fmi.avi.converter.iwxxm.generic.FieldXPathProvider;
 import fi.fmi.avi.converter.iwxxm.generic.IWXXMField;
 import fi.fmi.avi.converter.iwxxm.generic.XPathBuilder;
 
-import java.util.*;
-
-import static fi.fmi.avi.converter.iwxxm.generic.XPathBuilder.anyOf;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Field-XPath provider for generic IWXXM SIGMET and AIRMET messages.
  */
 public final class SIGMETAIRMETFieldXPathProvider implements FieldXPathProvider {
-
-    // Selector for any SIGMET or AIRMET root element
-    private static final String SIGMET_OR_AIRMET = "/" + anyOf("iwxxm", "SIGMET", "VolcanicAshSIGMET", "TropicalCycloneSIGMET", "AIRMET");
 
     private final Map<IWXXMField, List<String>> expressions;
 
@@ -22,69 +20,59 @@ public final class SIGMETAIRMETFieldXPathProvider implements FieldXPathProvider 
         final Map<IWXXMField, List<String>> map = new EnumMap<>(IWXXMField.class);
 
         // ISSUE_TIME for SIGMET/AIRMET:
-        // 1) IWXXM 3.0+: root/issueTime/TimeInstant/timePosition
+        // 1) IWXXM 3.0+: issueTime/TimeInstant/timePosition
         // 2) IWXXM 2.1: analysis/OM_Observation/resultTime/TimeInstant/timePosition
-        map.put(IWXXMField.ISSUE_TIME, Arrays.asList(
+        XPathBuilder.put(map, IWXXMField.ISSUE_TIME,
                 // IWXXM 3.0+ style
-                "normalize-space((" + SIGMET_OR_AIRMET
-                        + XPathBuilder.toVersionAgnostic("/iwxxm:issueTime"
+                "./iwxxm:issueTime"
                         + "/gml:TimeInstant"
-                        + "/gml:timePosition")
-                        + ")[1])",
-                // IWXXM 2.1 analysis/resultTime style
-                "normalize-space((" + SIGMET_OR_AIRMET
-                        + XPathBuilder.toVersionAgnostic("/iwxxm:analysis"
+                        + "/gml:timePosition",
+                // IWXXM 2.1 style
+                "./iwxxm:analysis"
                         + "/om:OM_Observation"
                         + "/om:resultTime"
                         + "/gml:TimeInstant"
-                        + "/gml:timePosition")
-                        + ")[1])"));
+                        + "/gml:timePosition");
 
         // ORIGINATING_MWO location indicator UnitTimeSlice (same structure across all versions)
-        map.put(IWXXMField.ORIGINATING_MWO, Collections.singletonList(
-                // Same structural pattern across all IWXXM versions
-                "(" + SIGMET_OR_AIRMET
-                        + XPathBuilder.toVersionAgnostic("/iwxxm:originatingMeteorologicalWatchOffice"
+        XPathBuilder.put(map, IWXXMField.ORIGINATING_MWO,
+                "./iwxxm:originatingMeteorologicalWatchOffice"
                         + "/aixm:Unit"
                         + "/aixm:timeSlice"
-                        + "/aixm:UnitTimeSlice")
-                        + ")[1]"));
+                        + "/aixm:UnitTimeSlice");
 
         // ISSUING_ATS_UNIT (same structure across all IWXXM versions)
-        map.put(IWXXMField.ISSUING_ATS_UNIT, Collections.singletonList(
-                "(" + SIGMET_OR_AIRMET
-                        + XPathBuilder.toVersionAgnostic("/iwxxm:issuingAirTrafficServicesUnit"
+        XPathBuilder.put(map, IWXXMField.ISSUING_ATS_UNIT,
+                "./iwxxm:issuingAirTrafficServicesUnit"
                         + "/aixm:Unit"
                         + "/aixm:timeSlice"
-                        + "/aixm:UnitTimeSlice")
-                        + ")[1]"));
+                        + "/aixm:UnitTimeSlice");
 
         // ISSUING_ATS_REGION:
         // - IWXXM 3.0+: issuingAirTrafficServicesRegion/Airspace/TimeSlice
         // - IWXXM 2.1: analysis/OM_Observation/featureOfInterest/SF_SpatialSamplingFeature/sampledFeature/Airspace/TimeSlice
-        map.put(IWXXMField.ISSUING_ATS_REGION, Arrays.asList(
+        XPathBuilder.put(map, IWXXMField.ISSUING_ATS_REGION,
                 // IWXXM 3.0+ style
-                "(" + SIGMET_OR_AIRMET
-                        + XPathBuilder.toVersionAgnostic("/iwxxm:issuingAirTrafficServicesRegion"
+                "./iwxxm:issuingAirTrafficServicesRegion"
                         + "/aixm:Airspace"
                         + "/aixm:timeSlice"
-                        + "/aixm:AirspaceTimeSlice")
-                        + ")[1]",
+                        + "/aixm:AirspaceTimeSlice",
                 // IWXXM 2.1 style
-                "(" + SIGMET_OR_AIRMET
-                        + XPathBuilder.toVersionAgnostic("/iwxxm:analysis"
+                "./iwxxm:analysis"
                         + "/om:OM_Observation"
                         + "/om:featureOfInterest"
                         + "/sams:SF_SpatialSamplingFeature"
                         + "/sam:sampledFeature"
                         + "/aixm:Airspace"
                         + "/aixm:timeSlice"
-                        + "/aixm:AirspaceTimeSlice")
-                        + ")[1]"));
+                        + "/aixm:AirspaceTimeSlice");
 
-        map.put(IWXXMField.VALID_TIME, Arrays.asList(
-                XPathBuilder.relative("./iwxxm:validPeriod"),
-                XPathBuilder.relative("./iwxxm:validTime")));
+        // Validity time for SIGMET/AIRMET:
+        //  - IWXXM 3.0+: validPeriod
+        //  - IWXXM 2.1: validTime
+        XPathBuilder.put(map, IWXXMField.VALID_TIME,
+                "./iwxxm:validPeriod",
+                "./iwxxm:validTime");
 
         this.expressions = Collections.unmodifiableMap(map);
     }

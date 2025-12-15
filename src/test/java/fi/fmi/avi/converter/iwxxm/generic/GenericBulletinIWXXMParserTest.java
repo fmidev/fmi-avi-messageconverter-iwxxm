@@ -144,4 +144,27 @@ public class GenericBulletinIWXXMParserTest {
                 .hasValidityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                 .hasLocationIndicator(LocationIndicatorType.AERODROME, "YUDO");
     }
+
+    @Test
+    public void testParserWithAlternateCollectNamespacePrefix() throws Exception {
+        final Document input = this.getBulletinDocument("taf/iwxxm-30-taf-bulletin-namespaces-collect-alt-prefix.xml");
+        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
+                IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+
+        assertThat(result.getConversionIssues()).isEmpty();
+        assertThat(result.getStatus()).isEqualTo(ConversionResult.Status.SUCCESS);
+        assertThat(result.getConvertedMessage()).isPresent();
+
+        final GenericMeteorologicalBulletin bulletin = result.getConvertedMessage().get();
+        assertThat(bulletin.getHeading()).isNotNull();
+
+        assertFirstMessage(result)
+                .hasFormat(Format.IWXXM)
+                .hasNamespace(IWXXM_3_0_NAMESPACE)
+                .hasMessageType(MessageType.TAF)
+                .hasReportStatus(ReportStatus.NORMAL)
+                .hasIssueTime("2012-08-15T18:00Z")
+                .hasValidityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
+                .hasLocationIndicator(LocationIndicatorType.AERODROME, "YUDO");
+    }
 }

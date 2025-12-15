@@ -106,7 +106,6 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 // TAF error cases
                 taf().fileName("iwxxm-2025-2-taf-invalid-issue-time.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
-                        .reportStatus(ReportStatus.NORMAL)
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                         .aerodrome("YUDO")
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "issue time")
@@ -114,7 +113,6 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
 
                 taf().fileName("iwxxm-2025-2-taf-invalid-validity-time.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
-                        .reportStatus(ReportStatus.NORMAL)
                         .issueTime("2012-08-15T18:00Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
@@ -123,10 +121,16 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
 
                 taf().fileName("iwxxm-2025-2-taf-missing-aerodrome.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
-                        .reportStatus(ReportStatus.NORMAL)
                         .issueTime("2012-08-15T18:00Z")
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "location indicator")
+                        .build(),
+
+                taf().fileName("iwxxm-2025-2-taf-namespaces-alt-prefix.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-15T18:00Z")
+                        .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
+                        .aerodrome("YUDO")
                         .build(),
 
                 // SIGMET tests
@@ -210,7 +214,6 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 // SIGMET error cases
                 sigmet().fileName("iwxxm-2025-2-sigmet-missing-mwo.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
-                        .reportStatus(ReportStatus.NORMAL)
                         .issueTime("2012-08-10T12:00Z")
                         .validityPeriod("2012-08-10T12:00Z", "2012-08-10T16:00Z")
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "ORIGINATING_METEOROLOGICAL_WATCH_OFFICE")
@@ -383,7 +386,6 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                 // Space Weather Advisory error cases
                 swx().fileName("iwxxm-2025-2-spacewx-missing-issuing-centre.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
-                        .reportStatus(ReportStatus.NORMAL)
                         .issueTime("2016-11-08T01:00Z")
                         .noValidityPeriod()
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "ISSUING_CENTRE")

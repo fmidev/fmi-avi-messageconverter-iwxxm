@@ -19,20 +19,16 @@ public final class SWXFieldXPathProvider implements FieldXPathProvider {
     public SWXFieldXPathProvider() {
         final Map<IWXXMField, List<String>> map = new EnumMap<>(IWXXMField.class);
 
-        // ISSUE_TIME for SpaceWeatherAdvisory
-        map.put(IWXXMField.ISSUE_TIME, Collections.singletonList(
-                XPathBuilder.text("/iwxxm:SpaceWeatherAdvisory"
-                        + "/iwxxm:issueTime"
+        XPathBuilder.put(map, IWXXMField.ISSUE_TIME,
+                "./iwxxm:issueTime"
                         + "/gml:TimeInstant"
-                        + "/gml:timePosition")));
+                        + "/gml:timePosition");
 
-        // ISSUING_CENTRE for SpaceWeatherAdvisory
-        map.put(IWXXMField.ISSUING_CENTRE, Collections.singletonList(
-                XPathBuilder.node("/iwxxm:SpaceWeatherAdvisory"
-                        + "/iwxxm:issuingSpaceWeatherCentre"
+        XPathBuilder.put(map, IWXXMField.ISSUING_CENTRE,
+                "./iwxxm:issuingSpaceWeatherCentre"
                         + "/aixm:Unit"
                         + "/aixm:timeSlice"
-                        + "/aixm:UnitTimeSlice")));
+                        + "/aixm:UnitTimeSlice");
 
         this.expressions = Collections.unmodifiableMap(map);
     }
@@ -43,4 +39,3 @@ public final class SWXFieldXPathProvider implements FieldXPathProvider {
         return result != null ? result : Collections.emptyList();
     }
 }
-
