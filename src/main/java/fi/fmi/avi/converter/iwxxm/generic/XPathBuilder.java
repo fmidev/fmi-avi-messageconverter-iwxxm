@@ -9,21 +9,21 @@ import java.util.regex.Pattern;
  * into version-agnostic XPath expressions using local-name() and contains(namespace-uri(), ...).
  * <p>
  * This allows writing readable XPaths like:
- * <pre>
+ * <p>
  *   ./iwxxm:issueTime/gml:TimeInstant/gml:timePosition
- * </pre>
+ * </p>
  * Which get converted to:
- * <pre>
+ * <p>
  *   ./*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='issueTime']
  *    /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='TimeInstant']
  *    /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='timePosition']
- * </pre>
+ * </p>
  */
 public final class XPathBuilder {
 
     private static final Map<String, String> PREFIX_TO_NS_PATTERN;
     // Matches prefix:localName after a / in XPath expressions. Predicates like [1] are not matched and remain untouched.
-    private static final Pattern PREFIXED_ELEMENT = Pattern.compile("/([a-zA-Z][a-zA-Z0-9]*):([A-Za-z_][A-Za-z0-9_.:-]*)");
+    private static final Pattern PREFIXED_ELEMENT = Pattern.compile("/([a-zA-Z][a-zA-Z0-9]*):([A-Za-z_][A-Za-z0-9_.-]*)");
 
     static {
         final Map<String, String> map = new HashMap<>();
@@ -43,28 +43,23 @@ public final class XPathBuilder {
     /**
      * Converts a human-readable XPath with namespace prefixes into a version-agnostic XPath.
      * <p>
-     * Replaces {@code /prefix:localName} with {@code /*[contains(namespace-uri(),'...') and local-name()='localName']}.
+     * Replaces {@code /prefix:localName} with {@code /*[contains(namespace-uri(),'nsPattern') and local-name()='localName']},
+     * where {@code nsPattern} is a version-independent namespace URI fragment for the given prefix.
+     * If the prefix is unknown, matches by local-name only.
+     * </p>
      *
      * @param readableXPath XPath with namespace prefixes (e.g. iwxxm:, gml:, aixm:)
-     * @return version-agnostic XPath using local-name() and contains(namespace-uri(), ...)
+     * @return version-agnostic XPath using local-name() and contains(namespace-uri(), nsPattern)
      */
     public static String toVersionAgnostic(final String readableXPath) {
         final Matcher matcher = PREFIXED_ELEMENT.matcher(readableXPath);
         final StringBuffer result = new StringBuffer();
-
         while (matcher.find()) {
-            final String prefix = matcher.group(1);
+            final String nsPattern = PREFIX_TO_NS_PATTERN.get(matcher.group(1));
             final String localName = matcher.group(2);
-            final String nsPattern = PREFIX_TO_NS_PATTERN.get(prefix);
-
-            final String replacement;
-            if (nsPattern != null) {
-                replacement = String.format("/*[contains(namespace-uri(),'%s') and local-name()='%s']",
-                        nsPattern, localName);
-            } else {
-                // Unknown prefix, just match by local name
-                replacement = "/*[local-name()='" + localName + "']";
-            }
+            final String replacement = nsPattern != null
+                    ? "/*[contains(namespace-uri(),'" + nsPattern + "') and local-name()='" + localName + "']"
+                    : "/*[local-name()='" + localName + "']";
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
         matcher.appendTail(result);

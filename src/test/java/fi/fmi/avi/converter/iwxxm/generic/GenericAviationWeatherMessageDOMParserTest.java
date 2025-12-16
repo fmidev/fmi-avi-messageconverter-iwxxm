@@ -133,6 +133,14 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
                         .aerodrome("YUDO")
                         .build(),
 
+                taf().fileName("iwxxm-2025-2-taf-A5-2.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-16T15:00:00Z")
+                        .validityPeriod("2012-08-16T00:00:00Z", "2012-08-16T18:00:00Z")
+                        .aerodrome("YUDO")
+                        .reportStatus(ReportStatus.AMENDMENT)
+                        .build(),
+
                 // SIGMET tests
                 sigmet().fileName("iwxxm-21-sigmet.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)

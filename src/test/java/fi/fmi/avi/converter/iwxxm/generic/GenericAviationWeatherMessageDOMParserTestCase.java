@@ -119,9 +119,6 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         return fileName;
     }
 
-    /**
-     * Represents an expected conversion issue for test verification.
-     */
     public static final class ExpectedIssue {
         private final ConversionIssue.Severity severity;
         private final ConversionIssue.Type type;
@@ -258,20 +255,6 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
                     .locationIndicator(LocationIndicatorType.ORIGINATING_METEOROLOGICAL_WATCH_OFFICE, mwo);
         }
 
-        /**
-         * Adds an expected issue with the specified severity and type.
-         */
-        public Builder expectedIssue(final ConversionIssue.Severity severity, final ConversionIssue.Type type) {
-            if (this.expectedIssues == null) {
-                this.expectedIssues = new ArrayList<>();
-            }
-            this.expectedIssues.add(ExpectedIssue.of(severity, type));
-            return this;
-        }
-
-        /**
-         * Adds an expected issue with the specified severity, type, and message substring.
-         */
         public Builder expectedIssue(final ConversionIssue.Severity severity,
                                      final ConversionIssue.Type type,
                                      final String messageSubstring) {

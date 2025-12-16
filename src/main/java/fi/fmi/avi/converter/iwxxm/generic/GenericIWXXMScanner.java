@@ -13,6 +13,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Function;
 
@@ -78,45 +79,6 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
         return new Builder();
     }
 
-    @Override
-    public IssueList collectMessage(final Element featureElement,
-                                    final XPath xpath,
-                                    final GenericAviationWeatherMessageImpl.Builder builder) {
-        final IssueList issues = new IssueList();
-
-        final MessageType messageType = messageTypeResolver.apply(featureElement);
-        if (messageType == null) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.SYNTAX,
-                    "Unable to determine message type from element: " + featureElement.getLocalName()));
-            return issues;
-        }
-        builder.setMessageType(messageType);
-
-        if (requireReportStatus) {
-            collectReportStatus(featureElement, xpath, builder, issues);
-        } else {
-            collectOptionalReportStatus(featureElement, xpath, builder, issues);
-        }
-
-        collectIssueTimeUsingFieldProvider(featureElement, xpath, builder, issues);
-
-        if (extractObservationTime) {
-            collectObservationTimeUsingFieldProvider(featureElement, xpath, builder, issues);
-        }
-
-        if (extractValidityTime) {
-            collectValidityTimeUsingFieldProvider(featureElement, xpath, builder, issues);
-        }
-
-        if (!locationIndicatorFields.isEmpty()) {
-            collectLocationIndicatorsUsingFieldProvider(featureElement, xpath, builder,
-                    locationIndicatorFields, issues);
-        }
-
-        return issues;
-    }
-
     private static String nullToEmpty(final String nullableString) {
         return nullableString == null ? "" : nullableString;
     }
@@ -150,11 +112,19 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
     /**
      * Collects report status from IWXXM message, trying @reportStatus (3.0+) first,
      * then falling back to @status (2.1) with direct string mapping.
+     *
+     * @param element  the IWXXM root element
+     * @param xpath    the XPath evaluator
+     * @param builder  the message builder to populate
+     * @param issues   the issue list to add errors to
+     * @param required if true, adds an error when report status cannot be parsed;
+     *                 if false, missing status is silently ignored (for VAA/TCA in IWXXM 2.1)
      */
     private static void collectReportStatus(final Element element,
                                             final XPath xpath,
                                             final GenericAviationWeatherMessageImpl.Builder builder,
-                                            final IssueList issues) {
+                                            final IssueList issues,
+                                            final boolean required) {
         try {
             // Try IWXXM 3.0+ @reportStatus first
             final Optional<AviationWeatherMessage.ReportStatus> reportStatus =
@@ -174,45 +144,15 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                 }
             }
 
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.MISSING_DATA,
-                    "The report status could not be parsed"));
-        } catch (final Exception ex) {
+            if (required) {
+                issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
+                        ConversionIssue.Type.MISSING_DATA,
+                        "The report status could not be parsed"));
+            }
+        } catch (final XPathExpressionException exception) {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                     ConversionIssue.Type.OTHER,
-                    "Unable to parse report status", ex));
-        }
-    }
-
-    /**
-     * Collects report status from IWXXM message where status is optional (e.g., VAA, TCA in IWXXM 2.1).
-     * Tries @reportStatus (3.0+) first, then @status (2.1). No error is added if status is missing.
-     */
-    private static void collectOptionalReportStatus(final Element element,
-                                                    final XPath xpath,
-                                                    final GenericAviationWeatherMessageImpl.Builder builder,
-                                                    final IssueList issues) {
-        try {
-            // Try IWXXM 3.0+ @reportStatus first
-            final Optional<AviationWeatherMessage.ReportStatus> reportStatus =
-                    evaluateEnumeration(element, xpath, "@reportStatus", AviationWeatherMessage.ReportStatus.class);
-            if (reportStatus.isPresent()) {
-                builder.setReportStatus(reportStatus.get());
-                return;
-            }
-
-            // Fallback to IWXXM 2.1 @status with direct string mapping
-            final String legacyStatus = xpath.compile("@status").evaluate(element);
-            if (legacyStatus != null && !legacyStatus.isEmpty()) {
-                final AviationWeatherMessage.ReportStatus mappedStatus = IWXXM_21_STATUS_TO_REPORT_STATUS.get(legacyStatus);
-                if (mappedStatus != null) {
-                    builder.setReportStatus(mappedStatus);
-                }
-            }
-        } catch (final Exception ex) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.OTHER,
-                    "Unable to parse report status", ex));
+                    "Unable to parse report status", exception));
         }
     }
 
@@ -243,11 +183,44 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                             "Unable to parse valid time for " + featureElement.getLocalName()));
                 }
             }
-        } catch (final Exception ex) {
+        } catch (final XPathExpressionException | DateTimeParseException exception) {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                     ConversionIssue.Type.MISSING_DATA,
-                    "Unable to parse valid time for " + featureElement.getLocalName(), ex));
+                    "Unable to parse valid time for " + featureElement.getLocalName(), exception));
         }
+        return issues;
+    }
+
+    @Override
+    public IssueList collectMessage(final Element featureElement,
+                                    final XPath xpath,
+                                    final GenericAviationWeatherMessageImpl.Builder builder) {
+        final IssueList issues = new IssueList();
+
+        final MessageType messageType = messageTypeResolver.apply(featureElement);
+        if (messageType == null) {
+            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
+                    ConversionIssue.Type.SYNTAX,
+                    "Unable to determine message type from element: " + featureElement.getLocalName()));
+            return issues;
+        }
+        builder.setMessageType(messageType);
+
+        collectReportStatus(featureElement, xpath, builder, issues, requireReportStatus);
+        collectIssueTimeUsingFieldProvider(featureElement, xpath, builder, issues);
+
+        if (extractObservationTime) {
+            collectObservationTimeUsingFieldProvider(featureElement, xpath, builder, issues);
+        }
+
+        if (extractValidityTime) {
+            collectValidityTimeUsingFieldProvider(featureElement, xpath, builder, issues);
+        }
+
+        if (!locationIndicatorFields.isEmpty()) {
+            collectLocationIndicatorsUsingFieldProvider(featureElement, xpath, builder, locationIndicatorFields, issues);
+        }
+
         return issues;
     }
 
@@ -266,10 +239,10 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                     ConversionIssue.Type.MISSING_DATA,
                     "No issue time found for IWXXM message"));
-        } catch (final Exception ex) {
+        } catch (final XPathExpressionException | DateTimeParseException exception) {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                     ConversionIssue.Type.OTHER,
-                    "Unable to parse issue time", ex));
+                    "Unable to parse issue time", exception));
         }
     }
 
@@ -285,10 +258,10 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                     return;
                 }
             }
-        } catch (final Exception ex) {
+        } catch (final XPathExpressionException | DateTimeParseException exception) {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                     ConversionIssue.Type.OTHER,
-                    "Unable to parse observation time", ex));
+                    "Unable to parse observation time", exception));
         }
     }
 
@@ -329,10 +302,10 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                     builder.putLocationIndicators(locationIndicatorType, locationIndicator);
                 }
             }
-        } catch (final Exception ex) {
+        } catch (final XPathExpressionException exception) {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                     ConversionIssue.Type.OTHER,
-                    "Unable to parse location indicators", ex));
+                    "Unable to parse location indicators", exception));
         }
     }
 
@@ -340,19 +313,15 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                                                        final XPath xpath,
                                                        final GenericAviationWeatherMessageImpl.Builder builder,
                                                        final IssueList issues) {
-        try {
-            for (final String expression : fieldXPathProvider.getXPaths(IWXXMField.VALID_TIME)) {
-                final IssueList validTimeIssues = collectValidTime(element, expression, xpath, builder);
-                if (builder.getValidityTime().isPresent()) {
-                    return;
-                }
-                issues.addAll(validTimeIssues);
+        final IssueList accumulatedIssues = new IssueList();
+        for (final String expression : fieldXPathProvider.getXPaths(IWXXMField.VALID_TIME)) {
+            final IssueList validTimeIssues = collectValidTime(element, expression, xpath, builder);
+            if (builder.getValidityTime().isPresent()) {
+                return;
             }
-        } catch (final Exception ex) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.OTHER,
-                    "Unable to parse validity time", ex));
+            accumulatedIssues.addAll(validTimeIssues);
         }
+        issues.addAll(accumulatedIssues);
     }
 
     public static class Builder {

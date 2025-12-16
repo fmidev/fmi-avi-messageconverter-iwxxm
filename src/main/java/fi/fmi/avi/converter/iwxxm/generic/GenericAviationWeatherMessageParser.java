@@ -51,17 +51,14 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
         try {
             final Document doc = parseAsDom(input);
-
-            retval = createAviationWeatherMessage(doc.getDocumentElement(), hints);
-
+            retval = createAviationWeatherMessage(doc.getDocumentElement());
         } catch (final Exception ce) {
             retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Error in parsing input", ce));
         }
-
         return retval;
     }
 
-    protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement, final ConversionHints hints) {
+    protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement) {
         final ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
@@ -70,13 +67,11 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         builder.setNullableXMLNamespace(featureElement.getNamespaceURI());
 
         final GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getLocalName()));
-
-        collectTranslationStatus(featureElement, xpath, builder, retval);
-
         if (scanner == null) {
             retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
                     "Unknown message type '" + featureElement.getLocalName() + "'"));
         } else {
+            collectTranslationStatus(featureElement, xpath, builder, retval);
             retval.addIssue(scanner.collectMessage(featureElement, xpath, builder));
         }
 
@@ -100,7 +95,6 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         }
 
         retval.setConvertedMessage(builder.build());
-
         return retval;
     }
 
