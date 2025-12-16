@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.generic;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.BulletinProperties;
@@ -31,9 +32,6 @@ import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.IWXXM_3_0_NAMESPACE
 import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertFirstMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Created by rinne on 19/07/17.
- */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
 public class GenericBulletinIWXXMParserTest {
@@ -166,5 +164,17 @@ public class GenericBulletinIWXXMParserTest {
                 .hasIssueTime("2012-08-15T18:00Z")
                 .hasValidityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                 .hasLocationIndicator(LocationIndicatorType.AERODROME, "YUDO");
+    }
+
+    @Test
+    public void testParserWithUnknownMessageType() throws Exception {
+        final Document input = getBulletinDocument("taf/iwxxm-2025-2-unknown-message-type-bulletin.xml");
+        final ConversionResult<GenericMeteorologicalBulletin> result = converter.convertMessage(input,
+                IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+
+        assertThat(result.getConversionIssues()).isNotEmpty();
+        assertThat(result.getConversionIssues())
+                .anyMatch(issue -> issue.getSeverity() == ConversionIssue.Severity.ERROR
+                        && issue.getMessage().contains("Unknown message type"));
     }
 }

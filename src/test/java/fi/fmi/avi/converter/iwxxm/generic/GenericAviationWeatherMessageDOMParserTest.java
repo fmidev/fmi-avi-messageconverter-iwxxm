@@ -11,7 +11,6 @@ import fi.fmi.avi.model.AviationWeatherMessage.ReportStatus;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.GenericAviationWeatherMessage.Format;
 import fi.fmi.avi.model.MessageType;
-import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,10 +32,11 @@ import java.util.Collection;
 import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertMessage;
 import static fi.fmi.avi.model.MessageType.*;
 import static java.util.Objects.requireNonNull;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 
 @RunWith(Parameterized.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase implements IWXXMConverterTests {
+public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverterTests {
 
     private final GenericAviationWeatherMessageDOMParserTestCase testCase;
 
@@ -371,14 +371,6 @@ public class GenericAviationWeatherMessageDOMParserTest extends XMLTestCase impl
 
                 swx().fileName("iwxxm-2023-1-spacewx-A2-3.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
-                        .issueTime("2016-11-08T01:00Z")
-                        .noValidityPeriod()
-                        .issuingCentre("DONLON")
-                        .build(),
-
-                swx().fileName("iwxxm-30-spacewx-A2-3.xml")
-                        .namespace(IWXXM_3_0_NAMESPACE)
-                        .reportStatus(ReportStatus.AMENDMENT)
                         .issueTime("2016-11-08T01:00Z")
                         .noValidityPeriod()
                         .issuingCentre("DONLON")

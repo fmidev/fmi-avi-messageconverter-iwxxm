@@ -49,27 +49,11 @@ public final class GenericMessageAssertion {
         this.message = message;
     }
 
-    private void assertMessageNotNull() {
-        assertThat(message).as("message").isNotNull();
-    }
-
-    /**
-     * Creates a new assertion for the given conversion result.
-     *
-     * @param result the conversion result to assert on
-     * @return a new fluent assertion instance
-     */
     public static GenericMessageAssertion assertMessage(final ConversionResult<GenericAviationWeatherMessage> result) {
         assertThat(result).as("ConversionResult").isNotNull();
         return new GenericMessageAssertion(result);
     }
 
-    /**
-     * Creates a new assertion for the first message in a bulletin conversion result.
-     *
-     * @param result the bulletin conversion result
-     * @return a new fluent assertion instance for the first message
-     */
     public static GenericMessageAssertion assertFirstMessage(final ConversionResult<GenericMeteorologicalBulletin> result) {
         assertThat(result).as("ConversionResult").isNotNull();
         assertThat(result.getConversionIssues()).as("conversionIssues").isEmpty();
@@ -80,46 +64,39 @@ public final class GenericMessageAssertion {
         return new GenericMessageAssertion(message);
     }
 
-    /**
-     * Asserts that the conversion had no issues and was successful.
-     */
+    private void assertMessageNotNull() {
+        assertThat(message).as("message").isNotNull();
+    }
+
+    private void assertResultNotNull() {
+        assertThat(result).as("result (use assertMessage with ConversionResult)").isNotNull();
+    }
+
     public GenericMessageAssertion hasNoIssues() {
+        assertResultNotNull();
         assertThat(result.getConversionIssues()).as("conversionIssues").isEmpty();
         assertThat(result.getStatus()).as("status").isEqualTo(ConversionResult.Status.SUCCESS);
         return this;
     }
 
-    /**
-     * Asserts that the conversion has issues (but still produced a result).
-     */
     public GenericMessageAssertion hasIssues() {
+        assertResultNotNull();
         assertThat(result.getConversionIssues()).as("conversionIssues").isNotEmpty();
         return this;
     }
 
-    /**
-     * Asserts that the conversion has an issue with the specified severity and type.
-     *
-     * @param severity the expected issue severity
-     * @param type     the expected issue type
-     */
     public GenericMessageAssertion hasIssue(final ConversionIssue.Severity severity, final ConversionIssue.Type type) {
+        assertResultNotNull();
         assertThat(result.getConversionIssues())
                 .as("conversionIssues with severity " + severity + " and type " + type)
                 .anyMatch(issue -> issue.getSeverity() == severity && issue.getType() == type);
         return this;
     }
 
-    /**
-     * Asserts that the conversion has an issue with the specified severity, type, and message substring.
-     *
-     * @param severity         the expected issue severity
-     * @param type             the expected issue type
-     * @param messageSubstring the substring expected in the issue message
-     */
     public GenericMessageAssertion hasIssue(final ConversionIssue.Severity severity,
                                             final ConversionIssue.Type type,
                                             final String messageSubstring) {
+        assertResultNotNull();
         assertThat(result.getConversionIssues())
                 .as("conversionIssues with severity " + severity + ", type " + type + ", containing '" + messageSubstring + "'")
                 .anyMatch(issue -> issue.getSeverity() == severity
@@ -129,62 +106,42 @@ public final class GenericMessageAssertion {
         return this;
     }
 
-    /**
-     * Asserts that the converted message is present.
-     */
     public GenericMessageAssertion isPresent() {
+        assertResultNotNull();
         assertThat(result.getConvertedMessage()).as("convertedMessage").isPresent();
         return this;
     }
 
-    /**
-     * Asserts the message format.
-     */
     public GenericMessageAssertion hasFormat(final Format expected) {
         assertMessageNotNull();
         assertThat(message.getMessageFormat()).as("messageFormat").isEqualTo(expected);
         return this;
     }
 
-    /**
-     * Asserts the XML namespace.
-     */
     public GenericMessageAssertion hasNamespace(final String expected) {
         assertMessageNotNull();
         assertThat(message.getXMLNamespace()).as("xmlNamespace").hasValue(expected);
         return this;
     }
 
-    /**
-     * Asserts the message type.
-     */
     public GenericMessageAssertion hasMessageType(final MessageType expected) {
         assertMessageNotNull();
         assertThat(message.getMessageType()).as("messageType").hasValue(expected);
         return this;
     }
 
-    /**
-     * Asserts that the message is translated.
-     */
     public GenericMessageAssertion isTranslated() {
         assertMessageNotNull();
         assertThat(message.isTranslated()).as("translated").isTrue();
         return this;
     }
 
-    /**
-     * Asserts that the message is not translated.
-     */
     public GenericMessageAssertion isNotTranslated() {
         assertMessageNotNull();
         assertThat(message.isTranslated()).as("translated").isFalse();
         return this;
     }
 
-    /**
-     * Asserts the report status.
-     */
     public GenericMessageAssertion hasReportStatus(final ReportStatus expected) {
         assertMessageNotNull();
         assertThat(message.getReportStatus()).as("reportStatus").isEqualTo(expected);
@@ -192,9 +149,9 @@ public final class GenericMessageAssertion {
     }
 
     /**
-     * Asserts the issue time.
+     * Assert the issue time.
      *
-     * @param expected ISO-8601 formatted time string (e.g. "2017-07-30T11:30Z")
+     * @param expected ISO-8601 formatted time (e.g. "2017-07-30T11:30Z")
      */
     public GenericMessageAssertion hasIssueTime(final String expected) {
         assertMessageNotNull();
@@ -207,9 +164,9 @@ public final class GenericMessageAssertion {
     }
 
     /**
-     * Asserts the observation time.
+     * Assert the observation time.
      *
-     * @param expected ISO-8601 formatted time string (e.g. "2012-08-22T16:30Z")
+     * @param expected ISO-8601 formatted time (e.g. "2012-08-22T16:30Z")
      */
     public GenericMessageAssertion hasObservationTime(final String expected) {
         assertMessageNotNull();
@@ -221,9 +178,6 @@ public final class GenericMessageAssertion {
         return this;
     }
 
-    /**
-     * Asserts that there is no observation time.
-     */
     public GenericMessageAssertion hasNoObservationTime() {
         assertMessageNotNull();
         assertThat(message.getObservationTime()).as("observationTime").isEmpty();
@@ -231,7 +185,7 @@ public final class GenericMessageAssertion {
     }
 
     /**
-     * Asserts the validity period.
+     * Assert the validity period.
      *
      * @param start ISO-8601 formatted start time
      * @param end   ISO-8601 formatted end time
@@ -254,41 +208,26 @@ public final class GenericMessageAssertion {
         return this;
     }
 
-    /**
-     * Asserts that there is no validity period.
-     */
     public GenericMessageAssertion hasNoValidityPeriod() {
         assertMessageNotNull();
         assertThat(message.getValidityTime()).as("validityTime").isEmpty();
         return this;
     }
 
-    /**
-     * Asserts a single location indicator.
-     */
     public GenericMessageAssertion hasLocationIndicator(final LocationIndicatorType type, final String value) {
         return hasLocationIndicators(Collections.singletonMap(type, value));
     }
 
-    /**
-     * Asserts all location indicators.
-     */
     public GenericMessageAssertion hasLocationIndicators(final Map<LocationIndicatorType, String> expected) {
         assertMessageNotNull();
         assertThat(message.getLocationIndicators()).as("locationIndicators").isEqualTo(expected);
         return this;
     }
 
-    /**
-     * Returns the message for additional custom assertions.
-     */
     public GenericAviationWeatherMessage getMessage() {
         return message;
     }
 
-    /**
-     * Returns the conversion result for additional custom assertions.
-     */
     public ConversionResult<GenericAviationWeatherMessage> getResult() {
         return result;
     }
