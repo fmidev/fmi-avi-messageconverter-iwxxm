@@ -21,7 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Fluent assertion helper for {@link GenericAviationWeatherMessage} in tests.
  * <p>
  * Example usage:
- * <pre>
+ * </p>
+ * <p>
  * GenericMessageAssertion.assertMessage(result)
  *     .hasNoIssues()
  *     .hasFormat(Format.IWXXM)
@@ -32,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *     .hasIssueTime("2017-07-30T11:30Z")
  *     .hasValidityPeriod("2017-07-30T12:00Z", "2017-07-31T12:00Z")
  *     .hasLocationIndicator(LocationIndicatorType.AERODROME, "EETN");
- * </pre>
+ * </p>
  */
 public final class GenericMessageAssertion {
 
