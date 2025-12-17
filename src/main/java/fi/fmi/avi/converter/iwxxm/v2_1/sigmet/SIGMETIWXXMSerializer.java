@@ -11,12 +11,12 @@ import fi.fmi.avi.model.*;
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
 import fi.fmi.avi.model.sigmet.VAInfo;
+import icao.iwxxm21.*;
 import icao.iwxxm21.AirspacePropertyType;
 import icao.iwxxm21.UnitPropertyType;
-import icao.iwxxm21.*;
+import net.opengis.gml32.*;
 import net.opengis.gml32.PointPropertyType;
 import net.opengis.gml32.PointType;
-import net.opengis.gml32.*;
 import net.opengis.om20.OMObservationPropertyType;
 import net.opengis.om20.OMObservationType;
 import net.opengis.om20.OMProcessPropertyType;
@@ -96,7 +96,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                             avt.setId("fpa-" + cnt + "-" + sigmetUUID);
                             geometry.getGeometry()
                                     .flatMap(TacOrGeoGeometry::getGeoGeometry)
-                                    .ifPresent(geom -> avt.setHorizontalProjection(createSurface(geom, "fpa-sfc-" + cnt + "-" + sigmetUUID)));
+                                    .ifPresent(geom -> avt.setHorizontalProjection(createSurface(geom, "fpa-sfc-" + cnt + "-" + sigmetUUID, Winding.COUNTERCLOCKWISE)));
 
                         /*
                         avt.setHorizontalProjection(create(SurfacePropertyType.class, spt -> {
@@ -612,7 +612,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                         geometryWithHeight.getGeometry()
                                                                 .flatMap(TacOrGeoGeometry::getGeoGeometry)
                                                                 .ifPresent(geom -> avt.setHorizontalProjection(
-                                                                        createSurface(geom, "an-sfc-" + cnt + "-" + sigmetUUID)));
+                                                                        createSurface(geom, "an-sfc-" + cnt + "-" + sigmetUUID, Winding.COUNTERCLOCKWISE)));
                             /*
                             avt.setHorizontalProjection(create(SurfacePropertyType.class, spt -> {
                                 spt.setSurface(createAndWrap(SurfaceType.class, sft -> {

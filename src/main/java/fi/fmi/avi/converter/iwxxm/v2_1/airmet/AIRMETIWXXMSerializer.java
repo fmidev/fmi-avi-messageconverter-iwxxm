@@ -10,8 +10,8 @@ import fi.fmi.avi.model.*;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.AirmetWind;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
-import icao.iwxxm21.UnitPropertyType;
 import icao.iwxxm21.*;
+import icao.iwxxm21.UnitPropertyType;
 import net.opengis.gml32.*;
 import net.opengis.om20.OMObservationPropertyType;
 import net.opengis.om20.OMObservationType;
@@ -339,7 +339,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM21Serializer
                                                         geometryWithHeight.getGeometry()
                                                                 .flatMap(TacOrGeoGeometry::getGeoGeometry)
                                                                 .ifPresent(geom -> avt.setHorizontalProjection(
-                                                                        createSurface(geom, "an-sfc-" + cnt + "-" + airmetUUID)));
+                                                                        createSurface(geom, "an-sfc-" + cnt + "-" + airmetUUID, Winding.COUNTERCLOCKWISE)));
                                                     }))));
                                             if (geometryWithHeight.getLowerLimitOperator().isPresent()) {
                                                 sect.setGeometryLowerLimitOperator(

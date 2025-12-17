@@ -102,7 +102,7 @@ public class SpaceWeatherAmd82BulletinIWXXMSerializerTest implements IWXXMConver
         assertEquals("2",
                 xpath.evaluate("count(/collect:MeteorologicalBulletin/collect:meteorologicalInformation)", doc));
 
-        assertEquals("-180.0 90.0 180.0 90.0 180.0 60.0 -180.0 60.0 -180.0 90.0",
+        assertEquals("-180.0 90.0 -180.0 60.0 180.0 60.0 180.0 90.0 -180.0 90.0",
                 xpath.evaluate("/collect:MeteorologicalBulletin"
                         + "/collect:meteorologicalInformation[1]"
                         + "/iwxxm2025_2:SpaceWeatherAdvisory"

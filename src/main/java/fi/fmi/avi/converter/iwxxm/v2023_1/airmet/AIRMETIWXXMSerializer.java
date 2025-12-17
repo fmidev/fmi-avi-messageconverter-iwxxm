@@ -1,7 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v2023_1.airmet;
 
-import aero.aixm511full.ValDistanceVerticalType;
 import aero.aixm511full.*;
+import aero.aixm511full.ValDistanceVerticalType;
 import fi.fmi.avi.converter.*;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
@@ -12,10 +12,10 @@ import fi.fmi.avi.model.AviationCodeListUser.AeronauticalAirmetWeatherPhenomenon
 import fi.fmi.avi.model.AviationCodeListUser.WeatherCausingVisibilityReduction;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
+import icao.iwxxm2023_1.*;
 import icao.iwxxm2023_1.AirspacePropertyType;
 import icao.iwxxm2023_1.AirspaceVolumePropertyType;
 import icao.iwxxm2023_1.UnitPropertyType;
-import icao.iwxxm2023_1.*;
 import net.opengis.gml32.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -430,7 +430,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
             }
         }
         an.getGeometry().flatMap(TacOrGeoGeometry::getGeoGeometry)
-                .ifPresent(geom -> avt.setHorizontalProjection(createAixm511fullSurface(geom, getUUID())));
+                .ifPresent(geom -> avt.setHorizontalProjection(createSurface(geom, getUUID(), Winding.COUNTERCLOCKWISE)));
 
         return avt;
     }
