@@ -153,7 +153,7 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         if (volume.getHorizontalProjection().isPresent()) {
             airspaceVolumeType.setId(getUUID());
             final SurfacePropertyType surfaceProperty =
-                    createAixm511fullSurface(volume.getHorizontalProjection().get(), getUUID());
+                    createSurface(volume.getHorizontalProjection().get(), getUUID());
             airspaceVolumeType.setHorizontalProjection(surfaceProperty);
         }
 

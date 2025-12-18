@@ -11,10 +11,10 @@ import fi.fmi.avi.model.AviationCodeListUser.AeronauticalAirmetWeatherPhenomenon
 import fi.fmi.avi.model.AviationCodeListUser.WeatherCausingVisibilityReduction;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
+import icao.iwxxm30.*;
 import icao.iwxxm30.AirspacePropertyType;
 import icao.iwxxm30.AirspaceVolumePropertyType;
 import icao.iwxxm30.UnitPropertyType;
-import icao.iwxxm30.*;
 import net.opengis.gml32.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -425,7 +425,7 @@ public abstract class AIRMETIWXXMSerializer<T> extends AbstractIWXXM30Serializer
             }
         }
         an.getGeometry().flatMap(TacOrGeoGeometry::getGeoGeometry)
-        .ifPresent(geom -> avt.setHorizontalProjection(createSurface(geom, getUUID())));
+                .ifPresent(geom -> avt.setHorizontalProjection(createSurface(geom, getUUID(), Winding.COUNTERCLOCKWISE)));
 
         return avt;
     }

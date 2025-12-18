@@ -1,7 +1,7 @@
 package fi.fmi.avi.converter.iwxxm.v2023_1.sigmet;
 
-import aero.aixm511full.ValDistanceVerticalType;
 import aero.aixm511full.*;
+import aero.aixm511full.ValDistanceVerticalType;
 import fi.fmi.avi.converter.*;
 import fi.fmi.avi.converter.ConversionResult.Status;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMSerializer;
@@ -13,13 +13,13 @@ import fi.fmi.avi.model.AviationCodeListUser.AeronauticalSignificantWeatherPheno
 import fi.fmi.avi.model.sigmet.SIGMET;
 import fi.fmi.avi.model.sigmet.SigmetAnalysisType;
 import fi.fmi.avi.model.sigmet.VAInfo;
+import icao.iwxxm2023_1.*;
 import icao.iwxxm2023_1.AirspacePropertyType;
 import icao.iwxxm2023_1.AirspaceVolumePropertyType;
 import icao.iwxxm2023_1.UnitPropertyType;
-import icao.iwxxm2023_1.*;
+import net.opengis.gml32.*;
 import net.opengis.gml32.PointPropertyType;
 import net.opengis.gml32.PointType;
-import net.opengis.gml32.*;
 import net.opengis.om20.TimeObjectPropertyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -559,7 +559,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
             }
         }
         an.getGeometry().flatMap(TacOrGeoGeometry::getGeoGeometry)
-                .ifPresent(geom -> avt.setHorizontalProjection(createAixm511fullSurface(geom, getUUID())));
+                .ifPresent(geom -> avt.setHorizontalProjection(createSurface(geom, getUUID(), Winding.COUNTERCLOCKWISE)));
 
         return avt;
     }
@@ -568,7 +568,7 @@ public abstract class SIGMETIWXXMSerializer<T> extends AbstractIWXXM20231Seriali
         AirspaceVolumeType airspace = create(AirspaceVolumeType.class, avt -> {
             avt.setId(getUUID());
             fc.getGeometry().flatMap(TacOrGeoGeometry::getGeoGeometry)
-                    .ifPresent(geom -> avt.setHorizontalProjection(createAixm511fullSurface(geom, getUUID())));
+                    .ifPresent(geom -> avt.setHorizontalProjection(createSurface(geom, getUUID(), Winding.COUNTERCLOCKWISE)));
 
         });
         return airspace;

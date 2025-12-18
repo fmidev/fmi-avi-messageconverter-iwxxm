@@ -72,7 +72,37 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
         return Optional.of(type);
     }
 
-    protected static SurfacePropertyType createAixm511fullSurface(final Geometry geom, final String id) throws IllegalArgumentException {
+    /**
+     * Creates a surface property from a geometry with a specific winding order enforced. See {@link Winding} for
+     * details on limitations when enforcing a specific winding.
+     *
+     * @param geom          the geometry
+     * @param id            the surface ID
+     * @param targetWinding the winding order to enforce
+     * @return the surface property
+     */
+    protected static SurfacePropertyType createSurface(final Geometry geom, final String id, final Winding targetWinding)
+            throws IllegalArgumentException {
+        return createSurfaceInternal(geom, id, targetWinding);
+    }
+
+    /**
+     * Creates a surface property from a geometry, preserving the original winding order.
+     * <p>
+     * Use this method when the polygon coordinates should not be reordered, for example when the input data is already
+     * in the correct order and winding detection may be unreliable. See {@link Winding} for details on limitations when
+     * enforcing a specific winding.
+     * </p>
+     *
+     * @param geom the geometry
+     * @param id   the surface ID
+     * @return the surface property
+     */
+    protected static SurfacePropertyType createSurface(final Geometry geom, final String id) throws IllegalArgumentException {
+        return createSurfaceInternal(geom, id, null);
+    }
+
+    private static SurfacePropertyType createSurfaceInternal(final Geometry geom, final String id, final Winding targetWinding) throws IllegalArgumentException {
         SurfacePropertyType retval = null;
         if (geom != null) {
             retval = create(SurfacePropertyType.class, spt -> spt.setSurface(createAndWrap(SurfaceType.class, sft -> {
@@ -107,10 +137,11 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
                     spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", _spapt -> _spapt.getAbstractSurfacePatch().add(ppt));
                 } else if (PolygonGeometry.class.isAssignableFrom(geom.getClass())) { //Polygon
                     final PolygonGeometry polygon = (PolygonGeometry) geom;
+                    final List<Double> positions = targetWinding != null ? polygon.getExteriorRingPositions(targetWinding) : polygon.getExteriorRingPositions();
                     final JAXBElement<PolygonPatchType> ppt = createAndWrap(PolygonPatchType.class, poly -> poly.setExterior(
                             create(AbstractRingPropertyType.class, arpt -> arpt.setAbstractRing(createAndWrap(LinearRingType.class, lrt -> {
                                 final DirectPositionListType dplt = create(DirectPositionListType.class,
-                                        dpl -> dpl.getValue().addAll(polygon.getExteriorRingPositions(Winding.COUNTERCLOCKWISE)));
+                                        dpl -> dpl.getValue().addAll(positions));
                                 lrt.setPosList(dplt);
                             })))));
                     spapt = createAndWrap(SurfacePatchArrayPropertyType.class, "createPatches", _spapt -> _spapt.getAbstractSurfacePatch().add(ppt));
