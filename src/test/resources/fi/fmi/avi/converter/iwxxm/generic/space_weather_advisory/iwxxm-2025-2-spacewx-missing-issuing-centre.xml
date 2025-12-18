@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:SpaceWeatherAdvisory xmlns:iwxxm="http://icao.int/iwxxm/2025-2"
+                            xmlns:gml="http://www.opengis.net/gml/3.2"
+                            xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+                            gml:id="uuid.test-missing-issuing-centre"
+                            reportStatus="NORMAL"
+                            permissibleUsage="OPERATIONAL">
+
+  <iwxxm:issueTime>
+    <gml:TimeInstant gml:id="uuid.issue-time">
+      <gml:timePosition>2016-11-08T01:00:00Z</gml:timePosition>
+    </gml:TimeInstant>
+  </iwxxm:issueTime>
+
+  <iwxxm:issuingSpaceWeatherCentre>
+    <aixm:Unit gml:id="uuid.swc">
+      <aixm:timeSlice>
+        <aixm:UnitTimeSlice gml:id="uuid.swc-ts">
+          <gml:validTime/>
+          <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+        </aixm:UnitTimeSlice>
+      </aixm:timeSlice>
+    </aixm:Unit>
+  </iwxxm:issuingSpaceWeatherCentre>
+
+</iwxxm:SpaceWeatherAdvisory>
+

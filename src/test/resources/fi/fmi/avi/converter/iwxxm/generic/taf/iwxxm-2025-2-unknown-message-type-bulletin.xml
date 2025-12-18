@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collect:MeteorologicalBulletin xmlns:collect="http://def.wmo.int/collect/2014"
+                                xmlns:gml="http://www.opengis.net/gml/3.2"
+                                xmlns:iwxxm="http://icao.int/iwxxm/3.0"
+                                gml:id="bulletin-unknown-type">
+  <collect:meteorologicalInformation>
+    <iwxxm:UnknownMessageType gml:id="uuid.unknown" reportStatus="NORMAL">
+      <iwxxm:issueTime>
+        <gml:TimeInstant gml:id="uuid.time">
+          <gml:timePosition>2012-08-15T18:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:issueTime>
+    </iwxxm:UnknownMessageType>
+  </collect:meteorologicalInformation>
+  <collect:bulletinIdentifier>A_LTXX99XXXX151800_C_XXXX_20120815180000.xml</collect:bulletinIdentifier>
+</collect:MeteorologicalBulletin>
+
