@@ -4,6 +4,7 @@ import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.bulletin.v1_2.BulletinProperties;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
@@ -20,21 +21,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.IWXXM_2_1_NAMESPACE;
-import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.IWXXM_3_0_NAMESPACE;
 import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertFirstMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class GenericBulletinIWXXMParserTest {
+public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
 
     @Autowired
     private AviMessageConverter converter;
@@ -42,27 +37,17 @@ public class GenericBulletinIWXXMParserTest {
     @Autowired
     private IWXXMGenericBulletinScanner iwxxmGenericBulletinScanner;
 
-    private Document getBulletinDocument(final String filename) throws Exception {
-        final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setNamespaceAware(true);
-        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        try (final InputStream inputStream = GenericBulletinIWXXMParserTest.class.getResourceAsStream(filename)) {
-            return documentBuilder.parse(inputStream);
-        }
-    }
-
     @Test
     public void testScanner() throws Exception {
         final BulletinProperties properties = new BulletinProperties();
-        iwxxmGenericBulletinScanner.collectBulletinProperties(this.getBulletinDocument("taf/iwxxm-21-taf-bulletin.xml"), properties, ConversionHints.EMPTY);
+        iwxxmGenericBulletinScanner.collectBulletinProperties(readDocumentFromResource("taf/iwxxm-21-taf-bulletin.xml"), properties, ConversionHints.EMPTY);
         assertThat(properties.contains(BulletinProperties.Name.HEADING)).isTrue();
         assertThat(properties.contains(BulletinProperties.Name.MESSAGE)).isTrue();
     }
 
     @Test
     public void testParserWithTAF() throws Exception {
-        final Document input = this.getBulletinDocument("taf/iwxxm-21-taf-bulletin.xml");
+        final Document input = readDocumentFromResource("taf/iwxxm-21-taf-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
         assertThat(result.getConversionIssues()).isEmpty();
@@ -71,7 +56,7 @@ public class GenericBulletinIWXXMParserTest {
 
     @Test
     public void testParserWithSIGMET() throws Exception {
-        final Document input = this.getBulletinDocument("sigmet/iwxxm-21-sigmet-bulletin.xml");
+        final Document input = readDocumentFromResource("sigmet/iwxxm-21-sigmet-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
@@ -92,7 +77,7 @@ public class GenericBulletinIWXXMParserTest {
 
     @Test
     public void testParserWithSIGMET30() throws Exception {
-        final Document input = this.getBulletinDocument("sigmet/iwxxm-30-sigmet-bulletin.xml");
+        final Document input = readDocumentFromResource("sigmet/iwxxm-30-sigmet-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
@@ -113,7 +98,7 @@ public class GenericBulletinIWXXMParserTest {
 
     @Test
     public void testParserWithTAF30() throws Exception {
-        final Document input = this.getBulletinDocument("taf/iwxxm-30-taf-bulletin.xml");
+        final Document input = readDocumentFromResource("taf/iwxxm-30-taf-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
@@ -129,7 +114,7 @@ public class GenericBulletinIWXXMParserTest {
 
     @Test
     public void testParserWithTAF30Cancellation() throws Exception {
-        final Document input = this.getBulletinDocument("taf/iwxxm-30-taf-cancellation-bulletin.xml");
+        final Document input = readDocumentFromResource("taf/iwxxm-30-taf-cancellation-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
@@ -145,7 +130,7 @@ public class GenericBulletinIWXXMParserTest {
 
     @Test
     public void testParserWithAlternateCollectNamespacePrefix() throws Exception {
-        final Document input = this.getBulletinDocument("taf/iwxxm-30-taf-bulletin-namespaces-collect-alt-prefix.xml");
+        final Document input = readDocumentFromResource("taf/iwxxm-30-taf-bulletin-namespaces-collect-alt-prefix.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
@@ -168,7 +153,7 @@ public class GenericBulletinIWXXMParserTest {
 
     @Test
     public void testParserWithUnknownMessageType() throws Exception {
-        final Document input = getBulletinDocument("taf/iwxxm-2025-2-unknown-message-type-bulletin.xml");
+        final Document input = readDocumentFromResource("taf/iwxxm-2025-2-unknown-message-type-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 

@@ -26,10 +26,10 @@ import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
 
-public class METARScannerTest extends DOMParsingTestBase {
+public class METARScannerTest implements IWXXMConverterTests {
 
     private List<ConversionIssue> withCollectedPropertiesFrom(final String fileName, final Consumer<METARProperties> resultHandler) throws Exception {
-        final Document doc = readDocument(METARScannerTest.class, fileName);
+        final Document doc = IWXXMConverterTests.readDocumentFromResource(fileName, METARScannerTest.class);
         final JAXBContext ctx = AbstractIWXXMAixm511WxSerializer.getAixm511WxJAXBContext();
         final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolverAixm511Wx.getInstance();

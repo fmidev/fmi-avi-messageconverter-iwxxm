@@ -16,17 +16,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLIdentical;
 
@@ -36,27 +29,6 @@ public final class GenericAviationWeatherMessageParserTest implements IWXXMConve
 
     @Autowired
     private AviMessageConverter converter;
-
-    private Document readDocumentFromResource(final String name) throws Exception {
-        try (final InputStream inputStream = getClass().getResourceAsStream(name)) {
-            requireNonNull(inputStream, name);
-            return readDocument(inputStream);
-        }
-    }
-
-    private Document readDocumentFromString(final String xmlString) throws Exception {
-        try (final InputStream inputStream = new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8))) {
-            return readDocument(inputStream);
-        }
-    }
-
-    private Document readDocument(final InputStream inputStream) throws Exception {
-        final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setNamespaceAware(true);
-        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        return documentBuilder.parse(inputStream);
-    }
 
     @Test
     public void specificationTest() {
@@ -89,7 +61,7 @@ public final class GenericAviationWeatherMessageParserTest implements IWXXMConve
         assertThat(messages).hasSize(1);
 
         final Document expectedMessage1 = readDocumentFromResource(expectedResultResourceName);
-        final Document actualDocument = readDocumentFromString(messages.get(0));
+        final Document actualDocument = IWXXMConverterTests.readDocumentFromString(messages.get(0));
         assertXMLIdentical(XMLUnit.compareXML(expectedMessage1, actualDocument), true);
     }
 
@@ -114,4 +86,3 @@ public final class GenericAviationWeatherMessageParserTest implements IWXXMConve
         testNamespaceDeclarations(bulletinResourceName, expectedResultResourceName);
     }
 }
-

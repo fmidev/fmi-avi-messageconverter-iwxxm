@@ -4,6 +4,7 @@ import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
@@ -18,11 +19,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.InputStream;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
@@ -31,23 +31,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = GenericAviationWeatherMessageScannerMissingTest.Config.class, loader = AnnotationConfigContextLoader.class)
-public class GenericAviationWeatherMessageScannerMissingTest {
+public class GenericAviationWeatherMessageScannerMissingTest implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
 
-    private Document getResourceAsDocument(final String filename) throws Exception {
-        final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setNamespaceAware(true);
-        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        try (final InputStream inputStream = GenericAviationWeatherMessageScannerMissingTest.class.getResourceAsStream(filename)) {
-            return documentBuilder.parse(inputStream);
-        }
-    }
-
     @Test
-    public void testParserWithTAF30() throws Exception {
-        final Document input = this.getResourceAsDocument("taf/iwxxm-30-taf-bulletin.xml");
+    public void testParserWithTAF30() throws IOException, ParserConfigurationException, SAXException {
+        final Document input = readDocumentFromResource("taf/iwxxm-30-taf-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
