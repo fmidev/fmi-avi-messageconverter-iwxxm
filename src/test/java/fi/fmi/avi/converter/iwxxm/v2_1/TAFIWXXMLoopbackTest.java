@@ -1,15 +1,13 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
-
+import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
+import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
+import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
+import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.taf.TAF;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,21 +17,19 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import fi.fmi.avi.converter.AviMessageConverter;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.DOMParsingTestBase;
-import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
-import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
-import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.taf.TAF;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+
+import static org.junit.Assert.*;
 
 /**
  * Created by rinne on 19/07/17.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
+public class TAFIWXXMLoopbackTest implements IWXXMConverterTests {
 
     @Autowired
     private AviMessageConverter converter;
@@ -43,7 +39,7 @@ public class TAFIWXXMLoopbackTest extends DOMParsingTestBase {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO));
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
 
-        final Document toValidate = readDocument(TAFIWXXMLoopbackTest.class, "taf-A5-1.xml");
+        final Document toValidate = readDocumentFromResource("taf-A5-1.xml");
         final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
         assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());

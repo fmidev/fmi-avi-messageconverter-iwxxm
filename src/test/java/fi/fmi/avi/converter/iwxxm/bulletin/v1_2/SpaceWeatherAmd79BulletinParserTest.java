@@ -3,6 +3,7 @@ package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
@@ -17,10 +18,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.InputStream;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -31,20 +28,10 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class SpaceWeatherAmd79BulletinParserTest {
+public class SpaceWeatherAmd79BulletinParserTest implements IWXXMConverterTests {
 
     @Autowired
     private AviMessageConverter converter;
-
-    private Document getBulletinDocument(final String filename) throws Exception {
-        final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setNamespaceAware(true);
-        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        try (final InputStream inputStream = SpaceWeatherAmd79BulletinParserTest.class.getResourceAsStream(filename)) {
-            return documentBuilder.parse(inputStream);
-        }
-    }
 
     @Test
     public void testScanner() throws Exception {
@@ -52,7 +39,7 @@ public class SpaceWeatherAmd79BulletinParserTest {
         final BulletinProperties properties = new BulletinProperties();
         final MeteorologicalBulletinIWXXMScanner<SpaceWeatherAdvisoryAmd79, SpaceWeatherAmd79Bulletin> scanner = new MeteorologicalBulletinIWXXMScanner<>();
         scanner.setMessageConverter(converter.getConverter(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO));
-        scanner.collectBulletinProperties(this.getBulletinDocument("swx-bulletin.xml"), properties, ConversionHints.EMPTY);
+        scanner.collectBulletinProperties(readDocumentFromResource("swx-bulletin.xml"), properties, ConversionHints.EMPTY);
         assertTrue(properties.contains(BulletinProperties.Name.HEADING));
         final Optional<BulletinHeading> heading = properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class);
         assertEquals(31, heading.get().getBulletinNumber());
@@ -61,7 +48,7 @@ public class SpaceWeatherAmd79BulletinParserTest {
 
     @Test
     public void testParser() throws Exception {
-        final Document input = this.getBulletinDocument("swx-bulletin.xml");
+        final Document input = readDocumentFromResource("swx-bulletin.xml");
         final ConversionResult<SpaceWeatherAmd79Bulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_30_BULLETIN_POJO,
                 ConversionHints.EMPTY);
         assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());

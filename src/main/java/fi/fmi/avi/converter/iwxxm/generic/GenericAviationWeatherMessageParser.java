@@ -20,15 +20,14 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 import java.io.StringWriter;
 import java.util.Map;
-import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
 public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWXXMParser<T, GenericAviationWeatherMessage> {
 
-    private final Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners;
+    private final Map<IWXXMMessageType, GenericAviationWeatherMessageScanner> scanners;
 
-    protected GenericAviationWeatherMessageParser(final Map<ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
+    protected GenericAviationWeatherMessageParser(final Map<IWXXMMessageType, GenericAviationWeatherMessageScanner> scanners) {
         this.scanners = requireNonNull(scanners, "scanners");
     }
 
@@ -46,35 +45,7 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
         }
     }
 
-    @Override
-    public ConversionResult<GenericAviationWeatherMessage> convertMessage(final T input, final ConversionHints hints) {
-        ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
-        try {
-            final Document doc = parseAsDom(input);
-            retval = createAviationWeatherMessage(doc.getDocumentElement());
-        } catch (final Exception ce) {
-            retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Error in parsing input", ce));
-        }
-        return retval;
-    }
-
-    protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement) {
-        final ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
-        final XPathFactory factory = XPathFactory.newInstance();
-        final XPath xpath = factory.newXPath();
-        final GenericAviationWeatherMessageImpl.Builder builder = GenericAviationWeatherMessageImpl.builder();
-        builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
-        builder.setNullableXMLNamespace(featureElement.getNamespaceURI());
-
-        final GenericAviationWeatherMessageScanner scanner = scanners.get(new ScannerKey(featureElement.getLocalName()));
-        if (scanner == null) {
-            retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
-                    "Unknown message type '" + featureElement.getLocalName() + "'"));
-        } else {
-            collectTranslationStatus(featureElement, xpath, builder, retval);
-            retval.addIssue(scanner.collectMessage(featureElement, xpath, builder));
-        }
-
+    private static void setOriginalMessage(final Element featureElement, final GenericAviationWeatherMessageImpl.Builder builder, final ConversionResult<GenericAviationWeatherMessage> result) {
         try {
             final StringWriter sw = new StringWriter();
             final Result output = new StreamResult(sw);
@@ -89,13 +60,52 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
             transformer.transform(dsource, output);
             builder.setOriginalMessage(sw.toString());
         } catch (final TransformerException e) {
-            retval.addIssue(
+            result.addIssue(
                     new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER,
                             "Unable to write the message content as string", e));
         }
+    }
 
-        retval.setConvertedMessage(builder.build());
+    @Override
+    public ConversionResult<GenericAviationWeatherMessage> convertMessage(final T input, final ConversionHints hints) {
+        ConversionResult<GenericAviationWeatherMessage> retval = new ConversionResult<>();
+        try {
+            final Document doc = parseAsDom(input);
+            retval = createAviationWeatherMessage(doc.getDocumentElement());
+        } catch (final Exception ce) {
+            retval.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Error in parsing input", ce));
+        }
         return retval;
+    }
+
+    protected ConversionResult<GenericAviationWeatherMessage> createAviationWeatherMessage(final Element featureElement) {
+        final ConversionResult<GenericAviationWeatherMessage> result = new ConversionResult<>();
+        final XPathFactory factory = XPathFactory.newInstance();
+        final XPath xpath = factory.newXPath();
+        final GenericAviationWeatherMessageImpl.Builder builder = GenericAviationWeatherMessageImpl.builder();
+        builder.setMessageFormat(GenericAviationWeatherMessage.Format.IWXXM);
+        builder.setNullableXMLNamespace(featureElement.getNamespaceURI());
+
+        final IWXXMMessageType iwxxmMessageType = IWXXMMessageType.fromMessageElementName(featureElement.getLocalName()).orElse(null);
+        if (iwxxmMessageType == null) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                    "Unknown message type '" + featureElement.getLocalName() + "'"));
+        } else {
+            builder.setMessageType(iwxxmMessageType.getMessageType());
+            collectTranslationStatus(featureElement, xpath, builder, result);
+        }
+        final GenericAviationWeatherMessageScanner scanner = scanners.get(iwxxmMessageType);
+        if (scanner == null) {
+            result.addIssue(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX,
+                    "Unsupported message type '" + featureElement.getLocalName() + "'"));
+        } else {
+            result.addIssue(scanner.collectMessage(featureElement, xpath, builder));
+        }
+
+        setOriginalMessage(featureElement, builder, result);
+
+        result.setConvertedMessage(builder.build());
+        return result;
     }
 
     @Override
@@ -110,7 +120,7 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class FromString extends GenericAviationWeatherMessageParser<String> {
-        public FromString(final Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
+        public FromString(final Map<IWXXMMessageType, GenericAviationWeatherMessageScanner> scanners) {
             super(scanners);
         }
 
@@ -121,7 +131,7 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class FromElement extends GenericAviationWeatherMessageParser<Element> {
-        public FromElement(final Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
+        public FromElement(final Map<IWXXMMessageType, GenericAviationWeatherMessageScanner> scanners) {
             super(scanners);
         }
 
@@ -136,42 +146,13 @@ public abstract class GenericAviationWeatherMessageParser<T> extends AbstractIWX
     }
 
     public static class FromDOM extends GenericAviationWeatherMessageParser<Document> {
-        public FromDOM(final Map<GenericAviationWeatherMessageParser.ScannerKey, GenericAviationWeatherMessageScanner> scanners) {
+        public FromDOM(final Map<IWXXMMessageType, GenericAviationWeatherMessageScanner> scanners) {
             super(scanners);
         }
 
         @Override
         protected Document parseAsDom(final Document input) {
             return input;
-        }
-    }
-
-    public static class ScannerKey {
-        private final String documentElementName;
-
-        public ScannerKey(final String documentElementName) {
-            this.documentElementName = documentElementName;
-        }
-
-        public String getDocumentElementName() {
-            return documentElementName;
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            final ScannerKey that = (ScannerKey) o;
-            return Objects.equals(getDocumentElementName(), that.getDocumentElementName());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getDocumentElementName());
         }
     }
 

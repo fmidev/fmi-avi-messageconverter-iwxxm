@@ -22,16 +22,11 @@ import org.springframework.test.context.TestContextManager;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 
 import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertMessage;
 import static fi.fmi.avi.model.MessageType.*;
-import static java.util.Objects.requireNonNull;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 
 @RunWith(Parameterized.class)
@@ -526,15 +521,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
     }
 
     private Document readDocumentFromResource(final String name, final MessageType messageType) throws Exception {
-        final String resourcePath = getResourcePath(name, messageType);
-        try (final InputStream inputStream = getClass().getResourceAsStream(resourcePath)) {
-            requireNonNull(inputStream, resourcePath);
-            final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setNamespaceAware(true);
-            documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            return documentBuilder.parse(inputStream);
-        }
+        return readDocumentFromResource(getResourcePath(name, messageType));
     }
 
     @Test

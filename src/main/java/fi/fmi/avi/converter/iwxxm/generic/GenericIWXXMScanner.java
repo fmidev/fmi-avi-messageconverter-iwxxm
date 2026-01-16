@@ -2,7 +2,10 @@ package fi.fmi.avi.converter.iwxxm.generic;
 
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.model.*;
+import fi.fmi.avi.model.AviationWeatherMessage;
+import fi.fmi.avi.model.GenericAviationWeatherMessage;
+import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
+import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -15,7 +18,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * A configurable, version-agnostic generic IWXXM scanner that can be configured
@@ -59,7 +61,6 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
     }
 
     private final FieldXPathProvider fieldXPathProvider;
-    private final Function<Element, MessageType> messageTypeResolver;
     private final boolean requireReportStatus;
     private final boolean extractValidityTime;
     private final boolean extractObservationTime;
@@ -67,7 +68,6 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
 
     private GenericIWXXMScanner(final Builder builder) {
         this.fieldXPathProvider = Objects.requireNonNull(builder.fieldXPathProvider, "fieldXPathProvider");
-        this.messageTypeResolver = Objects.requireNonNull(builder.messageTypeResolver, "messageTypeResolver");
         this.requireReportStatus = builder.requireReportStatus;
         this.extractValidityTime = builder.extractValidityTime;
         this.extractObservationTime = builder.extractObservationTime;
@@ -197,15 +197,6 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                                     final GenericAviationWeatherMessageImpl.Builder builder) {
         final IssueList issues = new IssueList();
 
-        final MessageType messageType = messageTypeResolver.apply(featureElement);
-        if (messageType == null) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.SYNTAX,
-                    "Unable to determine message type from element: " + featureElement.getLocalName()));
-            return issues;
-        }
-        builder.setMessageType(messageType);
-
         collectReportStatus(featureElement, xpath, builder, issues, requireReportStatus);
         collectIssueTimeUsingFieldProvider(featureElement, xpath, builder, issues);
 
@@ -328,7 +319,6 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
         private final Map<GenericAviationWeatherMessage.LocationIndicatorType, IWXXMField> locationIndicatorFields =
                 new EnumMap<>(GenericAviationWeatherMessage.LocationIndicatorType.class);
         private FieldXPathProvider fieldXPathProvider;
-        private Function<Element, MessageType> messageTypeResolver;
         private boolean requireReportStatus = true;
         private boolean extractValidityTime = false;
         private boolean extractObservationTime = false;
@@ -345,31 +335,6 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
          */
         public Builder fieldProvider(final FieldXPathProvider provider) {
             this.fieldXPathProvider = Objects.requireNonNull(provider, "fieldXPathProvider");
-            return this;
-        }
-
-        /**
-         * Sets a fixed message type for this scanner.
-         * Use this when the scanner handles only one message type.
-         *
-         * @param messageType the fixed message type
-         * @return this builder
-         */
-        public Builder messageType(final MessageType messageType) {
-            Objects.requireNonNull(messageType, "messageType");
-            this.messageTypeResolver = element -> messageType;
-            return this;
-        }
-
-        /**
-         * Sets a dynamic message type resolver for this scanner.
-         * Use this when the scanner handles multiple message types (e.g. METAR/SPECI).
-         *
-         * @param resolver function that determines message type from the root element
-         * @return this builder
-         */
-        public Builder messageTypeResolver(final Function<Element, MessageType> resolver) {
-            this.messageTypeResolver = Objects.requireNonNull(resolver, "messageTypeResolver");
             return this;
         }
 
@@ -433,7 +398,6 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
          */
         public GenericIWXXMScanner build() {
             Objects.requireNonNull(fieldXPathProvider, "fieldProvider must be set");
-            Objects.requireNonNull(messageTypeResolver, "messageType or messageTypeResolver must be set");
             return new GenericIWXXMScanner(this);
         }
     }
