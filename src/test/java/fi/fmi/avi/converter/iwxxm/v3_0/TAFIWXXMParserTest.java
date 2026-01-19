@@ -1,41 +1,30 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Objects;
-
+import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
+import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
+import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.*;
+import fi.fmi.avi.model.taf.TAF;
+import fi.fmi.avi.model.taf.TAFBaseForecast;
+import fi.fmi.avi.model.taf.TAFChangeForecast;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
 
-import fi.fmi.avi.converter.AviMessageConverter;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
-import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.Aerodrome;
-import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationWeatherMessage;
-import fi.fmi.avi.model.CloudForecast;
-import fi.fmi.avi.model.CloudLayer;
-import fi.fmi.avi.model.ElevatedPoint;
-import fi.fmi.avi.model.SurfaceWind;
-import fi.fmi.avi.model.taf.TAF;
-import fi.fmi.avi.model.taf.TAFBaseForecast;
-import fi.fmi.avi.model.taf.TAFChangeForecast;
+import java.io.IOException;
+import java.util.List;
+
+import static junit.framework.TestCase.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class TAFIWXXMParserTest {
+public class TAFIWXXMParserTest implements IWXXMConverterTests {
 
     @Autowired
     private AviMessageConverter converter;
@@ -47,7 +36,7 @@ public class TAFIWXXMParserTest {
     @Test
     public void normalMessageTest() throws IOException {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO));
-        final String input = getInput("taf-reportstatus-normal.xml");
+        final String input = readResourceToString("taf-reportstatus-normal.xml");
 
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
 
@@ -107,7 +96,7 @@ public class TAFIWXXMParserTest {
 
         //Change Forecasts
         assertTrue(taf.getChangeForecasts().isPresent());
-        assertTrue(taf.getChangeForecasts().get().size() > 0);
+        assertFalse(taf.getChangeForecasts().get().isEmpty());
 
         //Change 1
         TAFChangeForecast change = taf.getChangeForecasts().get().get(0);
@@ -187,7 +176,7 @@ public class TAFIWXXMParserTest {
 
     @Test
     public void cancelMessageTest() throws IOException {
-        final String input = getInput("taf-cancel-message.xml");
+        final String input = readResourceToString("taf-cancel-message.xml");
 
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
 
@@ -212,7 +201,7 @@ public class TAFIWXXMParserTest {
 
     @Test
     public void noSignificantWeatherTest() throws IOException {
-        final String input = getInput("taf-no-significant-weather-or-cloud.xml");
+        final String input = readResourceToString("taf-no-significant-weather-or-cloud.xml");
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
         assertSuccess(result);
         assertTrue(result.getConvertedMessage().isPresent());
@@ -233,7 +222,7 @@ public class TAFIWXXMParserTest {
 
     @Test
     public void noSignificantCloudTest() throws IOException {
-        final String input = getInput("taf-no-significant-weather-or-cloud.xml");
+        final String input = readResourceToString("taf-no-significant-weather-or-cloud.xml");
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
         assertSuccess(result);
         assertTrue(result.getConvertedMessage().isPresent());
@@ -255,7 +244,7 @@ public class TAFIWXXMParserTest {
 
     @Test
     public void translatedMetaPropsTest() throws IOException {
-        final String input = getInput("taf-translated.xml");
+        final String input = readResourceToString("taf-translated.xml");
 
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
 
@@ -275,25 +264,18 @@ public class TAFIWXXMParserTest {
 
     @Test
     public void CAVOKTrueTest() throws IOException {
-        final String input = getInput("taf-cavok.xml");
+        final String input = readResourceToString("taf-cavok.xml");
 
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
 
         assertSuccess(result);
         assertTrue(result.getConvertedMessage().isPresent());
-        TAF taf = result.getConvertedMessage().get();
+        final TAF taf = result.getConvertedMessage().get();
 
         assertTrue(taf.getBaseForecast().isPresent());
         assertTrue(taf.getBaseForecast().get().isCeilingAndVisibilityOk());
 
         assertTrue(taf.getChangeForecasts().isPresent());
         assertTrue(taf.getChangeForecasts().get().get(0).isCeilingAndVisibilityOk());
-    }
-
-    private String getInput(final String fileName) throws IOException {
-        try (InputStream is = this.getClass().getResourceAsStream(fileName)) {
-            Objects.requireNonNull(is);
-            return IOUtils.toString(is, "UTF-8");
-        }
     }
 }
