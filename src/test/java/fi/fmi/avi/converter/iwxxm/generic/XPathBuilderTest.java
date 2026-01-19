@@ -26,13 +26,9 @@ public class XPathBuilderTest {
                         "/*[contains(namespace-uri(),'://def.wmo.int/collect/') and local-name()='bulletinIdentifier']");
     }
 
-    @Test
-    public void unknownPrefixFallsBackToLocalNameOnly() {
-        final String result = XPathBuilder.toVersionAgnostic("./iwxxm:parent/unknown:child/gml:grandchild");
-        assertThat(result).isEqualTo(
-                "./*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='parent']" +
-                        "/*[local-name()='child']" +
-                        "/*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='grandchild']");
+    @Test(expected = IllegalArgumentException.class)
+    public void unknownPrefixThrowsException() {
+        XPathBuilder.toVersionAgnostic("./iwxxm:parent/unknown:child/gml:grandchild");
     }
 
     @Test

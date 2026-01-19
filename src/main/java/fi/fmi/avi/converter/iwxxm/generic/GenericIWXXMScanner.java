@@ -8,7 +8,6 @@ import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
 import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
 import fi.fmi.avi.model.immutable.GenericAviationWeatherMessageImpl;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -18,6 +17,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * A configurable, version-agnostic generic IWXXM scanner that can be configured
@@ -25,7 +26,6 @@ import java.util.*;
  * <p>
  * Configuration options:
  * <ul>
- *   <li>A message type resolver (fixed or dynamic based on element name)</li>
  *   <li>Whether report status is required or optional</li>
  *   <li>Whether to extract validity time</li>
  *   <li>Which location indicators to extract</li>
@@ -36,7 +36,6 @@ import java.util.*;
  * <pre>
  * GenericIWXXMScanner tafScanner = GenericIWXXMScanner.builder()
  *         .fieldProvider(new TAFFieldXPathProvider())
- *         .messageType(MessageType.TAF)
  *         .requireReportStatus(true)
  *         .extractValidityTime(true)
  *         .locationIndicator(LocationIndicatorType.AERODROME, IWXXMField.AERODROME)
@@ -48,17 +47,8 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
     /**
      * Maps IWXXM 2.1 @status attribute values to ReportStatus.
      */
-    private static final Map<String, AviationWeatherMessage.ReportStatus> IWXXM_21_STATUS_TO_REPORT_STATUS;
-
-    static {
-        final Map<String, AviationWeatherMessage.ReportStatus> map = new HashMap<>();
-        map.put("NORMAL", AviationWeatherMessage.ReportStatus.NORMAL);
-        map.put("CORRECTION", AviationWeatherMessage.ReportStatus.CORRECTION);
-        map.put("AMENDMENT", AviationWeatherMessage.ReportStatus.AMENDMENT);
-        map.put("MISSING", AviationWeatherMessage.ReportStatus.NORMAL);
-        map.put("CANCELLATION", AviationWeatherMessage.ReportStatus.AMENDMENT);
-        IWXXM_21_STATUS_TO_REPORT_STATUS = Collections.unmodifiableMap(map);
-    }
+    private static final Map<String, AviationWeatherMessage.ReportStatus> IWXXM_21_STATUS_TO_REPORT_STATUS =
+            createIwxxm21StatusToReportStatus();
 
     private final FieldXPathProvider fieldXPathProvider;
     private final boolean requireReportStatus;
@@ -75,6 +65,16 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                 new EnumMap<>(builder.locationIndicatorFields));
     }
 
+    private static Map<String, AviationWeatherMessage.ReportStatus> createIwxxm21StatusToReportStatus() {
+        final Map<String, AviationWeatherMessage.ReportStatus> map = new HashMap<>();
+        map.put("NORMAL", AviationWeatherMessage.ReportStatus.NORMAL);
+        map.put("CORRECTION", AviationWeatherMessage.ReportStatus.CORRECTION);
+        map.put("AMENDMENT", AviationWeatherMessage.ReportStatus.AMENDMENT);
+        map.put("MISSING", AviationWeatherMessage.ReportStatus.NORMAL);
+        map.put("CANCELLATION", AviationWeatherMessage.ReportStatus.AMENDMENT);
+        return Collections.unmodifiableMap(map);
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -83,14 +83,18 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
         return nullableString == null ? "" : nullableString;
     }
 
-    private static Optional<ZonedDateTime> evaluateZonedDateTime(final Element element,
-                                                                 final XPath xPath,
-                                                                 final String expression) throws XPathExpressionException {
-        final String value = xPath.compile(expression).evaluate(element);
-        if (value == null || value.isEmpty()) {
-            return Optional.empty();
+    private static XPathEvaluationResult<ZonedDateTime> evaluateZonedDateTime(final Element element,
+                                                                              final XPath xPath,
+                                                                              final String expression) {
+        try {
+            final String value = xPath.compile(expression).evaluate(element);
+            if (value == null || value.isEmpty()) {
+                return XPathEvaluationResult.empty();
+            }
+            return XPathEvaluationResult.of(ZonedDateTime.parse(value, DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        } catch (final XPathExpressionException | DateTimeParseException exception) {
+            return XPathEvaluationResult.fail(exception);
         }
-        return Optional.of(ZonedDateTime.parse(value, DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     }
 
     private static <T extends Enum<T>> Optional<T> evaluateEnumeration(final Element element,
@@ -156,39 +160,35 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
         }
     }
 
-    private static IssueList collectValidTime(final Element featureElement,
-                                              final String selector,
-                                              final XPath xpath,
-                                              final GenericAviationWeatherMessageImpl.Builder builder) {
-        final IssueList issues = new IssueList();
+    private static XPathEvaluationResult<PartialOrCompleteTimePeriod> collectValidTime(final Element featureElement,
+                                                                                       final String selector,
+                                                                                       final XPath xpath) {
         try {
-            final NodeList results = (NodeList) xpath.compile(selector)
-                    .evaluate(featureElement, XPathConstants.NODESET);
-            if (results.getLength() == 1) {
-                final Element validTimeElement = (Element) results.item(0);
-
-                final Optional<ZonedDateTime> startTime = evaluateZonedDateTime(validTimeElement, xpath,
-                        XPathBuilder.text("./gml:TimePeriod/gml:beginPosition"));
-                final Optional<ZonedDateTime> endTime = evaluateZonedDateTime(validTimeElement, xpath,
-                        XPathBuilder.text("./gml:TimePeriod/gml:endPosition"));
-
-                if (startTime.isPresent() && endTime.isPresent()) {
-                    builder.setValidityTime(PartialOrCompleteTimePeriod.builder()
-                            .setStartTime(PartialOrCompleteTimeInstant.of(startTime.get()))
-                            .setEndTime(PartialOrCompleteTimeInstant.of(endTime.get()))
-                            .build());
-                } else {
-                    issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                            ConversionIssue.Type.MISSING_DATA,
-                            "Unable to parse valid time for " + featureElement.getLocalName()));
-                }
+            final Object result = xpath.compile(selector).evaluate(featureElement, XPathConstants.NODE);
+            if (!(result instanceof Element)) {
+                return XPathEvaluationResult.empty();
             }
-        } catch (final XPathExpressionException | DateTimeParseException exception) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.MISSING_DATA,
-                    "Unable to parse valid time for " + featureElement.getLocalName(), exception));
+            final Element validTimeElement = (Element) result;
+
+            final XPathEvaluationResult<ZonedDateTime> startTime = evaluateZonedDateTime(validTimeElement, xpath,
+                    XPathBuilder.text("./gml:TimePeriod/gml:beginPosition"));
+            final XPathEvaluationResult<ZonedDateTime> endTime = evaluateZonedDateTime(validTimeElement, xpath,
+                    XPathBuilder.text("./gml:TimePeriod/gml:endPosition"));
+
+            if (startTime.hasValue() && endTime.hasValue()) {
+                return XPathEvaluationResult.of(PartialOrCompleteTimePeriod.builder()
+                        .setStartTime(PartialOrCompleteTimeInstant.of(startTime.getOrThrow()))
+                        .setEndTime(PartialOrCompleteTimeInstant.of(endTime.getOrThrow()))
+                        .build());
+            } else if (startTime.isFailed()) {
+                return XPathEvaluationResult.fail(startTime.getExceptionOrNull());
+            } else if (endTime.isFailed()) {
+                return XPathEvaluationResult.fail(endTime.getExceptionOrNull());
+            }
+            return XPathEvaluationResult.empty();
+        } catch (final XPathExpressionException exception) {
+            return XPathEvaluationResult.fail(exception);
         }
-        return issues;
     }
 
     @Override
@@ -198,10 +198,12 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
         final IssueList issues = new IssueList();
 
         collectReportStatus(featureElement, xpath, builder, issues, requireReportStatus);
-        collectIssueTimeUsingFieldProvider(featureElement, xpath, builder, issues);
+        collectTimeInstantUsingFieldProvider(featureElement, xpath, issues,
+                IWXXMField.ISSUE_TIME, "issue time", builder::setIssueTime);
 
         if (extractObservationTime) {
-            collectObservationTimeUsingFieldProvider(featureElement, xpath, builder, issues);
+            collectTimeInstantUsingFieldProvider(featureElement, xpath, issues,
+                    IWXXMField.OBSERVATION_TIME, "observation time", builder::setObservationTime);
         }
 
         if (extractValidityTime) {
@@ -215,44 +217,24 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
         return issues;
     }
 
-    private void collectIssueTimeUsingFieldProvider(final Element element,
-                                                    final XPath xpath,
-                                                    final GenericAviationWeatherMessageImpl.Builder builder,
-                                                    final IssueList issues) {
-        try {
-            for (final String expression : fieldXPathProvider.getXPaths(IWXXMField.ISSUE_TIME)) {
-                final Optional<ZonedDateTime> time = evaluateZonedDateTime(element, xpath, expression);
-                if (time.isPresent()) {
-                    builder.setIssueTime(PartialOrCompleteTimeInstant.of(time.get()));
-                    return;
-                }
-            }
+    private void collectTimeInstantUsingFieldProvider(final Element element,
+                                                      final XPath xpath,
+                                                      final IssueList issues,
+                                                      final IWXXMField field,
+                                                      final String fieldName,
+                                                      final Consumer<PartialOrCompleteTimeInstant> setter) {
+        final XPathEvaluationResult<ZonedDateTime> result = evaluate(field,
+                expr -> evaluateZonedDateTime(element, xpath, expr));
+        if (result.hasValue()) {
+            setter.accept(PartialOrCompleteTimeInstant.of(result.getOrThrow()));
+        } else if (result.isFailed()) {
+            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
+                    ConversionIssue.Type.OTHER,
+                    "Unable to parse " + fieldName, result.getException().orElse(null)));
+        } else {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                     ConversionIssue.Type.MISSING_DATA,
-                    "No issue time found for IWXXM message"));
-        } catch (final XPathExpressionException | DateTimeParseException exception) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.OTHER,
-                    "Unable to parse issue time", exception));
-        }
-    }
-
-    private void collectObservationTimeUsingFieldProvider(final Element element,
-                                                          final XPath xpath,
-                                                          final GenericAviationWeatherMessageImpl.Builder builder,
-                                                          final IssueList issues) {
-        try {
-            for (final String expression : fieldXPathProvider.getXPaths(IWXXMField.OBSERVATION_TIME)) {
-                final Optional<ZonedDateTime> time = evaluateZonedDateTime(element, xpath, expression);
-                if (time.isPresent()) {
-                    builder.setObservationTime(PartialOrCompleteTimeInstant.of(time.get()));
-                    return;
-                }
-            }
-        } catch (final XPathExpressionException | DateTimeParseException exception) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.OTHER,
-                    "Unable to parse observation time", exception));
+                    "No " + fieldName + " found for IWXXM message"));
         }
     }
 
@@ -263,40 +245,58 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
             final Map<GenericAviationWeatherMessage.LocationIndicatorType, IWXXMField> fieldByLocationType,
             final IssueList issues) {
 
+        final XPathExpression designatorExpression;
+        final XPathExpression nameExpression;
         try {
-            final XPathExpression designatorExpression = xpath.compile(XPathBuilder.text("./aixm:designator"));
-            final XPathExpression nameExpression = xpath.compile(XPathBuilder.text("./aixm:name"));
-
-            for (final Map.Entry<GenericAviationWeatherMessage.LocationIndicatorType, IWXXMField> entry
-                    : fieldByLocationType.entrySet()) {
-                final GenericAviationWeatherMessage.LocationIndicatorType locationIndicatorType = entry.getKey();
-                final IWXXMField field = entry.getValue();
-
-                String locationIndicator = "";
-                for (final String expression : fieldXPathProvider.getXPaths(field)) {
-                    final Object locationNode = xpath.compile(expression).evaluate(featureElement, XPathConstants.NODE);
-                    if (locationNode instanceof Element) {
-                        locationIndicator = nullToEmpty(designatorExpression.evaluate(locationNode));
-                        if (locationIndicator.isEmpty()) {
-                            locationIndicator = nullToEmpty(nameExpression.evaluate(locationNode));
-                        }
-                        if (!locationIndicator.isEmpty()) {
-                            break;
-                        }
-                    }
-                }
-
-                if (locationIndicator.isEmpty()) {
-                    issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                            String.format(Locale.ROOT, "Missing location indicator %s", locationIndicatorType)));
-                } else {
-                    builder.putLocationIndicators(locationIndicatorType, locationIndicator);
-                }
-            }
+            designatorExpression = xpath.compile(XPathBuilder.text("./aixm:designator"));
+            nameExpression = xpath.compile(XPathBuilder.text("./aixm:name"));
         } catch (final XPathExpressionException exception) {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                     ConversionIssue.Type.OTHER,
-                    "Unable to parse location indicators", exception));
+                    "Unable to compile location indicator expressions", exception));
+            return;
+        }
+
+        for (final Map.Entry<GenericAviationWeatherMessage.LocationIndicatorType, IWXXMField> entry
+                : fieldByLocationType.entrySet()) {
+            final GenericAviationWeatherMessage.LocationIndicatorType locationIndicatorType = entry.getKey();
+            final IWXXMField field = entry.getValue();
+
+            final XPathEvaluationResult<String> result = evaluate(field,
+                    expr -> evaluateLocationIndicator(featureElement, expr, xpath, designatorExpression, nameExpression));
+
+            if (result.hasValue()) {
+                builder.putLocationIndicators(locationIndicatorType, result.getOrThrow());
+            } else if (result.isFailed()) {
+                issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
+                        ConversionIssue.Type.OTHER,
+                        "Unable to parse location indicator " + locationIndicatorType, result.getException().orElse(null)));
+            } else {
+                issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
+                        String.format(Locale.ROOT, "Missing location indicator %s", locationIndicatorType)));
+            }
+        }
+    }
+
+    private XPathEvaluationResult<String> evaluateLocationIndicator(final Element featureElement,
+                                                                    final String expression,
+                                                                    final XPath xpath,
+                                                                    final XPathExpression designatorExpression,
+                                                                    final XPathExpression nameExpression) {
+        try {
+            final Object locationNode = xpath.compile(expression).evaluate(featureElement, XPathConstants.NODE);
+            if (locationNode instanceof Element) {
+                String locationIndicator = nullToEmpty(designatorExpression.evaluate(locationNode));
+                if (locationIndicator.isEmpty()) {
+                    locationIndicator = nullToEmpty(nameExpression.evaluate(locationNode));
+                }
+                if (!locationIndicator.isEmpty()) {
+                    return XPathEvaluationResult.of(locationIndicator);
+                }
+            }
+            return XPathEvaluationResult.empty();
+        } catch (final XPathExpressionException exception) {
+            return XPathEvaluationResult.fail(exception);
         }
     }
 
@@ -304,15 +304,33 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                                                        final XPath xpath,
                                                        final GenericAviationWeatherMessageImpl.Builder builder,
                                                        final IssueList issues) {
-        final IssueList accumulatedIssues = new IssueList();
-        for (final String expression : fieldXPathProvider.getXPaths(IWXXMField.VALID_TIME)) {
-            final IssueList validTimeIssues = collectValidTime(element, expression, xpath, builder);
-            if (builder.getValidityTime().isPresent()) {
-                return;
-            }
-            accumulatedIssues.addAll(validTimeIssues);
+        final XPathEvaluationResult<PartialOrCompleteTimePeriod> result = evaluate(IWXXMField.VALID_TIME,
+                expr -> collectValidTime(element, expr, xpath));
+        if (result.hasValue()) {
+            builder.setValidityTime(result.getOrThrow());
+        } else if (result.isFailed()) {
+            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
+                    ConversionIssue.Type.OTHER,
+                    "Unable to parse validity time", result.getException().orElse(null)));
         }
-        issues.addAll(accumulatedIssues);
+    }
+
+    private <T> XPathEvaluationResult<T> evaluate(final IWXXMField field,
+                                                  final Function<String, XPathEvaluationResult<T>> evaluator) {
+        Exception lastException = null;
+        for (final String expression : fieldXPathProvider.getXPaths(field)) {
+            final XPathEvaluationResult<T> result = evaluator.apply(expression);
+            if (result.hasValue()) {
+                return result;
+            }
+            if (result.isFailed()) {
+                lastException = result.getException().orElse(null);
+            }
+        }
+        if (lastException != null) {
+            return XPathEvaluationResult.fail(lastException);
+        }
+        return XPathEvaluationResult.empty();
     }
 
     public static class Builder {

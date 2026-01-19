@@ -1,6 +1,8 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +25,8 @@ public final class XPathBuilder {
 
     private static final Map<String, String> PREFIX_TO_NS_PATTERN;
     // Matches prefix:localName after a / in XPath expressions. Predicates like [1] are not matched and remain untouched.
-    private static final Pattern PREFIXED_ELEMENT = Pattern.compile("/([a-zA-Z][a-zA-Z0-9]*):([A-Za-z_][A-Za-z0-9_.-]*)");
+    private static final Pattern PREFIXED_ELEMENT = Pattern.compile(
+            "/(?<prefix>[a-zA-Z][a-zA-Z0-9]*):(?<localPart>[A-Za-z_][A-Za-z0-9_.-]*)");
 
     static {
         final Map<String, String> map = new HashMap<>();
@@ -45,21 +48,25 @@ public final class XPathBuilder {
      * <p>
      * Replaces {@code /prefix:localName} with {@code /*[contains(namespace-uri(),'nsPattern') and local-name()='localName']},
      * where {@code nsPattern} is a version-independent namespace URI fragment for the given prefix.
-     * If the prefix is unknown, matches by local-name only.
      * </p>
      *
      * @param readableXPath XPath with namespace prefixes (e.g. iwxxm:, gml:, aixm:)
      * @return version-agnostic XPath using local-name() and contains(namespace-uri(), nsPattern)
+     * @throws IllegalArgumentException if the XPath contains an unknown namespace prefix
      */
     public static String toVersionAgnostic(final String readableXPath) {
         final Matcher matcher = PREFIXED_ELEMENT.matcher(readableXPath);
+        // TODO: Replace StringBuffer with StringBuilder when moving to Java 9+
         final StringBuffer result = new StringBuffer();
         while (matcher.find()) {
-            final String nsPattern = PREFIX_TO_NS_PATTERN.get(matcher.group(1));
+            final String prefix = matcher.group(1);
+            final String nsPattern = PREFIX_TO_NS_PATTERN.get(prefix);
+            if (nsPattern == null) {
+                throw new IllegalArgumentException("Unknown namespace prefix: " + prefix
+                        + ". Known prefixes: " + PREFIX_TO_NS_PATTERN.keySet());
+            }
             final String localName = matcher.group(2);
-            final String replacement = nsPattern != null
-                    ? "/*[contains(namespace-uri(),'" + nsPattern + "') and local-name()='" + localName + "']"
-                    : "/*[local-name()='" + localName + "']";
+            final String replacement = "/*[contains(namespace-uri(),'" + nsPattern + "') and local-name()='" + localName + "']";
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
         matcher.appendTail(result);
@@ -90,37 +97,22 @@ public final class XPathBuilder {
     }
 
     /**
-     * Converts a human-readable XPath and wraps it according to the field type.
+     * Converts a human-readable XPath and wraps it according to the field's XPath data type.
      *
      * @param readableXPath XPath with namespace prefixes
      * @param field         the field being queried, determines wrapping style
      * @return version-agnostic XPath with appropriate wrapper
      */
     public static String wrap(final String readableXPath, final IWXXMField field) {
-        switch (field.getType()) {
-            case TEXT:
+        switch (field.getXPathDataType()) {
+            case STRING:
                 return text(readableXPath);
             case NODE:
                 return node(readableXPath);
             default:
-                throw new IllegalArgumentException("Unknown field type: " + field.getType());
+                throw new IllegalArgumentException("Unknown XPath data type: " + field.getXPathDataType());
         }
     }
 
-    /**
-     * Helper method for building field XPath maps in FieldXPathProvider implementations.
-     * Wraps each path according to the field's type and adds them to the map.
-     *
-     * @param map   the map to add the field expressions to
-     * @param field the field being mapped
-     * @param paths one or more XPath expressions for this field
-     */
-    public static void put(final Map<IWXXMField, List<String>> map, final IWXXMField field, final String... paths) {
-        final List<String> wrapped = new ArrayList<>(paths.length);
-        for (final String path : paths) {
-            wrapped.add(wrap(path, field));
-        }
-        map.put(field, wrapped);
-    }
 }
 

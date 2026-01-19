@@ -99,6 +99,14 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .build(),
 
                 // TAF error cases
+                taf().fileName("iwxxm-21-taf-unknown-status.xml")
+                        .namespace(IWXXM_2_1_NAMESPACE)
+                        .issueTime("2017-07-30T11:30Z")
+                        .validityPeriod("2017-07-30T12:00Z", "2017-07-31T12:00Z")
+                        .aerodrome("EETN")
+                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "report status")
+                        .build(),
+
                 taf().fileName("iwxxm-2025-2-taf-invalid-issue-time.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
@@ -106,12 +114,19 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "issue time")
                         .build(),
 
+                taf().fileName("iwxxm-2025-2-taf-missing-issue-time.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
+                        .aerodrome("YUDO")
+                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "issue time")
+                        .build(),
+
                 taf().fileName("iwxxm-2025-2-taf-invalid-validity-time.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
                         .issueTime("2012-08-15T18:00Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
-                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "valid time")
+                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "Unable to parse validity time")
                         .build(),
 
                 taf().fileName("iwxxm-2025-2-taf-missing-aerodrome.xml")
@@ -134,6 +149,13 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .validityPeriod("2012-08-16T00:00:00Z", "2012-08-16T18:00:00Z")
                         .aerodrome("YUDO")
                         .reportStatus(ReportStatus.AMENDMENT)
+                        .build(),
+
+                taf().fileName("iwxxm-2025-2-taf-multiple-valid-periods.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-15T18:00:00Z")
+                        .validityPeriod("2012-08-16T00:00:00Z", "2012-08-16T18:00:00Z")
+                        .aerodrome("YUDO")
                         .build(),
 
                 // SIGMET tests
@@ -305,6 +327,14 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "observation time")
+                        .build(),
+
+                metar().fileName("iwxxm-2025-2-metar-missing-observation-time.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-22T16:30Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "observation time")
                         .build(),
 
                 // SPECI tests
