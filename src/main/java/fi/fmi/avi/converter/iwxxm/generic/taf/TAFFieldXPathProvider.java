@@ -48,8 +48,11 @@ public final class TAFFieldXPathProvider extends AbstractFieldXPathProvider {
                         + "/aixm:AirportHeliportTimeSlice");
 
         put(map, IWXXMField.VALID_TIME,
+                // IWXXM 3.0+ normal reports: validPeriod
                 "./iwxxm:validPeriod",
+                // IWXXM 3.0+ cancellations: cancelledReportValidPeriod
                 "./iwxxm:cancelledReportValidPeriod",
+                // IWXXM 2.1: validTime
                 "./iwxxm:validTime");
 
         return Collections.unmodifiableMap(map);

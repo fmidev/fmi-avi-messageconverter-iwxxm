@@ -181,9 +181,9 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                         .setEndTime(PartialOrCompleteTimeInstant.of(endTime.getOrThrow()))
                         .build());
             } else if (startTime.isFailed()) {
-                return XPathEvaluationResult.fail(startTime.getExceptionOrNull());
+                return XPathEvaluationResult.fail(startTime.getException().orElse(null));
             } else if (endTime.isFailed()) {
-                return XPathEvaluationResult.fail(endTime.getExceptionOrNull());
+                return XPathEvaluationResult.fail(endTime.getException().orElse(null));
             }
             return XPathEvaluationResult.empty();
         } catch (final XPathExpressionException exception) {
@@ -317,20 +317,19 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
 
     private <T> XPathEvaluationResult<T> evaluate(final IWXXMField field,
                                                   final Function<String, XPathEvaluationResult<T>> evaluator) {
-        Exception lastException = null;
+        Exception failure = null;
         for (final String expression : fieldXPathProvider.getXPaths(field)) {
             final XPathEvaluationResult<T> result = evaluator.apply(expression);
             if (result.hasValue()) {
                 return result;
             }
-            if (result.isFailed()) {
-                lastException = result.getException().orElse(null);
+            if (failure == null) {
+                failure = result.getException().orElse(null);
+            } else {
+                result.getException().ifPresent(failure::addSuppressed);
             }
         }
-        if (lastException != null) {
-            return XPathEvaluationResult.fail(lastException);
-        }
-        return XPathEvaluationResult.empty();
+        return failure == null ? XPathEvaluationResult.empty() : XPathEvaluationResult.fail(failure);
     }
 
     public static class Builder {

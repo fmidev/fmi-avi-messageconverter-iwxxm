@@ -63,7 +63,9 @@ public final class SIGMETAIRMETFieldXPathProvider extends AbstractFieldXPathProv
                         + "/aixm:AirspaceTimeSlice");
 
         put(map, IWXXMField.VALID_TIME,
+                // IWXXM 3.0+ style
                 "./iwxxm:validPeriod",
+                // IWXXM 2.1 style
                 "./iwxxm:validTime");
 
         return Collections.unmodifiableMap(map);

@@ -59,13 +59,13 @@ public final class XPathBuilder {
         // TODO: Replace StringBuffer with StringBuilder when moving to Java 9+
         final StringBuffer result = new StringBuffer();
         while (matcher.find()) {
-            final String prefix = matcher.group(1);
+            final String prefix = matcher.group("prefix");
             final String nsPattern = PREFIX_TO_NS_PATTERN.get(prefix);
             if (nsPattern == null) {
                 throw new IllegalArgumentException("Unknown namespace prefix: " + prefix
                         + ". Known prefixes: " + PREFIX_TO_NS_PATTERN.keySet());
             }
-            final String localName = matcher.group(2);
+            final String localName = matcher.group("localPart");
             final String replacement = "/*[contains(namespace-uri(),'" + nsPattern + "') and local-name()='" + localName + "']";
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }

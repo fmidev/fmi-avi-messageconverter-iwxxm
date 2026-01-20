@@ -13,6 +13,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -98,5 +99,34 @@ public class GenericIWXXMScannerTest implements IWXXMConverterTests {
                 .filter(issue -> issue.getType() == ConversionIssue.Type.MISSING_DATA)
                 .filter(issue -> issue.getMessage().contains("issue time")))
                 .hasSize(1);
+    }
+
+    @Test
+    public void exceptions_collected_as_suppressed() {
+        final FieldXPathProvider fieldProvider = field -> {
+            if (field == IWXXMField.ISSUE_TIME) {
+                return Arrays.asList(
+                        "this[is[invalid[xpath1",
+                        "this[is[invalid[xpath2",
+                        "this[is[invalid[xpath3"
+                );
+            }
+            return Collections.emptyList();
+        };
+
+        final GenericIWXXMScanner scanner = GenericIWXXMScanner.builder()
+                .fieldProvider(fieldProvider)
+                .build();
+
+        final GenericAviationWeatherMessageImpl.Builder builder = GenericAviationWeatherMessageImpl.builder();
+        final IssueList issues = scanner.collectMessage(rootElement, xpath, builder);
+
+        assertThat(builder.getIssueTime()).isEmpty();
+
+        assertThat(issues)
+                .extracting(ConversionIssue::getCause)
+                .filteredOn(Objects::nonNull)
+                .first()
+                .satisfies(cause -> assertThat(cause.getSuppressed()).hasSize(2));
     }
 }

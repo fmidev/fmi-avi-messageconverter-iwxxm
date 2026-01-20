@@ -55,10 +55,6 @@ public final class XPathEvaluationResult<T> {
         return exception != null;
     }
 
-    public Exception getExceptionOrNull() {
-        return exception;
-    }
-
     public Optional<Exception> getException() {
         return Optional.ofNullable(exception);
     }
