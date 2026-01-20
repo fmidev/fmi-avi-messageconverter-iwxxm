@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:TAF xmlns:gml="http://www.opengis.net/gml/3.2"
+           xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+           xmlns:iwxxm="http://icao.int/iwxxm/2.1"
+           xmlns:metce="http://def.wmo.int/metce/2013"
+           xmlns:om="http://www.opengis.net/om/2.0"
+           xmlns:sam="http://www.opengis.net/sampling/2.0"
+           xmlns:sams="http://www.opengis.net/samplingSpatial/2.0"
+           xmlns:xlink="http://www.w3.org/1999/xlink"
+           gml:id="taf-d285e06a-6786-448b-af15-128c303e1aa0"
+           permissibleUsage="NON-OPERATIONAL"
+           permissibleUsageReason="TEST"
+           status="UNKNOWN_STATUS_VALUE">
+  <iwxxm:issueTime>
+    <gml:TimeInstant gml:id="time-b7c71fa9-f76b-49ae-97f2-0a6164ae289a">
+      <gml:timePosition>2017-07-30T11:30:00Z</gml:timePosition>
+    </gml:TimeInstant>
+  </iwxxm:issueTime>
+  <iwxxm:validTime>
+    <gml:TimePeriod gml:id="time-2dd0b516-8ed6-463b-862e-1d2f13009497">
+      <gml:beginPosition>2017-07-30T12:00:00Z</gml:beginPosition>
+      <gml:endPosition>2017-07-31T12:00:00Z</gml:endPosition>
+    </gml:TimePeriod>
+  </iwxxm:validTime>
+  <iwxxm:baseForecast>
+    <om:OM_Observation gml:id="bfct-c340b09a-a278-4438-9027-afb2852a0828">
+      <om:type xlink:href="http://codes.wmo.int/49-2/observation-type/iwxxm/2.1/MeteorologicalAerodromeForecast"
+               xlink:title="Aerodrome Base Forecast"/>
+      <om:phenomenonTime xlink:href="#time-2dd0b516-8ed6-463b-862e-1d2f13009497"
+                         xlink:title="Valid time period of the TAF"/>
+      <om:resultTime xlink:href="#time-b7c71fa9-f76b-49ae-97f2-0a6164ae289a"
+                     xlink:title="issueTime of the TAF"/>
+      <om:validTime xlink:href="#time-2dd0b516-8ed6-463b-862e-1d2f13009497"
+                    xlink:title="Valid time period of the TAF"/>
+      <om:procedure>
+        <metce:Process gml:id="process-9958ae19-a15c-4f99-9d0b-9bf1a112c808">
+          <gml:description>WMO No. 49 Volume 2 Meteorological Service for International Air Navigation APPENDIX 5
+            TECHNICAL SPECIFICATIONS RELATED TO FORECASTS
+          </gml:description>
+        </metce:Process>
+      </om:procedure>
+      <om:observedProperty xlink:href="http://codes.wmo.int/49-2/observable-property/MeteorologicalAerodromeForecast"
+                           xlink:title="TAF forecast properties"/>
+      <om:featureOfInterest>
+        <sams:SF_SpatialSamplingFeature gml:id="foi-c2dab068-3285-4691-8181-a3656d2b3899">
+          <sam:type xlink:href="http://www.opengis.net/def/samplingFeatureType/OGC-OM/2.0/SF_SamplingPoint"
+                    xlink:title="Sampling point"/>
+          <sam:sampledFeature>
+            <aixm:AirportHeliport gml:id="ad-0e5641b5-fba2-441d-8ced-f76e05700a5a">
+              <aixm:timeSlice>
+                <aixm:AirportHeliportTimeSlice gml:id="aerodrome-6b3ae165-e4e7-49e2-8d10-d76270f4d231">
+                  <gml:validTime/>
+                  <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+                  <aixm:designator>EETN</aixm:designator>
+                  <aixm:name>TALLINN AIRPORT</aixm:name>
+                  <aixm:locationIndicatorICAO>EETN</aixm:locationIndicatorICAO>
+                </aixm:AirportHeliportTimeSlice>
+              </aixm:timeSlice>
+            </aixm:AirportHeliport>
+          </sam:sampledFeature>
+          <sams:shape>
+            <gml:Point gml:id="point-71556e70-bdc1-41e8-8ee8-e01d34e1210f"
+                       srsDimension="2"
+                       srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+              <gml:pos>24.8325 59.413333</gml:pos>
+            </gml:Point>
+          </sams:shape>
+        </sams:SF_SpatialSamplingFeature>
+      </om:featureOfInterest>
+      <om:result>
+        <iwxxm:MeteorologicalAerodromeForecastRecord cloudAndVisibilityOK="true"
+                                                     gml:id="rec-1ca4c338-8e7f-4a3f-beec-8634141d530b"/>
+      </om:result>
+    </om:OM_Observation>
+  </iwxxm:baseForecast>
+</iwxxm:TAF>

@@ -4,22 +4,59 @@ import fi.fmi.avi.converter.ConversionIssue;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public interface IWXXMConverterTests {
     String IWXXM_2_1_NAMESPACE = "http://icao.int/iwxxm/2.1";
     String IWXXM_3_0_NAMESPACE = "http://icao.int/iwxxm/3.0";
+    String IWXXM_2021_2_NAMESPACE = "http://icao.int/iwxxm/2021-2";
+    String IWXXM_2023_1_NAMESPACE = "http://icao.int/iwxxm/2023-1";
     String IWXXM_2025_2_NAMESPACE = "http://icao.int/iwxxm/2025-2";
 
-    static String readResourceToString(final String fileName, final Class<? extends IWXXMConverterTests> referenceClass) throws IOException {
-        try (final InputStream is = referenceClass.getResourceAsStream(fileName)) {
-            Objects.requireNonNull(is);
-            return IOUtils.toString(is, "UTF-8");
+    static Document readDocumentFromResource(final String resourceName, final Class<? extends IWXXMConverterTests> resourceReference) throws IOException, ParserConfigurationException, SAXException {
+        requireNonNull(resourceName, "resourceName");
+        requireNonNull(resourceReference, "resourceReference");
+        try (final InputStream inputStream = resourceReference.getResourceAsStream(resourceName)) {
+            requireNonNull(inputStream, resourceName);
+            return readDocument(inputStream);
+        }
+    }
+
+    static Document readDocumentFromString(final String xmlString) throws Exception {
+        requireNonNull(xmlString, "xmlString");
+        try (final InputStream inputStream = new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8))) {
+            return readDocument(inputStream);
+        }
+    }
+
+    static Document readDocument(final InputStream inputStream) throws ParserConfigurationException, IOException, SAXException {
+        requireNonNull(inputStream, "inputStream");
+        final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setNamespaceAware(true);
+        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        return documentBuilder.parse(inputStream);
+    }
+
+    static String readResourceToString(final String resourceName, final Class<? extends IWXXMConverterTests> resourceReference) throws IOException {
+        requireNonNull(resourceName, "resourceName");
+        requireNonNull(resourceReference, "resourceReference");
+        try (final InputStream resourceStream = resourceReference.getResourceAsStream(resourceName)) {
+            requireNonNull(resourceStream, resourceName);
+            return IOUtils.toString(resourceStream, "UTF-8");
         }
     }
 
@@ -51,8 +88,11 @@ public interface IWXXMConverterTests {
         XMLAssert.assertXMLEqual(setFixedGmlIds(input), setFixedGmlIds(actual));
     }
 
+    default Document readDocumentFromResource(final String name) throws IOException, ParserConfigurationException, SAXException {
+        return IWXXMConverterTests.readDocumentFromResource(name, getClass());
+    }
+
     default String readResourceToString(final String fileName) throws IOException {
-        final Class<? extends IWXXMConverterTests> referenceClass = getClass();
-        return IWXXMConverterTests.readResourceToString(fileName, referenceClass);
+        return IWXXMConverterTests.readResourceToString(fileName, getClass());
     }
 }

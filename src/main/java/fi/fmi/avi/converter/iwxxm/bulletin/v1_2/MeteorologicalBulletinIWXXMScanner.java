@@ -1,28 +1,21 @@
 package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
+import fi.fmi.avi.converter.*;
+import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
+import fi.fmi.avi.converter.iwxxm.generic.XPathBuilder;
+import fi.fmi.avi.model.AviationWeatherMessage;
+import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
+import fi.fmi.avi.util.GTSExchangeFileInfo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import fi.fmi.avi.converter.AviMessageSpecificConverter;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.IssueList;
-import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
-import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
-import fi.fmi.avi.model.AviationWeatherMessage;
-import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
-import fi.fmi.avi.util.GTSExchangeFileInfo;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.util.List;
 
 public class MeteorologicalBulletinIWXXMScanner<S extends AviationWeatherMessage, T extends MeteorologicalBulletin<S>> extends AbstractIWXXMScanner {
 
@@ -53,10 +46,9 @@ public class MeteorologicalBulletinIWXXMScanner<S extends AviationWeatherMessage
         final IssueList retval = new IssueList();
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
-        xpath.setNamespaceContext(new IWXXMNamespaceContext());
         try {
-            XPathExpression expr = xpath.compile("/collect:MeteorologicalBulletin/collect:bulletinIdentifier");
-            final String bulletinIdentifier = expr.evaluate(input.getDocumentElement());
+            final String bulletinIdentifier = xpath.compile(XPathBuilder.text("/collect:MeteorologicalBulletin/collect:bulletinIdentifier"))
+                    .evaluate(input.getDocumentElement());
             if (bulletinIdentifier.isEmpty()) {
                 retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "No or empty bulletinIdentifier in MeteorologicalBulletin");
                 return retval;
@@ -64,8 +56,9 @@ public class MeteorologicalBulletinIWXXMScanner<S extends AviationWeatherMessage
 
             retval.addAll(collectHeading(bulletinIdentifier, properties));
 
-            expr = xpath.compile("/collect:MeteorologicalBulletin/collect:meteorologicalInformation/*");
-            final NodeList features = (NodeList) expr.evaluate(input.getDocumentElement(), XPathConstants.NODESET);
+            final String meteorologicalInfoXPath = XPathBuilder.toVersionAgnostic("/collect:MeteorologicalBulletin/collect:meteorologicalInformation") + "/*";
+            final NodeList features = (NodeList) xpath.compile(meteorologicalInfoXPath)
+                    .evaluate(input.getDocumentElement(), XPathConstants.NODESET);
             ConversionResult<S> messageResult;
             for (int i = 0; i < features.getLength(); i++) {
                 messageResult = createAviationWeatherMessage((Element) features.item(i), hints);
