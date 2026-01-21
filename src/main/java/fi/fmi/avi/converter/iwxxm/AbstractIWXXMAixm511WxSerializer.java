@@ -157,9 +157,14 @@ public abstract class AbstractIWXXMAixm511WxSerializer<T extends AviationWeather
         return Optional.of(type);
     }
 
+    /**
+     * Creates a nil ValDistanceVerticalType with nilReason="unknown" and uom="OTHER".
+     * The xsi:nil="true" attribute is added by the XSL cleanup transformation.
+     *
+     * @return a nil ValDistanceVerticalType
+     */
     protected static ValDistanceVerticalType nilValDistanceVertical() {
         final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
-        // TODO: how to set xsi:nil="true"?
         type.setNilReason("unknown");
         type.setUom("OTHER");
         return type;

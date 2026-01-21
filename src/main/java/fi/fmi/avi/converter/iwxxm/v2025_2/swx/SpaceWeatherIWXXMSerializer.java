@@ -158,15 +158,20 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM20252S
         }
 
         volume.getLowerLimit().ifPresent(limit -> {
-            AbstractIWXXMAixm511FullSerializer.toValDistanceVertical(limit).ifPresent(airspaceVolumeType::setLowerLimit);
+            airspaceVolumeType.setLowerLimit(toValDistanceVertical(limit)
+                    .orElseGet(AbstractIWXXMAixm511FullSerializer::nilValDistanceVertical));
             airspaceVolumeType.setLowerLimitReference(create(CodeVerticalReferenceType.class,
-                    codeVerticalReferenceType -> volume.getLowerLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
-        });
-
-        volume.getUpperLimit().ifPresent(limit -> {
-            AbstractIWXXMAixm511FullSerializer.toValDistanceVertical(limit).ifPresent(airspaceVolumeType::setUpperLimit);
-            airspaceVolumeType.setUpperLimitReference(create(CodeVerticalReferenceType.class,
-                    codeVerticalReferenceType -> volume.getUpperLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
+                    codeVerticalReferenceType ->
+                            volume.getLowerLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
+            if (volume.getUpperLimit().isPresent()) {
+                airspaceVolumeType.setUpperLimit(toValDistanceVertical(volume.getUpperLimit().get())
+                        .orElseGet(AbstractIWXXMAixm511FullSerializer::nilValDistanceVertical));
+                airspaceVolumeType.setUpperLimitReference(create(CodeVerticalReferenceType.class,
+                        codeVerticalReferenceType ->
+                                volume.getUpperLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
+            } else {
+                airspaceVolumeType.setUpperLimit(nilValDistanceVertical());
+            }
         });
 
         prop.setAirspaceVolume(airspaceVolumeType);
