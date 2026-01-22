@@ -47,6 +47,7 @@
         <iwxxm:SpaceWeatherRegion gml:id="uuid.c264db5c-3f0b-4444-ab5e-71f48a514644">
           <iwxxm:location>
             <aixm:AirspaceVolume gml:id="uuid.7138f8d1-9854-46cb-a1b1-9d96c5cee46f">
+              <aixm:upperLimit uom="OTHER" xsi:nil="true" nilReason="unknown"/>
               <aixm:lowerLimit uom="FL">340</aixm:lowerLimit>
               <aixm:lowerLimitReference>STD</aixm:lowerLimitReference>
               <aixm:horizontalProjection>

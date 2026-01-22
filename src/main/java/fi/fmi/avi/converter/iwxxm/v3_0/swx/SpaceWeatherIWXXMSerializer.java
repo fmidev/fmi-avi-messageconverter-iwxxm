@@ -271,16 +271,20 @@ public abstract class SpaceWeatherIWXXMSerializer<T> extends AbstractIWXXM30Seri
         }
 
         volume.getLowerLimit().ifPresent(limit -> {
-            // TODO: Once xsi:nil can be set, setLowerLimit can be moved outside presence test
-            airspaceVolumeType.setLowerLimit(toValDistanceVertical(limit).orElseGet(AbstractIWXXMAixm511WxSerializer::nilValDistanceVertical));
+            airspaceVolumeType.setLowerLimit(toValDistanceVertical(limit)
+                    .orElseGet(AbstractIWXXMAixm511WxSerializer::nilValDistanceVertical));
             airspaceVolumeType.setLowerLimitReference(create(CodeVerticalReferenceType.class,
-                    codeVerticalReferenceType -> volume.getLowerLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
-        });
-        volume.getUpperLimit().ifPresent(limit -> {
-            // TODO: Once xsi:nil can be set, setLowerLimit can be moved outside presence test
-            airspaceVolumeType.setUpperLimit(toValDistanceVertical(limit).orElseGet(AbstractIWXXMAixm511WxSerializer::nilValDistanceVertical));
-            airspaceVolumeType.setUpperLimitReference(create(CodeVerticalReferenceType.class,
-                    codeVerticalReferenceType -> volume.getUpperLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
+                    codeVerticalReferenceType ->
+                            volume.getLowerLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
+            if (volume.getUpperLimit().isPresent()) {
+                airspaceVolumeType.setUpperLimit(toValDistanceVertical(volume.getUpperLimit().get())
+                        .orElseGet(AbstractIWXXMAixm511WxSerializer::nilValDistanceVertical));
+                airspaceVolumeType.setUpperLimitReference(create(CodeVerticalReferenceType.class,
+                        codeVerticalReferenceType ->
+                                volume.getUpperLimitReference().ifPresent(codeVerticalReferenceType::setValue)));
+            } else {
+                airspaceVolumeType.setUpperLimit(nilValDistanceVertical());
+            }
         });
 
         prop.setAirspaceVolume(airspaceVolumeType);

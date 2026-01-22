@@ -73,6 +73,19 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
     }
 
     /**
+     * Creates a nil ValDistanceVerticalType with nilReason="unknown" and uom="OTHER".
+     * The xsi:nil="true" attribute is added by the XSL cleanup transformation.
+     *
+     * @return a nil ValDistanceVerticalType
+     */
+    protected static ValDistanceVerticalType nilValDistanceVertical() {
+        final ValDistanceVerticalType type = create(ValDistanceVerticalType.class);
+        type.setNilReason("unknown");
+        type.setUom("OTHER");
+        return type;
+    }
+
+    /**
      * Creates a surface property from a geometry with a specific winding order enforced. See {@link Winding} for
      * details on limitations when enforcing a specific winding.
      *

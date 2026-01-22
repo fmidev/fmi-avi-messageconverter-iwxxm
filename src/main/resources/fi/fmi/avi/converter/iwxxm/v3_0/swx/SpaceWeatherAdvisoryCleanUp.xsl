@@ -34,7 +34,17 @@
   </xsl:template>
 
   <xsl:template match="//gml:boundedBy[@xsi:nil='true']"/>
-  <xsl:template match="//aixm:upperLimit[@xsi:nil='true']"/>
+
+  <!-- Add xsi:nil="true" to aixm:upperLimit with nilReason and no value -->
+  <xsl:template match="//aixm:upperLimit[@nilReason and not(text())]">
+    <xsl:copy>
+      <xsl:attribute name="xsi:nil">true</xsl:attribute>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
+  <!-- Remove aixm:upperLimit with xsi:nil but without nilReason -->
+  <xsl:template match="//aixm:upperLimit[@xsi:nil='true' and not(@nilReason)]"/>
+
   <xsl:template match="//aixm:upperLimitReference[@xsi:nil='true']"/>
   <xsl:template match="//aixm:maximumLimit[@xsi:nil='true']"/>
   <xsl:template match="//aixm:maximumLimitReference[@xsi:nil='true']"/>
