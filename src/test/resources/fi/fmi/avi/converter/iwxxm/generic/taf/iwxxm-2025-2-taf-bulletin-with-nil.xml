@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<collect:MeteorologicalBulletin xmlns:collect="http://def.wmo.int/collect/2014"
+                                xmlns:gml="http://www.opengis.net/gml/3.2"
+                                xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+                                xmlns:iwxxm="http://icao.int/iwxxm/2025-2"
+                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                gml:id="bulletin-nil-test"
+                                xsi:schemaLocation="http://icao.int/iwxxm/2025-2 http://schemas.wmo.int/iwxxm/2025-2/iwxxm.xsd http://def.wmo.int/collect/2014 http://schemas.wmo.int/collect/1.2/collect.xsd">
+
+  <!-- First message: Normal TAF -->
+  <collect:meteorologicalInformation>
+    <iwxxm:TAF
+      gml:id="taf-normal-yudo"
+      reportStatus="NORMAL"
+      permissibleUsage="OPERATIONAL">
+      <iwxxm:issueTime>
+        <gml:TimeInstant gml:id="ti-normal-yudo">
+          <gml:timePosition>2012-08-15T18:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:issueTime>
+      <iwxxm:aerodrome>
+        <aixm:AirportHeliport gml:id="aerodrome-normal-yudo">
+          <aixm:timeSlice>
+            <aixm:AirportHeliportTimeSlice gml:id="aerodrome-ts-normal-yudo">
+              <gml:validTime/>
+              <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+              <aixm:designator>YUDO</aixm:designator>
+              <aixm:name>DONLON/INTERNATIONAL</aixm:name>
+              <aixm:locationIndicatorICAO>YUDO</aixm:locationIndicatorICAO>
+            </aixm:AirportHeliportTimeSlice>
+          </aixm:timeSlice>
+        </aixm:AirportHeliport>
+      </iwxxm:aerodrome>
+      <iwxxm:validPeriod>
+        <gml:TimePeriod gml:id="vp-normal-yudo">
+          <gml:beginPosition>2012-08-16T00:00:00Z</gml:beginPosition>
+          <gml:endPosition>2012-08-16T18:00:00Z</gml:endPosition>
+        </gml:TimePeriod>
+      </iwxxm:validPeriod>
+      <iwxxm:baseForecast>
+        <iwxxm:MeteorologicalAerodromeForecast gml:id="fc-normal-yudo" cloudAndVisibilityOK="true">
+          <iwxxm:phenomenonTime xlink:href="#vp-normal-yudo"/>
+        </iwxxm:MeteorologicalAerodromeForecast>
+      </iwxxm:baseForecast>
+    </iwxxm:TAF>
+  </collect:meteorologicalInformation>
+
+  <!-- Second message: NIL TAF -->
+  <collect:meteorologicalInformation>
+    <iwxxm:TAF
+      gml:id="taf-nil-efha"
+      reportStatus="NORMAL"
+      permissibleUsage="OPERATIONAL">
+      <iwxxm:issueTime>
+        <gml:TimeInstant gml:id="ti-nil-efha">
+          <gml:timePosition>2012-08-15T18:00:00Z</gml:timePosition>
+        </gml:TimeInstant>
+      </iwxxm:issueTime>
+      <iwxxm:aerodrome>
+        <aixm:AirportHeliport gml:id="aerodrome-nil-efha">
+          <aixm:timeSlice>
+            <aixm:AirportHeliportTimeSlice gml:id="aerodrome-ts-nil-efha">
+              <gml:validTime/>
+              <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+              <aixm:designator>EFHA</aixm:designator>
+              <aixm:name>HALLI</aixm:name>
+              <aixm:locationIndicatorICAO>EFHA</aixm:locationIndicatorICAO>
+            </aixm:AirportHeliportTimeSlice>
+          </aixm:timeSlice>
+        </aixm:AirportHeliport>
+      </iwxxm:aerodrome>
+      <iwxxm:baseForecast nilReason="http://codes.wmo.int/common/nil/missing"/>
+    </iwxxm:TAF>
+  </collect:meteorologicalInformation>
+
+  <collect:bulletinIdentifier>A_LTFI31YUDO151800_C_YUDO_20120815180000.xml</collect:bulletinIdentifier>
+</collect:MeteorologicalBulletin>
