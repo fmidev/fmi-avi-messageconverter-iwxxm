@@ -36,8 +36,9 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
-import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
-import static org.junit.Assert.*;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -76,9 +77,7 @@ public class SpaceWeatherAmd82BulletinIWXXMSerializerTest implements IWXXMConver
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_STRING));
         final SpaceWeatherAmd82Bulletin bulletin = getSWXBulletin("spacewx-A2-3.json", "spacewx-A7-3.json");
         final ConversionResult<String> result = converter.convertMessage(bulletin, IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
-
-        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
-        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-bulletin.xml"), result.getConvertedMessage().get());
+        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-bulletin.xml"));
     }
 
     @Test
@@ -87,14 +86,13 @@ public class SpaceWeatherAmd82BulletinIWXXMSerializerTest implements IWXXMConver
         final SpaceWeatherAmd82Bulletin bulletin = getSWXBulletin("spacewx-A2-3.json", "spacewx-A7-3.json");
         final ConversionResult<Document> result = converter.convertMessage(bulletin, IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
 
-        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
+        final Document doc = assertConversionResult(result).isSuccessful();
 
         final XPath xpath = XPathFactory.newInstance().newXPath();
         final IWXXMNamespaceContext ctx = new IWXXMNamespaceContext();
         ctx.addNamespacePrefix("http://www.w3.org/2000/xmlns/", "xmlns");
         xpath.setNamespaceContext(ctx);
 
-        final Document doc = result.getConvertedMessage().get();
 
         assertEquals("A_LNXX31TEST180815_C_TEST_2020051808----.xml",
                 xpath.evaluate("/collect:MeteorologicalBulletin/collect:bulletinIdentifier", doc));

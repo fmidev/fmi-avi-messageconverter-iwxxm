@@ -24,7 +24,7 @@ import org.w3c.dom.Document;
 import java.util.HashMap;
 import java.util.Map;
 
-import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertBulletinConversionSuccess;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
 import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -66,7 +66,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUCC");
         expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUSO");
 
-        final GenericMeteorologicalBulletin bulletin = assertBulletinConversionSuccess(result);
+        final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).isSuccessful();
         assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_2_1_NAMESPACE)
@@ -88,7 +88,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUDO");
         expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUDD");
 
-        final GenericMeteorologicalBulletin bulletin = assertBulletinConversionSuccess(result);
+        final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).isSuccessful();
         assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_3_0_NAMESPACE)
@@ -105,7 +105,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
-        final GenericMeteorologicalBulletin bulletin = assertBulletinConversionSuccess(result);
+        final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).isSuccessful();
         assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_3_0_NAMESPACE)
@@ -122,7 +122,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
-        final GenericMeteorologicalBulletin bulletin = assertBulletinConversionSuccess(result);
+        final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).isSuccessful();
         assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_3_0_NAMESPACE)
@@ -139,7 +139,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
-        final GenericMeteorologicalBulletin bulletin = assertBulletinConversionSuccess(result);
+        final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).isSuccessful();
         assertThat(bulletin.getHeading()).isNotNull();
 
         assertMessage(bulletin.getMessages().get(0))
@@ -170,7 +170,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
-        final GenericMeteorologicalBulletin bulletin = assertBulletinConversionSuccess(result);
+        final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).isSuccessful();
         assertThat(bulletin.getMessages()).hasSize(2);
 
         assertMessage(bulletin.getMessages().get(0))
@@ -200,7 +200,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
-        final GenericMeteorologicalBulletin bulletin = assertBulletinConversionSuccess(result);
+        final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).isSuccessful();
         assertThat(bulletin.getMessages()).hasSize(2);
 
         assertMessage(bulletin.getMessages().get(0))

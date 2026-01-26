@@ -1,6 +1,8 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import fi.fmi.avi.converter.ConversionIssue;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.unitils.thirdparty.org.apache.commons.io.IOUtils;
@@ -12,10 +14,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
@@ -25,15 +27,6 @@ public interface IWXXMConverterTests {
     String IWXXM_2021_2_NAMESPACE = "http://icao.int/iwxxm/2021-2";
     String IWXXM_2023_1_NAMESPACE = "http://icao.int/iwxxm/2023-1";
     String IWXXM_2025_2_NAMESPACE = "http://icao.int/iwxxm/2025-2";
-
-    static Document readDocumentFromResource(final String resourceName, final Class<? extends IWXXMConverterTests> resourceReference) throws IOException, ParserConfigurationException, SAXException {
-        requireNonNull(resourceName, "resourceName");
-        requireNonNull(resourceReference, "resourceReference");
-        try (final InputStream inputStream = resourceReference.getResourceAsStream(resourceName)) {
-            requireNonNull(inputStream, resourceName);
-            return readDocument(inputStream);
-        }
-    }
 
     static Document readDocumentFromString(final String xmlString) throws Exception {
         requireNonNull(xmlString, "xmlString");
@@ -49,24 +42,6 @@ public interface IWXXMConverterTests {
         documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         return documentBuilder.parse(inputStream);
-    }
-
-    static String readResourceToString(final String resourceName, final Class<? extends IWXXMConverterTests> resourceReference) throws IOException {
-        requireNonNull(resourceName, "resourceName");
-        requireNonNull(resourceReference, "resourceReference");
-        try (final InputStream resourceStream = resourceReference.getResourceAsStream(resourceName)) {
-            requireNonNull(resourceStream, resourceName);
-            return IOUtils.toString(resourceStream, "UTF-8");
-        }
-    }
-
-    static void printIssues(final List<ConversionIssue> issues) {
-        if (!issues.isEmpty()) {
-            for (final ConversionIssue item : issues) {
-                System.out.println("********************************************************");
-                System.out.println(item.getMessage());
-            }
-        }
     }
 
     /**
@@ -88,11 +63,34 @@ public interface IWXXMConverterTests {
         XMLAssert.assertXMLEqual(setFixedGmlIds(input), setFixedGmlIds(actual));
     }
 
-    default Document readDocumentFromResource(final String name) throws IOException, ParserConfigurationException, SAXException {
-        return IWXXMConverterTests.readDocumentFromResource(name, getClass());
+    default Document readDocumentFromResource(final String resourceName) throws IOException, ParserConfigurationException, SAXException {
+        requireNonNull(resourceName, "resourceName");
+        try (final InputStream inputStream = getClass().getResourceAsStream(resourceName)) {
+            requireNonNull(inputStream, resourceName);
+            return readDocument(inputStream);
+        }
     }
 
-    default String readResourceToString(final String fileName) throws IOException {
-        return IWXXMConverterTests.readResourceToString(fileName, getClass());
+    default String readResourceToString(final String resourceName) throws IOException {
+        requireNonNull(resourceName, "resourceName");
+        try (final InputStream resourceStream = getClass().getResourceAsStream(resourceName)) {
+            requireNonNull(resourceStream, resourceName);
+            return IOUtils.toString(resourceStream, "UTF-8");
+        }
+    }
+
+    default <T> T readFromJSON(final String resourceName, final Class<T> targetType) throws IOException {
+        requireNonNull(resourceName, "resourceName");
+        requireNonNull(targetType, "targetType");
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new Jdk8Module());
+        objectMapper.registerModule(new JavaTimeModule());
+        try (final InputStream inputStream = getClass().getResourceAsStream(resourceName)) {
+            if (inputStream != null) {
+                return objectMapper.readValue(inputStream, targetType);
+            } else {
+                throw new FileNotFoundException("Resource '" + resourceName + "' could not be loaded");
+            }
+        }
     }
 }

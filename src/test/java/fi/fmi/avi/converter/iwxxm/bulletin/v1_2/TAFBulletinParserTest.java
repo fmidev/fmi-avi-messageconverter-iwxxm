@@ -19,6 +19,7 @@ import org.w3c.dom.Document;
 
 import java.util.Optional;
 
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -50,13 +51,10 @@ public class TAFBulletinParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf-bulletin.xml");
         final ConversionResult<TAFBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_TAF_BULLETIN_POJO,
                 ConversionHints.EMPTY);
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-        if (result.getConvertedMessage().isPresent()) {
-            final TAFBulletin bulletin = result.getConvertedMessage().get();
-            assertEquals(2, bulletin.getMessages().size());
-            final TAF mesg = bulletin.getMessages().get(0);
-            assertEquals(26.0, mesg.getBaseForecast().get().getSurfaceWind().get().getWindGust().get().getValue(), 0.0001);
-        }
+        final TAFBulletin bulletin = assertConversionResult(result).isSuccessful();
+        assertEquals(2, bulletin.getMessages().size());
+        final TAF mesg = bulletin.getMessages().get(0);
+        assertEquals(26.0, mesg.getBaseForecast().get().getSurfaceWind().get().getWindGust().get().getValue(), 0.0001);
     }
 
 }

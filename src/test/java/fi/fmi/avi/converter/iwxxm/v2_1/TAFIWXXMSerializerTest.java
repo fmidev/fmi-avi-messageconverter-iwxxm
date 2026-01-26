@@ -1,23 +1,16 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.YearMonth;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
-
+import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
+import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
+import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
+import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.immutable.AerodromeImpl;
+import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
+import fi.fmi.avi.model.immutable.ElevatedPointImpl;
+import fi.fmi.avi.model.taf.TAF;
+import fi.fmi.avi.model.taf.immutable.TAFImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,33 +20,29 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+import java.io.IOException;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
-import fi.fmi.avi.converter.AviMessageConverter;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
-import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
-import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.immutable.AerodromeImpl;
-import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
-import fi.fmi.avi.model.immutable.ElevatedPointImpl;
-import fi.fmi.avi.model.taf.TAF;
-import fi.fmi.avi.model.taf.immutable.TAFImpl;
+import static org.junit.Assert.*;
 
 /**
  * Created by rinne on 19/07/17.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class TAFIWXXMSerializerTest {
+public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
 
     @Autowired
     private AviMessageConverter converter;
 
     private TAF getTAF() throws IOException {
-        final TAF t = readFromJSON("taf12.json");
+        final TAF t = readFromJSON("taf12.json", TAFImpl.class);
         final AerodromeImpl.Builder airportBuilder = AerodromeImpl.builder()
                 .setDesignator("EETN")
                 .setName("Tallinn Airport")
@@ -80,7 +69,7 @@ public class TAFIWXXMSerializerTest {
     @Test
     public void testCancelledTAFSerialisation() throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
-        final TAF t = readFromJSON("taf-A5-2.json");
+        final TAF t = readFromJSON("taf-A5-2.json", TAFImpl.class);
         assertTrue(t.isCancelMessage());
         final ConversionResult<String> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING);
         assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
@@ -692,19 +681,6 @@ public class TAFIWXXMSerializerTest {
         expr = xpath.compile("/iwxxm:TAF/iwxxm:changeForecast[4]/om:OM_Observation/om:result/iwxxm:MeteorologicalAerodromeForecastRecord/iwxxm:cloud/iwxxm"
                 + ":AerodromeCloudForecast/iwxxm:verticalVisibility/@uom");
         assertEquals("Change Forecast 4 cloud vertical visibility uom does not match", "[ft_i]", expr.evaluate(docElement));
-
     }
 
-    protected TAF readFromJSON(final String fileName) throws IOException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new Jdk8Module());
-        objectMapper.registerModule(new JavaTimeModule());
-        try (InputStream inputStream = TAFIWXXMSerializerTest.class.getResourceAsStream(fileName)) {
-            if (inputStream != null) {
-                return objectMapper.readValue(inputStream, TAFImpl.class);
-            } else {
-                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
-            }
-        }
-    }
 }

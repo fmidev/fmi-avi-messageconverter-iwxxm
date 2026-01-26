@@ -27,7 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.printIssues;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -74,10 +74,7 @@ public class SpaceWeatherIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
 
-        printIssues(result.getConversionIssues());
-        assertTrue(result.getConvertedMessage().isPresent());
-
-        final SpaceWeatherAdvisoryAmd79 swx = result.getConvertedMessage().get();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
         assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
@@ -112,10 +109,7 @@ public class SpaceWeatherIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
 
-        printIssues(result.getConversionIssues());
-        assertTrue(result.getConvertedMessage().isPresent());
-
-        final SpaceWeatherAdvisoryAmd79 swx = result.getConvertedMessage().get();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
         assertTrue(swx.getRemarks().isPresent());
         assertEquals(26, swx.getRemarks().get().size());
         assertEquals(expected, swx.getRemarks().get());
@@ -127,10 +121,7 @@ public class SpaceWeatherIWXXMParserTest implements IWXXMConverterTests {
 
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
-        printIssues(result.getConversionIssues());
-        assertTrue(result.getConvertedMessage().isPresent());
-
-        final SpaceWeatherAdvisoryAmd79 swx = result.getConvertedMessage().get();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
         assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
@@ -181,10 +172,7 @@ public class SpaceWeatherIWXXMParserTest implements IWXXMConverterTests {
 
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
-        printIssues(result.getConversionIssues());
-        assertTrue(result.getConvertedMessage().isPresent());
-
-        final SpaceWeatherAdvisoryAmd79 swx = result.getConvertedMessage().get();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
         assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
@@ -218,10 +206,7 @@ public class SpaceWeatherIWXXMParserTest implements IWXXMConverterTests {
 
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
-        printIssues(result.getConversionIssues());
-        assertTrue(result.getConvertedMessage().isPresent());
-
-        final SpaceWeatherAdvisoryAmd79 swx = result.getConvertedMessage().get();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
         assertEquals("ACFJ", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());

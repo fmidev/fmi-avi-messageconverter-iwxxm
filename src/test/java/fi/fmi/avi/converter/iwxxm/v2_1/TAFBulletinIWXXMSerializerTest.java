@@ -1,38 +1,8 @@
 package fi.fmi.avi.converter.iwxxm.v2_1;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.YearMonth;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
@@ -49,6 +19,32 @@ import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import fi.fmi.avi.model.taf.immutable.TAFBulletinImpl;
 import fi.fmi.avi.model.taf.immutable.TAFImpl;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.util.ArrayList;
+import java.util.List;
+
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by rinne on 19/07/17.
@@ -102,10 +98,7 @@ public class TAFBulletinIWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         final TAFBulletin tb = getTAFBulletin("taf12.json", "taf1.json");
         final ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
-        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
-
-        assertTrue(result.getConvertedMessage().isPresent());
-        assertNotNull(result.getConvertedMessage().get());
+        assertConversionResult(result).isSuccessful();
     }
 
     @Test
@@ -113,15 +106,14 @@ public class TAFBulletinIWXXMSerializerTest {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
         final TAFBulletin tb = getTAFBulletin("taf12.json", "taf1.json");
         final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
-        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
+        final Document doc = assertConversionResult(result).isSuccessful();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
         final NamespaceContext ctx = new IWXXMNamespaceContext();
         xpath.setNamespaceContext(ctx);
 
-        final Element docElement = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
-        assertNotNull(docElement);
+        final Element docElement = doc.getDocumentElement();
 
         XPathExpression expr = xpath.compile("/collect:MeteorologicalBulletin/collect:bulletinIdentifier");
         final String bulletinId = expr.evaluate(docElement);

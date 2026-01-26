@@ -1,10 +1,8 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
@@ -28,9 +26,7 @@ import org.w3c.dom.Element;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -44,7 +40,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class SpaceWeatherAmd79BulletinIWXXMSerializerTest {
+public class SpaceWeatherAmd79BulletinIWXXMSerializerTest implements IWXXMConverterTests {
 
     @Autowired
     private AviMessageConverter converter;
@@ -52,7 +48,7 @@ public class SpaceWeatherAmd79BulletinIWXXMSerializerTest {
     private SpaceWeatherAmd79Bulletin getSWXBulletin(final String... fileNames) throws IOException {
         final List<SpaceWeatherAdvisoryAmd79> swxMessages = new ArrayList<>();
         for (final String fName : fileNames) {
-            final SpaceWeatherAdvisoryAmd79 t = readFromJSON(fName);
+            final SpaceWeatherAdvisoryAmd79 t = readFromJSON(fName, SpaceWeatherAdvisoryAmd79Impl.class);
             //Need to do any patching with external data here? (complete dates or geometries?)
             swxMessages.add(t);
         }
@@ -135,18 +131,5 @@ public class SpaceWeatherAmd79BulletinIWXXMSerializerTest {
                 + "/aixm:AirspaceVolume/aixm:horizontalProjection/aixm:Surface/gml:patches[1]/gml:PolygonPatch/gml:exterior/gml:LinearRing/gml:posList");
 
         assertEquals("90.0 -180.0 60.0 -180.0 60.0 180.0 90.0 180.0 90.0 -180.0", expr.evaluate(docElement));
-    }
-
-    protected SpaceWeatherAdvisoryAmd79 readFromJSON(final String fileName) throws IOException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new Jdk8Module());
-        objectMapper.registerModule(new JavaTimeModule());
-        try (final InputStream inputStream = SpaceWeatherAmd79BulletinIWXXMSerializerTest.class.getResourceAsStream(fileName)) {
-            if (inputStream != null) {
-                return objectMapper.readValue(inputStream, SpaceWeatherAdvisoryAmd79Impl.class);
-            } else {
-                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
-            }
-        }
     }
 }

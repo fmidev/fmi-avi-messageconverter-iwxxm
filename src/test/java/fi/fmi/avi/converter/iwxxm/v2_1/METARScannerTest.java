@@ -24,12 +24,13 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 public class METARScannerTest implements IWXXMConverterTests {
 
     private List<ConversionIssue> withCollectedPropertiesFrom(final String fileName, final Consumer<METARProperties> resultHandler) throws Exception {
-        final Document doc = IWXXMConverterTests.readDocumentFromResource(fileName, METARScannerTest.class);
+        final Document doc = readDocumentFromResource(fileName);
         final JAXBContext ctx = AbstractIWXXMAixm511WxSerializer.getAixm511WxJAXBContext();
         final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         final IWXXMSchemaResourceResolver resolver = IWXXMSchemaResourceResolverAixm511Wx.getInstance();
@@ -99,7 +100,7 @@ public class METARScannerTest implements IWXXMConverterTests {
             assertFalse(meta.get(GenericReportProperties.Name.TRANSLATION_TIME, ZonedDateTime.class).isPresent());
             assertFalse(meta.get(GenericReportProperties.Name.TRANSLATION_FAILED_TAC, String.class).isPresent());
         });
-        assertTrue("No issues should have been found", issues.isEmpty());
+        assertThat(issues).as("conversionIssues").isEmpty();
     }
 
 }

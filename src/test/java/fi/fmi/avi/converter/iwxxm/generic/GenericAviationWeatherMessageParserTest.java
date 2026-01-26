@@ -16,10 +16,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLIdentical;
 
@@ -49,15 +49,13 @@ public final class GenericAviationWeatherMessageParserTest implements IWXXMConve
 
         final ConversionResult<GenericMeteorologicalBulletin> result = converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_STRING_TO_GENERIC_BULLETIN_POJO);
-        assertThat(result.getConversionIssues()).isEmpty();
+        final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).isSuccessful();
 
         XMLUnit.setIgnoreWhitespace(true);
         XMLUnit.setIgnoreComments(true);
-        final List<String> messages = result.getConvertedMessage()
-                .map(bulletin -> bulletin.getMessages().stream()
-                        .map(GenericAviationWeatherMessage::getOriginalMessage)
-                        .collect(Collectors.toList()))
-                .orElse(Collections.emptyList());
+        final List<String> messages = bulletin.getMessages().stream()
+                .map(GenericAviationWeatherMessage::getOriginalMessage)
+                .collect(Collectors.toList());
         assertThat(messages).hasSize(1);
 
         final Document expectedMessage1 = readDocumentFromResource(expectedResultResourceName);

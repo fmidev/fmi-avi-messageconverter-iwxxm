@@ -1,28 +1,24 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.YearMonth;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import fi.fmi.avi.converter.AviMessageConverter;
+import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
+import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
+import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
+import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
+import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
+import fi.fmi.avi.model.*;
+import fi.fmi.avi.model.immutable.*;
+import fi.fmi.avi.model.taf.TAF;
+import fi.fmi.avi.model.taf.TAFBaseForecast;
+import fi.fmi.avi.model.taf.TAFChangeForecast;
+import fi.fmi.avi.model.taf.immutable.TAFBaseForecastImpl;
+import fi.fmi.avi.model.taf.immutable.TAFChangeForecastImpl;
+import fi.fmi.avi.model.taf.immutable.TAFImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,43 +29,23 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.xpath.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.*;
 
-import fi.fmi.avi.converter.AviMessageConverter;
-import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
-import fi.fmi.avi.converter.ConversionResult;
-import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
-import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
-import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
-import fi.fmi.avi.model.Aerodrome;
-import fi.fmi.avi.model.AviationCodeListUser;
-import fi.fmi.avi.model.AviationWeatherMessage;
-import fi.fmi.avi.model.CloudForecast;
-import fi.fmi.avi.model.PartialOrCompleteTimeInstant;
-import fi.fmi.avi.model.PartialOrCompleteTimePeriod;
-import fi.fmi.avi.model.SurfaceWind;
-import fi.fmi.avi.model.Weather;
-import fi.fmi.avi.model.immutable.AerodromeImpl;
-import fi.fmi.avi.model.immutable.CloudForecastImpl;
-import fi.fmi.avi.model.immutable.CloudLayerImpl;
-import fi.fmi.avi.model.immutable.CoordinateReferenceSystemImpl;
-import fi.fmi.avi.model.immutable.ElevatedPointImpl;
-import fi.fmi.avi.model.immutable.NumericMeasureImpl;
-import fi.fmi.avi.model.immutable.SurfaceWindImpl;
-import fi.fmi.avi.model.immutable.WeatherImpl;
-import fi.fmi.avi.model.taf.TAF;
-import fi.fmi.avi.model.taf.TAFBaseForecast;
-import fi.fmi.avi.model.taf.TAFChangeForecast;
-import fi.fmi.avi.model.taf.immutable.TAFBaseForecastImpl;
-import fi.fmi.avi.model.taf.immutable.TAFChangeForecastImpl;
-import fi.fmi.avi.model.taf.immutable.TAFImpl;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class TAFIWXXMSerializerTest {
+public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
 

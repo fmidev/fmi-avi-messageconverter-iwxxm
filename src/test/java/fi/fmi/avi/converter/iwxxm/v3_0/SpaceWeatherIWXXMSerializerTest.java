@@ -22,11 +22,10 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.util.Collections;
 
-import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
-import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.printIssues;
-import static org.junit.Assert.*;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -48,55 +47,35 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
     public void serialize_spacewx_A2_3() throws Exception {
         final String input = readResourceToString("spacewx-A2-3.json");
         final ConversionResult<String> result = serialize(input);
-
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-        assertTrue(result.getConvertedMessage().isPresent());
-        assertNotNull(result.getConvertedMessage().get());
-        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-A2-3.xml"), result.getConvertedMessage().get());
+        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-A2-3.xml"));
     }
 
     @Test
     public void serialize_spacewx_A2_4() throws Exception {
         final String input = readResourceToString("spacewx-A2-4.json");
         final ConversionResult<String> result = serialize(input);
-
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-        assertTrue(result.getConvertedMessage().isPresent());
-        assertNotNull(result.getConvertedMessage().get());
-        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-A2-4.xml"), result.getConvertedMessage().get());
+        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-A2-4.xml"));
     }
 
     @Test
     public void serialize_spacewx_A2_5() throws Exception {
         final String input = readResourceToString("spacewx-A2-5.json");
         final ConversionResult<String> result = serialize(input);
-
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-        assertTrue(result.getConvertedMessage().isPresent());
-        assertNotNull(result.getConvertedMessage().get());
-        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-A2-5.xml"), result.getConvertedMessage().get());
+        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-A2-5.xml"));
     }
 
     @Test
     public void serialize_spacewx_daylight_side() throws Exception {
         final String input = readResourceToString("spacewx-daylight-side.json");
         final ConversionResult<String> result = serialize(input);
-
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-        assertTrue(result.getConvertedMessage().isPresent());
-        assertNotNull(result.getConvertedMessage().get());
-        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-daylight-side.xml"), result.getConvertedMessage().get());
+        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-daylight-side.xml"));
     }
 
     @Test
     public void serialize_spacewx_issuing_centre() throws Exception {
         final String input = readResourceToString("spacewx-issuing-centre.json");
         final ConversionResult<String> result = serialize(input);
-
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-        assertTrue(result.getConvertedMessage().isPresent());
-        assertNotNull(result.getConvertedMessage().get());
-        assertXMLEqualsIgnoringVariables(readResourceToString("spacewx-issuing-centre.xml"), result.getConvertedMessage().get());
+        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-issuing-centre.xml"));
     }
 
     @Test
@@ -124,48 +103,31 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
 
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
 
-        final ConversionResult<String> message = serialize(result.getConvertedMessage().get());
-
-        assertEquals(Collections.emptyList(), message.getConversionIssues());
-        assertEquals(ConversionResult.Status.SUCCESS, message.getStatus());
-        assertTrue(message.getConvertedMessage().isPresent());
-        assertNotNull(message.getConvertedMessage().get());
-        assertXMLEqualsIgnoringVariables(input, message.getConvertedMessage().get());
+        final ConversionResult<String> message = serialize(swx);
+        assertConversionResult(message).assertSuccessful().hasXmlEqualing(input);
     }
 
     @Test
     public void parse_and_serialize_nil_remark_test() throws Exception {
         final String input = readResourceToString("spacewx-nil-remark.xml");
-
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
+        assertFalse(swx.getRemarks().isPresent());
 
-        assertEquals(0, result.getConversionIssues().size());
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-
-        assertFalse(result.getConvertedMessage().get().getRemarks().isPresent());
-
-        final ConversionResult<String> message = serialize(result.getConvertedMessage().get());
-
-        assertEquals(ConversionResult.Status.SUCCESS, message.getStatus());
-        assertTrue(message.getConvertedMessage().isPresent());
-        assertNotNull(message.getConvertedMessage().get());
-        assertXMLEqualsIgnoringVariables(input, message.getConvertedMessage().get());
+        final ConversionResult<String> message = serialize(swx);
+        assertConversionResult(message).assertSuccessful().hasXmlEqualing(input);
     }
 
     private ConversionResult<String> serialize(final String input) throws Exception {
-        final SpaceWeatherAdvisoryAmd79 swx = objectMapper.readValue(input, SpaceWeatherAdvisoryAmd79Impl.class);
-
-        return serialize(swx);
+        return serialize(objectMapper.readValue(input, SpaceWeatherAdvisoryAmd79Impl.class));
     }
 
     private ConversionResult<String> serialize(final SpaceWeatherAdvisoryAmd79 swx) {
-
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING));
-        final ConversionResult<String> message = converter.convertMessage(swx, IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING);
-        printIssues(message.getConversionIssues());
-        return message;
+        return converter.convertMessage(swx, IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING);
     }
 
 }
