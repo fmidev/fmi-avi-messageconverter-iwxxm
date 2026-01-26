@@ -50,8 +50,10 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf/iwxxm-21-taf-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
-        assertThat(result.getConversionIssues()).isEmpty();
-        assertThat(result.getStatus()).isEqualTo(ConversionResult.Status.SUCCESS);
+
+        assertFirstMessage(result);
+        assertThat(result.getConvertedMessage().get().getHeading().getOriginalCollectIdentifier())
+                .hasValue("A_LTFI31EFKL301115_C_EFKL_201902011315--.xml");
     }
 
     @Test
@@ -73,6 +75,8 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
                 .hasIssueTime("2012-08-25T16:00Z")
                 .hasValidityPeriod("2012-08-25T16:00Z", "2012-08-25T22:00Z")
                 .hasLocationIndicators(expectedIndicators);
+        assertThat(result.getConvertedMessage().get().getHeading().getOriginalCollectIdentifier())
+                .hasValue("A_LYXX31YUDO251600_C_YUDO_201208251600--.xml");
     }
 
     @Test
@@ -94,6 +98,8 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
                 .hasIssueTime("2012-08-10T12:00Z")
                 .hasValidityPeriod("2012-08-10T12:00Z", "2012-08-10T16:00Z")
                 .hasLocationIndicators(expectedIndicators);
+        assertThat(result.getConvertedMessage().get().getHeading().getOriginalCollectIdentifier())
+                .hasValue("A_LYXX31YUDO251600_C_YUDO_201208251600--.xml");
     }
 
     @Test
@@ -110,6 +116,8 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
                 .hasIssueTime("2012-08-15T18:00Z")
                 .hasValidityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                 .hasLocationIndicator(LocationIndicatorType.AERODROME, "YUDO");
+        assertThat(result.getConvertedMessage().get().getHeading().getOriginalCollectIdentifier())
+                .hasValue("A_LYXX31YUDO251600_C_YUDO_201208251600--.xml");
     }
 
     @Test
@@ -126,6 +134,8 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
                 .hasIssueTime("2012-08-16T15:00Z")
                 .hasValidityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                 .hasLocationIndicator(LocationIndicatorType.AERODROME, "YUDO");
+        assertThat(result.getConvertedMessage().get().getHeading().getOriginalCollectIdentifier())
+                .hasValue("A_LYXX31YUDO251600_C_YUDO_201208251600--.xml");
     }
 
     @Test
@@ -133,13 +143,6 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf/iwxxm-30-taf-bulletin-namespaces-collect-alt-prefix.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
-
-        assertThat(result.getConversionIssues()).isEmpty();
-        assertThat(result.getStatus()).isEqualTo(ConversionResult.Status.SUCCESS);
-        assertThat(result.getConvertedMessage()).isPresent();
-
-        final GenericMeteorologicalBulletin bulletin = result.getConvertedMessage().get();
-        assertThat(bulletin.getHeading()).isNotNull();
 
         assertFirstMessage(result)
                 .hasFormat(Format.IWXXM)
@@ -149,6 +152,8 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
                 .hasIssueTime("2012-08-15T18:00Z")
                 .hasValidityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                 .hasLocationIndicator(LocationIndicatorType.AERODROME, "YUDO");
+        assertThat(result.getConvertedMessage().get().getHeading().getOriginalCollectIdentifier())
+                .hasValue("A_LTFI31EFKL301115_C_EFKL_201902011315--.xml");
     }
 
     @Test

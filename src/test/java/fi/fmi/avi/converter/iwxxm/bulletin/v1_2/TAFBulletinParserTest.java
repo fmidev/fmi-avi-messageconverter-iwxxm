@@ -19,8 +19,7 @@ import org.w3c.dom.Document;
 
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by rinne on 19/07/17.
@@ -34,15 +33,18 @@ public class TAFBulletinParserTest implements IWXXMConverterTests {
 
     @Test
     public void testScanner() throws Exception {
-        assertTrue(this.converter.isSpecificationSupported(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO));
+        assertThat(this.converter.isSpecificationSupported(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO)).isTrue();
+
         final BulletinProperties properties = new BulletinProperties();
         final MeteorologicalBulletinIWXXMScanner<TAF, TAFBulletin> scanner = new MeteorologicalBulletinIWXXMScanner<>();
         scanner.setMessageConverter(converter.getConverter(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO));
         scanner.collectBulletinProperties(readDocumentFromResource("taf-bulletin.xml"), properties, ConversionHints.EMPTY);
-        assertTrue(properties.contains(BulletinProperties.Name.HEADING));
+        assertThat(properties.contains(BulletinProperties.Name.HEADING)).isTrue();
+
         final Optional<BulletinHeading> heading = properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class);
-        assertEquals(31, heading.get().getBulletinNumber());
-        assertTrue(properties.contains(BulletinProperties.Name.MESSAGE));
+        assertThat(heading).isPresent();
+        assertThat(heading.get().getBulletinNumber()).isEqualTo(31);
+        assertThat(properties.contains(BulletinProperties.Name.MESSAGE)).isTrue();
     }
 
     @Test
@@ -50,13 +52,15 @@ public class TAFBulletinParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf-bulletin.xml");
         final ConversionResult<TAFBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_TAF_BULLETIN_POJO,
                 ConversionHints.EMPTY);
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-        if (result.getConvertedMessage().isPresent()) {
-            final TAFBulletin bulletin = result.getConvertedMessage().get();
-            assertEquals(2, bulletin.getMessages().size());
-            final TAF mesg = bulletin.getMessages().get(0);
-            assertEquals(26.0, mesg.getBaseForecast().get().getSurfaceWind().get().getWindGust().get().getValue(), 0.0001);
-        }
+        assertThat(result.getStatus()).isEqualTo(ConversionResult.Status.SUCCESS);
+        assertThat(result.getConvertedMessage()).isPresent();
+
+        final TAFBulletin bulletin = result.getConvertedMessage().get();
+        assertThat(bulletin.getHeading().getOriginalCollectIdentifier()).hasValue("A_LTFI31EFKL301115_C_EFKL_201902011315--.xml");
+        assertThat(bulletin.getMessages()).hasSize(2);
+
+        final TAF mesg = bulletin.getMessages().get(0);
+        assertThat(mesg.getBaseForecast().get().getSurfaceWind().get().getWindGust().get().getValue()).isEqualTo(26.0);
     }
 
 }

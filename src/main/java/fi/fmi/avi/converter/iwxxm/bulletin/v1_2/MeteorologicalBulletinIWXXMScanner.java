@@ -4,7 +4,9 @@ import fi.fmi.avi.converter.*;
 import fi.fmi.avi.converter.iwxxm.AbstractIWXXMScanner;
 import fi.fmi.avi.converter.iwxxm.generic.XPathBuilder;
 import fi.fmi.avi.model.AviationWeatherMessage;
+import fi.fmi.avi.model.bulletin.BulletinHeading;
 import fi.fmi.avi.model.bulletin.MeteorologicalBulletin;
+import fi.fmi.avi.model.bulletin.immutable.BulletinHeadingImpl;
 import fi.fmi.avi.util.GTSExchangeFileInfo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -25,7 +27,10 @@ public class MeteorologicalBulletinIWXXMScanner<S extends AviationWeatherMessage
         final IssueList retval = new IssueList();
         try {
             final GTSExchangeFileInfo info = GTSExchangeFileInfo.Builder.from(bulletinIdentifier).build();
-            properties.set(BulletinProperties.Name.HEADING, info.getHeading());
+            final BulletinHeading heading = BulletinHeadingImpl.Builder.from(info.getHeading())
+                    .setOriginalCollectIdentifier(bulletinIdentifier)
+                    .build();
+            properties.set(BulletinProperties.Name.HEADING, heading);
             info.getTimeStampYear().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_YEAR, value));
             info.getTimeStampMonth().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_MONTH, value));
             info.getTimeStampDay().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_DAY, value));
