@@ -60,6 +60,12 @@ public final class METARSPECIFieldXPathProvider extends AbstractFieldXPathProvid
                         + "/aixm:timeSlice"
                         + "/aixm:AirportHeliportTimeSlice");
 
+        put(map, IWXXMField.NIL_REASON,
+                // IWXXM 3.0+ style
+                "./iwxxm:observation[not(*)]/@nilReason",
+                // IWXXM 2.1 style
+                "@status[.='MISSING']");
+
         return Collections.unmodifiableMap(map);
     }
 }

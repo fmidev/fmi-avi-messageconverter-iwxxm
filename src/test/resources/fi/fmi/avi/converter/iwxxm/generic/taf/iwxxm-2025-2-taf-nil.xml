@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iwxxm:TAF
+  xmlns:iwxxm="http://icao.int/iwxxm/2025-2"
+  xmlns:gml="http://www.opengis.net/gml/3.2"
+  xmlns:aixm="http://www.aixm.aero/schema/5.1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://icao.int/iwxxm/2025-2 http://schemas.wmo.int/iwxxm/2025-2/iwxxm.xsd"
+  gml:id="uuid.taf-nil-yudo-20120815180000"
+  reportStatus="NORMAL"
+  permissibleUsage="OPERATIONAL">
+
+  <iwxxm:issueTime>
+    <gml:TimeInstant gml:id="uuid.ti-taf-nil-yudo-20120815180000">
+      <gml:timePosition>2012-08-15T18:00:00Z</gml:timePosition>
+    </gml:TimeInstant>
+  </iwxxm:issueTime>
+
+  <iwxxm:aerodrome>
+    <aixm:AirportHeliport gml:id="uuid.aerodrome-taf-nil-yudo">
+      <aixm:timeSlice>
+        <aixm:AirportHeliportTimeSlice gml:id="uuid.aerodrome-ts-taf-nil-yudo">
+          <gml:validTime/>
+          <aixm:interpretation>SNAPSHOT</aixm:interpretation>
+          <aixm:designator>YUDO</aixm:designator>
+          <aixm:name>DONLON/INTERNATIONAL</aixm:name>
+          <aixm:locationIndicatorICAO>YUDO</aixm:locationIndicatorICAO>
+        </aixm:AirportHeliportTimeSlice>
+      </aixm:timeSlice>
+    </aixm:AirportHeliport>
+  </iwxxm:aerodrome>
+
+  <iwxxm:baseForecast nilReason="http://codes.wmo.int/common/nil/missing"/>
+</iwxxm:TAF>

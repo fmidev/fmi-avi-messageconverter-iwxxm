@@ -20,20 +20,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Fluent assertion helper for {@link GenericAviationWeatherMessage} in tests.
  * <p>
- * Example usage:
+ * Example usage for single message conversion:
  * </p>
- * <p>
- * GenericMessageAssertion.assertMessage(result)
+ * <pre>
+ * assertMessage(result)
  *     .hasNoIssues()
  *     .hasFormat(Format.IWXXM)
- *     .hasNamespace(IWXXM_2_1_NAMESPACE)
  *     .hasMessageType(MessageType.TAF)
- *     .isTranslated()
- *     .hasReportStatus(ReportStatus.NORMAL)
- *     .hasIssueTime("2017-07-30T11:30Z")
- *     .hasValidityPeriod("2017-07-30T12:00Z", "2017-07-31T12:00Z")
- *     .hasLocationIndicator(LocationIndicatorType.AERODROME, "EETN");
+ *     .hasIssueTime("2017-07-30T11:30Z");
+ * </pre>
+ * <p>
+ * Example usage for bulletin conversion:
  * </p>
+ * <pre>
+ * GenericMeteorologicalBulletin bulletin = assertBulletinConversionSuccess(result);
+ * assertThat(bulletin.getMessages()).hasSize(2);
+ *
+ * assertMessage(bulletin.getMessages().get(0))
+ *     .hasFormat(Format.IWXXM)
+ *     .hasMessageType(MessageType.TAF)
+ *     .hasIssueTime("2017-07-30T11:30Z")
+ *     .isNotNil();
+ *
+ * assertMessage(bulletin.getMessages().get(1))
+ *     .hasMessageType(MessageType.TAF)
+ *     .isNil();
+ * </pre>
  */
 public final class GenericMessageAssertion {
 
@@ -55,14 +67,18 @@ public final class GenericMessageAssertion {
         return new GenericMessageAssertion(result);
     }
 
-    public static GenericMessageAssertion assertFirstMessage(final ConversionResult<GenericMeteorologicalBulletin> result) {
+    public static GenericMessageAssertion assertMessage(final GenericAviationWeatherMessage message) {
+        assertThat(message).as("message").isNotNull();
+        return new GenericMessageAssertion(message);
+    }
+
+    public static GenericMeteorologicalBulletin assertBulletinConversionSuccess(
+            final ConversionResult<GenericMeteorologicalBulletin> result) {
         assertThat(result).as("ConversionResult").isNotNull();
         assertThat(result.getConversionIssues()).as("conversionIssues").isEmpty();
         assertThat(result.getStatus()).as("status").isEqualTo(ConversionResult.Status.SUCCESS);
         assertThat(result.getConvertedMessage()).as("convertedMessage").isPresent();
-        assertThat(result.getConvertedMessage().get().getMessages()).as("messages").isNotEmpty();
-        final GenericAviationWeatherMessage message = result.getConvertedMessage().get().getMessages().get(0);
-        return new GenericMessageAssertion(message);
+        return result.getConvertedMessage().get();
     }
 
     private void assertMessageNotNull() {
@@ -146,6 +162,18 @@ public final class GenericMessageAssertion {
     public GenericMessageAssertion hasReportStatus(final ReportStatus expected) {
         assertMessageNotNull();
         assertThat(message.getReportStatus()).as("reportStatus").isEqualTo(expected);
+        return this;
+    }
+
+    public GenericMessageAssertion isNil() {
+        assertMessageNotNull();
+        assertThat(message.isNil()).as("nil").isTrue();
+        return this;
+    }
+
+    public GenericMessageAssertion isNotNil() {
+        assertMessageNotNull();
+        assertThat(message.isNil()).as("nil").isFalse();
         return this;
     }
 

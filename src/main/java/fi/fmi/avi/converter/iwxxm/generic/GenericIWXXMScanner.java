@@ -198,6 +198,7 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
         final IssueList issues = new IssueList();
 
         collectReportStatus(featureElement, xpath, builder, issues, requireReportStatus);
+        collectNilStatus(featureElement, xpath, builder, issues);
         collectTimeInstantUsingFieldProvider(featureElement, xpath, issues,
                 IWXXMField.ISSUE_TIME, "issue time", builder::setIssueTime);
 
@@ -312,6 +313,30 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                     ConversionIssue.Type.OTHER,
                     "Unable to parse validity time", result.getException().orElse(null)));
+        }
+    }
+
+    private void collectNilStatus(final Element element,
+                                  final XPath xpath,
+                                  final GenericAviationWeatherMessageImpl.Builder builder,
+                                  final IssueList issues) {
+        final XPathEvaluationResult<String> result = evaluate(IWXXMField.NIL_REASON, expr -> {
+            try {
+                final String value = xpath.compile(expr).evaluate(element);
+                if (value != null && !value.isEmpty()) {
+                    return XPathEvaluationResult.of(value);
+                }
+                return XPathEvaluationResult.empty();
+            } catch (final XPathExpressionException exception) {
+                return XPathEvaluationResult.fail(exception);
+            }
+        });
+        if (result.hasValue()) {
+            builder.setNil(true);
+        } else if (result.isFailed()) {
+            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
+                    ConversionIssue.Type.OTHER,
+                    "Unable to parse NIL status", result.getException().orElse(null)));
         }
     }
 
