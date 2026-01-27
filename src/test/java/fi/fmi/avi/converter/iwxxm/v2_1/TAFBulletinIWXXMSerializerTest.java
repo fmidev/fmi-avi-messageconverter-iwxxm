@@ -93,7 +93,7 @@ public class TAFBulletinIWXXMSerializerTest implements IWXXMConverterTests {
         assertThat(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING)).isTrue();
         final TAFBulletin tb = getTAFBulletin("taf12.json", "taf1.json");
         final ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
-        assertConversionResult(result).isSuccessful();
+        assertConversionResult(result).successfullyConverted();
     }
 
     @Test
@@ -101,7 +101,7 @@ public class TAFBulletinIWXXMSerializerTest implements IWXXMConverterTests {
         assertThat(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM)).isTrue();
         final TAFBulletin tb = getTAFBulletin("taf12.json", "taf1.json");
         final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
-        final Document doc = assertConversionResult(result).isSuccessful();
+        final Document doc = assertConversionResult(result).successfullyConverted();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();

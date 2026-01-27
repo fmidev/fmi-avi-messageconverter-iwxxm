@@ -32,7 +32,7 @@ public abstract class AbstractIWXXMReserializeTest<T extends AviationWeatherMess
 
     private <I, R> R convertAndAssert(final I input, final ConversionSpecification<I, R> conversionSpecification) {
         final ConversionResult<R> result = converter.convertMessage(input, conversionSpecification, ConversionHints.EMPTY);
-        return assertConversionResult(result).isSuccessful();
+        return assertConversionResult(result).successfullyConverted();
     }
 
     protected abstract ConversionSpecification<T, String> getPojoToIwxxmConversionSpecification();

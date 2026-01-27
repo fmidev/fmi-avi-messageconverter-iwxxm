@@ -29,7 +29,7 @@ public final class ConversionResultAssertion<T> {
         return new ConversionResultAssertion<>(result);
     }
 
-    public T isSuccessful() {
+    public T successfullyConverted() {
         assertSuccessful();
         return result.getConvertedMessage().get();
     }
@@ -38,11 +38,6 @@ public final class ConversionResultAssertion<T> {
         assertThat(result.getConversionIssues()).as("conversionIssues").isEmpty();
         assertThat(result.getStatus()).as("status").isEqualTo(ConversionResult.Status.SUCCESS);
         assertThat(result.getConvertedMessage()).as("convertedMessage").isPresent();
-        return this;
-    }
-
-    public ConversionResultAssertion<T> hasNoIssues() {
-        assertThat(result.getConversionIssues()).as("conversionIssues").isEmpty();
         return this;
     }
 

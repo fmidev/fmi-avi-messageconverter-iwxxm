@@ -61,7 +61,7 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
     public void serializeA51Taf() throws XPathExpressionException {
         final TAF input = createTafMessage();
         final ConversionResult<Document> result = converter.convertMessage(input, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM, ConversionHints.EMPTY);
-        final Document doc = assertConversionResult(result).isSuccessful();
+        final Document doc = assertConversionResult(result).successfullyConverted();
 
         final XPathFactory xPathfactory = XPathFactory.newInstance();
         final XPath xpath = xPathfactory.newXPath();
@@ -409,7 +409,7 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
     public void serializeA52Taf() throws XPathExpressionException {
         final TAF input = createTafMessageWithCancellation();
         final ConversionResult<Document> result = converter.convertMessage(input, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM, ConversionHints.EMPTY);
-        final Document doc = assertConversionResult(result).isSuccessful();
+        final Document doc = assertConversionResult(result).successfullyConverted();
 
         final XPathFactory xPathfactory = XPathFactory.newInstance();
         final XPath xpath = xPathfactory.newXPath();
@@ -446,7 +446,7 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
         final TAF t = getTafObject();
         final ConversionResult<Document> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM);
 
-        final Document doc = assertConversionResult(result).isSuccessful();
+        final Document doc = assertConversionResult(result).successfullyConverted();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();

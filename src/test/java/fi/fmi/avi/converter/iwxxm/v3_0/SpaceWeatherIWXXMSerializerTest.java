@@ -101,7 +101,7 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
         final String input = readResourceToString(fileName);
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
-        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).successfullyConverted();
         final ConversionResult<String> message = serialize(swx);
         assertConversionResult(message).assertSuccessful().hasXmlEqualing(input);
     }
@@ -111,7 +111,7 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
         final String input = readResourceToString("spacewx-nil-remark.xml");
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
-        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).successfullyConverted();
         assertThat(swx.getRemarks()).isEmpty();
 
         final ConversionResult<String> message = serialize(swx);

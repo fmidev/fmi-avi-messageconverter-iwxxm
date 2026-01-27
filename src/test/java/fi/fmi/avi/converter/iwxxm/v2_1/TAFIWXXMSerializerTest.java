@@ -94,7 +94,7 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
         final TAF t = getTAF();
         final ConversionResult<Document> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM);
-        final Document doc = assertConversionResult(result).isSuccessful();
+        final Document doc = assertConversionResult(result).successfullyConverted();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();

@@ -53,7 +53,7 @@ public class TAFBulletinParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf-bulletin.xml");
         final ConversionResult<TAFBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_TAF_BULLETIN_POJO,
                 ConversionHints.EMPTY);
-        final TAFBulletin bulletin = assertConversionResult(result).isSuccessful();
+        final TAFBulletin bulletin = assertConversionResult(result).successfullyConverted();
         assertThat(bulletin.getMessages()).hasSize(2);
         final TAF mesg = bulletin.getMessages().get(0);
         assertThat(mesg.getBaseForecast()).isPresent();

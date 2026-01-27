@@ -30,14 +30,14 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
     public void testStringParser() throws Exception {
         final String input = readResourceToString("taf-A5-1.xml");
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).hasNoIssues();
+        assertConversionResult(result).assertSuccessful();
     }
 
     @Test
     public void testNoIssuesWithValidTAF() throws Exception {
         final Document toValidate = readDocumentFromResource("taf-A5-1.xml");
         final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).hasNoIssues();
+        assertConversionResult(result).assertSuccessful();
     }
 
     @Test
@@ -86,14 +86,14 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
     public void testCancelledTAFParsing() throws Exception {
         final Document toValidate = readDocumentFromResource("taf-A5-2.xml");
         final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).isSuccessful();
+        assertConversionResult(result).successfullyConverted();
     }
 
     @Test
     public void testTAFParsingWithTemperature() throws Exception {
         final Document toValidate = readDocumentFromResource("taf-with_temperature_fct.xml");
         final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).isSuccessful();
+        final TAF taf = assertConversionResult(result).successfullyConverted();
         assertTrue(taf.getBaseForecast().get().getTemperatures().isPresent());
     }
 
@@ -101,7 +101,7 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
     public void testTAFParsingWithARP() throws Exception {
         final Document toValidate = readDocumentFromResource("taf-with_airport_ARP.xml");
         final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).isSuccessful();
+        final TAF taf = assertConversionResult(result).successfullyConverted();
         assertFalse(taf.getAerodrome().getFieldElevationValue().isPresent());
         assertTrue(taf.getAerodrome().getReferencePoint().get().getElevationValue().isPresent());
     }
@@ -110,7 +110,7 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
     public void testTAFParsingWithFieldElevationUomFt() throws Exception {
         final Document toValidate = readDocumentFromResource("taf-field-elevation-uom-ft.xml");
         final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).isSuccessful();
+        final TAF taf = assertConversionResult(result).successfullyConverted();
         assertTrue(taf.getAerodrome().getFieldElevationValue().isPresent());
     }
 
@@ -118,7 +118,7 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
     public void testCAVOKTrue() throws Exception {
         final String input = readResourceToString("taf-cavok.xml");
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).isSuccessful();
+        final TAF taf = assertConversionResult(result).successfullyConverted();
 
         assertTrue(taf.getBaseForecast().isPresent());
         assertTrue(taf.getBaseForecast().get().isCeilingAndVisibilityOk());

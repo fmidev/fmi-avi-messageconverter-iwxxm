@@ -74,7 +74,7 @@ public class SpaceWeatherIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
 
-        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).successfullyConverted();
         assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
@@ -109,7 +109,7 @@ public class SpaceWeatherIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
 
-        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).successfullyConverted();
         assertTrue(swx.getRemarks().isPresent());
         assertEquals(26, swx.getRemarks().get().size());
         assertEquals(expected, swx.getRemarks().get());
@@ -121,7 +121,7 @@ public class SpaceWeatherIWXXMParserTest implements IWXXMConverterTests {
 
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
-        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).successfullyConverted();
         assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
@@ -172,7 +172,7 @@ public class SpaceWeatherIWXXMParserTest implements IWXXMConverterTests {
 
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
-        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).successfullyConverted();
         assertEquals("DONLON", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());
@@ -206,7 +206,7 @@ public class SpaceWeatherIWXXMParserTest implements IWXXMConverterTests {
 
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
-        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
+        final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).successfullyConverted();
         assertEquals("ACFJ", swx.getIssuingCenter().getName().get());
         assertEquals("OTHER:SWXC", swx.getIssuingCenter().getType().get());
         assertEquals(2016, swx.getAdvisoryNumber().getYear());

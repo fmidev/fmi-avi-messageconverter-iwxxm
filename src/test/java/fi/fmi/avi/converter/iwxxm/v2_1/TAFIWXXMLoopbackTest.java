@@ -42,10 +42,10 @@ public class TAFIWXXMLoopbackTest implements IWXXMConverterTests {
 
         final Document toValidate = readDocumentFromResource("taf-A5-1.xml");
         final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).isSuccessful();
+        final TAF taf = assertConversionResult(result).successfullyConverted();
 
         final ConversionResult<Document> result2 = converter.convertMessage(taf, IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM);
-        final Document outputDoc = assertConversionResult(result2).isSuccessful();
+        final Document outputDoc = assertConversionResult(result2).successfullyConverted();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();

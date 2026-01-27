@@ -47,7 +47,7 @@ public final class GenericAviationWeatherMessageParserTest implements IWXXMConve
 
         final ConversionResult<GenericMeteorologicalBulletin> result = converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_STRING_TO_GENERIC_BULLETIN_POJO);
-        final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).isSuccessful();
+        final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).successfullyConverted();
 
         final List<String> messages = bulletin.getMessages().stream()
                 .map(GenericAviationWeatherMessage::getOriginalMessage)

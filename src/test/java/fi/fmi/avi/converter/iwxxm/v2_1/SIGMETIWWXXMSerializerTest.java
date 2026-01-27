@@ -74,6 +74,6 @@ public class SIGMETIWWXXMSerializerTest implements IWXXMConverterTests {
         assertThat(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING)).isTrue();
         final SIGMET s = readFromJSON(fn, SIGMETImpl.class);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
-        return assertConversionResult(result).isSuccessful();
+        return assertConversionResult(result).successfullyConverted();
     }
 }

@@ -80,7 +80,7 @@ public class SpaceWeatherAmd82BulletinIWXXMSerializerTest implements IWXXMConver
         final SpaceWeatherAmd82Bulletin bulletin = getSWXBulletin("spacewx-A2-3.json", "spacewx-A7-3.json");
         final ConversionResult<Document> result = converter.convertMessage(bulletin, IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
 
-        final Document doc = assertConversionResult(result).isSuccessful();
+        final Document doc = assertConversionResult(result).successfullyConverted();
 
         final XPath xpath = XPathFactory.newInstance().newXPath();
         final IWXXMNamespaceContext ctx = new IWXXMNamespaceContext();

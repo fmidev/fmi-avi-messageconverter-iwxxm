@@ -633,7 +633,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 }
             }
         } else {
-            resultAssertion.hasNoIssues();
+            resultAssertion.assertSuccessful();
         }
 
         final GenericAviationWeatherMessage message = result.getConvertedMessage()

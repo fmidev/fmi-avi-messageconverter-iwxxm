@@ -32,6 +32,6 @@ public class VASIGMETIWWXXMSerializerTest implements IWXXMConverterTests {
         assertThat(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING)).isTrue();
         final SIGMET s = getSIGMET();
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
-        assertConversionResult(result).isSuccessful();
+        assertConversionResult(result).successfullyConverted();
     }
 }
