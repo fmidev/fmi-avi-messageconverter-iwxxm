@@ -25,12 +25,18 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
 
-
-    public void doTestAIRMETDOMSerialization(final String fn) throws Exception {
+    private void doTestAIRMETDOMSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM2023_1_DOM));
         final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
         final ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM2023_1_DOM);
         assertConversionResult(result).isSuccessful();
+    }
+
+    private void doTestAIRMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
+        assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM2023_1_STRING));
+        final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
+        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM2023_1_STRING);
+        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString(iwxxmFn));
     }
 
     @Test
@@ -40,7 +46,7 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
 
     @Test
     public void dotestAIRMETMOVING() throws Exception {
-        final String s = doTestAIRMETStringSerialization("airmetMOVING.json", "airmetMOVING.xml");
+        doTestAIRMETStringSerialization("airmetMOVING.json", "airmetMOVING.xml");
     }
 
     @Test
@@ -91,17 +97,17 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
 
     @Test
     public void dotestAIRMET_OPER() throws Exception {
-        final String s = doTestAIRMETStringSerialization("airmet_OPER.json", "airmet_OPER.xml");
+        doTestAIRMETStringSerialization("airmet_OPER.json", "airmet_OPER.xml");
     }
 
     @Test
     public void dotestAIRMET_TEST() throws Exception {
-        final String s = doTestAIRMETStringSerialization("airmet_TEST.json", "airmet_TEST.xml");
+        doTestAIRMETStringSerialization("airmet_TEST.json", "airmet_TEST.xml");
     }
 
     @Test
     public void dotestAIRMET_EXER() throws Exception {
-        final String s = doTestAIRMETStringSerialization("airmet_EXER.json", "airmet_EXER.xml");
+        doTestAIRMETStringSerialization("airmet_EXER.json", "airmet_EXER.xml");
     }
 
 
@@ -118,14 +124,6 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
     @Test
     public void dotestAIRMETDOMSerialization3() throws Exception {
         doTestAIRMETDOMSerialization("airmet2.json");
-    }
-
-    public String doTestAIRMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM2023_1_STRING));
-        final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
-        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM2023_1_STRING);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString(iwxxmFn));
-        return result.getConvertedMessage().get();
     }
 
 }

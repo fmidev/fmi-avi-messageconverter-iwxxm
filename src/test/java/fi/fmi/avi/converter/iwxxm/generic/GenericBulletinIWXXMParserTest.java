@@ -2,7 +2,6 @@ package fi.fmi.avi.converter.iwxxm.generic;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
@@ -51,8 +50,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf/iwxxm-21-taf-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
-        assertThat(result.getConversionIssues()).isEmpty();
-        assertThat(result.getStatus()).isEqualTo(ConversionResult.Status.SUCCESS);
+        assertConversionResult(result).assertSuccessful();
     }
 
     @Test
@@ -157,11 +155,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf/iwxxm-2025-2-unknown-message-type-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
-
-        assertThat(result.getConversionIssues()).isNotEmpty();
-        assertThat(result.getConversionIssues())
-                .anyMatch(issue -> issue.getSeverity() == ConversionIssue.Severity.ERROR
-                        && issue.getMessage().contains("Unknown message type"));
+        assertConversionResult(result).hasIssueContaining("Unknown message type");
     }
 
     @Test

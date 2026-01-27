@@ -5,7 +5,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
-import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMNamespaceContext;
@@ -39,8 +38,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -58,26 +57,15 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
     @Test
     public void conversionTest() throws IOException {
         final TAF input = getTafObject();
-
         final ConversionResult<String> result = converter.convertMessage(input, IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING, ConversionHints.EMPTY);
-
-        checkConversionIssues(result.getConversionIssues());
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-
-        Assert.assertTrue(result.getConvertedMessage().isPresent());
-        assertNotNull(result.getConvertedMessage().get());
+        assertConversionResult(result).assertSuccessful();
     }
 
     @Test
     public void serializeA51Taf() throws XPathExpressionException {
         final TAF input = createTafMessage();
-
         final ConversionResult<Document> result = converter.convertMessage(input, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM, ConversionHints.EMPTY);
-
-        checkConversionIssues(result.getConversionIssues());
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-
-        final Element doc = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
+        final Document doc = assertConversionResult(result).isSuccessful();
 
         final XPathFactory xPathfactory = XPathFactory.newInstance();
         final XPath xpath = xPathfactory.newXPath();
@@ -424,14 +412,8 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
     @Test
     public void serializeA52Taf() throws XPathExpressionException {
         final TAF input = createTafMessageWithCancellation();
-
         final ConversionResult<Document> result = converter.convertMessage(input, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM, ConversionHints.EMPTY);
-
-        checkConversionIssues(result.getConversionIssues());
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-        //System.out.println(result.getConvertedMessage().get());
-
-        final Element doc = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
+        final Document doc = assertConversionResult(result).isSuccessful();
 
         final XPathFactory xPathfactory = XPathFactory.newInstance();
         final XPath xpath = xPathfactory.newXPath();
@@ -468,15 +450,14 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
         final TAF t = getTafObject();
         final ConversionResult<Document> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM);
 
-        Assert.assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
+        final Document doc = assertConversionResult(result).isSuccessful();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
         final NamespaceContext ctx = new IWXXMNamespaceContext();
         xpath.setNamespaceContext(ctx);
 
-        final Element docElement = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
-        assertNotNull(docElement);
+        final Element docElement = doc.getDocumentElement();
 
         XPathExpression expr = xpath.compile("/iwxxm30:TAF/iwxxm30:issueTime/gml:TimeInstant/@gml:id");
         final String issueTimeId = expr.evaluate(docElement);
@@ -904,17 +885,6 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
 
     }
 
-    private void checkConversionIssues(final List<ConversionIssue> issues) {
-        if (!issues.isEmpty()) {
-            for (final ConversionIssue issue : issues) {
-                System.out.println("******************");
-                System.out.println("Severity: " + issue.getSeverity());
-                System.out.println(issue.getMessage());
-                System.out.println("******************");
-                fail();
-            }
-        }
-    }
 
     private TAF getTafObject() throws IOException {
         final TAF t = readFromJSON("taf12.json");

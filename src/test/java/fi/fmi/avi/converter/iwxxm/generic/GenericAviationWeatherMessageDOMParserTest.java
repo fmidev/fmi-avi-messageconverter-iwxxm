@@ -29,7 +29,6 @@ import java.util.Collection;
 import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
 import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertMessage;
 import static fi.fmi.avi.model.MessageType.*;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 
 @RunWith(Parameterized.class)
@@ -637,8 +636,8 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
             resultAssertion.hasNoIssues();
         }
 
-        assertThat(result.getConvertedMessage()).as("convertedMessage").isPresent();
-        final GenericAviationWeatherMessage message = result.getConvertedMessage().get();
+        final GenericAviationWeatherMessage message = result.getConvertedMessage()
+                .orElseThrow(() -> new AssertionError("Expected convertedMessage to be present"));
 
         final GenericMessageAssertion assertion = assertMessage(message)
                 .hasFormat(Format.IWXXM)

@@ -33,7 +33,9 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by rinne on 19/07/17.
@@ -72,19 +74,15 @@ public class SpaceWeatherAmd79BulletinIWXXMSerializerTest implements IWXXMConver
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         final SpaceWeatherAmd79Bulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
         final ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
-        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
-
-        assertTrue(result.getConvertedMessage().isPresent());
-        assertNotNull(result.getConvertedMessage().get());
+        final String collectString = assertConversionResult(result).isSuccessful();
 
         //Test that the namespace prefix mappings and schemaLocation attributes are included in the correct elements:
 
         //Collect:
-        final String s = result.getConvertedMessage().get();
         final String bulletinElementFQN = "collect:MeteorologicalBulletin";
-        final int bulletinElementStartIndex = s.indexOf("<" + bulletinElementFQN);
-        final int bulletinElementEndIndex = s.indexOf(">", bulletinElementStartIndex);
-        String attrs = s.substring(bulletinElementStartIndex + bulletinElementFQN.length() + 1, bulletinElementEndIndex).trim();
+        final int bulletinElementStartIndex = collectString.indexOf("<" + bulletinElementFQN);
+        final int bulletinElementEndIndex = collectString.indexOf(">", bulletinElementStartIndex);
+        String attrs = collectString.substring(bulletinElementStartIndex + bulletinElementFQN.length() + 1, bulletinElementEndIndex).trim();
         assertTrue(attrs.contains("xmlns:gml=\"http://www.opengis.net/gml/3.2\""));
         assertTrue(attrs.contains("xmlns:collect=\"http://def.wmo.int/collect/2014\""));
 
@@ -93,9 +91,9 @@ public class SpaceWeatherAmd79BulletinIWXXMSerializerTest implements IWXXMConver
         int swxElementStartIndex;
         int swxElementEndIndex = bulletinElementEndIndex;
         for (int i = 0; i < 3; i++) {
-            swxElementStartIndex = s.indexOf("<" + swxAdvisoryFQN, swxElementEndIndex + 1);
-            swxElementEndIndex = s.indexOf(">", swxElementStartIndex);
-            attrs = s.substring(swxElementStartIndex + swxAdvisoryFQN.length() + 1, swxElementEndIndex).trim();
+            swxElementStartIndex = collectString.indexOf("<" + swxAdvisoryFQN, swxElementEndIndex + 1);
+            swxElementEndIndex = collectString.indexOf(">", swxElementStartIndex);
+            attrs = collectString.substring(swxElementStartIndex + swxAdvisoryFQN.length() + 1, swxElementEndIndex).trim();
             assertTrue("Missing gml in message #" + (i + 1), attrs.contains("xmlns:gml=\"http://www.opengis.net/gml/3.2\""));
             assertTrue("Missing iwxxm in message #" + (i + 1), attrs.contains("xmlns:iwxxm=\"http://icao.int/iwxxm/3.0\""));
             assertTrue("Missing aixm in message #" + (i + 1), attrs.contains("xmlns:aixm=\"http://www.aixm.aero/schema/5.1.1\""));
@@ -109,7 +107,7 @@ public class SpaceWeatherAmd79BulletinIWXXMSerializerTest implements IWXXMConver
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
         final SpaceWeatherAmd79Bulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
         final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
-        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
+        final Document doc = assertConversionResult(result).isSuccessful();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
@@ -117,8 +115,7 @@ public class SpaceWeatherAmd79BulletinIWXXMSerializerTest implements IWXXMConver
         ctx.addNamespacePrefix("http://www.w3.org/2000/xmlns/", "xmlns");
         xpath.setNamespaceContext(ctx);
 
-        final Element docElement = result.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
-        assertNotNull(docElement);
+        final Element docElement = doc.getDocumentElement();
 
         XPathExpression expr = xpath.compile("/collect:MeteorologicalBulletin/collect:bulletinIdentifier");
         final String bulletinId = expr.evaluate(docElement);

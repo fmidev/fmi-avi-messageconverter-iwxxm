@@ -16,14 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * TAF taf = assertConversionResult(result).isSuccessful();
  * }</pre>
  *
- * <p>Example usage for successful conversion with XML comparison:</p>
- * <pre>{@code
- * assertConversionResult(result)
- *     .assertSuccessful()
- *     .hasXmlEqualing(expectedXml);
- * }</pre>
- *
- * @param <T> the type of the converted message
  */
 public final class ConversionResultAssertion<T> {
 
@@ -34,32 +26,15 @@ public final class ConversionResultAssertion<T> {
         this.result = result;
     }
 
-    /**
-     * Create a new assertion for the given conversion result.
-     *
-     * @param result the conversion result to assert on
-     * @param <T>    the type of the converted message
-     * @return a new assertion instance
-     */
     public static <T> ConversionResultAssertion<T> assertConversionResult(final ConversionResult<T> result) {
         return new ConversionResultAssertion<>(result);
     }
 
-    /**
-     * Assert that the conversion was successful (no issues, SUCCESS status, message present) and return the converted message.
-     *
-     * @return the converted message
-     */
     public T isSuccessful() {
         assertSuccessful();
         return result.getConvertedMessage().get();
     }
 
-    /**
-     * Assert that the conversion was successful (no issues, SUCCESS status, message present).
-     *
-     * @return this assertion for chaining
-     */
     public ConversionResultAssertion<T> assertSuccessful() {
         assertThat(result.getConversionIssues()).as("conversionIssues").isEmpty();
         assertThat(result.getStatus()).as("status").isEqualTo(ConversionResult.Status.SUCCESS);
@@ -67,11 +42,6 @@ public final class ConversionResultAssertion<T> {
         return this;
     }
 
-    /**
-     * Assert that the conversion result has no issues.
-     *
-     * @return this assertion for chaining
-     */
     public ConversionResultAssertion<T> hasNoIssues() {
         assertThat(result.getConversionIssues()).as("conversionIssues").isEmpty();
         return this;
@@ -112,9 +82,7 @@ public final class ConversionResultAssertion<T> {
 
     public ConversionResultAssertion<T> hasXmlEqualing(final String expectedXml) throws SAXException, IOException {
         assertThat(result.getConvertedMessage()).as("convertedMessage").isPresent();
-        final T converted = result.getConvertedMessage().get();
-        assertThat(converted).as("converted message").isInstanceOf(String.class);
-        IWXXMConverterTests.assertXMLEqualsIgnoringVariables(expectedXml, (String) converted);
+        IWXXMConverterTests.assertXMLEqualsIgnoringVariables(expectedXml, (String) result.getConvertedMessage().get());
         return this;
     }
 

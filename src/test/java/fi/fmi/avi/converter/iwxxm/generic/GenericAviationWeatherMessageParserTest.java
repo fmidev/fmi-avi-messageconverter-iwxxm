@@ -7,21 +7,18 @@ import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.w3c.dom.Document;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLIdentical;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -51,16 +48,13 @@ public final class GenericAviationWeatherMessageParserTest implements IWXXMConve
                 IWXXMConverter.WMO_COLLECT_STRING_TO_GENERIC_BULLETIN_POJO);
         final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).isSuccessful();
 
-        XMLUnit.setIgnoreWhitespace(true);
-        XMLUnit.setIgnoreComments(true);
         final List<String> messages = bulletin.getMessages().stream()
                 .map(GenericAviationWeatherMessage::getOriginalMessage)
                 .collect(Collectors.toList());
         assertThat(messages).hasSize(1);
 
-        final Document expectedMessage1 = readDocumentFromResource(expectedResultResourceName);
-        final Document actualDocument = IWXXMConverterTests.readDocumentFromString(messages.get(0));
-        assertXMLIdentical(XMLUnit.compareXML(expectedMessage1, actualDocument), true);
+        final String expectedMessageXml = readResourceToString(expectedResultResourceName);
+        IWXXMConverterTests.assertXMLEqualsIgnoringVariables(expectedMessageXml, messages.get(0));
     }
 
     @Test

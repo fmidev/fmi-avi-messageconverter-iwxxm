@@ -240,10 +240,7 @@ public class SpaceWeatherIWXXMParserTest implements IWXXMConverterTests {
             final String illegalInput = input.replace("indeterminatePosition=\"before\"", "indeterminatePosition=\"" + illegalIndeterminatePosition + "\"");
             final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(illegalInput, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                     ConversionHints.EMPTY);
-            assertEquals(1, result.getConversionIssues().size());
-            final String errorMessage = result.getConversionIssues().get(0).getMessage();
-            assertTrue(String.format("Expected message containing <%s>, but was: <%s>", illegalIndeterminatePosition, errorMessage),
-                    errorMessage.contains(illegalIndeterminatePosition.toUpperCase(Locale.US)));
+            assertConversionResult(result).hasIssueContaining(illegalIndeterminatePosition.toUpperCase(Locale.US));
         }
     }
 
