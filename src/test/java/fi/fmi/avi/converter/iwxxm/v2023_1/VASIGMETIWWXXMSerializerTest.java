@@ -15,7 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
-import static junit.framework.TestCase.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -49,22 +49,15 @@ public class VASIGMETIWWXXMSerializerTest implements IWXXMConverterTests {
         doTestSIGMETStringSerialization("vasigmet1_cancel_movtofir.json", "vasigmet1_cancel_movtofir.xml");
     }
 
-    public void testSIGMETStringSerialization(final String fn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING));
-        final SIGMET s = readFromJSON(fn, SIGMETImpl.class);
-        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING);
-        assertConversionResult(result).isSuccessful();
-    }
-
-    public void doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING));
+    private void doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING)).isTrue();
         final SIGMET s = readFromJSON(fn, SIGMETImpl.class);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING);
         assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString(iwxxmFn));
     }
 
-    public void doTestSIGMETStringSerializationNoCoords(final String fn, final String iwxxmFn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING));
+    private void doTestSIGMETStringSerializationNoCoords(final String fn, final String iwxxmFn) throws Exception {
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING)).isTrue();
         final SIGMET s = readFromJSON(fn, SIGMETImpl.class);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING);
         assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString(iwxxmFn));

@@ -16,7 +16,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 
 import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
-import static junit.framework.TestCase.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -25,11 +25,18 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
 
-    public void doTestAIRMETDOMSerialization(final String fn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM30_DOM));
+    private void doTestAIRMETDOMSerialization(final String fn) throws Exception {
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM30_DOM)).isTrue();
         final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
         final ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM30_DOM);
         assertConversionResult(result).isSuccessful();
+    }
+
+    private void doTestAIRMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM30_STRING)).isTrue();
+        final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
+        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM30_STRING);
+        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString(iwxxmFn));
     }
 
     @Test
@@ -116,13 +123,6 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
     @Test
     public void dotestAIRMETDOMSerialization3() throws Exception {
         doTestAIRMETDOMSerialization("airmet2.json");
-    }
-
-    public void doTestAIRMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM30_STRING));
-        final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
-        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM30_STRING);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString(iwxxmFn));
     }
 
 }

@@ -15,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <pre>{@code
  * TAF taf = assertConversionResult(result).isSuccessful();
  * }</pre>
- *
  */
 public final class ConversionResultAssertion<T> {
 

@@ -7,6 +7,7 @@ import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.sigmet.AIRMET;
 import fi.fmi.avi.model.sigmet.immutable.AIRMETImpl;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,17 +27,19 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
 
-    public String doTestAIRMETStringSerialization(final String fn) throws Exception {
+    private String doTestAIRMETStringSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING));
         final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING);
-        // Allow WITH_WARNINGS status for Schematron rule AIRMET.AECC1 warning about phenomenonTime/validPeriod
+        // Allow WITH_WARNINGS here due to issue:
+        // "When AIRMETEvolvingConditionCollection timeIndicator is an observation, the phenomenonTime must be earlier than or equal to the beginning of the validPeriod of the report."
+        // This seems to be a shortcoming of the rule (xlinked validTime is not considered)
         assertFalse(ConversionResult.Status.isMoreCritical(result.getStatus(), ConversionResult.Status.WITH_WARNINGS));
         assertTrue(result.getConvertedMessage().isPresent());
         return result.getConvertedMessage().get();
     }
 
-    public void doTestAIRMETDOMSerialization(final String fn) throws Exception {
+    private void doTestAIRMETDOMSerialization(final String fn) throws Exception {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM));
         final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
         final ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM);
@@ -101,7 +104,8 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
         doTestAIRMETDOMSerialization("airmetMOVING.json");
     }
 
-    //    @Test
+    @Test
+    @Ignore("Schematron issue, see comments in doTestAIRMETStringSerialization")
     public void dotestAIRMETDOMSerialization3() throws Exception {
         doTestAIRMETDOMSerialization("airmet2.json");
     }

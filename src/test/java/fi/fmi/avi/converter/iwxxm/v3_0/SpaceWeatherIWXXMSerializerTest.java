@@ -24,8 +24,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 
 import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -100,11 +99,9 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
 
     private void testParseAndSerialize(final String fileName) throws IOException, SAXException {
         final String input = readResourceToString(fileName);
-
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
         final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
-
         final ConversionResult<String> message = serialize(swx);
         assertConversionResult(message).assertSuccessful().hasXmlEqualing(input);
     }
@@ -115,7 +112,7 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
         final ConversionResult<SpaceWeatherAdvisoryAmd79> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_SPACE_WEATHER_POJO,
                 ConversionHints.EMPTY);
         final SpaceWeatherAdvisoryAmd79 swx = assertConversionResult(result).isSuccessful();
-        assertFalse(swx.getRemarks().isPresent());
+        assertThat(swx.getRemarks()).isEmpty();
 
         final ConversionResult<String> message = serialize(swx);
         assertConversionResult(message).assertSuccessful().hasXmlEqualing(input);
@@ -126,7 +123,7 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
     }
 
     private ConversionResult<String> serialize(final SpaceWeatherAdvisoryAmd79 swx) {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING));
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING)).isTrue();
         return converter.convertMessage(swx, IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM30_STRING);
     }
 

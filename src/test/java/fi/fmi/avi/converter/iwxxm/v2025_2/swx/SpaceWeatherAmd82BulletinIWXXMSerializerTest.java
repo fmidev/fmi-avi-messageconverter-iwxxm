@@ -1,8 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.v2025_2.swx;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
@@ -27,9 +24,7 @@ import org.w3c.dom.Document;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoField;
@@ -37,8 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -67,14 +61,14 @@ public class SpaceWeatherAmd82BulletinIWXXMSerializerTest implements IWXXMConver
     private List<SpaceWeatherAdvisoryAmd82> readAdvisories(final String... fileNames) throws IOException {
         final List<SpaceWeatherAdvisoryAmd82> advisories = new ArrayList<>();
         for (final String filename : fileNames) {
-            advisories.add(readFromJSON(filename));
+            advisories.add(readFromJSON(filename, SpaceWeatherAdvisoryAmd82Impl.class));
         }
         return advisories;
     }
 
     @Test
     public void testBulletinStringSerialization() throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_STRING));
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_STRING)).isTrue();
         final SpaceWeatherAmd82Bulletin bulletin = getSWXBulletin("spacewx-A2-3.json", "spacewx-A7-3.json");
         final ConversionResult<String> result = converter.convertMessage(bulletin, IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
         assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-bulletin.xml"));
@@ -82,7 +76,7 @@ public class SpaceWeatherAmd82BulletinIWXXMSerializerTest implements IWXXMConver
 
     @Test
     public void testBulletinDOMSerialization() throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_DOM));
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_DOM)).isTrue();
         final SpaceWeatherAmd82Bulletin bulletin = getSWXBulletin("spacewx-A2-3.json", "spacewx-A7-3.json");
         final ConversionResult<Document> result = converter.convertMessage(bulletin, IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
 
@@ -94,43 +88,30 @@ public class SpaceWeatherAmd82BulletinIWXXMSerializerTest implements IWXXMConver
         xpath.setNamespaceContext(ctx);
 
 
-        assertEquals("A_LNXX31TEST180815_C_TEST_2020051808----.xml",
-                xpath.evaluate("/collect:MeteorologicalBulletin/collect:bulletinIdentifier", doc));
+        assertThat(xpath.evaluate("/collect:MeteorologicalBulletin/collect:bulletinIdentifier", doc))
+                .isEqualTo("A_LNXX31TEST180815_C_TEST_2020051808----.xml");
 
-        assertEquals("2",
-                xpath.evaluate("count(/collect:MeteorologicalBulletin/collect:meteorologicalInformation)", doc));
+        assertThat(xpath.evaluate("count(/collect:MeteorologicalBulletin/collect:meteorologicalInformation)", doc))
+                .isEqualTo("2");
 
-        assertEquals("-180.0 90.0 -180.0 60.0 180.0 60.0 180.0 90.0 -180.0 90.0",
-                xpath.evaluate("/collect:MeteorologicalBulletin"
-                        + "/collect:meteorologicalInformation[1]"
-                        + "/iwxxm2025_2:SpaceWeatherAdvisory"
-                        + "/iwxxm2025_2:analysis[1]"
-                        + "/iwxxm2025_2:SpaceWeatherAnalysis"
-                        + "/iwxxm2025_2:intensityAndRegion[1]"
-                        + "/iwxxm2025_2:SpaceWeatherIntensityAndRegion"
-                        + "/iwxxm2025_2:region[1]"
-                        + "/iwxxm2025_2:SpaceWeatherRegion[1]"
-                        + "/iwxxm2025_2:location[1]"
-                        + "/aixm:AirspaceVolume"
-                        + "/aixm:horizontalProjection"
-                        + "/aixm:Surface"
-                        + "/gml:patches[1]"
-                        + "/gml:PolygonPatch"
-                        + "/gml:exterior"
-                        + "/gml:LinearRing"
-                        + "/gml:posList", doc));
-    }
-
-    protected SpaceWeatherAdvisoryAmd82 readFromJSON(final String fileName) throws IOException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new Jdk8Module());
-        objectMapper.registerModule(new JavaTimeModule());
-        try (final InputStream inputStream = SpaceWeatherAmd82BulletinIWXXMSerializerTest.class.getResourceAsStream(fileName)) {
-            if (inputStream != null) {
-                return objectMapper.readValue(inputStream, SpaceWeatherAdvisoryAmd82Impl.class);
-            } else {
-                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
-            }
-        }
+        assertThat(xpath.evaluate("/collect:MeteorologicalBulletin"
+                + "/collect:meteorologicalInformation[1]"
+                + "/iwxxm2025_2:SpaceWeatherAdvisory"
+                + "/iwxxm2025_2:analysis[1]"
+                + "/iwxxm2025_2:SpaceWeatherAnalysis"
+                + "/iwxxm2025_2:intensityAndRegion[1]"
+                + "/iwxxm2025_2:SpaceWeatherIntensityAndRegion"
+                + "/iwxxm2025_2:region[1]"
+                + "/iwxxm2025_2:SpaceWeatherRegion[1]"
+                + "/iwxxm2025_2:location[1]"
+                + "/aixm:AirspaceVolume"
+                + "/aixm:horizontalProjection"
+                + "/aixm:Surface"
+                + "/gml:patches[1]"
+                + "/gml:PolygonPatch"
+                + "/gml:exterior"
+                + "/gml:LinearRing"
+                + "/gml:posList", doc))
+                .isEqualTo("-180.0 90.0 -180.0 60.0 180.0 60.0 180.0 90.0 -180.0 90.0");
     }
 }

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -54,7 +55,7 @@ public final class GenericAviationWeatherMessageParserTest implements IWXXMConve
         assertThat(messages).hasSize(1);
 
         final String expectedMessageXml = readResourceToString(expectedResultResourceName);
-        IWXXMConverterTests.assertXMLEqualsIgnoringVariables(expectedMessageXml, messages.get(0));
+        assertXMLEqualsIgnoringVariables(expectedMessageXml, messages.get(0));
     }
 
     @Test

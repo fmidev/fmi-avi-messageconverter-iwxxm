@@ -15,7 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
-import static junit.framework.TestCase.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -57,7 +57,7 @@ public class SIGMETIWWXXMSerializerTest implements IWXXMConverterTests {
 
     @Test
     public void testSIGMETCleanup() throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING));
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING)).isTrue();
         final SIGMET s = readFromJSON("sigmetMOVING.json", SIGMETImpl.class);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
         assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("sigmetMOVING.IWXXM21"));
@@ -70,8 +70,8 @@ public class SIGMETIWWXXMSerializerTest implements IWXXMConverterTests {
         doTestSIGMETStringSerialization("sigmetFORECASTPOSITION.json");
     }
 
-    public String doTestSIGMETStringSerialization(final String fn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING));
+    private String doTestSIGMETStringSerialization(final String fn) throws Exception {
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING)).isTrue();
         final SIGMET s = readFromJSON(fn, SIGMETImpl.class);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM21_STRING);
         return assertConversionResult(result).isSuccessful();
