@@ -29,7 +29,7 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
         assertThat(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM30_DOM)).isTrue();
         final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
         final ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM30_DOM);
-        assertConversionResult(result).successfullyConverted();
+        assertConversionResult(result).assertSuccessful();
     }
 
     private void doTestAIRMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {

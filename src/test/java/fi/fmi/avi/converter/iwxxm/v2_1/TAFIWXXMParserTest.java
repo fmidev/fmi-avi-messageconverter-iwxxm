@@ -86,7 +86,7 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
     public void testCancelledTAFParsing() throws Exception {
         final Document toValidate = readDocumentFromResource("taf-A5-2.xml");
         final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).successfullyConverted();
+        assertConversionResult(result).assertSuccessful();
     }
 
     @Test
