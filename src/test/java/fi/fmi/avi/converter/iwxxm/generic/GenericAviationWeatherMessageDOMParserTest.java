@@ -636,7 +636,9 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
             resultAssertion.hasNoIssues();
         }
 
-        final GenericAviationWeatherMessage message = resultAssertion.isSuccessful();
+        final GenericAviationWeatherMessage message = result.getConvertedMessage()
+                .orElseThrow(() -> new AssertionError("Expected convertedMessage to be present"));
+
         final GenericMessageAssertion assertion = assertMessage(message)
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(testCase.getNamespace())
