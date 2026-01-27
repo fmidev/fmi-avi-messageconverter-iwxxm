@@ -20,7 +20,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -96,7 +96,7 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
     }
 
     private ConversionResult<String> serialize(final SpaceWeatherAdvisoryAmd82 swx) {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM2025_2_STRING));
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM2025_2_STRING)).isTrue();
         return converter.convertMessage(swx, IWXXMConverter.SPACE_WEATHER_POJO_TO_IWXXM2025_2_STRING);
     }
 

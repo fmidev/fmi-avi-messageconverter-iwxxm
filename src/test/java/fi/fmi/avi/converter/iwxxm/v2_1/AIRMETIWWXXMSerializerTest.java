@@ -17,8 +17,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 
 import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -27,20 +26,19 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
 
-    private String doTestAIRMETStringSerialization(final String fn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING));
+    private void doTestAIRMETStringSerialization(final String fn) throws Exception {
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING)).isTrue();
         final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING);
         // Allow WITH_WARNINGS here due to issue:
         // "When AIRMETEvolvingConditionCollection timeIndicator is an observation, the phenomenonTime must be earlier than or equal to the beginning of the validPeriod of the report."
         // This seems to be a shortcoming of the rule (xlinked validTime is not considered)
-        assertFalse(ConversionResult.Status.isMoreCritical(result.getStatus(), ConversionResult.Status.WITH_WARNINGS));
-        assertTrue(result.getConvertedMessage().isPresent());
-        return result.getConvertedMessage().get();
+        assertThat(ConversionResult.Status.isMoreCritical(result.getStatus(), ConversionResult.Status.WITH_WARNINGS)).isFalse();
+        assertThat(result.getConvertedMessage()).isPresent();
     }
 
     private void doTestAIRMETDOMSerialization(final String fn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM));
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM)).isTrue();
         final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
         final ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM);
         assertConversionResult(result).isSuccessful();
@@ -58,7 +56,7 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
 
     @Test
     public void testAIRMETCleanup() throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING));
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING)).isTrue();
         final AIRMET s = readFromJSON("airmetMOVING.json", AIRMETImpl.class);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING);
         assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("airmetMOVING.IWXXM21"));

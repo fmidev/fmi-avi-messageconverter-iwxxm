@@ -2,6 +2,7 @@ package fi.fmi.avi.converter.iwxxm.generic;
 
 import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
+import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
@@ -155,7 +156,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf/iwxxm-2025-2-unknown-message-type-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).hasIssueContaining("Unknown message type");
+        assertConversionResult(result).hasIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Unknown message type");
     }
 
     @Test
