@@ -31,7 +31,7 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -71,7 +71,7 @@ public class SpaceWeatherAmd82BulletinIWXXMSerializerTest implements IWXXMConver
         assertThat(converter.isSpecificationSupported(IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_STRING)).isTrue();
         final SpaceWeatherAmd82Bulletin bulletin = getSWXBulletin("spacewx-A2-3.json", "spacewx-A7-3.json");
         final ConversionResult<String> result = converter.convertMessage(bulletin, IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-bulletin.xml"));
+        assertThatConversionResult(result).isSuccessful().hasXmlMessageEqualTo(readResourceToString("spacewx-bulletin.xml"));
     }
 
     @Test
@@ -80,7 +80,7 @@ public class SpaceWeatherAmd82BulletinIWXXMSerializerTest implements IWXXMConver
         final SpaceWeatherAmd82Bulletin bulletin = getSWXBulletin("spacewx-A2-3.json", "spacewx-A7-3.json");
         final ConversionResult<Document> result = converter.convertMessage(bulletin, IWXXMConverter.SWX_2025_2_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
 
-        final Document doc = assertConversionResult(result).successfullyConverted();
+        final Document doc = assertThatConversionResult(result).isSuccessful().getMessage();
 
         final XPath xpath = XPathFactory.newInstance().newXPath();
         final IWXXMNamespaceContext ctx = new IWXXMNamespaceContext();

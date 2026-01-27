@@ -19,7 +19,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
@@ -42,42 +42,42 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
     public void serialize_spacewx_A2_3() throws Exception {
         final String input = readResourceToString("spacewx-A2-3.json");
         final ConversionResult<String> result = serialize(input);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-A2-3.xml"));
+        assertThatConversionResult(result).isSuccessful().hasXmlMessageEqualTo(readResourceToString("spacewx-A2-3.xml"));
     }
 
     @Test
     public void serialize_spacewx_A7_3() throws Exception {
         final String input = readResourceToString("spacewx-A7-3.json");
         final ConversionResult<String> result = serialize(input);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-A7-3.xml"));
+        assertThatConversionResult(result).isSuccessful().hasXmlMessageEqualTo(readResourceToString("spacewx-A7-3.xml"));
     }
 
     @Test
     public void serialize_spacewx_A7_5() throws Exception {
         final String input = readResourceToString("spacewx-A7-5.json");
         final ConversionResult<String> result = serialize(input);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-A7-5.xml"));
+        assertThatConversionResult(result).isSuccessful().hasXmlMessageEqualTo(readResourceToString("spacewx-A7-5.xml"));
     }
 
     @Test
     public void serialize_spacewx_repeated_regions() throws Exception {
         final String input = readResourceToString("spacewx-repeated-regions.json");
         final ConversionResult<String> result = serialize(input);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-repeated-regions.xml"));
+        assertThatConversionResult(result).isSuccessful().hasXmlMessageEqualTo(readResourceToString("spacewx-repeated-regions.xml"));
     }
 
     @Test
     public void serialize_rounded_polygon_coordinates() throws Exception {
         final String input = readResourceToString("spacewx-polygon-coordinate-rounding.json");
         final ConversionResult<String> result = serialize(input);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-polygon-coordinate-rounding.xml"));
+        assertThatConversionResult(result).isSuccessful().hasXmlMessageEqualTo(readResourceToString("spacewx-polygon-coordinate-rounding.xml"));
     }
 
     @Test
     public void serialize_nil_reasons() throws Exception {
         final String input = readResourceToString("spacewx-nil-reasons.json");
         final ConversionResult<String> result = serialize(input);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("spacewx-nil-reasons.xml"));
+        assertThatConversionResult(result).isSuccessful().hasXmlMessageEqualTo(readResourceToString("spacewx-nil-reasons.xml"));
     }
 
     @Test
@@ -85,9 +85,9 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
         final String input = readResourceToString("spacewx-too-many-replace-nrs.json");
         final ConversionResult<String> result = serialize(input);
 
-        assertConversionResult(result)
+        assertThatConversionResult(result)
                 .hasStatus(ConversionResult.Status.WITH_ERRORS)
-                .hasXmlEqualing(readResourceToString("spacewx-too-many-replace-nrs.xml"));
+                .hasXmlMessageEqualTo(readResourceToString("spacewx-too-many-replace-nrs.xml"));
     }
 
     private ConversionResult<String> serialize(final String input) throws Exception {

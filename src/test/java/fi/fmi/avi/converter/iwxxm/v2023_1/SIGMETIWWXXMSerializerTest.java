@@ -14,7 +14,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -24,6 +24,12 @@ public class SIGMETIWWXXMSerializerTest implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
 
+    public void doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING)).isTrue();
+        final SIGMET s = readFromJSON(fn, SIGMETImpl.class);
+        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING);
+        assertThatConversionResult(result).isSuccessful().hasXmlMessageEqualTo(readResourceToString(iwxxmFn));
+    }
 
     @Test
     public void testSIGMETStringSerialization1() throws Exception {
@@ -160,10 +166,4 @@ public class SIGMETIWWXXMSerializerTest implements IWXXMConverterTests {
         doTestSIGMETStringSerialization("sigmet_minimal_va_test.json", "sigmet_minimal_va_test.xml");
     }
 
-    public void doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
-        assertThat(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING)).isTrue();
-        final SIGMET s = readFromJSON(fn, SIGMETImpl.class);
-        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString(iwxxmFn));
-    }
 }

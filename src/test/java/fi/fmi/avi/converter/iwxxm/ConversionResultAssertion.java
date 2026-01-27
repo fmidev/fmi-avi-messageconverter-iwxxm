@@ -25,16 +25,16 @@ public final class ConversionResultAssertion<T> {
         this.result = result;
     }
 
-    public static <T> ConversionResultAssertion<T> assertConversionResult(final ConversionResult<T> result) {
+    public static <T> ConversionResultAssertion<T> assertThatConversionResult(final ConversionResult<T> result) {
         return new ConversionResultAssertion<>(result);
     }
 
-    public T successfullyConverted() {
-        assertSuccessful();
+    public T getMessage() {
+        assertThat(result.getConvertedMessage()).as("convertedMessage").isPresent();
         return result.getConvertedMessage().get();
     }
 
-    public ConversionResultAssertion<T> assertSuccessful() {
+    public ConversionResultAssertion<T> isSuccessful() {
         assertThat(result.getConversionIssues()).as("conversionIssues").isEmpty();
         assertThat(result.getStatus()).as("status").isEqualTo(ConversionResult.Status.SUCCESS);
         assertThat(result.getConvertedMessage()).as("convertedMessage").isPresent();
@@ -74,8 +74,8 @@ public final class ConversionResultAssertion<T> {
         return this;
     }
 
-    public ConversionResultAssertion<T> hasXmlEqualing(final String expectedXml) throws SAXException, IOException {
-        assertThat(result.getConvertedMessage()).as("convertedMessage").isPresent();
+    public ConversionResultAssertion<T> hasXmlMessageEqualTo(final String expectedXml) throws SAXException, IOException {
+        assertThat(result.getConvertedMessage()).as("convertedMessage").containsInstanceOf(String.class);
         IWXXMConverterTests.assertXMLEqualsIgnoringVariables(expectedXml, (String) result.getConvertedMessage().get());
         return this;
     }

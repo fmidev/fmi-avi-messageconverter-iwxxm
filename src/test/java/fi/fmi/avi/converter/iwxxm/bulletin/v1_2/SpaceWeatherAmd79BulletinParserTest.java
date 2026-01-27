@@ -20,7 +20,7 @@ import org.w3c.dom.Document;
 
 import java.util.Optional;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -51,7 +51,7 @@ public class SpaceWeatherAmd79BulletinParserTest implements IWXXMConverterTests 
         final Document input = readDocumentFromResource("swx-bulletin.xml");
         final ConversionResult<SpaceWeatherAmd79Bulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_30_BULLETIN_POJO,
                 ConversionHints.EMPTY);
-        final SpaceWeatherAmd79Bulletin bulletin = assertConversionResult(result).successfullyConverted();
+        final SpaceWeatherAmd79Bulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
         assertThat(bulletin.getMessages()).hasSize(1);
         final SpaceWeatherAdvisoryAmd79 msg = bulletin.getMessages().get(0);
         assertThat(msg.getPhenomena().get(0)).isEqualTo(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"));

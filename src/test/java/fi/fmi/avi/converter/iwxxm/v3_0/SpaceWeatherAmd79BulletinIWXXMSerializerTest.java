@@ -33,7 +33,7 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -73,7 +73,7 @@ public class SpaceWeatherAmd79BulletinIWXXMSerializerTest implements IWXXMConver
         assertThat(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING)).isTrue();
         final SpaceWeatherAmd79Bulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
         final ConversionResult<String> result = converter.convertMessage(tb, IWXXMConverter.SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_STRING);
-        final String collectString = assertConversionResult(result).successfullyConverted();
+        final String collectString = assertThatConversionResult(result).isSuccessful().getMessage();
 
         //Test that the namespace prefix mappings and schemaLocation attributes are included in the correct elements:
 
@@ -106,7 +106,7 @@ public class SpaceWeatherAmd79BulletinIWXXMSerializerTest implements IWXXMConver
         assertThat(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM)).isTrue();
         final SpaceWeatherAmd79Bulletin tb = getSWXBulletin("spacewx-A2-3.json", "spacewx-A2-4.json", "spacewx-A2-5.json");
         final ConversionResult<Document> result = converter.convertMessage(tb, IWXXMConverter.SWX_30_BULLETIN_POJO_TO_WMO_COLLECT_DOM);
-        final Document doc = assertConversionResult(result).successfullyConverted();
+        final Document doc = assertThatConversionResult(result).isSuccessful().getMessage();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();

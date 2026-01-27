@@ -20,7 +20,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import java.io.IOException;
 import java.util.List;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static junit.framework.TestCase.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -35,7 +35,7 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO));
         final String input = readResourceToString("taf-reportstatus-normal.xml");
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).successfullyConverted();
+        final TAF taf = assertThatConversionResult(result).isSuccessful().getMessage();
 
         assertEquals(AviationWeatherMessage.ReportStatus.NORMAL, taf.getReportStatus());
         assertEquals(AviationCodeListUser.PermissibleUsage.NON_OPERATIONAL, taf.getPermissibleUsage().get());
@@ -170,7 +170,7 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
     public void cancelMessageTest() throws IOException {
         final String input = readResourceToString("taf-cancel-message.xml");
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).successfullyConverted();
+        final TAF taf = assertThatConversionResult(result).isSuccessful().getMessage();
 
         assertEquals(AviationWeatherMessage.ReportStatus.AMENDMENT, taf.getReportStatus());
         assertEquals(AviationCodeListUser.PermissibleUsage.OPERATIONAL, taf.getPermissibleUsage().get());
@@ -191,7 +191,7 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
     public void noSignificantWeatherTest() throws IOException {
         final String input = readResourceToString("taf-no-significant-weather-or-cloud.xml");
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).successfullyConverted();
+        final TAF taf = assertThatConversionResult(result).isSuccessful().getMessage();
 
         assertTrue("Expected noSignificantWeather on nothingOfOperationalSignificance nilReason", //
                 taf.getBaseForecast().get().isNoSignificantWeather());
@@ -210,7 +210,7 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
     public void noSignificantCloudTest() throws IOException {
         final String input = readResourceToString("taf-no-significant-weather-or-cloud.xml");
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).successfullyConverted();
+        final TAF taf = assertThatConversionResult(result).isSuccessful().getMessage();
 
         assertTrue("Expected noSignificantCloud on nothingOfOperationalSignificance nilReason", //
                 taf.getBaseForecast().get().getCloud().get().isNoSignificantCloud());
@@ -230,7 +230,7 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
     public void translatedMetaPropsTest() throws IOException {
         final String input = readResourceToString("taf-translated.xml");
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).successfullyConverted();
+        final TAF taf = assertThatConversionResult(result).isSuccessful().getMessage();
 
         assertTrue(taf.isTranslated());
         assertEquals("123456", taf.getTranslatedBulletinID().get());
@@ -245,7 +245,7 @@ public class TAFIWXXMParserTest implements IWXXMConverterTests {
     public void CAVOKTrueTest() throws IOException {
         final String input = readResourceToString("taf-cavok.xml");
         final ConversionResult<TAF> result = converter.convertMessage(input, IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).successfullyConverted();
+        final TAF taf = assertThatConversionResult(result).isSuccessful().getMessage();
 
         assertTrue(taf.getBaseForecast().isPresent());
         assertTrue(taf.getBaseForecast().get().isCeilingAndVisibilityOk());

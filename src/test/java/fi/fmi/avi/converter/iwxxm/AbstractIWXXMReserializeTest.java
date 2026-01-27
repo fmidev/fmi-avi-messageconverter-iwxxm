@@ -14,7 +14,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -27,12 +27,12 @@ public abstract class AbstractIWXXMReserializeTest<T extends AviationWeatherMess
 
         final T parseResult = convertAndAssert(input, getIwxxmToPojoConversionSpecification());
         final ConversionResult<String> serializationResult = converter.convertMessage(parseResult, getPojoToIwxxmConversionSpecification(), ConversionHints.EMPTY);
-        assertConversionResult(serializationResult).assertSuccessful().hasXmlEqualing(input);
+        assertThatConversionResult(serializationResult).isSuccessful().hasXmlMessageEqualTo(input);
     }
 
     private <I, R> R convertAndAssert(final I input, final ConversionSpecification<I, R> conversionSpecification) {
         final ConversionResult<R> result = converter.convertMessage(input, conversionSpecification, ConversionHints.EMPTY);
-        return assertConversionResult(result).successfullyConverted();
+        return assertThatConversionResult(result).isSuccessful().getMessage();
     }
 
     protected abstract ConversionSpecification<T, String> getPojoToIwxxmConversionSpecification();

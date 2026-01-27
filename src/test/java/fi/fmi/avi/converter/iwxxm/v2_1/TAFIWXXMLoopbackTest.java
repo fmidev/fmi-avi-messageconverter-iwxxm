@@ -22,7 +22,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.junit.Assert.*;
 
 /**
@@ -42,10 +42,10 @@ public class TAFIWXXMLoopbackTest implements IWXXMConverterTests {
 
         final Document toValidate = readDocumentFromResource("taf-A5-1.xml");
         final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        final TAF taf = assertConversionResult(result).successfullyConverted();
+        final TAF taf = assertThatConversionResult(result).isSuccessful().getMessage();
 
         final ConversionResult<Document> result2 = converter.convertMessage(taf, IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM);
-        final Document outputDoc = assertConversionResult(result2).successfullyConverted();
+        final Document outputDoc = assertThatConversionResult(result2).isSuccessful().getMessage();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();

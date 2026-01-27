@@ -14,7 +14,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -24,43 +24,38 @@ public class VASIGMETIWWXXMSerializerTest implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
 
+    private void assertSuccessfulSIGMETSerialization(final String jsonFileName, final String iwxxmFilename) throws Exception {
+        assertThat(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING)).isTrue();
+        final SIGMET sigmet = readFromJSON(jsonFileName, SIGMETImpl.class);
+        final ConversionResult<String> result = converter.convertMessage(sigmet, IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING);
+        assertThatConversionResult(result)
+                .isSuccessful()
+                .hasXmlMessageEqualTo(readResourceToString(iwxxmFilename));
+    }
+
     @Test
     public void testVaSigmet() throws Exception {
-        doTestSIGMETStringSerialization("vasigmet1.json", "vasigmet1.xml");
+        assertSuccessfulSIGMETSerialization("vasigmet1.json", "vasigmet1.xml");
     }
 
     @Test
     public void testVaSigmet_NoCoords() throws Exception {
-        doTestSIGMETStringSerializationNoCoords("vasigmet1_nocoords.json", "vasigmet1_nocoords.xml");
+        assertSuccessfulSIGMETSerialization("vasigmet1_nocoords.json", "vasigmet1_nocoords.xml");
     }
 
     @Test
     public void testVaSigmet_NoName() throws Exception {
-        doTestSIGMETStringSerialization("vasigmet1_noname.json", "vasigmet1_noname.xml");
+        assertSuccessfulSIGMETSerialization("vasigmet1_noname.json", "vasigmet1_noname.xml");
     }
 
     @Test
     public void testVaSigmetCancel() throws Exception {
-        doTestSIGMETStringSerialization("vasigmet1_cancel.json", "vasigmet1_cancel.xml");
+        assertSuccessfulSIGMETSerialization("vasigmet1_cancel.json", "vasigmet1_cancel.xml");
     }
 
     @Test
     public void testVaSigmetCancelMovToFir() throws Exception {
-        doTestSIGMETStringSerialization("vasigmet1_cancel_movtofir.json", "vasigmet1_cancel_movtofir.xml");
-    }
-
-    private void doTestSIGMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
-        assertThat(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING)).isTrue();
-        final SIGMET s = readFromJSON(fn, SIGMETImpl.class);
-        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString(iwxxmFn));
-    }
-
-    private void doTestSIGMETStringSerializationNoCoords(final String fn, final String iwxxmFn) throws Exception {
-        assertThat(converter.isSpecificationSupported(IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING)).isTrue();
-        final SIGMET s = readFromJSON(fn, SIGMETImpl.class);
-        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.SIGMET_POJO_TO_IWXXM2023_1_STRING);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString(iwxxmFn));
+        assertSuccessfulSIGMETSerialization("vasigmet1_cancel_movtofir.json", "vasigmet1_cancel_movtofir.xml");
     }
 
 }

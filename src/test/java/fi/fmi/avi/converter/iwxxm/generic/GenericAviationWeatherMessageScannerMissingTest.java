@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = GenericAviationWeatherMessageScannerMissingTest.Config.class, loader = AnnotationConfigContextLoader.class)
@@ -40,7 +40,7 @@ public class GenericAviationWeatherMessageScannerMissingTest implements IWXXMCon
         final Document input = readDocumentFromResource("taf/iwxxm-30-taf-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result)
+        assertThatConversionResult(result)
                 .hasIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Unsupported message type");
     }
 

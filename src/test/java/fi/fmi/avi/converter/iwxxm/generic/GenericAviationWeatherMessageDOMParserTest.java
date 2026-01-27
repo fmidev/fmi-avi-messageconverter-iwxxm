@@ -26,7 +26,7 @@ import org.w3c.dom.Document;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertMessage;
 import static fi.fmi.avi.model.MessageType.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
@@ -622,7 +622,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
                 IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, testCase.getHints());
 
-        final ConversionResultAssertion<GenericAviationWeatherMessage> resultAssertion = assertConversionResult(result);
+        final ConversionResultAssertion<GenericAviationWeatherMessage> resultAssertion = assertThatConversionResult(result);
 
         if (testCase.expectsIssues()) {
             for (final GenericAviationWeatherMessageDOMParserTestCase.ExpectedIssue expectedIssue : testCase.getExpectedIssues()) {
@@ -633,12 +633,10 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 }
             }
         } else {
-            resultAssertion.assertSuccessful();
+            resultAssertion.isSuccessful();
         }
 
-        final GenericAviationWeatherMessage message = result.getConvertedMessage()
-                .orElseThrow(() -> new AssertionError("Expected convertedMessage to be present"));
-
+        final GenericAviationWeatherMessage message = result.getConvertedMessage().orElse(null);
         final GenericMessageAssertion assertion = assertMessage(message)
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(testCase.getNamespace())

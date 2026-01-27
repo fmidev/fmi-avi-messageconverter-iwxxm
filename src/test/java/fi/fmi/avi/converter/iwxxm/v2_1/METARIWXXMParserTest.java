@@ -21,7 +21,7 @@ import org.w3c.dom.Document;
 import java.util.List;
 import java.util.Optional;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -35,21 +35,21 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testStringParser() throws Exception {
         final String input = readResourceToString("metar-A3-1.xml");
         final ConversionResult<METAR> result = converter.convertMessage(input, IWXXMConverter.IWXXM21_STRING_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
     public void testNoIssuesWithValidMETAR_A3() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
     public void testNoIssuesWithValidMETAR_RWS() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-EDDF-runwaystate.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        final METAR m = assertConversionResult(result).successfullyConverted();
+        final METAR m = assertThatConversionResult(result).isSuccessful().getMessage();
         final Optional<List<RunwayState>> states = m.getRunwayStates();
         assertTrue(states.isPresent());
         assertEquals(3, states.get().size());
@@ -60,70 +60,70 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testNoIssuesWithValidMETAR_NIL() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-NIL.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
     public void testNOSIG() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_NOSIG.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
     public void testCatchesWrongObservationTypes() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_invalid-obs-types.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).hasIssueContaining("Invalid observation type");
+        assertThatConversionResult(result).hasIssueContaining("Invalid observation type");
     }
 
     @Test
     public void testCatchesWrongObservedPropertyRefs() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_invalid-obs-properties.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).hasIssueContaining("Invalid observed property");
+        assertThatConversionResult(result).hasIssueContaining("Invalid observed property");
     }
 
     @Test
     public void testCatchesMissingPhenomenonTime() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_no-phenomenon-time.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).hasIssueContaining("METAR observation phenomenonTime");
+        assertThatConversionResult(result).hasIssueContaining("METAR observation phenomenonTime");
     }
 
     @Test
     public void testRecentWeather() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-recent-weather.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
     public void testWindShear() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-wind-shear.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
     public void testSeaState() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-sea-state.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
     public void testSnowClosure() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-snow-closure.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
     public void testCatchesCavokConflicts() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-cavok-conflicts.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result)
+        assertThatConversionResult(result)
                 .hasNoIssueContaining("Schema validation issue")
                 .hasIssueContaining("rvr")
                 .hasIssueContaining("visibility")
@@ -135,14 +135,14 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testTrendSurfaceWindForecast() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-trend-wind.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
     public void testCatchesTrendCavokConflicts() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-trend-cavok-conflicts.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result)
+        assertThatConversionResult(result)
                 .hasNoIssueContaining("Schema validation issue")
                 .hasIssueContaining("prevailingVisibility")
                 .hasIssueContaining("clouds")
@@ -153,7 +153,7 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testNoCloudsDetectedForecast() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-ncd.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
@@ -162,7 +162,7 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
 
         Document toValidate = readDocumentFromResource("metar-A3-1_with-missing-cloud-obs.xml");
         ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
 
         Optional<METAR> m = result.getConvertedMessage();
         assertTrue(m.isPresent());
@@ -207,7 +207,7 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
 
         toValidate = readDocumentFromResource("metar-A3-1_with-missing-cloud-obs2.xml");
         result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
 
         m = result.getConvertedMessage();
         assertTrue(m.isPresent());
@@ -265,7 +265,7 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testTrendCloudForecast() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-trend-cloud-and-nsc.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
 
         final Optional<METAR> m = result.getConvertedMessage();
         assertTrue(m.isPresent());
@@ -283,7 +283,7 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testRunwayStateAllRunways() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-EDDF-runwaystate-all-runways.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
         final Optional<METAR> m = result.getConvertedMessage();
         assertTrue(m.isPresent());
 
@@ -297,7 +297,7 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testRunwayStateCleared() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-EDDF-runwaystate-cleared.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
         final Optional<METAR> m = result.getConvertedMessage();
         assertTrue(m.isPresent());
 
@@ -315,7 +315,7 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testRunwayStateClearedConflict() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-EDDF-runwaystate-cleared-conflict.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result)
+        assertThatConversionResult(result)
                 .hasNoIssueContaining("Schema validation issue")
                 .hasIssueContaining("cleared");
     }
@@ -324,7 +324,7 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testRunwayStateInfo() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-EDDF-runwaystate-depth-of-deposit.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
         final Optional<METAR> m = result.getConvertedMessage();
         assertTrue(m.isPresent());
         final Optional<List<RunwayState>> states = m.get().getRunwayStates();
@@ -533,7 +533,7 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testSeaStateWithSignificantWaveHeight() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-sea-state-sig-wave-height.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
 
         final Optional<METAR> m = result.getConvertedMessage();
         assertTrue(m.isPresent());
@@ -550,7 +550,7 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testWindShearAllRunways() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-wind-shear-all-runways.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
 
         final Optional<METAR> m = result.getConvertedMessage();
         assertTrue(m.isPresent());
@@ -565,7 +565,7 @@ public class METARIWXXMParserTest implements IWXXMConverterTests {
     public void testTrendPhenomenonTime() throws Exception {
         final Document toValidate = readDocumentFromResource("metar-A3-1_with-trend-time-instant.xml");
         final ConversionResult<METAR> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_METAR_POJO, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
 }

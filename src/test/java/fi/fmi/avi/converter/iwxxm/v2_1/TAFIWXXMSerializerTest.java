@@ -29,7 +29,7 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.junit.Assert.*;
@@ -76,7 +76,7 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
         assertTrue(t.isCancelMessage());
         final ConversionResult<String> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING);
         // Test data lacks aerodrome reference point location, which produces an issue
-        assertConversionResult(result)
+        assertThatConversionResult(result)
                 .hasStatus(ConversionResult.Status.SUCCESS)
                 .hasIssueContaining("Aerodrome references does not contain reference point location");
     }
@@ -86,7 +86,7 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING));
         final TAF t = getTAF();
         final ConversionResult<String> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
@@ -94,7 +94,7 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
         assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM));
         final TAF t = getTAF();
         final ConversionResult<Document> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM);
-        final Document doc = assertConversionResult(result).successfullyConverted();
+        final Document doc = assertThatConversionResult(result).isSuccessful().getMessage();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();

@@ -16,7 +16,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.w3c.dom.Document;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -41,7 +41,7 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
         assertThat(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM)).isTrue();
         final AIRMET s = readFromJSON(fn, AIRMETImpl.class);
         final ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_DOM);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
@@ -59,7 +59,7 @@ public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
         assertThat(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING)).isTrue();
         final AIRMET s = readFromJSON("airmetMOVING.json", AIRMETImpl.class);
         final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM21_STRING);
-        assertConversionResult(result).assertSuccessful().hasXmlEqualing(readResourceToString("airmetMOVING.IWXXM21"));
+        assertThatConversionResult(result).isSuccessful().hasXmlMessageEqualTo(readResourceToString("airmetMOVING.IWXXM21"));
     }
 
     @Test

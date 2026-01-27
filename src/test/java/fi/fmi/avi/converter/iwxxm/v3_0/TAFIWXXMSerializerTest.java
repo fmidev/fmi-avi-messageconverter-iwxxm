@@ -33,7 +33,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.junit.Assert.assertNotNull;
@@ -54,14 +54,14 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
     public void conversionTest() throws IOException {
         final TAF input = getTafObject();
         final ConversionResult<String> result = converter.convertMessage(input, IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING, ConversionHints.EMPTY);
-        assertConversionResult(result).assertSuccessful();
+        assertThatConversionResult(result).isSuccessful();
     }
 
     @Test
     public void serializeA51Taf() throws XPathExpressionException {
         final TAF input = createTafMessage();
         final ConversionResult<Document> result = converter.convertMessage(input, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM, ConversionHints.EMPTY);
-        final Document doc = assertConversionResult(result).successfullyConverted();
+        final Document doc = assertThatConversionResult(result).isSuccessful().getMessage();
 
         final XPathFactory xPathfactory = XPathFactory.newInstance();
         final XPath xpath = xPathfactory.newXPath();
@@ -409,7 +409,7 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
     public void serializeA52Taf() throws XPathExpressionException {
         final TAF input = createTafMessageWithCancellation();
         final ConversionResult<Document> result = converter.convertMessage(input, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM, ConversionHints.EMPTY);
-        final Document doc = assertConversionResult(result).successfullyConverted();
+        final Document doc = assertThatConversionResult(result).isSuccessful().getMessage();
 
         final XPathFactory xPathfactory = XPathFactory.newInstance();
         final XPath xpath = xPathfactory.newXPath();
@@ -446,7 +446,7 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
         final TAF t = getTafObject();
         final ConversionResult<Document> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM);
 
-        final Document doc = assertConversionResult(result).successfullyConverted();
+        final Document doc = assertThatConversionResult(result).isSuccessful().getMessage();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();

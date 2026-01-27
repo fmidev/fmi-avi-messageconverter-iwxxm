@@ -17,7 +17,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertConversionResult;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,7 +47,7 @@ public final class GenericAviationWeatherMessageParserTest implements IWXXMConve
 
         final ConversionResult<GenericMeteorologicalBulletin> result = converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_STRING_TO_GENERIC_BULLETIN_POJO);
-        final GenericMeteorologicalBulletin bulletin = assertConversionResult(result).successfullyConverted();
+        final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
 
         final List<String> messages = bulletin.getMessages().stream()
                 .map(GenericAviationWeatherMessage::getOriginalMessage)
