@@ -25,7 +25,6 @@ public class SIGMETIWWXXMSerializerTest implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
 
-
     @Test
     public void testSIGMETStringSerialization1() throws Exception {
         doTestSIGMETStringSerialization("sigmet1.json", "sigmet1.IWXXM30");
