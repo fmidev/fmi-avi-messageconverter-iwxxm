@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p>Example usage for successful conversion with result extraction:</p>
  * <pre>{@code
- * TAF taf = assertConversionResult(result).isSuccessful();
+ * TAF taf = assertConversionResult(result).successfullyConverted();
  * }</pre>
  */
 public final class ConversionResultAssertion<T> {

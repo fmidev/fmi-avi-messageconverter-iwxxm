@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p>For conversion result assertions, use {@link fi.fmi.avi.converter.iwxxm.ConversionResultAssertion}:</p>
  * <pre>{@code
- * GenericAviationWeatherMessage message = assertConversionResult(result).isSuccessful();
+ * GenericAviationWeatherMessage message = assertConversionResult(result).successfullyConverted();
  * assertMessage(message)
  *     .hasFormat(Format.IWXXM)
  *     .hasMessageType(MessageType.TAF);
