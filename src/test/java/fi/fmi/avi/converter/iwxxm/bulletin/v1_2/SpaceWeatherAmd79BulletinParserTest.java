@@ -20,8 +20,8 @@ import org.w3c.dom.Document;
 
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by rinne on 19/07/17.
@@ -35,15 +35,15 @@ public class SpaceWeatherAmd79BulletinParserTest implements IWXXMConverterTests 
 
     @Test
     public void testScanner() throws Exception {
-        assertTrue(this.converter.isSpecificationSupported(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO));
+        assertThat(this.converter.isSpecificationSupported(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO)).isTrue();
         final BulletinProperties properties = new BulletinProperties();
         final MeteorologicalBulletinIWXXMScanner<SpaceWeatherAdvisoryAmd79, SpaceWeatherAmd79Bulletin> scanner = new MeteorologicalBulletinIWXXMScanner<>();
         scanner.setMessageConverter(converter.getConverter(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO));
         scanner.collectBulletinProperties(readDocumentFromResource("swx-bulletin.xml"), properties, ConversionHints.EMPTY);
-        assertTrue(properties.contains(BulletinProperties.Name.HEADING));
+        assertThat(properties.contains(BulletinProperties.Name.HEADING)).isTrue();
         final Optional<BulletinHeading> heading = properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class);
-        assertEquals(31, heading.get().getBulletinNumber());
-        assertTrue(properties.contains(BulletinProperties.Name.MESSAGE));
+        assertThat(heading.get().getBulletinNumber()).isEqualTo(31);
+        assertThat(properties.contains(BulletinProperties.Name.MESSAGE)).isTrue();
     }
 
     @Test
@@ -51,13 +51,10 @@ public class SpaceWeatherAmd79BulletinParserTest implements IWXXMConverterTests 
         final Document input = readDocumentFromResource("swx-bulletin.xml");
         final ConversionResult<SpaceWeatherAmd79Bulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_30_BULLETIN_POJO,
                 ConversionHints.EMPTY);
-        assertEquals(ConversionResult.Status.SUCCESS, result.getStatus());
-        if (result.getConvertedMessage().isPresent()) {
-            final SpaceWeatherAmd79Bulletin bulletin = result.getConvertedMessage().get();
-            assertEquals(1, bulletin.getMessages().size());
-            final SpaceWeatherAdvisoryAmd79 mesg = bulletin.getMessages().get(0);
-            assertEquals(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"), mesg.getPhenomena().get(0));
-        }
+        final SpaceWeatherAmd79Bulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(bulletin.getMessages()).hasSize(1);
+        final SpaceWeatherAdvisoryAmd79 msg = bulletin.getMessages().get(0);
+        assertThat(msg.getPhenomena().get(0)).isEqualTo(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"));
     }
 
 }
