@@ -22,6 +22,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.junit.Assert.*;
 
 /**
@@ -41,19 +42,17 @@ public class TAFIWXXMLoopbackTest implements IWXXMConverterTests {
 
         final Document toValidate = readDocumentFromResource("taf-A5-1.xml");
         final ConversionResult<TAF> result = converter.convertMessage(toValidate, IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, ConversionHints.EMPTY);
-        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
-        assertTrue("No issues should have been found", result.getConversionIssues().isEmpty());
-        assertTrue(result.getConvertedMessage().isPresent());
+        final TAF taf = assertThatConversionResult(result).isSuccessful().getMessage();
 
-        final ConversionResult<Document> result2 = converter.convertMessage(result.getConvertedMessage().get(), IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM);
-        assertSame(ConversionResult.Status.SUCCESS, result2.getStatus());
+        final ConversionResult<Document> result2 = converter.convertMessage(taf, IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM);
+        final Document outputDoc = assertThatConversionResult(result2).isSuccessful().getMessage();
 
         final XPathFactory factory = XPathFactory.newInstance();
         final XPath xpath = factory.newXPath();
         final NamespaceContext ctx = new IWXXMNamespaceContext();
         xpath.setNamespaceContext(ctx);
 
-        final Element output = result2.getConvertedMessage().map(Document::getDocumentElement).orElse(null);
+        final Element output = outputDoc.getDocumentElement();
         final Element input = toValidate.getDocumentElement();
         assertNotNull(output);
 

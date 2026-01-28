@@ -55,6 +55,12 @@ public final class TAFFieldXPathProvider extends AbstractFieldXPathProvider {
                 // IWXXM 2.1: validTime
                 "./iwxxm:validTime");
 
+        put(map, IWXXMField.NIL_REASON,
+                // IWXXM 3.0+ style
+                "./iwxxm:baseForecast[not(*)]/@nilReason",
+                // IWXXM 2.1 style
+                "@status[.='MISSING']");
+
         return Collections.unmodifiableMap(map);
     }
 }

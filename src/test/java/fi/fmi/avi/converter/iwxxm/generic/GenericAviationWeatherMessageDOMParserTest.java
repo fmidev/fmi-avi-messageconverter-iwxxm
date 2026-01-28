@@ -4,6 +4,7 @@ import fi.fmi.avi.converter.AviMessageConverter;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.iwxxm.ConversionResultAssertion;
 import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
@@ -25,6 +26,7 @@ import org.w3c.dom.Document;
 import java.util.Arrays;
 import java.util.Collection;
 
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertMessage;
 import static fi.fmi.avi.model.MessageType.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
@@ -68,6 +70,23 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .issueTime("2012-08-16T15:00Z")
                         .noValidityPeriod()
                         .aerodrome("YUDA")
+                        .nil(true)
+                        .build(),
+
+                taf().fileName("iwxxm-21-taf-nil.xml")
+                        .namespace(IWXXM_2_1_NAMESPACE)
+                        .issueTime("2012-08-16T00:00Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .nil(true)
+                        .build(),
+
+                taf().fileName("iwxxm-30-taf-nil.xml")
+                        .namespace(IWXXM_3_0_NAMESPACE)
+                        .issueTime("2012-08-16T00:00Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .nil(true)
                         .build(),
 
                 taf().fileName("iwxxm-30-taf-A5-1.xml")
@@ -96,6 +115,14 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .issueTime("2012-08-15T18:00Z")
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                         .aerodrome("YUDO")
+                        .build(),
+
+                taf().fileName("iwxxm-2025-2-taf-nil.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-15T18:00Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .nil(true)
                         .build(),
 
                 // TAF error cases
@@ -289,12 +316,30 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .aerodrome("YUDO")
                         .build(),
 
+                metar().fileName("iwxxm-21-metar-nil.xml")
+                        .namespace(IWXXM_2_1_NAMESPACE)
+                        .issueTime("2012-08-22T16:30Z")
+                        .observationTime("2012-08-22T16:30Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .nil(true)
+                        .build(),
+
                 metar().fileName("iwxxm-30-metar-A3-1.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
                         .issueTime("2012-08-22T16:30Z")
                         .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
+                        .build(),
+
+                metar().fileName("iwxxm-30-metar-nil.xml")
+                        .namespace(IWXXM_3_0_NAMESPACE)
+                        .issueTime("2012-08-22T16:30Z")
+                        .observationTime("2012-08-22T16:30Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .nil(true)
                         .build(),
 
                 metar().fileName("iwxxm-2021-2-metar-A3-1.xml")
@@ -335,6 +380,15 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .noValidityPeriod()
                         .aerodrome("YUDO")
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "observation time")
+                        .build(),
+
+                metar().fileName("iwxxm-2025-2-metar-nil.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-22T16:30Z")
+                        .observationTime("2012-08-22T16:30Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .nil(true)
                         .build(),
 
                 // SPECI tests
@@ -378,6 +432,15 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .aerodrome("YUDO")
                         .build(),
 
+                speci().fileName("iwxxm-2025-2-speci-nil.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .issueTime("2012-08-22T16:45Z")
+                        .observationTime("2012-08-22T16:45Z")
+                        .noValidityPeriod()
+                        .aerodrome("YUDO")
+                        .nil(true)
+                        .build(),
+
                 // Space Weather Advisory tests
                 swx().fileName("iwxxm-30-spacewx-A2-3.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
@@ -416,7 +479,6 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "ISSUING_CENTRE")
                         .build(),
 
-
                 // Tropical Cyclone Advisory tests
                 tca().fileName("iwxxm-21-tc-advisory-A2-2.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
@@ -453,7 +515,6 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .noValidityPeriod()
                         .issuingCentre("YUFO")
                         .build(),
-
 
                 // Volcanic Ash Advisory tests
                 vaa().fileName("iwxxm-21-va-advisory-A2-1.xml")
@@ -561,22 +622,22 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
         final ConversionResult<GenericAviationWeatherMessage> result = converter.convertMessage(input,
                 IWXXMConverter.IWXXM_DOM_TO_GENERIC_AVIATION_WEATHER_MESSAGE_POJO, testCase.getHints());
 
-        final GenericMessageAssertion assertion = assertMessage(result);
+        final ConversionResultAssertion<GenericAviationWeatherMessage> resultAssertion = assertThatConversionResult(result);
 
         if (testCase.expectsIssues()) {
-            assertion.hasIssues();
             for (final GenericAviationWeatherMessageDOMParserTestCase.ExpectedIssue expectedIssue : testCase.getExpectedIssues()) {
                 if (expectedIssue.hasMessageSubstring()) {
-                    assertion.hasIssue(expectedIssue.getSeverity(), expectedIssue.getType(), expectedIssue.getMessageSubstring());
+                    resultAssertion.hasIssue(expectedIssue.getSeverity(), expectedIssue.getType(), expectedIssue.getMessageSubstring());
                 } else {
-                    assertion.hasIssue(expectedIssue.getSeverity(), expectedIssue.getType());
+                    resultAssertion.hasIssue(expectedIssue.getSeverity(), expectedIssue.getType());
                 }
             }
         } else {
-            assertion.hasNoIssues();
+            resultAssertion.isSuccessful();
         }
 
-        assertion.isPresent()
+        final GenericAviationWeatherMessage message = result.getConvertedMessage().orElse(null);
+        final GenericMessageAssertion assertion = assertMessage(message)
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(testCase.getNamespace())
                 .hasMessageType(testCase.getMessageType());
@@ -611,9 +672,15 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
             assertion.hasLocationIndicators(testCase.getLocationIndicators());
         }
 
+        if (testCase.isNil()) {
+            assertion.isNil();
+        } else {
+            assertion.isNotNil();
+        }
+
         XMLUnit.setIgnoreWhitespace(true);
         assertXMLEqual(readResourceToString(getResourcePath(testCase.getFileName(), testCase.getMessageType())),
-                result.getConvertedMessage().get().getOriginalMessage());
+                message.getOriginalMessage());
     }
 }
 

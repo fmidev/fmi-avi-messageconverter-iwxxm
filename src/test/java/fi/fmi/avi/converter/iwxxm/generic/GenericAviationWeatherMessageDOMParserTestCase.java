@@ -16,6 +16,7 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
     private final ConversionHints hints;
     private final boolean translated;
     private final ReportStatus reportStatus;
+    private final boolean nil;
     private final String issueTime;
     private final String observationTime;
     private final String validityStart;
@@ -30,6 +31,7 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         this.hints = builder.hints != null ? builder.hints : new ConversionHints();
         this.translated = builder.translated;
         this.reportStatus = builder.reportStatus;
+        this.nil = builder.nil;
         this.issueTime = builder.issueTime;
         this.observationTime = builder.observationTime;
         this.validityStart = builder.validityStart;
@@ -72,6 +74,10 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
 
     public boolean hasReportStatus() {
         return reportStatus != null;
+    }
+
+    public boolean isNil() {
+        return nil;
     }
 
     public String getIssueTime() {
@@ -173,6 +179,7 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         private String validityEnd;
         private Map<LocationIndicatorType, String> locationIndicators;
         private List<ExpectedIssue> expectedIssues;
+        private boolean nil;
 
         private Builder() {
         }
@@ -247,6 +254,11 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
 
         public Builder issuingCentre(final String name) {
             return locationIndicator(LocationIndicatorType.ISSUING_CENTRE, name);
+        }
+
+        public Builder nil(final boolean nil) {
+            this.nil = nil;
+            return this;
         }
 
         public Builder sigmetLocationIndicators(final String atsUnit, final String atsRegion, final String mwo) {

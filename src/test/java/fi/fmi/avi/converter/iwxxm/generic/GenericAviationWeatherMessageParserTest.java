@@ -7,21 +7,19 @@ import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.w3c.dom.Document;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
+import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLIdentical;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
@@ -49,20 +47,15 @@ public final class GenericAviationWeatherMessageParserTest implements IWXXMConve
 
         final ConversionResult<GenericMeteorologicalBulletin> result = converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_STRING_TO_GENERIC_BULLETIN_POJO);
-        assertThat(result.getConversionIssues()).isEmpty();
+        final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
 
-        XMLUnit.setIgnoreWhitespace(true);
-        XMLUnit.setIgnoreComments(true);
-        final List<String> messages = result.getConvertedMessage()
-                .map(bulletin -> bulletin.getMessages().stream()
-                        .map(GenericAviationWeatherMessage::getOriginalMessage)
-                        .collect(Collectors.toList()))
-                .orElse(Collections.emptyList());
+        final List<String> messages = bulletin.getMessages().stream()
+                .map(GenericAviationWeatherMessage::getOriginalMessage)
+                .collect(Collectors.toList());
         assertThat(messages).hasSize(1);
 
-        final Document expectedMessage1 = readDocumentFromResource(expectedResultResourceName);
-        final Document actualDocument = IWXXMConverterTests.readDocumentFromString(messages.get(0));
-        assertXMLIdentical(XMLUnit.compareXML(expectedMessage1, actualDocument), true);
+        final String expectedMessageXml = readResourceToString(expectedResultResourceName);
+        assertXMLEqualsIgnoringVariables(expectedMessageXml, messages.get(0));
     }
 
     @Test

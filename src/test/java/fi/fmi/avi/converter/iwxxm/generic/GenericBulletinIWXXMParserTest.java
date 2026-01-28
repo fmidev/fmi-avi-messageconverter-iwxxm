@@ -24,7 +24,8 @@ import org.w3c.dom.Document;
 import java.util.HashMap;
 import java.util.Map;
 
-import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertFirstMessage;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
+import static fi.fmi.avi.converter.iwxxm.generic.GenericMessageAssertion.assertMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -50,6 +51,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf/iwxxm-21-taf-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+        assertThatConversionResult(result).isSuccessful();
 
         assertFirstMessage(result);
         assertThat(result.getConvertedMessage().get().getHeading().getOriginalCollectIdentifier())
@@ -67,7 +69,8 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUCC");
         expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUSO");
 
-        assertFirstMessage(result)
+        final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_2_1_NAMESPACE)
                 .hasMessageType(MessageType.SIGMET)
@@ -90,7 +93,8 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_REGION, "YUDO");
         expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUDD");
 
-        assertFirstMessage(result)
+        final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_3_0_NAMESPACE)
                 .hasMessageType(MessageType.SIGMET)
@@ -108,7 +112,8 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
-        assertFirstMessage(result)
+        final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_3_0_NAMESPACE)
                 .hasMessageType(MessageType.TAF)
@@ -126,7 +131,8 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
-        assertFirstMessage(result)
+        final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_3_0_NAMESPACE)
                 .hasMessageType(MessageType.TAF)
@@ -144,7 +150,10 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
-        assertFirstMessage(result)
+        final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(bulletin.getHeading()).isNotNull();
+
+        assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_3_0_NAMESPACE)
                 .hasMessageType(MessageType.TAF)
@@ -161,10 +170,68 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf/iwxxm-2025-2-unknown-message-type-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+        assertThatConversionResult(result).hasIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Unknown message type");
+    }
 
-        assertThat(result.getConversionIssues()).isNotEmpty();
-        assertThat(result.getConversionIssues())
-                .anyMatch(issue -> issue.getSeverity() == ConversionIssue.Severity.ERROR
-                        && issue.getMessage().contains("Unknown message type"));
+    @Test
+    public void testParserWithNilTAF() throws Exception {
+        final Document input = readDocumentFromResource("taf/iwxxm-2025-2-taf-bulletin-with-nil.xml");
+        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
+                IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+
+        final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(bulletin.getMessages()).hasSize(2);
+
+        assertMessage(bulletin.getMessages().get(0))
+                .hasFormat(Format.IWXXM)
+                .hasNamespace(IWXXM_2025_2_NAMESPACE)
+                .hasMessageType(MessageType.TAF)
+                .hasReportStatus(ReportStatus.NORMAL)
+                .hasIssueTime("2012-08-15T18:00Z")
+                .hasValidityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
+                .hasLocationIndicator(LocationIndicatorType.AERODROME, "YUDO")
+                .isNotNil();
+
+        assertMessage(bulletin.getMessages().get(1))
+                .hasFormat(Format.IWXXM)
+                .hasNamespace(IWXXM_2025_2_NAMESPACE)
+                .hasMessageType(MessageType.TAF)
+                .hasReportStatus(ReportStatus.NORMAL)
+                .hasIssueTime("2012-08-15T18:00Z")
+                .hasNoValidityPeriod()
+                .hasLocationIndicator(LocationIndicatorType.AERODROME, "EFHA")
+                .isNil();
+    }
+
+    @Test
+    public void testParserWithNilMETAR() throws Exception {
+        final Document input = readDocumentFromResource("metar/iwxxm-2025-2-metar-bulletin-with-nil.xml");
+        final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
+                IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
+
+        final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(bulletin.getMessages()).hasSize(2);
+
+        assertMessage(bulletin.getMessages().get(0))
+                .hasFormat(Format.IWXXM)
+                .hasNamespace(IWXXM_2025_2_NAMESPACE)
+                .hasMessageType(MessageType.METAR)
+                .hasReportStatus(ReportStatus.NORMAL)
+                .hasIssueTime("2012-08-22T16:30Z")
+                .hasObservationTime("2012-08-22T16:30Z")
+                .hasNoValidityPeriod()
+                .hasLocationIndicator(LocationIndicatorType.AERODROME, "YUDO")
+                .isNotNil();
+
+        assertMessage(bulletin.getMessages().get(1))
+                .hasFormat(Format.IWXXM)
+                .hasNamespace(IWXXM_2025_2_NAMESPACE)
+                .hasMessageType(MessageType.METAR)
+                .hasReportStatus(ReportStatus.NORMAL)
+                .hasIssueTime("2012-08-22T16:30Z")
+                .hasObservationTime("2012-08-22T16:30Z")
+                .hasNoValidityPeriod()
+                .hasLocationIndicator(LocationIndicatorType.AERODROME, "EFHA")
+                .isNil();
     }
 }

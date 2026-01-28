@@ -20,6 +20,7 @@ import org.w3c.dom.Document;
 
 import java.util.Optional;
 
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -35,15 +36,12 @@ public class SpaceWeatherAmd79BulletinParserTest implements IWXXMConverterTests 
     @Test
     public void testScanner() throws Exception {
         assertThat(this.converter.isSpecificationSupported(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO)).isTrue();
-
         final BulletinProperties properties = new BulletinProperties();
         final MeteorologicalBulletinIWXXMScanner<SpaceWeatherAdvisoryAmd79, SpaceWeatherAmd79Bulletin> scanner = new MeteorologicalBulletinIWXXMScanner<>();
         scanner.setMessageConverter(converter.getConverter(IWXXMConverter.IWXXM30_DOM_TO_SPACE_WEATHER_POJO));
         scanner.collectBulletinProperties(readDocumentFromResource("swx-bulletin.xml"), properties, ConversionHints.EMPTY);
         assertThat(properties.contains(BulletinProperties.Name.HEADING)).isTrue();
-
         final Optional<BulletinHeading> heading = properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class);
-        assertThat(heading).isPresent();
         assertThat(heading.get().getBulletinNumber()).isEqualTo(31);
         assertThat(properties.contains(BulletinProperties.Name.MESSAGE)).isTrue();
     }
@@ -53,15 +51,11 @@ public class SpaceWeatherAmd79BulletinParserTest implements IWXXMConverterTests 
         final Document input = readDocumentFromResource("swx-bulletin.xml");
         final ConversionResult<SpaceWeatherAmd79Bulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_30_BULLETIN_POJO,
                 ConversionHints.EMPTY);
-        assertThat(result.getStatus()).isEqualTo(ConversionResult.Status.SUCCESS);
-        assertThat(result.getConvertedMessage()).isPresent();
-
-        final SpaceWeatherAmd79Bulletin bulletin = result.getConvertedMessage().get();
+        final SpaceWeatherAmd79Bulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
         assertThat(bulletin.getHeading().getOriginalCollectIdentifier()).hasValue("A_LNXX31EFKL301115_C_EFKL_201902011315--.xml");
         assertThat(bulletin.getMessages()).hasSize(1);
-
-        final SpaceWeatherAdvisoryAmd79 mesg = bulletin.getMessages().get(0);
-        assertThat(mesg.getPhenomena().get(0)).isEqualTo(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"));
+        final SpaceWeatherAdvisoryAmd79 msg = bulletin.getMessages().get(0);
+        assertThat(msg.getPhenomena().get(0)).isEqualTo(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"));
     }
 
 }

@@ -12,7 +12,8 @@ public enum IWXXMField {
     ORIGINATING_MWO(DataType.NODE),
     ISSUING_ATS_UNIT(DataType.NODE),
     ISSUING_ATS_REGION(DataType.NODE),
-    ISSUING_CENTRE(DataType.NODE);
+    ISSUING_CENTRE(DataType.NODE),
+    NIL_REASON(DataType.STRING);
 
     private final DataType xpathDataType;
 

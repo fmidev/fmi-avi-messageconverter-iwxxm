@@ -1,11 +1,10 @@
 package fi.fmi.avi.converter.iwxxm.v3_0;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import fi.fmi.avi.converter.AviMessageConverter;
-import fi.fmi.avi.converter.ConversionIssue;
 import fi.fmi.avi.converter.ConversionResult;
+import fi.fmi.avi.converter.ConversionSpecification;
+import fi.fmi.avi.converter.iwxxm.ConversionResultAssertion;
+import fi.fmi.avi.converter.iwxxm.IWXXMConverterTests;
 import fi.fmi.avi.converter.iwxxm.IWXXMTestConfiguration;
 import fi.fmi.avi.converter.iwxxm.conf.IWXXMConverter;
 import fi.fmi.avi.model.sigmet.AIRMET;
@@ -16,70 +15,46 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.w3c.dom.Document;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
-import static fi.fmi.avi.converter.iwxxm.IWXXMConverterTests.assertXMLEqualsIgnoringVariables;
-import static junit.framework.TestCase.assertSame;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertNotNull;
+import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = IWXXMTestConfiguration.class, loader = AnnotationConfigContextLoader.class)
-public class AIRMETIWWXXMSerializerTest {
+public class AIRMETIWWXXMSerializerTest implements IWXXMConverterTests {
 
     @Autowired
     private AviMessageConverter converter;
 
-    protected AIRMET readFromJSON(final String fileName) throws IOException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new Jdk8Module());
-        objectMapper.registerModule(new JavaTimeModule());
-        try (final InputStream inputStream = this.getClass().getResourceAsStream(fileName)) {
-            if (inputStream != null) {
-                return objectMapper.readValue(inputStream, AIRMETImpl.class);
-            } else {
-                throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
-            }
-        }
+    private <T> ConversionResultAssertion<T> assertAIRMETSerialization(
+            final String jsonFileName,
+            final ConversionSpecification<AIRMET, T> conversionSpecification) throws IOException {
+        assertThat(converter.isSpecificationSupported(conversionSpecification)).isTrue();
+        final AIRMET airmet = readFromJSON(jsonFileName, AIRMETImpl.class);
+        final ConversionResult<T> result = converter.convertMessage(airmet, conversionSpecification);
+        return assertThatConversionResult(result);
     }
 
-    protected String readFromFile(final String fileName) throws IOException {
-        try {
-            return new String(Files.readAllBytes(Paths.get(getClass().getResource(fileName).toURI())));
-        } catch (final URISyntaxException e) {
-            e.printStackTrace();
-            throw new FileNotFoundException("Resource '" + fileName + "' could not be loaded");
-        }
+    private void doTestAIRMETDOMSerialization(final String jsonFileName) throws Exception {
+        assertAIRMETSerialization(jsonFileName, IWXXMConverter.AIRMET_POJO_TO_IWXXM30_DOM).isSuccessful();
     }
 
-    public void doTestAIRMETDOMSerialization(final String fn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM30_DOM));
-        final AIRMET s = readFromJSON(fn);
-        final ConversionResult<Document> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM30_DOM);
-        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
-        for (final ConversionIssue iss : result.getConversionIssues()) {
-            System.err.println("iss:" + iss);
-        }
-        assertTrue(result.getConvertedMessage().isPresent());
+    private void doTestAIRMETStringSerialization(final String jsonFileName, final String iwxxmFileName) throws Exception {
+        assertAIRMETSerialization(jsonFileName, IWXXMConverter.AIRMET_POJO_TO_IWXXM30_STRING)
+                .isSuccessful()
+                .hasXmlMessageEqualTo(readResourceToString(iwxxmFileName));
     }
 
     @Test
     public void dotestAIRMETStringSerialization1() throws Exception {
-        final String s = doTestAIRMETStringSerialization("airmet_iwxxm1.json", "airmet_iwxxm1.IWXXM30");
-        System.err.println(s);
+        doTestAIRMETStringSerialization("airmet_iwxxm1.json", "airmet_iwxxm1.IWXXM30");
     }
 
     @Test
     public void dotestAIRMETMOVING() throws Exception {
-        final String s = doTestAIRMETStringSerialization("airmetMOVING.json", "airmetMOVING.IWXXM30");
-        System.err.println(s);
+        doTestAIRMETStringSerialization("airmetMOVING.json", "airmetMOVING.IWXXM30");
     }
 
     @Test
@@ -130,20 +105,17 @@ public class AIRMETIWWXXMSerializerTest {
 
     @Test
     public void dotestAIRMET_OPER() throws Exception {
-        final String s = doTestAIRMETStringSerialization("airmet_OPER.json", "airmet_OPER.IWXXM30");
-        System.err.println(s);
+        doTestAIRMETStringSerialization("airmet_OPER.json", "airmet_OPER.IWXXM30");
     }
 
     @Test
     public void dotestAIRMET_TEST() throws Exception {
-        final String s = doTestAIRMETStringSerialization("airmet_TEST.json", "airmet_TEST.IWXXM30");
-        System.err.println(s);
+        doTestAIRMETStringSerialization("airmet_TEST.json", "airmet_TEST.IWXXM30");
     }
 
     @Test
     public void dotestAIRMET_EXER() throws Exception {
-        final String s = doTestAIRMETStringSerialization("airmet_EXER.json", "airmet_EXER.IWXXM30");
-        System.err.println(s);
+        doTestAIRMETStringSerialization("airmet_EXER.json", "airmet_EXER.IWXXM30");
     }
 
     @Test
@@ -159,25 +131,6 @@ public class AIRMETIWWXXMSerializerTest {
     @Test
     public void dotestAIRMETDOMSerialization3() throws Exception {
         doTestAIRMETDOMSerialization("airmet2.json");
-    }
-
-    public String doTestAIRMETStringSerialization(final String fn, final String iwxxmFn) throws Exception {
-        assertTrue(converter.isSpecificationSupported(IWXXMConverter.AIRMET_POJO_TO_IWXXM30_STRING));
-        final AIRMET s = readFromJSON(fn);
-        final ConversionResult<String> result = converter.convertMessage(s, IWXXMConverter.AIRMET_POJO_TO_IWXXM30_STRING);
-
-        for (final ConversionIssue iss : result.getConversionIssues()) {
-            System.err.println("iss:" + iss.getMessage() + "===" + iss.getCause());
-        }
-
-        assertSame(ConversionResult.Status.SUCCESS, result.getStatus());
-        System.err.println("XML:\n" + result.getConvertedMessage().get());
-        assertTrue(result.getConvertedMessage().isPresent());
-        assertNotNull(result.getConvertedMessage().get());
-
-        final String expectedXml = readFromFile(iwxxmFn);
-        assertXMLEqualsIgnoringVariables(expectedXml, result.getConvertedMessage().get());
-        return result.getConvertedMessage().orElse(null);
     }
 
 }

@@ -23,9 +23,7 @@ public class IWXXMGenericAviationWeatherMessageConverterTest {
     @Test
     public void scannerIsConfiguredForAllKnownIWXXMMessageTypes() {
         final Map<IWXXMMessageType, GenericAviationWeatherMessageScanner> scanners = iwxxmGenericAviationWeatherMessageConverter.genericAviationMessageScannerMap();
-        assertThat(scanners.keySet())
-                .containsExactlyInAnyOrder(IWXXMMessageType.values());
-        assertThat(scanners)
-                .doesNotContainValue(null);
+        assertThat(scanners.keySet()).containsExactlyInAnyOrder(IWXXMMessageType.values());
+        assertThat(scanners).doesNotContainValue(null);
     }
 }
