@@ -11,30 +11,28 @@ import java.util.regex.Pattern;
  * into version-agnostic XPath expressions using local-name() and contains(namespace-uri(), ...).
  * <p>
  * This allows writing readable XPaths like:
- * <p>
+ * <pre>{@code
  *   ./iwxxm:issueTime/gml:TimeInstant/gml:timePosition
- * </p>
+ * }</pre>
  * Which get converted to:
- * <p>
+ * <pre>{@code
  *   ./*[contains(namespace-uri(),'://icao.int/iwxxm/') and local-name()='issueTime']
  *    /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='TimeInstant']
  *    /*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='timePosition']
- * </p>
+ * }</pre>
  * <p>
  * Also handles namespaced attributes like {@code @gml:id} which get converted to:
- * <p>
+ * <pre>{@code
  *   @*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='id']
- * </p>
+ * }</pre>
  */
 public final class XPathBuilder {
 
     private static final Map<String, String> PREFIX_TO_NS_PATTERN;
-    // Matches prefix:localName after a / in XPath expressions. Predicates like [1] are not matched and remain untouched.
-    private static final Pattern PREFIXED_ELEMENT = Pattern.compile(
-            "/(?<prefix>[a-zA-Z][a-zA-Z0-9]*):(?<localPart>[A-Za-z_][A-Za-z0-9_.-]*)");
-    // Matches @prefix:localName for namespaced attributes
-    private static final Pattern PREFIXED_ATTRIBUTE = Pattern.compile(
-            "@(?<prefix>[a-zA-Z][a-zA-Z0-9]*):(?<localPart>[A-Za-z_][A-Za-z0-9_.-]*)");
+    // Matches either /prefix:localName (elements) or @prefix:localName (attributes)
+    // The "type" group captures "/" or "@" to determine if it's an element or attribute
+    private static final Pattern PREFIXED_NAME = Pattern.compile(
+            "(?<type>[/@])(?<prefix>[a-zA-Z][a-zA-Z0-9]*):(?<localPart>[A-Za-z_][A-Za-z0-9_.-]*)");
 
     static {
         final Map<String, String> map = new HashMap<>();
@@ -64,18 +62,11 @@ public final class XPathBuilder {
      * @throws IllegalArgumentException if the XPath contains an unknown namespace prefix
      */
     public static String toVersionAgnostic(final String readableXPath) {
-        // First handle elements
-        String result = replacePattern(readableXPath, PREFIXED_ELEMENT, "/*");
-        // Then handle attributes
-        result = replacePattern(result, PREFIXED_ATTRIBUTE, "@*");
-        return result;
-    }
-
-    private static String replacePattern(final String input, final Pattern pattern, final String wildcardPrefix) {
-        final Matcher matcher = pattern.matcher(input);
+        final Matcher matcher = PREFIXED_NAME.matcher(readableXPath);
         // TODO: Replace StringBuffer with StringBuilder when moving to Java 9+
         final StringBuffer result = new StringBuffer();
         while (matcher.find()) {
+            final String type = matcher.group("type");
             final String prefix = matcher.group("prefix");
             final String nsPattern = PREFIX_TO_NS_PATTERN.get(prefix);
             if (nsPattern == null) {
@@ -83,6 +74,8 @@ public final class XPathBuilder {
                         + ". Known prefixes: " + PREFIX_TO_NS_PATTERN.keySet());
             }
             final String localName = matcher.group("localPart");
+            // For elements (/), use /*; for attributes (@), use @*
+            final String wildcardPrefix = "/".equals(type) ? "/*" : "@*";
             final String replacement = wildcardPrefix + "[contains(namespace-uri(),'" + nsPattern + "') and local-name()='" + localName + "']";
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
