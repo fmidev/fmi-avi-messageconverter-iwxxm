@@ -30,7 +30,7 @@ public final class XPathBuilder {
 
     private static final Map<String, String> PREFIX_TO_NS_PATTERN;
     // Matches either /prefix:localName (elements) or @prefix:localName (attributes)
-    // The "type" group captures "/" or "@" to determine if it's an element or attribute
+    // The type group captures "/" or "@" to determine if it's an element or attribute
     private static final Pattern PREFIXED_NAME = Pattern.compile(
             "(?<type>[/@])(?<prefix>[a-zA-Z][a-zA-Z0-9]*):(?<localPart>[A-Za-z_][A-Za-z0-9_.-]*)");
 
@@ -74,7 +74,6 @@ public final class XPathBuilder {
                         + ". Known prefixes: " + PREFIX_TO_NS_PATTERN.keySet());
             }
             final String localName = matcher.group("localPart");
-            // For elements (/), use /*; for attributes (@), use @*
             final String wildcardPrefix = "/".equals(type) ? "/*" : "@*";
             final String replacement = wildcardPrefix + "[contains(namespace-uri(),'" + nsPattern + "') and local-name()='" + localName + "']";
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
