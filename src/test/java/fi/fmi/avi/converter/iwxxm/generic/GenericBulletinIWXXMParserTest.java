@@ -51,10 +51,8 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf/iwxxm-21-taf-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
-        assertThatConversionResult(result).isSuccessful();
-
-        assertFirstMessage(result);
-        assertThat(result.getConvertedMessage().get().getHeading().getOriginalCollectIdentifier())
+        final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(bulletin.getHeading().getOriginalCollectIdentifier())
                 .hasValue("A_LTFI31EFKL301115_C_EFKL_201902011315--.xml");
     }
 
