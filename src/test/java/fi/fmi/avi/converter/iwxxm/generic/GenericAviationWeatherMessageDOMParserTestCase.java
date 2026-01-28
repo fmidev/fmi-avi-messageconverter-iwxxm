@@ -17,6 +17,7 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
     private final boolean translated;
     private final ReportStatus reportStatus;
     private final boolean nil;
+    private final String gmlId;
     private final String issueTime;
     private final String observationTime;
     private final String validityStart;
@@ -32,6 +33,7 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         this.translated = builder.translated;
         this.reportStatus = builder.reportStatus;
         this.nil = builder.nil;
+        this.gmlId = builder.gmlId;
         this.issueTime = builder.issueTime;
         this.observationTime = builder.observationTime;
         this.validityStart = builder.validityStart;
@@ -78,6 +80,14 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
 
     public boolean isNil() {
         return nil;
+    }
+
+    public boolean hasGmlId() {
+        return gmlId != null;
+    }
+
+    public String getGmlId() {
+        return gmlId;
     }
 
     public String getIssueTime() {
@@ -173,6 +183,7 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
         private ConversionHints hints;
         private boolean translated;
         private ReportStatus reportStatus = ReportStatus.NORMAL;
+        private String gmlId;
         private String issueTime;
         private String observationTime;
         private String validityStart;
@@ -215,6 +226,16 @@ public final class GenericAviationWeatherMessageDOMParserTestCase {
 
         public Builder reportStatus(final ReportStatus reportStatus) {
             this.reportStatus = reportStatus;
+            return this;
+        }
+
+        public Builder gmlId(final String gmlId) {
+            this.gmlId = gmlId;
+            return this;
+        }
+
+        public Builder noGmlId() {
+            this.gmlId = null;
             return this;
         }
 

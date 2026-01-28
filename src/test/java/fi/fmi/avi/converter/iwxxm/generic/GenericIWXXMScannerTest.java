@@ -38,28 +38,8 @@ public class GenericIWXXMScannerTest implements IWXXMConverterTests {
                         XPathBuilder.text("./iwxxm:issueTime/gml:TimeInstant/gml:timePosition")
                 );
             }
-            return Collections.emptyList();
-        };
-
-        final GenericIWXXMScanner scanner = GenericIWXXMScanner.builder()
-                .fieldProvider(fieldProvider)
-                .build();
-
-        final GenericAviationWeatherMessageImpl.Builder builder = GenericAviationWeatherMessageImpl.builder();
-        final IssueList issues = scanner.collectMessage(rootElement, xpath, builder);
-
-        assertThat(builder.getIssueTime()).isPresent();
-        assertThat(issues).isEmpty();
-    }
-
-    @Test
-    public void first_expression_empty_second_succeeds() {
-        final FieldXPathProvider fieldProvider = field -> {
-            if (field == IWXXMField.ISSUE_TIME) {
-                return Arrays.asList(
-                        XPathBuilder.text("./iwxxm:nonExistent/gml:TimeInstant/gml:timePosition"),
-                        XPathBuilder.text("./iwxxm:issueTime/gml:TimeInstant/gml:timePosition")
-                );
+            if (field == IWXXMField.GML_ID) {
+                return Collections.singletonList(XPathBuilder.text("@gml:id"));
             }
             return Collections.emptyList();
         };
@@ -72,6 +52,34 @@ public class GenericIWXXMScannerTest implements IWXXMConverterTests {
         final IssueList issues = scanner.collectMessage(rootElement, xpath, builder);
 
         assertThat(builder.getIssueTime()).isPresent();
+        assertThat(builder.getGmlId()).isPresent();
+        assertThat(issues).isEmpty();
+    }
+
+    @Test
+    public void first_expression_empty_second_succeeds() {
+        final FieldXPathProvider fieldProvider = field -> {
+            if (field == IWXXMField.ISSUE_TIME) {
+                return Arrays.asList(
+                        XPathBuilder.text("./iwxxm:nonExistent/gml:TimeInstant/gml:timePosition"),
+                        XPathBuilder.text("./iwxxm:issueTime/gml:TimeInstant/gml:timePosition")
+                );
+            }
+            if (field == IWXXMField.GML_ID) {
+                return Collections.singletonList(XPathBuilder.text("@gml:id"));
+            }
+            return Collections.emptyList();
+        };
+
+        final GenericIWXXMScanner scanner = GenericIWXXMScanner.builder()
+                .fieldProvider(fieldProvider)
+                .build();
+
+        final GenericAviationWeatherMessageImpl.Builder builder = GenericAviationWeatherMessageImpl.builder();
+        final IssueList issues = scanner.collectMessage(rootElement, xpath, builder);
+
+        assertThat(builder.getIssueTime()).isPresent();
+        assertThat(builder.getGmlId()).isPresent();
         assertThat(issues).isEmpty();
     }
 
@@ -83,6 +91,9 @@ public class GenericIWXXMScannerTest implements IWXXMConverterTests {
                         XPathBuilder.text("./iwxxm:nonExistent1/gml:TimeInstant/gml:timePosition"),
                         XPathBuilder.text("./iwxxm:nonExistent2/gml:TimeInstant/gml:timePosition")
                 );
+            }
+            if (field == IWXXMField.GML_ID) {
+                return Collections.singletonList(XPathBuilder.text("@gml:id"));
             }
             return Collections.emptyList();
         };
@@ -110,6 +121,9 @@ public class GenericIWXXMScannerTest implements IWXXMConverterTests {
                         "this[is[invalid[xpath2",
                         "this[is[invalid[xpath3"
                 );
+            }
+            if (field == IWXXMField.GML_ID) {
+                return Collections.singletonList(XPathBuilder.text("@gml:id"));
             }
             return Collections.emptyList();
         };

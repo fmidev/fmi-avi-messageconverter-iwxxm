@@ -5,6 +5,7 @@ package fi.fmi.avi.converter.iwxxm.generic;
  * Each field has a {@link DataType} that determines how the XPath result should be processed.
  */
 public enum IWXXMField {
+    GML_ID(DataType.STRING),
     ISSUE_TIME(DataType.STRING),
     OBSERVATION_TIME(DataType.STRING),
     VALID_TIME(DataType.NODE),
