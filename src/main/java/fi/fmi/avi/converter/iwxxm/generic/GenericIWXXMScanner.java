@@ -113,6 +113,34 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
         }
     }
 
+    private void collectGmlId(final Element element,
+                              final XPath xpath,
+                              final GenericAviationWeatherMessageImpl.Builder builder,
+                              final IssueList issues) {
+        final XPathEvaluationResult<String> result = evaluate(IWXXMField.GML_ID, expr -> {
+            try {
+                final String value = xpath.compile(expr).evaluate(element);
+                if (value != null && !value.isEmpty()) {
+                    return XPathEvaluationResult.of(value);
+                }
+                return XPathEvaluationResult.empty();
+            } catch (final XPathExpressionException exception) {
+                return XPathEvaluationResult.fail(exception);
+            }
+        });
+        if (result.hasValue()) {
+            builder.setGmlId(result.getOrThrow());
+        } else if (result.isFailed()) {
+            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
+                    ConversionIssue.Type.OTHER,
+                    "Unable to parse gml:id", result.getException().orElse(null)));
+        } else {
+            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
+                    ConversionIssue.Type.MISSING_DATA,
+                    "No gml:id found for IWXXM message"));
+        }
+    }
+
     /**
      * Collects report status from IWXXM message, trying @reportStatus (3.0+) first,
      * then falling back to @status (2.1) with direct string mapping.
@@ -197,6 +225,7 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                                     final GenericAviationWeatherMessageImpl.Builder builder) {
         final IssueList issues = new IssueList();
 
+        collectGmlId(featureElement, xpath, builder, issues);
         collectReportStatus(featureElement, xpath, builder, issues, requireReportStatus);
         collectNilStatus(featureElement, xpath, builder, issues);
         collectTimeInstantUsingFieldProvider(featureElement, xpath, issues,

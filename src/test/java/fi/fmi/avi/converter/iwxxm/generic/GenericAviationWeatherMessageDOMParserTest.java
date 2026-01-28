@@ -50,6 +50,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 taf().fileName("iwxxm-21-taf.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
                         .translated()
+                        .gmlId("taf-d285e06a-6786-448b-af15-128c303e1aa0")
                         .issueTime("2017-07-30T11:30Z")
                         .validityPeriod("2017-07-30T12:00Z", "2017-07-31T12:00Z")
                         .aerodrome("EETN")
@@ -58,6 +59,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 taf().fileName("iwxxm-21-taf-cancel.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
                         .reportStatus(ReportStatus.AMENDMENT)
+                        .gmlId("taf-YUDO-20120816150000Z")
                         .issueTime("2012-08-16T15:00Z")
                         .validityPeriod("2012-08-16T15:00Z", "2012-08-17T00:00Z")
                         .aerodrome("YUDO")
@@ -65,6 +67,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-21-taf-missing.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
+                        .gmlId("taf-YUDO-20120816150000Z")
                         .issueTime("2012-08-16T15:00Z")
                         .noValidityPeriod()
                         .aerodrome("YUDA")
@@ -73,6 +76,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-21-taf-nil.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
+                        .gmlId("taf-YUDO-201208160000Z")
                         .issueTime("2012-08-16T00:00Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
@@ -81,6 +85,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-30-taf-nil.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .gmlId("uuid.ae3b123f-4fa1-447e-aa0e-5a950c8abff2")
                         .issueTime("2012-08-16T00:00Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
@@ -89,6 +94,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-30-taf-A5-1.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .gmlId("uuid.d6a85870-f32e-4ea8-8502-c7d9be7e0144")
                         .issueTime("2012-08-15T18:00Z")
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                         .aerodrome("YUDO")
@@ -96,6 +102,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-2021-2-taf-A5-1.xml")
                         .namespace(IWXXM_2021_2_NAMESPACE)
+                        .gmlId("uuid.d6a85870-f32e-4ea8-8502-c7d9be7e0144")
                         .issueTime("2012-08-15T18:00Z")
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                         .aerodrome("YUDO")
@@ -103,6 +110,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-2023-1-taf-A5-1.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
+                        .gmlId("uuid.d6a85870-f32e-4ea8-8502-c7d9be7e0144")
                         .issueTime("2012-08-15T18:00Z")
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                         .aerodrome("YUDO")
@@ -110,6 +118,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-2025-2-taf-A5-1.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.d6a85870-f32e-4ea8-8502-c7d9be7e0144")
                         .issueTime("2012-08-15T18:00Z")
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                         .aerodrome("YUDO")
@@ -117,6 +126,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-2025-2-taf-nil.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.taf-nil-yudo-20120815180000")
                         .issueTime("2012-08-15T18:00Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
@@ -126,6 +136,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 // TAF error cases
                 taf().fileName("iwxxm-21-taf-unknown-status.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
+                        .gmlId("taf-d285e06a-6786-448b-af15-128c303e1aa0")
                         .issueTime("2017-07-30T11:30Z")
                         .validityPeriod("2017-07-30T12:00Z", "2017-07-31T12:00Z")
                         .aerodrome("EETN")
@@ -134,6 +145,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-2025-2-taf-invalid-issue-time.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.test-invalid-issue-time")
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                         .aerodrome("YUDO")
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.OTHER, "issue time")
@@ -141,6 +153,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-2025-2-taf-missing-issue-time.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.d6a85870-f32e-4ea8-8502-c7d9be7e0144")
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                         .aerodrome("YUDO")
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "issue time")
@@ -148,6 +161,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-2025-2-taf-invalid-validity-time.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.test-invalid-validity")
                         .issueTime("2012-08-15T18:00Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
@@ -156,6 +170,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-2025-2-taf-missing-aerodrome.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.test-missing-aerodrome")
                         .issueTime("2012-08-15T18:00Z")
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "location indicator")
@@ -163,6 +178,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-2025-2-taf-namespaces-alt-prefix.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.d6a85870-f32e-4ea8-8502-c7d9be7e0144")
                         .issueTime("2012-08-15T18:00Z")
                         .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
                         .aerodrome("YUDO")
@@ -170,6 +186,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-2025-2-taf-A5-2.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.dfbfe27c-3478-4efc-9800-124b90030e39")
                         .issueTime("2012-08-16T15:00:00Z")
                         .validityPeriod("2012-08-16T00:00:00Z", "2012-08-16T18:00:00Z")
                         .aerodrome("YUDO")
@@ -178,6 +195,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 taf().fileName("iwxxm-2025-2-taf-multiple-valid-periods.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.d6a85870-f32e-4ea8-8502-c7d9be7e0144")
                         .issueTime("2012-08-15T18:00:00Z")
                         .validityPeriod("2012-08-16T00:00:00Z", "2012-08-16T18:00:00Z")
                         .aerodrome("YUDO")
@@ -186,6 +204,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 // SIGMET tests
                 sigmet().fileName("iwxxm-21-sigmet.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
+                        .gmlId("sigmet-YUCC-20120825160000Z")
                         .issueTime("2012-08-25T16:00Z")
                         .validityPeriod("2012-08-25T16:00:00Z", "2012-08-25T22:00:00Z")
                         .sigmetLocationIndicators("YUCC", "YUSO", "YUDO")
@@ -193,6 +212,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 sigmet().fileName("iwxxm-21-sigmet-with-empty-translationid.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
+                        .gmlId("sigmet-YUCC-20120825160000Z")
                         .issueTime("2012-08-25T16:00Z")
                         .validityPeriod("2012-08-25T16:00:00Z", "2012-08-25T22:00:00Z")
                         .sigmetLocationIndicators("YUCC", "YUSO", "YUDO")
@@ -200,6 +220,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 sigmet().fileName("iwxxm-30-sigmet-A6-1a-TS.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .gmlId("uuid.8debfaca-7116-4b32-9378-b472ca64e823")
                         .issueTime("2012-08-10T12:00Z")
                         .validityPeriod("2012-08-10T12:00Z", "2012-08-10T16:00Z")
                         .sigmetLocationIndicators("YUDD", "YUDD", "YUSO")
@@ -207,6 +228,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 sigmet().fileName("iwxxm-30-sigmet-A6-2-TC.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .gmlId("uuid.f12194be-0d82-49ad-ad97-41e46f724dec")
                         .issueTime("2012-08-25T16:00Z")
                         .validityPeriod("2012-08-25T16:00Z", "2012-08-25T22:00Z")
                         .sigmetLocationIndicators("YUCC", "YUCC", "YUDO")
@@ -214,6 +236,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 sigmet().fileName("iwxxm-2021-2-sigmet-A6-1a-TS.xml")
                         .namespace(IWXXM_2021_2_NAMESPACE)
+                        .gmlId("uuid.8debfaca-7116-4b32-9378-b472ca64e823")
                         .issueTime("2012-08-10T12:00Z")
                         .validityPeriod("2012-08-10T12:00Z", "2012-08-10T16:00Z")
                         .sigmetLocationIndicators("YUDD", "YUDD", "YUSO")
@@ -221,6 +244,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 sigmet().fileName("iwxxm-2021-2-sigmet-A6-2-TC.xml")
                         .namespace(IWXXM_2021_2_NAMESPACE)
+                        .gmlId("uuid.f12194be-0d82-49ad-ad97-41e46f724dec")
                         .issueTime("2012-08-25T16:00Z")
                         .validityPeriod("2012-08-25T16:00Z", "2012-08-25T22:00Z")
                         .sigmetLocationIndicators("YUCC", "YUCC", "YUDO")
@@ -228,6 +252,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 sigmet().fileName("iwxxm-2023-1-sigmet-A6-1a-TS.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
+                        .gmlId("uuid.8debfaca-7116-4b32-9378-b472ca64e823")
                         .issueTime("2012-08-10T12:00Z")
                         .validityPeriod("2012-08-10T12:00Z", "2012-08-10T16:00Z")
                         .sigmetLocationIndicators("YUDD", "YUDD", "YUSO")
@@ -235,6 +260,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 sigmet().fileName("iwxxm-2023-1-sigmet-A6-2-TC.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
+                        .gmlId("uuid.f12194be-0d82-49ad-ad97-41e46f724dec")
                         .issueTime("2012-08-25T16:00Z")
                         .validityPeriod("2012-08-25T16:00Z", "2012-08-25T22:00Z")
                         .sigmetLocationIndicators("YUCC", "YUCC", "YUDO")
@@ -242,6 +268,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 sigmet().fileName("iwxxm-2025-2-sigmet-A6-1a-TS.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.8debfaca-7116-4b32-9378-b472ca64e823")
                         .issueTime("2012-08-10T12:00Z")
                         .validityPeriod("2012-08-10T12:00Z", "2012-08-10T16:00Z")
                         .sigmetLocationIndicators("YUDD", "YUDD", "YUSO")
@@ -249,6 +276,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 sigmet().fileName("iwxxm-2025-2-sigmet-A6-2-TC.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.f12194be-0d82-49ad-ad97-41e46f724dec")
                         .issueTime("2012-08-25T16:00Z")
                         .validityPeriod("2012-08-25T16:00Z", "2012-08-25T22:00Z")
                         .sigmetLocationIndicators("YUCC", "YUCC", "YUDO")
@@ -256,6 +284,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 sigmet().fileName("iwxxm-2025-2-sigmet-VA-EGGX.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.64c3912b-b09a-494a-8731-321f28b759e4")
                         .issueTime("2018-07-25T16:00:00Z")
                         .validityPeriod("2018-07-25T16:00Z", "2018-07-25T22:00Z")
                         .sigmetLocationIndicators("EGGX", "EGGX", "EGRR")
@@ -264,6 +293,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 // SIGMET error cases
                 sigmet().fileName("iwxxm-2025-2-sigmet-missing-mwo.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.test-missing-mwo")
                         .issueTime("2012-08-10T12:00Z")
                         .validityPeriod("2012-08-10T12:00Z", "2012-08-10T16:00Z")
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "ORIGINATING_METEOROLOGICAL_WATCH_OFFICE")
@@ -272,6 +302,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 // AIRMET tests
                 airmet().fileName("iwxxm-21-airmet.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
+                        .gmlId("airmet-YUDD-201405151520Z")
                         .issueTime("2014-05-15T15:20Z")
                         .validityPeriod("2014-05-15T15:20Z", "2014-05-15T18:00Z")
                         .sigmetLocationIndicators("YUDD", "YUCC", "YUDD")
@@ -279,6 +310,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 airmet().fileName("iwxxm-30-airmet.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .gmlId("uuid.69a2497b-193c-47bf-a6bd-1cc71acbc8e5")
                         .issueTime("2014-05-15T15:20Z")
                         .validityPeriod("2014-05-15T15:20Z", "2014-05-15T18:00Z")
                         .sigmetLocationIndicators("YUDD", "YUCC", "YUDD")
@@ -286,6 +318,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 airmet().fileName("iwxxm-2021-2-airmet-A6-1a-TS.xml")
                         .namespace(IWXXM_2021_2_NAMESPACE)
+                        .gmlId("uuid.69a2497b-193c-47bf-a6bd-1cc71acbc8e5")
                         .issueTime("2014-05-15T15:20Z")
                         .validityPeriod("2014-05-15T15:20Z", "2014-05-15T18:00Z")
                         .sigmetLocationIndicators("YUDD", "YUCC", "YUDD")
@@ -293,6 +326,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 airmet().fileName("iwxxm-2023-1-airmet-A6-1a-TS.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
+                        .gmlId("uuid.69a2497b-193c-47bf-a6bd-1cc71acbc8e5")
                         .issueTime("2014-05-15T15:20Z")
                         .validityPeriod("2014-05-15T15:20Z", "2014-05-15T18:00Z")
                         .sigmetLocationIndicators("YUDD", "YUDD", "YUDD")
@@ -300,6 +334,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 airmet().fileName("iwxxm-2025-2-airmet-A6-1a-TS.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.69a2497b-193c-47bf-a6bd-1cc71acbc8e5")
                         .issueTime("2014-05-15T15:20Z")
                         .validityPeriod("2014-05-15T15:20Z", "2014-05-15T18:00Z")
                         .sigmetLocationIndicators("YUDD", "YUDD", "YUDD")
@@ -308,6 +343,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 // METAR tests
                 metar().fileName("iwxxm-21-metar.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
+                        .gmlId("metar-YUDO-20120822163000Z")
                         .issueTime("2012-08-22T16:30Z")
                         .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
@@ -316,6 +352,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 metar().fileName("iwxxm-21-metar-nil.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
+                        .gmlId("metar-YUDO-20120822163000Z")
                         .issueTime("2012-08-22T16:30Z")
                         .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
@@ -325,6 +362,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 metar().fileName("iwxxm-30-metar-A3-1.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .gmlId("uuid.510df5de-fefb-4406-bafd-faab35333ec0")
                         .issueTime("2012-08-22T16:30Z")
                         .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
@@ -333,6 +371,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 metar().fileName("iwxxm-30-metar-nil.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .gmlId("uuid.15ff064a-6dc4-41e0-bafa-8ee78ed4dc25")
                         .issueTime("2012-08-22T16:30Z")
                         .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
@@ -342,6 +381,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 metar().fileName("iwxxm-2021-2-metar-A3-1.xml")
                         .namespace(IWXXM_2021_2_NAMESPACE)
+                        .gmlId("uuid.510df5de-fefb-4406-bafd-faab35333ec0")
                         .issueTime("2012-08-22T16:30Z")
                         .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
@@ -350,6 +390,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 metar().fileName("iwxxm-2023-1-metar-A3-1.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
+                        .gmlId("uuid.510df5de-fefb-4406-bafd-faab35333ec0")
                         .issueTime("2012-08-22T16:30Z")
                         .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
@@ -358,6 +399,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 metar().fileName("iwxxm-2025-2-metar-A3-1.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.510df5de-fefb-4406-bafd-faab35333ec0")
                         .issueTime("2012-08-22T16:30Z")
                         .observationTime("2012-08-22T16:25Z")
                         .noValidityPeriod()
@@ -366,6 +408,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 metar().fileName("iwxxm-2025-2-metar-invalid-observation-time.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.510df5de-fefb-4406-bafd-faab35333ec0")
                         .issueTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
@@ -374,6 +417,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 metar().fileName("iwxxm-2025-2-metar-missing-observation-time.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.510df5de-fefb-4406-bafd-faab35333ec0")
                         .issueTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
                         .aerodrome("YUDO")
@@ -382,6 +426,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 metar().fileName("iwxxm-2025-2-metar-nil.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.15ff064a-6dc4-41e0-bafa-8ee78ed4dc25")
                         .issueTime("2012-08-22T16:30Z")
                         .observationTime("2012-08-22T16:30Z")
                         .noValidityPeriod()
@@ -392,6 +437,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 // SPECI tests
                 speci().fileName("iwxxm-21-speci-A3-2.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
+                        .gmlId("speci-YUDO-20120822163000Z")
                         .issueTime("2012-08-15T11:15Z")
                         .observationTime("2012-08-15T11:15Z")
                         .noValidityPeriod()
@@ -400,6 +446,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 speci().fileName("iwxxm-30-speci-A3-2.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .gmlId("uuid.8ca15300-d667-4364-86a1-ab8bec9ba833")
                         .issueTime("2012-08-15T11:15Z")
                         .observationTime("2012-08-15T11:15Z")
                         .noValidityPeriod()
@@ -408,6 +455,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 speci().fileName("iwxxm-2021-2-speci-A3-2.xml")
                         .namespace(IWXXM_2021_2_NAMESPACE)
+                        .gmlId("uuid.8ca15300-d667-4364-86a1-ab8bec9ba833")
                         .issueTime("2012-08-15T11:15Z")
                         .observationTime("2012-08-15T11:15Z")
                         .noValidityPeriod()
@@ -416,6 +464,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 speci().fileName("iwxxm-2023-1-speci-A3-2.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
+                        .gmlId("uuid.8ca15300-d667-4364-86a1-ab8bec9ba833")
                         .issueTime("2012-08-15T11:15Z")
                         .observationTime("2012-08-15T11:15Z")
                         .noValidityPeriod()
@@ -424,6 +473,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 speci().fileName("iwxxm-2025-2-speci-A3-2.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.8ca15300-d667-4364-86a1-ab8bec9ba833")
                         .issueTime("2012-08-15T11:15Z")
                         .observationTime("2012-08-15T11:10Z")
                         .noValidityPeriod()
@@ -432,6 +482,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 speci().fileName("iwxxm-2025-2-speci-nil.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.speci-nil-yudo-20120822164500")
                         .issueTime("2012-08-22T16:45Z")
                         .observationTime("2012-08-22T16:45Z")
                         .noValidityPeriod()
@@ -442,6 +493,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 // Space Weather Advisory tests
                 swx().fileName("iwxxm-30-spacewx-A2-3.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .gmlId("uuid.dea6234c-f57f-4ccf-be7a-bb00a0265af2")
                         .reportStatus(ReportStatus.AMENDMENT)
                         .issueTime("2016-11-08T01:00Z")
                         .noValidityPeriod()
@@ -450,6 +502,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 swx().fileName("iwxxm-2021-2-spacewx-A2-3.xml")
                         .namespace(IWXXM_2021_2_NAMESPACE)
+                        .gmlId("uuid.dea6234c-f57f-4ccf-be7a-bb00a0265af2")
                         .issueTime("2016-11-08T01:00Z")
                         .noValidityPeriod()
                         .issuingCentre("DONLON")
@@ -457,6 +510,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 swx().fileName("iwxxm-2023-1-spacewx-A2-3.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
+                        .gmlId("uuid.dea6234c-f57f-4ccf-be7a-bb00a0265af2")
                         .issueTime("2016-11-08T01:00Z")
                         .noValidityPeriod()
                         .issuingCentre("DONLON")
@@ -464,6 +518,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 swx().fileName("iwxxm-2025-2-spacewx-A7-3.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.dea6234c-f57f-4ccf-be7a-bb00a0265af2")
                         .issueTime("2020-11-08T01:00Z")
                         .noValidityPeriod()
                         .issuingCentre("DONLON")
@@ -472,6 +527,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 // Space Weather Advisory error cases
                 swx().fileName("iwxxm-2025-2-spacewx-missing-issuing-centre.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.test-missing-issuing-centre")
                         .issueTime("2016-11-08T01:00Z")
                         .noValidityPeriod()
                         .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "ISSUING_CENTRE")
@@ -480,6 +536,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 // Tropical Cyclone Advisory tests
                 tca().fileName("iwxxm-21-tc-advisory-A2-2.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
+                        .gmlId("ID000")
                         .issueTime("2004-09-25T16:00:00Z")
                         .noValidityPeriod()
                         .issuingCentre("YUFO")
@@ -487,6 +544,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 tca().fileName("iwxxm-30-tc-advisory-A2-2.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .gmlId("uuid.217b27d6-fbc0-499b-b58e-4ee062c86cd4")
                         .reportStatus(ReportStatus.CORRECTION)
                         .issueTime("2004-09-25T16:00:00Z")
                         .noValidityPeriod()
@@ -495,6 +553,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 tca().fileName("iwxxm-2021-2-tc-advisory-A2-2.xml")
                         .namespace(IWXXM_2021_2_NAMESPACE)
+                        .gmlId("uuid.217b27d6-fbc0-499b-b58e-4ee062c86cd4")
                         .issueTime("2004-09-25T16:00:00Z")
                         .noValidityPeriod()
                         .issuingCentre("YUFO")
@@ -502,6 +561,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 tca().fileName("iwxxm-2023-1-tc-advisory-A2-2.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
+                        .gmlId("uuid.217b27d6-fbc0-499b-b58e-4ee062c86cd4")
                         .issueTime("2004-09-25T16:00:00Z")
                         .noValidityPeriod()
                         .issuingCentre("YUFO")
@@ -509,6 +569,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 tca().fileName("iwxxm-2025-2-tc-advisory-A2-2.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.217b27d6-fbc0-499b-b58e-4ee062c86cd4")
                         .issueTime("2004-09-25T19:00:00Z")
                         .noValidityPeriod()
                         .issuingCentre("YUFO")
@@ -517,6 +578,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 // Volcanic Ash Advisory tests
                 vaa().fileName("iwxxm-21-va-advisory-A2-1.xml")
                         .namespace(IWXXM_2_1_NAMESPACE)
+                        .gmlId("ID000")
                         .issueTime("2008-09-23T01:30:00Z")
                         .noValidityPeriod()
                         .issuingCentre("TOKYO")
@@ -524,6 +586,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 vaa().fileName("iwxxm-30-va-advisory-A2-1.xml")
                         .namespace(IWXXM_3_0_NAMESPACE)
+                        .gmlId("uuid.fb4861a8-0438-4f17-b8a7-efc13de58dec")
                         .reportStatus(ReportStatus.CORRECTION)
                         .issueTime("2008-09-23T01:30:00Z")
                         .noValidityPeriod()
@@ -532,6 +595,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 vaa().fileName("iwxxm-2021-2-va-advisory-A2-1.xml")
                         .namespace(IWXXM_2021_2_NAMESPACE)
+                        .gmlId("uuid.fb4861a8-0438-4f17-b8a7-efc13de58dec")
                         .issueTime("2008-09-23T01:30:00Z")
                         .noValidityPeriod()
                         .issuingCentre("TOKYO")
@@ -539,6 +603,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 vaa().fileName("iwxxm-2023-1-va-advisory-A2-1.xml")
                         .namespace(IWXXM_2023_1_NAMESPACE)
+                        .gmlId("uuid.fb4861a8-0438-4f17-b8a7-efc13de58dec")
                         .issueTime("2008-09-23T01:30:00Z")
                         .noValidityPeriod()
                         .issuingCentre("TOKYO")
@@ -546,6 +611,7 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
 
                 vaa().fileName("iwxxm-2025-2-va-advisory-A7-2.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
+                        .gmlId("uuid.fb4861a8-0438-4f17-b8a7-efc13de58dec")
                         .issueTime("2024-09-23T01:30:00Z")
                         .noValidityPeriod()
                         .issuingCentre("TOKYO")
@@ -639,6 +705,12 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(testCase.getNamespace())
                 .hasMessageType(testCase.getMessageType());
+
+        if (testCase.hasGmlId()) {
+            assertion.hasGmlId(testCase.getGmlId());
+        } else {
+            assertion.hasNoGmlId();
+        }
 
         if (testCase.hasReportStatus()) {
             assertion.hasReportStatus(testCase.getReportStatus());

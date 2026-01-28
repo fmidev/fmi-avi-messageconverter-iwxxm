@@ -1,16 +1,19 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class AbstractFieldXPathProvider implements FieldXPathProvider {
 
     private final Map<IWXXMField, List<String>> expressions;
 
     protected AbstractFieldXPathProvider(final Map<IWXXMField, List<String>> expressions) {
-        this.expressions = expressions;
+        this.expressions = withCommonFields(expressions);
+    }
+
+    private static Map<IWXXMField, List<String>> withCommonFields(final Map<IWXXMField, List<String>> expressions) {
+        final Map<IWXXMField, List<String>> merged = new EnumMap<>(expressions);
+        put(merged, IWXXMField.GML_ID, "@gml:id");
+        return Collections.unmodifiableMap(merged);
     }
 
     /**
