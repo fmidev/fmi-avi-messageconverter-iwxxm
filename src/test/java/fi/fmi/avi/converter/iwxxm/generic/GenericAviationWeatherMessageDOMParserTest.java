@@ -126,6 +126,15 @@ public class GenericAviationWeatherMessageDOMParserTest implements IWXXMConverte
                         .aerodrome("YUDO")
                         .build(),
 
+                taf().fileName("iwxxm-2025-2-taf-no-gml-id.xml")
+                        .namespace(IWXXM_2025_2_NAMESPACE)
+                        .noGmlId()
+                        .issueTime("2012-08-15T18:00Z")
+                        .validityPeriod("2012-08-16T00:00Z", "2012-08-16T18:00Z")
+                        .aerodrome("YUDO")
+                        .expectedIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA, "gml:id")
+                        .build(),
+
                 taf().fileName("iwxxm-2025-2-taf-nil.xml")
                         .namespace(IWXXM_2025_2_NAMESPACE)
                         .gmlId("uuid.taf-nil-yudo-20120815180000")

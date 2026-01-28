@@ -87,13 +87,11 @@ public final class GenericMessageAssertion {
     }
 
     public GenericMessageAssertion hasGmlId(final String expected) {
-        assertMessageNotNull();
         assertThat(message.getGmlId()).as("gmlId").hasValue(expected);
         return this;
     }
 
     public GenericMessageAssertion hasNoGmlId() {
-        assertMessageNotNull();
         assertThat(message.getGmlId()).as("gmlId").isEmpty();
         return this;
     }
