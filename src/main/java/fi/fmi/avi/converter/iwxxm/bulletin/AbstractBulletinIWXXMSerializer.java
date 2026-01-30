@@ -19,13 +19,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @param <S> bulletin content model type
@@ -97,41 +92,8 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
                     }
                 }
 
-                final String collectIdentifier;
-                if (input.getCollectIdentifier().isPresent()) {
-                    collectIdentifier = input.getCollectIdentifier().get();
-                } else {
-                    final GTSExchangeFileInfo.Builder info = new GTSExchangeFileInfo.Builder()//
-                            .setPFlag(GTSExchangeFileInfo.GTSExchangePFlag.A)//
-                            .setHeading(input.getHeading())//
-                            .setMetadataFile(false)//
-                            .setFileType(GTSExchangeFileInfo.GTSExchangeFileType.XML);
-                    if (input.getTimeStamp().isPresent()) {
-                        final ZonedDateTime timeStamp = input.getTimeStamp().get();
-                        final Set<ChronoField> fieldsToInclude = input.getTimeStampFields();
-                        if (fieldsToInclude.contains(ChronoField.YEAR)) {
-                            info.setTimeStampYear(timeStamp.getYear());
-                        }
-                        if (fieldsToInclude.contains(ChronoField.MONTH_OF_YEAR)) {
-                            info.setTimeStampMonth(timeStamp.getMonth());
-                        }
-                        if (fieldsToInclude.contains(ChronoField.DAY_OF_MONTH)) {
-                            info.setTimeStampDay(timeStamp.getDayOfMonth());
-                        }
-                        if (fieldsToInclude.contains(ChronoField.HOUR_OF_DAY)) {
-                            info.setTimeStampHour(timeStamp.getHour());
-                        }
-                        if (fieldsToInclude.contains(ChronoField.MINUTE_OF_HOUR)) {
-                            info.setTimeStampMinute(timeStamp.getMinute());
-                        }
-                        if (fieldsToInclude.contains(ChronoField.SECOND_OF_MINUTE)) {
-                            info.setTimeStampSecond(timeStamp.getSecond());
-                        }
-                    } else {
-                        info.setTimeStamp(LocalDateTime.now(ZoneId.of("UTC")));
-                    }
-                    collectIdentifier = info.build().toGTSExchangeFilename();
-                }
+                final String collectIdentifier = input.getCollectIdentifier()
+                        .orElseGet(() -> GTSExchangeFileInfo.Builder.from(input).build().toGTSExchangeFilename());
                 final Element identifier = dom.createElementNS(IWXXMNamespaceContext.getDefaultURI("collect"), "bulletinIdentifier");
                 identifier.setPrefix("collect");
                 identifier.setTextContent(collectIdentifier);
