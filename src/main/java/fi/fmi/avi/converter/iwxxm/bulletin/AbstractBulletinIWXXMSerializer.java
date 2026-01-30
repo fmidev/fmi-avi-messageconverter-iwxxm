@@ -97,38 +97,44 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
                     }
                 }
 
-                final GTSExchangeFileInfo.Builder info = new GTSExchangeFileInfo.Builder()//
-                        .setPFlag(GTSExchangeFileInfo.GTSExchangePFlag.A)//
-                        .setHeading(input.getHeading())//
-                        .setMetadataFile(false)//
-                        .setFileType(GTSExchangeFileInfo.GTSExchangeFileType.XML);
-                if (input.getTimeStamp().isPresent()) {
-                    final ZonedDateTime timeStamp = input.getTimeStamp().get();
-                    final Set<ChronoField> fieldsToInclude = input.getTimeStampFields();
-                    if (fieldsToInclude.contains(ChronoField.YEAR)) {
-                        info.setTimeStampYear(timeStamp.getYear());
-                    }
-                    if (fieldsToInclude.contains(ChronoField.MONTH_OF_YEAR)) {
-                        info.setTimeStampMonth(timeStamp.getMonth());
-                    }
-                    if (fieldsToInclude.contains(ChronoField.DAY_OF_MONTH)) {
-                        info.setTimeStampDay(timeStamp.getDayOfMonth());
-                    }
-                    if (fieldsToInclude.contains(ChronoField.HOUR_OF_DAY)) {
-                        info.setTimeStampHour(timeStamp.getHour());
-                    }
-                    if (fieldsToInclude.contains(ChronoField.MINUTE_OF_HOUR)) {
-                        info.setTimeStampMinute(timeStamp.getMinute());
-                    }
-                    if (fieldsToInclude.contains(ChronoField.SECOND_OF_MINUTE)) {
-                        info.setTimeStampSecond(timeStamp.getSecond());
-                    }
+                final String bulletinIdentifier;
+                if (input.getCollectIdentifier().isPresent()) {
+                    bulletinIdentifier = input.getCollectIdentifier().get();
                 } else {
-                    info.setTimeStamp(LocalDateTime.now(ZoneId.of("UTC")));
+                    final GTSExchangeFileInfo.Builder info = new GTSExchangeFileInfo.Builder()//
+                            .setPFlag(GTSExchangeFileInfo.GTSExchangePFlag.A)//
+                            .setHeading(input.getHeading())//
+                            .setMetadataFile(false)//
+                            .setFileType(GTSExchangeFileInfo.GTSExchangeFileType.XML);
+                    if (input.getTimeStamp().isPresent()) {
+                        final ZonedDateTime timeStamp = input.getTimeStamp().get();
+                        final Set<ChronoField> fieldsToInclude = input.getTimeStampFields();
+                        if (fieldsToInclude.contains(ChronoField.YEAR)) {
+                            info.setTimeStampYear(timeStamp.getYear());
+                        }
+                        if (fieldsToInclude.contains(ChronoField.MONTH_OF_YEAR)) {
+                            info.setTimeStampMonth(timeStamp.getMonth());
+                        }
+                        if (fieldsToInclude.contains(ChronoField.DAY_OF_MONTH)) {
+                            info.setTimeStampDay(timeStamp.getDayOfMonth());
+                        }
+                        if (fieldsToInclude.contains(ChronoField.HOUR_OF_DAY)) {
+                            info.setTimeStampHour(timeStamp.getHour());
+                        }
+                        if (fieldsToInclude.contains(ChronoField.MINUTE_OF_HOUR)) {
+                            info.setTimeStampMinute(timeStamp.getMinute());
+                        }
+                        if (fieldsToInclude.contains(ChronoField.SECOND_OF_MINUTE)) {
+                            info.setTimeStampSecond(timeStamp.getSecond());
+                        }
+                    } else {
+                        info.setTimeStamp(LocalDateTime.now(ZoneId.of("UTC")));
+                    }
+                    bulletinIdentifier = info.build().toGTSExchangeFileName();
                 }
                 final Element identifier = dom.createElementNS(IWXXMNamespaceContext.getDefaultURI("collect"), "bulletinIdentifier");
                 identifier.setPrefix("collect");
-                identifier.setTextContent(info.build().toGTSExchangeFileName());
+                identifier.setTextContent(bulletinIdentifier);
                 collect.appendChild(identifier);
                 retval = aggregateAsBulletin(dom, outputMessages, hints);
 

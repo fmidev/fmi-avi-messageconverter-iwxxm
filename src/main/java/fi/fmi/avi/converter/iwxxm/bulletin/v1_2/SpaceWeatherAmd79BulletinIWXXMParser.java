@@ -27,6 +27,7 @@ public abstract class SpaceWeatherAmd79BulletinIWXXMParser<T> extends AbstractBu
                                                       final ConversionHints hints) {
         final SpaceWeatherAmd79BulletinImpl.Builder builder = SpaceWeatherAmd79BulletinImpl.builder();
         properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class).ifPresent(builder::setHeading);
+        properties.get(BulletinProperties.Name.COLLECT_IDENTIFIER, String.class).ifPresent(builder::setCollectIdentifier);
         builder.addAllMessages(properties.getList(BulletinProperties.Name.MESSAGE, SpaceWeatherAdvisoryAmd79.class));
         if (timestamp != null && timestampFields != null) {
             builder.setTimeStamp(timestamp).addAllTimeStampFields(timestampFields);

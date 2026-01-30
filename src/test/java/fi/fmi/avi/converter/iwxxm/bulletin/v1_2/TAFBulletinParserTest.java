@@ -54,7 +54,7 @@ public class TAFBulletinParserTest implements IWXXMConverterTests {
         final ConversionResult<TAFBulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_TAF_BULLETIN_POJO,
                 ConversionHints.EMPTY);
         final TAFBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
-        assertThat(bulletin.getHeading().getOriginalCollectIdentifier()).hasValue("A_LTFI31EFKL301115_C_EFKL_201902011315--.xml");
+        assertThat(bulletin.getCollectIdentifier()).hasValue("A_LTFI31EFKL301115_C_EFKL_201902011315--.xml");
         assertThat(bulletin.getMessages()).hasSize(2);
         final TAF mesg = bulletin.getMessages().get(0);
         assertThat(mesg.getBaseForecast()).isPresent();

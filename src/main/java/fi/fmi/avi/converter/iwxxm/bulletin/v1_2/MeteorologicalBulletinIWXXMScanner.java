@@ -32,6 +32,7 @@ public class MeteorologicalBulletinIWXXMScanner<S extends AviationWeatherMessage
             info.getTimeStampHour().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_HOUR, value));
             info.getTimeStampMinute().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_MINUTE, value));
             info.getTimeStampSecond().ifPresent(value -> properties.set(BulletinProperties.Name.TIMESTAMP_SECOND, value));
+            properties.set(BulletinProperties.Name.COLLECT_IDENTIFIER, bulletinIdentifier);
         } catch (final Exception e) {
             retval.add(ConversionIssue.Severity.ERROR, ConversionIssue.Type.SYNTAX, "Could not parse bulletin heading info from the bulletinIdentifier", e);
         }
