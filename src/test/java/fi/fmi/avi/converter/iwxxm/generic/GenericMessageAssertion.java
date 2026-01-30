@@ -86,6 +86,16 @@ public final class GenericMessageAssertion {
         return this;
     }
 
+    public GenericMessageAssertion hasGmlId(final String expected) {
+        assertThat(message.getGmlId()).as("gmlId").hasValue(expected);
+        return this;
+    }
+
+    public GenericMessageAssertion hasNoGmlId() {
+        assertThat(message.getGmlId()).as("gmlId").isEmpty();
+        return this;
+    }
+
     /**
      * Assert the issue time.
      *
