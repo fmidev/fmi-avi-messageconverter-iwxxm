@@ -52,6 +52,7 @@ public class SpaceWeatherAmd79BulletinParserTest implements IWXXMConverterTests 
         final ConversionResult<SpaceWeatherAmd79Bulletin> result = this.converter.convertMessage(input, IWXXMConverter.WMO_COLLECT_DOM_TO_SWX_30_BULLETIN_POJO,
                 ConversionHints.EMPTY);
         final SpaceWeatherAmd79Bulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(bulletin.getCollectIdentifier()).hasValue("A_LNXX31EFKL301115_C_EFKL_201902011315--.xml");
         assertThat(bulletin.getMessages()).hasSize(1);
         final SpaceWeatherAdvisoryAmd79 msg = bulletin.getMessages().get(0);
         assertThat(msg.getPhenomena().get(0)).isEqualTo(SpaceWeatherPhenomenon.fromWMOCodeListValue("http://codes.wmo.int/49-2/SpaceWxPhenomena/HF_COM_MOD"));

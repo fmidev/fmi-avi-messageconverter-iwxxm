@@ -51,7 +51,8 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         final Document input = readDocumentFromResource("taf/iwxxm-21-taf-bulletin.xml");
         final ConversionResult<GenericMeteorologicalBulletin> result = this.converter.convertMessage(input,
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
-        assertThatConversionResult(result).isSuccessful();
+        final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(bulletin.getCollectIdentifier()).hasValue("A_LTFI31EFKL301115_C_EFKL_201902011315--.xml");
     }
 
     @Test
@@ -66,6 +67,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUSO");
 
         final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(bulletin.getCollectIdentifier()).hasValue("A_LYXX31YUDO251600_C_YUDO_201208251600--.xml");
         assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_2_1_NAMESPACE)
@@ -88,6 +90,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
         expectedIndicators.put(LocationIndicatorType.ISSUING_AIR_TRAFFIC_SERVICES_UNIT, "YUDD");
 
         final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(bulletin.getCollectIdentifier()).hasValue("A_LYXX31YUDO251600_C_YUDO_201208251600--.xml");
         assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_3_0_NAMESPACE)
@@ -105,6 +108,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
         final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(bulletin.getCollectIdentifier()).hasValue("A_LYXX31YUDO251600_C_YUDO_201208251600--.xml");
         assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_3_0_NAMESPACE)
@@ -122,6 +126,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
         final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(bulletin.getCollectIdentifier()).hasValue("A_LYXX31YUDO251600_C_YUDO_201208251600--.xml");
         assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)
                 .hasNamespace(IWXXM_3_0_NAMESPACE)
@@ -139,7 +144,7 @@ public class GenericBulletinIWXXMParserTest implements IWXXMConverterTests {
                 IWXXMConverter.WMO_COLLECT_DOM_TO_GENERIC_BULLETIN_POJO, ConversionHints.EMPTY);
 
         final GenericMeteorologicalBulletin bulletin = assertThatConversionResult(result).isSuccessful().getMessage();
-        assertThat(bulletin.getHeading()).isNotNull();
+        assertThat(bulletin.getCollectIdentifier()).hasValue("A_LTFI31EFKL301115_C_EFKL_201902011315--.xml");
 
         assertMessage(bulletin.getMessages().get(0))
                 .hasFormat(Format.IWXXM)

@@ -1,11 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.bulletin.v1_2;
 
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
-import java.util.Set;
-
-import org.w3c.dom.Document;
-
 import fi.fmi.avi.converter.AviMessageSpecificConverter;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
@@ -14,6 +8,11 @@ import fi.fmi.avi.model.bulletin.BulletinHeading;
 import fi.fmi.avi.model.taf.TAF;
 import fi.fmi.avi.model.taf.TAFBulletin;
 import fi.fmi.avi.model.taf.immutable.TAFBulletinImpl;
+import org.w3c.dom.Document;
+
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.util.Set;
 
 public abstract class TAFBulletinIWXXMParser<T> extends AbstractBulletinIWXXMParser<T, TAF, TAFBulletin> {
 
@@ -28,6 +27,7 @@ public abstract class TAFBulletinIWXXMParser<T> extends AbstractBulletinIWXXMPar
             final ConversionHints hints) {
         final TAFBulletinImpl.Builder builder = TAFBulletinImpl.builder();
         properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class).ifPresent(builder::setHeading);
+        properties.get(BulletinProperties.Name.COLLECT_IDENTIFIER, String.class).ifPresent(builder::setCollectIdentifier);
         builder.addAllMessages(properties.getList(BulletinProperties.Name.MESSAGE, TAF.class));
         if (timestamp != null && timestampFields != null) {
             builder.setTimeStamp(timestamp).addAllTimeStampFields(timestampFields);

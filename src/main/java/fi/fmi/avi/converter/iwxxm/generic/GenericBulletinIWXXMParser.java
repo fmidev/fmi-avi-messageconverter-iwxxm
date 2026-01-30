@@ -1,11 +1,5 @@
 package fi.fmi.avi.converter.iwxxm.generic;
 
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
-import java.util.Set;
-
-import org.w3c.dom.Document;
-
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
 import fi.fmi.avi.converter.iwxxm.bulletin.AbstractBulletinIWXXMParser;
@@ -15,6 +9,11 @@ import fi.fmi.avi.model.GenericAviationWeatherMessage;
 import fi.fmi.avi.model.bulletin.BulletinHeading;
 import fi.fmi.avi.model.bulletin.GenericMeteorologicalBulletin;
 import fi.fmi.avi.model.bulletin.immutable.GenericMeteorologicalBulletinImpl;
+import org.w3c.dom.Document;
+
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.util.Set;
 
 public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXXMParser<T, GenericAviationWeatherMessage, GenericMeteorologicalBulletin> {
 
@@ -29,6 +28,7 @@ public abstract class GenericBulletinIWXXMParser<T> extends AbstractBulletinIWXX
             final Set<ChronoField> timestampFields, final ConversionHints hints) {
         final GenericMeteorologicalBulletinImpl.Builder builder = GenericMeteorologicalBulletinImpl.builder();
         properties.get(BulletinProperties.Name.HEADING, BulletinHeading.class).ifPresent(builder::setHeading);
+        properties.get(BulletinProperties.Name.COLLECT_IDENTIFIER, String.class).ifPresent(builder::setCollectIdentifier);
         builder.addAllMessages(properties.getList(BulletinProperties.Name.MESSAGE, GenericAviationWeatherMessage.class));
         if (timestamp != null && timestampFields != null) {
             builder.setTimeStamp(timestamp).addAllTimeStampFields(timestampFields);
