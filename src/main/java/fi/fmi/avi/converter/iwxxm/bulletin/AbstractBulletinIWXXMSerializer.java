@@ -97,9 +97,9 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
                     }
                 }
 
-                final String bulletinIdentifier;
+                final String collectIdentifier;
                 if (input.getCollectIdentifier().isPresent()) {
-                    bulletinIdentifier = input.getCollectIdentifier().get();
+                    collectIdentifier = input.getCollectIdentifier().get();
                 } else {
                     final GTSExchangeFileInfo.Builder info = new GTSExchangeFileInfo.Builder()//
                             .setPFlag(GTSExchangeFileInfo.GTSExchangePFlag.A)//
@@ -130,11 +130,11 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
                     } else {
                         info.setTimeStamp(LocalDateTime.now(ZoneId.of("UTC")));
                     }
-                    bulletinIdentifier = info.build().toGTSExchangeFilename();
+                    collectIdentifier = info.build().toGTSExchangeFilename();
                 }
                 final Element identifier = dom.createElementNS(IWXXMNamespaceContext.getDefaultURI("collect"), "bulletinIdentifier");
                 identifier.setPrefix("collect");
-                identifier.setTextContent(bulletinIdentifier);
+                identifier.setTextContent(collectIdentifier);
                 collect.appendChild(identifier);
                 retval = aggregateAsBulletin(dom, outputMessages, hints);
 
