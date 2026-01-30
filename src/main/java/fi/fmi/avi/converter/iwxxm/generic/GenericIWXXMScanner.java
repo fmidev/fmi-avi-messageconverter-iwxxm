@@ -83,6 +83,20 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
         return nullableString == null ? "" : nullableString;
     }
 
+    private static XPathEvaluationResult<String> evaluateString(final Element element,
+                                                                final XPath xpath,
+                                                                final String expression) {
+        try {
+            final String value = xpath.compile(expression).evaluate(element);
+            if (value != null && !value.isEmpty()) {
+                return XPathEvaluationResult.of(value);
+            }
+            return XPathEvaluationResult.empty();
+        } catch (final XPathExpressionException exception) {
+            return XPathEvaluationResult.fail(exception);
+        }
+    }
+
     private static XPathEvaluationResult<ZonedDateTime> evaluateZonedDateTime(final Element element,
                                                                               final XPath xPath,
                                                                               final String expression) {
@@ -113,31 +127,21 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
         }
     }
 
-    private void collectGmlId(final Element element,
-                              final XPath xpath,
-                              final GenericAviationWeatherMessageImpl.Builder builder,
-                              final IssueList issues) {
-        final XPathEvaluationResult<String> result = evaluate(IWXXMField.GML_ID, expr -> {
-            try {
-                final String value = xpath.compile(expr).evaluate(element);
-                if (value != null && !value.isEmpty()) {
-                    return XPathEvaluationResult.of(value);
-                }
-                return XPathEvaluationResult.empty();
-            } catch (final XPathExpressionException exception) {
-                return XPathEvaluationResult.fail(exception);
-            }
-        });
+    private static <T> void collectResult(final IssueList issues,
+                                          final XPathEvaluationResult<T> result,
+                                          final Consumer<T> setter,
+                                          final boolean errorOnMissing,
+                                          final String fieldName) {
         if (result.hasValue()) {
-            builder.setGmlId(result.getOrThrow());
+            setter.accept(result.getOrThrow());
         } else if (result.isFailed()) {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                     ConversionIssue.Type.OTHER,
-                    "Unable to parse gml:id", result.getException().orElse(null)));
-        } else {
+                    "Unable to parse " + fieldName, result.getException().orElse(null)));
+        } else if (errorOnMissing) {
             issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                     ConversionIssue.Type.MISSING_DATA,
-                    "No gml:id found for IWXXM message"));
+                    "No " + fieldName + " found for IWXXM message"));
         }
     }
 
@@ -145,18 +149,18 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
      * Collects report status from IWXXM message, trying @reportStatus (3.0+) first,
      * then falling back to @status (2.1) with direct string mapping.
      *
-     * @param element  the IWXXM root element
-     * @param xpath    the XPath evaluator
-     * @param builder  the message builder to populate
-     * @param issues   the issue list to add errors to
-     * @param required if true, adds an error when report status cannot be parsed;
-     *                 if false, missing status is silently ignored (for VAA/TCA in IWXXM 2.1)
+     * @param element        the IWXXM root element
+     * @param xpath          the XPath evaluator
+     * @param builder        the message builder to populate
+     * @param issues         the issue list to add errors to
+     * @param errorOnMissing if true, adds an error when report status cannot be parsed;
+     *                       if false, missing status is silently ignored (for VAA/TCA in IWXXM 2.1)
      */
     private static void collectReportStatus(final Element element,
                                             final XPath xpath,
                                             final GenericAviationWeatherMessageImpl.Builder builder,
                                             final IssueList issues,
-                                            final boolean required) {
+                                            final boolean errorOnMissing) {
         try {
             // Try IWXXM 3.0+ @reportStatus first
             final Optional<AviationWeatherMessage.ReportStatus> reportStatus =
@@ -176,7 +180,7 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                 }
             }
 
-            if (required) {
+            if (errorOnMissing) {
                 issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
                         ConversionIssue.Type.MISSING_DATA,
                         "The report status could not be parsed"));
@@ -219,6 +223,15 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
         }
     }
 
+    private void collectGmlId(final Element element,
+                              final XPath xpath,
+                              final GenericAviationWeatherMessageImpl.Builder builder,
+                              final IssueList issues) {
+        final XPathEvaluationResult<String> result = evaluate(IWXXMField.GML_ID,
+                expr -> evaluateString(element, xpath, expr));
+        collectResult(issues, result, builder::setGmlId, true, "gml:id");
+    }
+
     @Override
     public IssueList collectMessage(final Element featureElement,
                                     final XPath xpath,
@@ -255,17 +268,7 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                                                       final Consumer<PartialOrCompleteTimeInstant> setter) {
         final XPathEvaluationResult<ZonedDateTime> result = evaluate(field,
                 expr -> evaluateZonedDateTime(element, xpath, expr));
-        if (result.hasValue()) {
-            setter.accept(PartialOrCompleteTimeInstant.of(result.getOrThrow()));
-        } else if (result.isFailed()) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.OTHER,
-                    "Unable to parse " + fieldName, result.getException().orElse(null)));
-        } else {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.MISSING_DATA,
-                    "No " + fieldName + " found for IWXXM message"));
-        }
+        collectResult(issues, result, value -> setter.accept(PartialOrCompleteTimeInstant.of(value)), true, fieldName);
     }
 
     private void collectLocationIndicatorsUsingFieldProvider(
@@ -295,16 +298,9 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
             final XPathEvaluationResult<String> result = evaluate(field,
                     expr -> evaluateLocationIndicator(featureElement, expr, xpath, designatorExpression, nameExpression));
 
-            if (result.hasValue()) {
-                builder.putLocationIndicators(locationIndicatorType, result.getOrThrow());
-            } else if (result.isFailed()) {
-                issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                        ConversionIssue.Type.OTHER,
-                        "Unable to parse location indicator " + locationIndicatorType, result.getException().orElse(null)));
-            } else {
-                issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR, ConversionIssue.Type.MISSING_DATA,
-                        String.format(Locale.ROOT, "Missing location indicator %s", locationIndicatorType)));
-            }
+            collectResult(issues, result,
+                    value -> builder.putLocationIndicators(locationIndicatorType, value),
+                    true, "location indicator " + locationIndicatorType);
         }
     }
 
@@ -336,37 +332,16 @@ public class GenericIWXXMScanner implements GenericAviationWeatherMessageScanner
                                                        final IssueList issues) {
         final XPathEvaluationResult<PartialOrCompleteTimePeriod> result = evaluate(IWXXMField.VALID_TIME,
                 expr -> collectValidTime(element, expr, xpath));
-        if (result.hasValue()) {
-            builder.setValidityTime(result.getOrThrow());
-        } else if (result.isFailed()) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.OTHER,
-                    "Unable to parse validity time", result.getException().orElse(null)));
-        }
+        collectResult(issues, result, builder::setValidityTime, false, "validity time");
     }
 
     private void collectNilStatus(final Element element,
                                   final XPath xpath,
                                   final GenericAviationWeatherMessageImpl.Builder builder,
                                   final IssueList issues) {
-        final XPathEvaluationResult<String> result = evaluate(IWXXMField.NIL_REASON, expr -> {
-            try {
-                final String value = xpath.compile(expr).evaluate(element);
-                if (value != null && !value.isEmpty()) {
-                    return XPathEvaluationResult.of(value);
-                }
-                return XPathEvaluationResult.empty();
-            } catch (final XPathExpressionException exception) {
-                return XPathEvaluationResult.fail(exception);
-            }
-        });
-        if (result.hasValue()) {
-            builder.setNil(true);
-        } else if (result.isFailed()) {
-            issues.add(new ConversionIssue(ConversionIssue.Severity.ERROR,
-                    ConversionIssue.Type.OTHER,
-                    "Unable to parse NIL status", result.getException().orElse(null)));
-        }
+        final XPathEvaluationResult<String> result = evaluate(IWXXMField.NIL_REASON,
+                expr -> evaluateString(element, xpath, expr));
+        collectResult(issues, result, value -> builder.setNil(true), false, "NIL status");
     }
 
     private <T> XPathEvaluationResult<T> evaluate(final IWXXMField field,

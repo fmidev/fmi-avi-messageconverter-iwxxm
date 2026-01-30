@@ -28,13 +28,16 @@ import java.util.regex.Pattern;
  */
 public final class XPathBuilder {
 
-    private static final Map<String, String> PREFIX_TO_NS_PATTERN;
+    private static final Map<String, String> PREFIX_TO_NS_PATTERN = createPrefixToNsPattern();
     // Matches either /prefix:localName (elements) or @prefix:localName (attributes)
     // The type group captures "/" or "@" to determine if it's an element or attribute
     private static final Pattern PREFIXED_NAME = Pattern.compile(
             "(?<type>[/@])(?<prefix>[a-zA-Z][a-zA-Z0-9]*):(?<localPart>[A-Za-z_][A-Za-z0-9_.-]*)");
 
-    static {
+    private XPathBuilder() {
+    }
+
+    private static Map<String, String> createPrefixToNsPattern() {
         final Map<String, String> map = new HashMap<>();
         map.put("iwxxm", "://icao.int/iwxxm/");
         map.put("gml", "://www.opengis.net/gml/");
@@ -43,10 +46,7 @@ public final class XPathBuilder {
         map.put("sams", "://www.opengis.net/samplingSpatial/");
         map.put("sam", "://www.opengis.net/sampling/");
         map.put("collect", "://def.wmo.int/collect/");
-        PREFIX_TO_NS_PATTERN = Collections.unmodifiableMap(map);
-    }
-
-    private XPathBuilder() {
+        return Collections.unmodifiableMap(map);
     }
 
     /**
@@ -74,8 +74,7 @@ public final class XPathBuilder {
                         + ". Known prefixes: " + PREFIX_TO_NS_PATTERN.keySet());
             }
             final String localName = matcher.group("localPart");
-            final String wildcardPrefix = "/".equals(type) ? "/*" : "@*";
-            final String replacement = wildcardPrefix + "[contains(namespace-uri(),'" + nsPattern + "') and local-name()='" + localName + "']";
+            final String replacement = type + "*[contains(namespace-uri(),'" + nsPattern + "') and local-name()='" + localName + "']";
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
         matcher.appendTail(result);
