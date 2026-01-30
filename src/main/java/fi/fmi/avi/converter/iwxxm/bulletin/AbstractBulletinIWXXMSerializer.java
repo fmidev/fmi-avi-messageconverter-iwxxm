@@ -130,7 +130,7 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
                     } else {
                         info.setTimeStamp(LocalDateTime.now(ZoneId.of("UTC")));
                     }
-                    bulletinIdentifier = info.build().toGTSExchangeFileName();
+                    bulletinIdentifier = info.build().toGTSExchangeFilename();
                 }
                 final Element identifier = dom.createElementNS(IWXXMNamespaceContext.getDefaultURI("collect"), "bulletinIdentifier");
                 identifier.setPrefix("collect");
