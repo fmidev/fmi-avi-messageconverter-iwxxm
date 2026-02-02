@@ -93,7 +93,10 @@ public abstract class AbstractBulletinIWXXMSerializer<T, U extends AviationWeath
                 }
 
                 final String collectIdentifier = input.getCollectIdentifier()
-                        .orElseGet(() -> GTSExchangeFileInfo.Builder.from(input).build().toGTSExchangeFilename());
+                        .orElseGet(() -> GTSExchangeFileInfo.Builder.from(input)
+                                .setFileType(GTSExchangeFileInfo.GTSExchangeFileType.XML)
+                                .build()
+                                .toGTSExchangeFilename());
                 final Element identifier = dom.createElementNS(IWXXMNamespaceContext.getDefaultURI("collect"), "bulletinIdentifier");
                 identifier.setPrefix("collect");
                 identifier.setTextContent(collectIdentifier);
