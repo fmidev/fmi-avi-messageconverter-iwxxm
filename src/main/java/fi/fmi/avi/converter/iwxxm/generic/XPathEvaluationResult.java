@@ -39,6 +39,7 @@ public final class XPathEvaluationResult<T> {
      * Returns the value or throws if this result doesn't contain one.
      *
      * @throws IllegalStateException if this result is empty or failed
+     * @return the value if present
      */
     public T getOrThrow() {
         if (value == null) {

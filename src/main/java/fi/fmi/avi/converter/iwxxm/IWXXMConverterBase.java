@@ -208,7 +208,7 @@ public abstract class IWXXMConverterBase {
             throws ConversionException {
         final IssueList retval = new IssueList();
         retval.addAll(validateAgainstSchema(new DOMSource(input.getDocumentElement()), schemaInfo, hints));
-        retval.addAll(validateAgainstIWXXMSchematron(input, schemaInfo, hints));
+        retval.addAll(validateAgainstIWXXMSchematron(input, schemaInfo));
         return retval;
     }
 
@@ -222,7 +222,7 @@ public abstract class IWXXMConverterBase {
             final DocumentBuilder db = dbf.newDocumentBuilder();
             final Document dom = db.parse(new InputSource(new StringReader(input)));
             retval.addAll(validateAgainstSchema(new StreamSource(new StringReader(input)), schemaInfo, hints));
-            retval.addAll(validateAgainstIWXXMSchematron(dom, schemaInfo, hints));
+            retval.addAll(validateAgainstIWXXMSchematron(dom, schemaInfo));
         } catch (final ParserConfigurationException | SAXException | IOException e) {
             throw new ConversionException("Error validating produced bulletin", e);
         }
@@ -234,10 +234,10 @@ public abstract class IWXXMConverterBase {
      * Uses a pre-generated XLS transformation files producing Schematron SVRL reports.
      *
      * @param input IWXXM message Document
-     * @param hints conversion hints to guide the validaton
+     * @param schemaInfo schema info
      * @return the list of Schematron validation issues (failed asserts)
      */
-    protected static IssueList validateAgainstIWXXMSchematron(final Document input, final XMLSchemaInfo schemaInfo, final ConversionHints hints) {
+    protected static IssueList validateAgainstIWXXMSchematron(final Document input, final XMLSchemaInfo schemaInfo) {
         final XPath xPath = XPathFactory.newInstance().newXPath();
         xPath.setNamespaceContext(new IWXXMNamespaceContext());
         final IssueList retval = new IssueList();

@@ -76,6 +76,10 @@ public class SpaceWeatherIntensityAndRegionHandler {
 
     /**
      * Registers an intensity + regions combination, returning the ID and whether it's new.
+     *
+     * @param intensity intensity to register
+     * @param regions   regions to register
+     * @return id assignment
      */
     public IdAssignment register(final Intensity intensity, final List<SpaceWeatherRegion> regions) {
         return register(new IntensityAndRegionsKey(intensity, normalizeRegions(regions)), intensityAndRegionIds);
@@ -83,6 +87,9 @@ public class SpaceWeatherIntensityAndRegionHandler {
 
     /**
      * Registers a single region, returning the ID, whether it's new, and the normalized region.
+     *
+     * @param region region to register
+     * @return region id assignment
      */
     public RegionIdAssignment registerRegion(final SpaceWeatherRegion region) {
         final SpaceWeatherRegion normalized = roundCoordinates(region);

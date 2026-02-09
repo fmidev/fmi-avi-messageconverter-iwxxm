@@ -22,9 +22,9 @@ import java.util.regex.Pattern;
  * }</pre>
  * <p>
  * Also handles namespaced attributes like {@code @gml:id} which get converted to:
- * <pre>{@code
- *   @*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='id']
- * }</pre>
+ * <pre>
+ *   {@literal @}*[contains(namespace-uri(),'://www.opengis.net/gml/') and local-name()='id']
+ * </pre>
  */
 public final class XPathBuilder {
 

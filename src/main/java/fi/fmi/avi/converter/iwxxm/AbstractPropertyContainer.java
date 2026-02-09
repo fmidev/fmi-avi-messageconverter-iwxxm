@@ -1,12 +1,6 @@
 package fi.fmi.avi.converter.iwxxm;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Common functionality for IWXXM property container classes used in scanning the IWXXM messages
@@ -61,15 +55,10 @@ public abstract class AbstractPropertyContainer {
      * Sets a value for the named property.
      * Note: silently ignores setting a null value to any property.
      *
-     * @param key
-     *         the key
-     * @param value
-     *         to set
-     *
+     * @param key   the key
+     * @param value to set
      * @return the previous value if set
-     *
-     * @throws IllegalArgumentException
-     *         if the value type is not acceptable for the given key
+     * @throws IllegalArgumentException if the value type is not acceptable for the given key
      */
     public Object set(final PropertyName key, final Object value) throws IllegalArgumentException {
         if (value == null) {
@@ -87,8 +76,7 @@ public abstract class AbstractPropertyContainer {
     /**
      * Removes the value for this key is one has previously been set.
      *
-     * @param key
-     *         the property to unset
+     * @param key the property to unset
      */
     public void unset(final PropertyName key) {
         this.properties.remove(key);
@@ -97,13 +85,10 @@ public abstract class AbstractPropertyContainer {
     /**
      * Adds a new value for the list of values for the given key.
      *
-     * @param key
-     *         the key
-     * @param value
-     *         the new list item
-     *
-     * @throws IllegalArgumentException
-     *         if the property with this key already has non-list value, or if the value is of wrong type
+     * @param <E>   type of the list item
+     * @param key   the key
+     * @param value the new list item
+     * @throws IllegalArgumentException if the property with this key already has non-list value, or if the value is of wrong type
      */
     @SuppressWarnings("unchecked")
     public <E> void addToList(final PropertyName key, final E value) throws IllegalArgumentException {
@@ -125,13 +110,9 @@ public abstract class AbstractPropertyContainer {
     /**
      * Adds all given values to the list of values for the given key.
      *
-     * @param key
-     *         the key
-     * @param values
-     *         the new list items
-     *
-     * @throws IllegalArgumentException
-     *         if the property with this key already has non-list value, or if the value is of wrong type
+     * @param key    the key
+     * @param values the new list items
+     * @throws IllegalArgumentException if the property with this key already has non-list value, or if the value is of wrong type
      */
     public void addAllToList(final PropertyName key, final Collection<?> values) throws IllegalArgumentException {
         if (values != null) {

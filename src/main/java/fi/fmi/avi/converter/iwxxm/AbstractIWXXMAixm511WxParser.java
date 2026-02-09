@@ -61,7 +61,7 @@ public abstract class AbstractIWXXMAixm511WxParser<T, S extends AviationWeatherM
                 refCtx = new ReferredObjectRetrievalContext(dom, binder);
 
                 //Schematron validation:
-                result.addIssue(validateAgainstIWXXMSchematron(dom, schemaInfo, hints));
+                result.addIssue(validateAgainstIWXXMSchematron(dom, schemaInfo));
                 try {
                     result.setConvertedMessage(createPOJO(source, refCtx, result, hints));
                 } catch (final IllegalStateException ise) {
