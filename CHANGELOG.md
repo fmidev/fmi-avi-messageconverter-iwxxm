@@ -31,6 +31,22 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - ...
 
+## [v6.3.0] - 2026-02-09
+
+### Added
+
+- Added nil status to generic TAF/METAR/SPECI parsing [#143]
+- Added GML id to generic parsing [#146]
+
+### Changed
+
+- The IWXXM collect identifier stored in the model is now used in serialization by default. A new collect identifier
+  is only built if the model does not already contain one. [#145]
+
+### Fixed
+
+- Serialize aixm:upperLimit in SWX advisories when lower limit exists [#142]
+
 ## [v6.2.0] - 2026-01-12
 
 ### Changed
@@ -135,7 +151,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Previous changelog entries are available
 on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases) in a more freeform format.
 
-[Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-6.2.0...HEAD
+[Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-6.3.0...HEAD
+
+[v6.3.0]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-6.3.0
 
 [v6.2.0]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-6.2.0
 
@@ -220,3 +238,11 @@ on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwx
 [#137]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/137
 
 [#140]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/140
+
+[#142]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/142
+
+[#143]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/143
+
+[#145]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/145
+
+[#146]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/146
