@@ -31,6 +31,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - ...
 
+## [v6.3.1] - 2026-02-10
+
+### Fixed
+
+- Fixed a bug where nil aixm:upperLimit elements in SWX serialization incorrectly included extra namespace declarations
+  [#148]
+
 ## [v6.3.0] - 2026-02-09
 
 ### Added
@@ -151,7 +158,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Previous changelog entries are available
 on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases) in a more freeform format.
 
-[Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-6.3.0...HEAD
+[Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-6.3.1...HEAD
+
+[v6.3.1]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-6.3.1
 
 [v6.3.0]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-6.3.0
 
@@ -246,3 +255,5 @@ on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwx
 [#145]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/145
 
 [#146]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/146
+
+[#148]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/148
