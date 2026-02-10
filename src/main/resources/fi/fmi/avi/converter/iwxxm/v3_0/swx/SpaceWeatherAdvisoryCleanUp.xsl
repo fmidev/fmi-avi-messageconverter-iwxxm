@@ -37,7 +37,7 @@
 
   <!-- Add xsi:nil="true" to aixm:upperLimit with nilReason and no value -->
   <xsl:template match="//aixm:upperLimit[@nilReason and not(text())]">
-    <xsl:copy>
+    <xsl:copy copy-namespaces="no">
       <xsl:attribute name="xsi:nil">true</xsl:attribute>
       <xsl:apply-templates select="@*|node()"/>
     </xsl:copy>
