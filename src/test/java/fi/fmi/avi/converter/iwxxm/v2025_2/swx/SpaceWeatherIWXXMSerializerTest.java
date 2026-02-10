@@ -81,6 +81,16 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
     }
 
     @Test
+    public void nil_upperLimit_has_no_unwanted_namespace_declarations() throws Exception {
+        final String input = readResourceToString("spacewx-A7-5.json");
+        final ConversionResult<String> result = serialize(input);
+        final String xml = assertThatConversionResult(result).isSuccessful().getMessage();
+        assertThat(xml)
+                .as("aixm:upperLimit should not contain extra xmlns declarations")
+                .doesNotContain("<aixm:upperLimit xmlns:");
+    }
+
+    @Test
     public void serialize_too_many_replace_nrs() throws Exception {
         final String input = readResourceToString("spacewx-too-many-replace-nrs.json");
         final ConversionResult<String> result = serialize(input);
