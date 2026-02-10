@@ -19,6 +19,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static fi.fmi.avi.converter.iwxxm.ConversionResultAssertion.assertThatConversionResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -85,9 +88,14 @@ public class SpaceWeatherIWXXMSerializerTest implements IWXXMConverterTests {
         final String input = readResourceToString("spacewx-A7-5.json");
         final ConversionResult<String> result = serialize(input);
         final String xml = assertThatConversionResult(result).isSuccessful().getMessage();
-        assertThat(xml)
-                .as("aixm:upperLimit should not contain extra xmlns declarations")
-                .doesNotContain("<aixm:upperLimit xmlns:");
+
+        final Matcher matcher = Pattern.compile("<aixm:upperLimit\\s[^>]+>").matcher(xml);
+        assertThat(matcher.find())
+                .as("Expected to find aixm:upperLimit element")
+                .isTrue();
+        assertThat(matcher.group())
+                .as("aixm:upperLimit should not contain xmlns declarations")
+                .doesNotContain("xmlns:");
     }
 
     @Test
