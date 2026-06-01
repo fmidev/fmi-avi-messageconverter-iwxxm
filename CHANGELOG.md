@@ -25,7 +25,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- ...
+- Compile with javac `-parameters` flag to enable parameter name retention for use with Spring Framework.
 
 ### Security
 
