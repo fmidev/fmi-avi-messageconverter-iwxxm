@@ -25,11 +25,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- Compile with javac `-parameters` flag to enable parameter name retention for use with Spring Framework.
+- ...
 
 ### Security
 
 - ...
+
+## [v6.3.2] - 2026-09-03
+
+### Fixed
+
+- Compile with javac `-parameters` flag to enable parameter name retention for use with Spring Framework. [#150]
 
 ## [v6.3.1] - 2026-02-10
 
@@ -158,7 +164,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 Previous changelog entries are available
 on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases) in a more freeform format.
 
-[Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-6.3.1...HEAD
+[Unreleased]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/compare/fmi-avi-messageconverter-iwxxm-6.3.2...HEAD
+
+[v6.3.2]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-6.3.2
 
 [v6.3.1]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/releases/tag/fmi-avi-messageconverter-iwxxm-6.3.1
 
@@ -257,3 +265,5 @@ on [GitHub releases page](https://github.com/fmidev/fmi-avi-messageconverter-iwx
 [#146]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/146
 
 [#148]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/148
+
+[#150]: https://github.com/fmidev/fmi-avi-messageconverter-iwxxm/pull/150
