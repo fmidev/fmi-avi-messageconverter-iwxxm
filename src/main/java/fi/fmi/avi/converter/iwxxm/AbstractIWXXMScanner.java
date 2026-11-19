@@ -4,6 +4,7 @@ import static fi.fmi.avi.model.immutable.WeatherImpl.WEATHER_CODES;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import net.opengis.gml32.AbstractCurveSegmentType;
@@ -25,6 +27,7 @@ import net.opengis.gml32.DirectPositionType;
 import net.opengis.gml32.LinearRingType;
 import net.opengis.gml32.MeasureType;
 import net.opengis.gml32.PolygonPatchType;
+import net.opengis.gml32.ReferenceType;
 import net.opengis.gml32.RingType;
 
 import aero.aixm511.AirportHeliportTimeSlicePropertyType;
@@ -280,6 +283,35 @@ public abstract class AbstractIWXXMScanner extends IWXXMConverterBase {
             issueList.add(new ConversionIssue(ConversionIssue.Type.OTHER, "Unsupported surface patch type " + patch.getDeclaredType().getCanonicalName()));
         }
         return retval;
+    }
+
+    public static boolean hasNothingOfOperationalSignificance(final List<String> nilReasons) {
+        return nilReasons.contains(AviationCodeListUser.CODELIST_VALUE_NIL_REASON_NOTHING_OF_OPERATIONAL_SIGNIFICANCE);
+    }
+
+    public static void withWeatherBuilderFor(final ReferenceType weather, final ConversionHints hints,
+            final Consumer<WeatherImpl.Builder> resultHandler, final Consumer<ConversionIssue> issueHandler) {
+        if (weather.getNilReason().isEmpty()) {
+            withWeatherBuilderFor(weather.getHref(), weather.getTitle(), hints, resultHandler, issueHandler);
+        }
+    }
+
+    protected static void collectTranslationTimes(final XMLGregorianCalendar receptionTime, final XMLGregorianCalendar translationTime,
+            final GenericReportProperties properties, final ConversionHints hints) {
+        if (receptionTime != null) {
+            properties.set(GenericReportProperties.Name.TRANSLATED_BULLETIN_RECEPTION_TIME, receptionTime.toGregorianCalendar().toZonedDateTime());
+        }
+        if (translationTime != null) {
+            properties.set(GenericReportProperties.Name.TRANSLATION_TIME, translationTime.toGregorianCalendar().toZonedDateTime());
+        }
+        if (!properties.contains(GenericReportProperties.Name.TRANSLATION_TIME) && hints != null && hints.containsKey(ConversionHints.KEY_TRANSLATION_TIME)) {
+            final Object value = hints.get(ConversionHints.KEY_TRANSLATION_TIME);
+            if (ConversionHints.VALUE_TRANSLATION_TIME_AUTO.equals(value)) {
+                properties.set(GenericReportProperties.Name.TRANSLATION_TIME, ZonedDateTime.now());
+            } else if (value instanceof ZonedDateTime) {
+                properties.set(GenericReportProperties.Name.TRANSLATION_TIME, value);
+            }
+        }
     }
 
     public static void withWeatherBuilderFor(final String codeListValue, final String description, final ConversionHints hints,

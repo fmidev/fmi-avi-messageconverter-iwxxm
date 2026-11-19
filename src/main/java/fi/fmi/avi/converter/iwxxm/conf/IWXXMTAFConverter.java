@@ -110,4 +110,47 @@ public class IWXXMTAFConverter {
         return new BulletinIWXXMDOMSerializer<>(aixmWxSchemaProfile, tafIWXXM30DOMSerializer());
     }
 
+    @Bean
+    public AviMessageSpecificConverter<String, TAF> tafIWXXM20252StringParser() {
+        return new fi.fmi.avi.converter.iwxxm.v2025_2.taf.TAFIWXXMParser.FromString();
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<Document, TAF> tafIWXXM20252DOMParser() {
+        return new fi.fmi.avi.converter.iwxxm.v2025_2.taf.TAFIWXXMParser.FromDOM();
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<String, TAFBulletin> tafBulletinIWXXM20252StringParser() {
+        final TAFBulletinIWXXMParser<String> retval = new TAFBulletinIWXXMParser.FromString();
+        retval.setMessageConverter(tafIWXXM20252DOMParser());
+        return retval;
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<Document, TAFBulletin> tafBulletinIWXXM20252DOMParser() {
+        final TAFBulletinIWXXMParser<Document> retval = new TAFBulletinIWXXMParser.FromDOM();
+        retval.setMessageConverter(tafIWXXM20252DOMParser());
+        return retval;
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<TAF, String> tafIWXXM20252StringSerializer() {
+        return new fi.fmi.avi.converter.iwxxm.v2025_2.taf.TAFIWXXMSerializer.ToString();
+    }
+
+    @Bean
+    public AbstractIWXXMSerializer<TAF, Document> tafIWXXM20252DOMSerializer() {
+        return new fi.fmi.avi.converter.iwxxm.v2025_2.taf.TAFIWXXMSerializer.ToDOM();
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<TAFBulletin, String> tafBulletinIWXXM20252StringSerializer(final IWXXMSchemaProfile aixmFullSchemaProfile) {
+        return new BulletinIWXXMStringSerializer<>(aixmFullSchemaProfile, tafIWXXM20252DOMSerializer());
+    }
+
+    @Bean
+    public AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXM20252DOMSerializer(final IWXXMSchemaProfile aixmFullSchemaProfile) {
+        return new BulletinIWXXMDOMSerializer<>(aixmFullSchemaProfile, tafIWXXM20252DOMSerializer());
+    }
 }

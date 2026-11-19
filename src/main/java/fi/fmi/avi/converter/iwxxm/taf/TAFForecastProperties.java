@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.v3_0.taf;
+package fi.fmi.avi.converter.iwxxm.taf;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public class TAFForecastProperties extends AbstractPropertyContainer {
 
         CLOUD_AND_VISIBILITY_OK(Boolean.class),
         PREVAILING_VISIBILITY(NumericMeasure.class),
-        PREVAILING_VISIBILIT_OPERATOR(AviationCodeListUser.RelationalOperator.class),
+        PREVAILING_VISIBILITY_OPERATOR(AviationCodeListUser.RelationalOperator.class),
         SURFACEWIND(SurfaceWind.class),
         FORECAST_WEATHER(List.class),
         NO_SIGNIFICANT_WEATHER(Boolean.class),

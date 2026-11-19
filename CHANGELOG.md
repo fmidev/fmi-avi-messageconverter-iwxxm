@@ -9,7 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- ...
+- TAF parsing and serialization for IWXXM 2025-2.
 
 ### Changed
 
@@ -25,7 +25,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- ...
+- Preserve mean wind speed and gust speed operators when parsing and serializing IWXXM 3.0 and 2025-2 TAFs.
+- Omit conflicting prevailing visibility from CAVOK base forecasts while reporting a conversion warning.
+- Resolve GML time period references and handle cloud codes with a nil reason without failing TAF parsing.
 
 ### Security
 

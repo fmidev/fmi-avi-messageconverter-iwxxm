@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.v3_0.taf;
+package fi.fmi.avi.converter.iwxxm.taf;
 
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
 import fi.fmi.avi.model.AviationCodeListUser;
