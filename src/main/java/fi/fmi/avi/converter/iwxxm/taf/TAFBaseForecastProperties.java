@@ -1,18 +1,17 @@
-package fi.fmi.avi.converter.iwxxm.v3_0.taf;
+package fi.fmi.avi.converter.iwxxm.taf;
 
 import java.util.List;
 
 import fi.fmi.avi.converter.iwxxm.AbstractPropertyContainer;
-import fi.fmi.avi.model.NumericMeasure;
 
-public class TAFCloudForecastProperties extends AbstractPropertyContainer {
+public class TAFBaseForecastProperties extends AbstractPropertyContainer {
+    public TAFBaseForecastProperties() {
+    }
 
     public enum Name implements PropertyName {
 
-        VERTICAL_VISIBILITY(NumericMeasure.class), //
-        CLOUD_LAYER(List.class), //
-        NO_SIGNIFICANT_CLOUD(Boolean.class), //
-        VERTICAL_VISIBILITY_MISSING(Boolean.class);
+        FORECAST(TAFForecastProperties.class),
+        TEMPERATURES(List.class);
 
         private final Class<?> acceptedType;
 

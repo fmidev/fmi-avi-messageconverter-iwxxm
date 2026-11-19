@@ -1,4 +1,4 @@
-package fi.fmi.avi.converter.iwxxm.v3_0.taf;
+package fi.fmi.avi.converter.iwxxm.taf;
 
 import java.util.List;
 
@@ -21,7 +21,6 @@ public class TAFProperties extends AbstractPropertyContainer {
         REPORT_METADATA(GenericReportProperties.class),
         BASE_FORECAST(TAFBaseForecastProperties.class),
         CHANGE_FORECAST(List.class),
-        MISSING_MESSAGE(Boolean.class),
         AERODROME(Aerodrome.class);
 
         private final Class<?> acceptedType;

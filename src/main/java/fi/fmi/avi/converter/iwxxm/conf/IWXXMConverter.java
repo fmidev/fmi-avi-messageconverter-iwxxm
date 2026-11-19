@@ -133,6 +133,54 @@ public class IWXXMConverter {
     public static final ConversionSpecification<Document, TAFBulletin> WMO_COLLECT_IWXXM30_DOM_TO_TAF_BULLETIN_POJO = new ConversionSpecification<>(
             Document.class, TAFBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 3.0 TAF", null);
 
+    /**
+     * Pre-configured spec for {@link TAF} to IWXXM 2025-2 XML format TAF document String.
+     */
+    public static final ConversionSpecification<TAF, String> TAF_POJO_TO_IWXXM2025_2_STRING = new ConversionSpecification<>(TAF.class, String.class, null,
+            "TAF, XML/IWXXM 2025-2");
+
+    /**
+     * Pre-configured spec for {@link TAF} to IWXXM 2025-2 XML format TAF document DOM Node.
+     */
+    public static final ConversionSpecification<TAF, Document> TAF_POJO_TO_IWXXM2025_2_DOM = new ConversionSpecification<>(TAF.class, Document.class, null,
+            "TAF, XML/IWXXM 2025-2");
+
+    /**
+     * Pre-configured spec for IWXXM 2025-2 XML format TAF document String to {@link TAF}.
+     */
+    public static final ConversionSpecification<String, TAF> IWXXM2025_2_STRING_TO_TAF_POJO = new ConversionSpecification<>(String.class, TAF.class,
+            "TAF, XML/IWXXM 2025-2", null);
+
+    /**
+     * Pre-configured spec for IWXXM 2025-2 XML format TAF document DOM Node to {@link TAF}.
+     */
+    public static final ConversionSpecification<Document, TAF> IWXXM2025_2_DOM_TO_TAF_POJO = new ConversionSpecification<>(Document.class, TAF.class,
+            "TAF, XML/IWXXM 2025-2", null);
+
+    /**
+     * Pre-configured spec for {@link TAFBulletin} to WMO COLLECT 1.2 XML String containing IWXXM 2025-2 TAFs.
+     */
+    public static final ConversionSpecification<TAFBulletin, String> TAF_BULLETIN_POJO_TO_WMO_COLLECT_IWXXM2025_2_STRING = new ConversionSpecification<>(
+            TAFBulletin.class, String.class, null, "XML/WMO COLLECT 1.2 + IWXXM 2025-2 TAF");
+
+    /**
+     * Pre-configured spec for {@link TAFBulletin} to WMO COLLECT 1.2 XML DOM document containing IWXXM 2025-2 TAFs.
+     */
+    public static final ConversionSpecification<TAFBulletin, Document> TAF_BULLETIN_POJO_TO_WMO_COLLECT_IWXXM2025_2_DOM = new ConversionSpecification<>(
+            TAFBulletin.class, Document.class, null, "XML/WMO COLLECT 1.2 + IWXXM 2025-2 TAF");
+
+    /**
+     * Pre-configured spec for WMO COLLECT 1.2 XML String containing IWXXM 2025-2 TAFs to {@link TAFBulletin}.
+     */
+    public static final ConversionSpecification<String, TAFBulletin> WMO_COLLECT_IWXXM2025_2_STRING_TO_TAF_BULLETIN_POJO = new ConversionSpecification<>(
+            String.class, TAFBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 2025-2 TAF", null);
+
+    /**
+     * Pre-configured spec for WMO COLLECT 1.2 XML DOM document containing IWXXM 2025-2 TAFs to {@link TAFBulletin}.
+     */
+    public static final ConversionSpecification<Document, TAFBulletin> WMO_COLLECT_IWXXM2025_2_DOM_TO_TAF_BULLETIN_POJO = new ConversionSpecification<>(
+            Document.class, TAFBulletin.class, "XML/WMO COLLECT 1.2 + IWXXM 2025-2 TAF", null);
+
     // *******************
     //  METAR & SPECI
     // *******************

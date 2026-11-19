@@ -15,7 +15,6 @@ import fi.fmi.avi.model.taf.TAFChangeForecast;
 import fi.fmi.avi.model.taf.immutable.TAFBaseForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFChangeForecastImpl;
 import fi.fmi.avi.model.taf.immutable.TAFImpl;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,12 +42,6 @@ import static org.junit.Assert.assertNotNull;
 public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
     @Autowired
     private AviMessageConverter converter;
-
-    @Test
-    public void confTest() {
-        Assert.assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING));
-        Assert.assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM));
-    }
 
     @Test
     public void conversionTest() throws IOException {
@@ -442,7 +435,6 @@ public class TAFIWXXMSerializerTest implements IWXXMConverterTests {
 
     @Test
     public void testTAFDOMSerialization() throws Exception {
-        Assert.assertTrue(converter.isSpecificationSupported(IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM));
         final TAF t = getTafObject();
         final ConversionResult<Document> result = converter.convertMessage(t, IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM);
 

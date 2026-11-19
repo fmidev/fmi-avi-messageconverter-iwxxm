@@ -80,6 +80,30 @@ public class IWXXMTestConfiguration {
     @Autowired
     private AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXM30DOMSerializer;
 
+    @Autowired
+    private AviMessageSpecificConverter<String, TAF> tafIWXXM20252StringParser;
+
+    @Autowired
+    private AviMessageSpecificConverter<Document, TAF> tafIWXXM20252DOMParser;
+
+    @Autowired
+    private AviMessageSpecificConverter<String, TAFBulletin> tafBulletinIWXXM20252StringParser;
+
+    @Autowired
+    private AviMessageSpecificConverter<Document, TAFBulletin> tafBulletinIWXXM20252DOMParser;
+
+    @Autowired
+    private AviMessageSpecificConverter<TAF, String> tafIWXXM20252StringSerializer;
+
+    @Autowired
+    private AviMessageSpecificConverter<TAF, Document> tafIWXXM20252DOMSerializer;
+
+    @Autowired
+    private AviMessageSpecificConverter<TAFBulletin, String> tafBulletinIWXXM20252StringSerializer;
+
+    @Autowired
+    private AviMessageSpecificConverter<TAFBulletin, Document> tafBulletinIWXXM20252DOMSerializer;
+
     // METAR & SPECI
 
     @Autowired
@@ -216,20 +240,28 @@ public class IWXXMTestConfiguration {
         // TAF;
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_TAF_POJO, tafIWXXMStringParser);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_STRING_TO_TAF_POJO, tafIWXXM30StringParser);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM2025_2_STRING_TO_TAF_POJO, tafIWXXM20252StringParser);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_DOM_TO_TAF_POJO, tafIWXXMDOMParser);
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM30_DOM_TO_TAF_POJO, tafIWXXM30DOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.IWXXM2025_2_DOM_TO_TAF_POJO, tafIWXXM20252DOMParser);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_STRING, tafIWXXMStringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM30_STRING, tafIWXXM30StringSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM2025_2_STRING, tafIWXXM20252StringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM21_DOM, tafIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM30_DOM, tafIWXXM30DOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.TAF_POJO_TO_IWXXM2025_2_DOM, tafIWXXM20252DOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_STRING, tafBulletinIWXXMStringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_IWXXM30_STRING, tafBulletinIWXXM30StringSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_IWXXM2025_2_STRING, tafBulletinIWXXM20252StringSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_DOM, tafBulletinIWXXMDOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_IWXXM30_DOM, tafBulletinIWXXM30DOMSerializer);
+        p.setMessageSpecificConverter(IWXXMConverter.TAF_BULLETIN_POJO_TO_WMO_COLLECT_IWXXM2025_2_DOM, tafBulletinIWXXM20252DOMSerializer);
         p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_STRING_TO_TAF_BULLETIN_POJO, tafBulletinIWXXMStringParser);
         p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_IWXXM30_STRING_TO_TAF_BULLETIN_POJO, tafBulletinIWXXM30StringParser);
+        p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_IWXXM2025_2_STRING_TO_TAF_BULLETIN_POJO, tafBulletinIWXXM20252StringParser);
         p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_DOM_TO_TAF_BULLETIN_POJO, tafBulletinIWXXMDOMParser);
         p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_IWXXM30_DOM_TO_TAF_BULLETIN_POJO, tafBulletinIWXXM30DOMParser);
+        p.setMessageSpecificConverter(IWXXMConverter.WMO_COLLECT_IWXXM2025_2_DOM_TO_TAF_BULLETIN_POJO, tafBulletinIWXXM20252DOMParser);
 
         // METAR & SPECI:
         p.setMessageSpecificConverter(IWXXMConverter.IWXXM21_STRING_TO_METAR_POJO, metarIWXXMStringParser);

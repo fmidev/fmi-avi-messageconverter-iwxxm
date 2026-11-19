@@ -1,7 +1,17 @@
 package fi.fmi.avi.converter.iwxxm;
 
+import aero.aixm511full.AirportHeliportTimeSlicePropertyType;
+import aero.aixm511full.AirportHeliportTimeSliceType;
+import aero.aixm511full.AirportHeliportType;
+import aero.aixm511full.CodeAirportHeliportDesignatorType;
+import aero.aixm511full.CodeIATAType;
+import aero.aixm511full.CodeICAOType;
+import aero.aixm511full.CodeVerticalDatumType;
+import aero.aixm511full.ElevatedPointPropertyType;
+import aero.aixm511full.ElevatedPointType;
 import aero.aixm511full.SurfacePropertyType;
 import aero.aixm511full.SurfaceType;
+import aero.aixm511full.TextNameType;
 import aero.aixm511full.ValDistanceVerticalType;
 import fi.fmi.avi.converter.ConversionException;
 import fi.fmi.avi.converter.ConversionHints;
@@ -21,6 +31,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Common functionality for serializing aviation messages into IWXXM. Uses the full AIXM 5.1.1 schema.
@@ -181,6 +192,42 @@ public abstract class AbstractIWXXMAixm511FullSerializer<T extends AviationWeath
         } catch (final JAXBException e) {
             throw new ConversionException("Exception in rendering to DOM", e);
         }
+    }
+
+    protected void setAerodromeData(final AirportHeliportType aerodrome, final Aerodrome input, final String aerodromeId,
+            final String timeSliceIdPrefix, final String elevatedPointIdPrefix) {
+        if (input == null) {
+            return;
+        }
+        aerodrome.setId(aerodromeId);
+        final AirportHeliportTimeSliceType timeSlice = create(AirportHeliportTimeSliceType.class);
+        timeSlice.setId(timeSliceIdPrefix + UUID.randomUUID());
+        timeSlice.setValidTime(create(TimePrimitivePropertyType.class));
+        timeSlice.setInterpretation("SNAPSHOT");
+        timeSlice.setDesignator(create(CodeAirportHeliportDesignatorType.class, designator -> designator.setValue(input.getDesignator())));
+        input.getName().ifPresent(inputName ->
+                timeSlice.setPortName(create(TextNameType.class, name -> name.setValue(inputName.toUpperCase(Locale.US)))));
+        input.getLocationIndicatorICAO().ifPresent(inputLocator ->
+                timeSlice.setLocationIndicatorICAO(create(CodeICAOType.class, locator -> locator.setValue(inputLocator))));
+        input.getDesignatorIATA().ifPresent(inputDesignator ->
+                timeSlice.setDesignatorIATA(create(CodeIATAType.class, designator -> designator.setValue(inputDesignator))));
+        valDistanceVertical(input.getFieldElevationValue().orElse(Double.NaN), input.getFieldElevationUom().orElse(""))
+                .ifPresent(timeSlice::setFieldElevation);
+
+        input.getReferencePoint().ifPresent(inputPosition -> {
+            final ElevatedPointType point = create(ElevatedPointType.class);
+            point.setId(elevatedPointIdPrefix + UUID.randomUUID());
+            inputPosition.getCrs().ifPresent(crs -> setCrsToType(point, crs));
+            if (inputPosition.getCoordinates() != null) {
+                point.setPos(create(DirectPositionType.class, pos -> pos.getValue().addAll(inputPosition.getCoordinates())));
+            }
+            valDistanceVertical(inputPosition.getElevationValue().orElse(Double.NaN), inputPosition.getElevationUom().orElse(""))
+                    .ifPresent(point::setElevation);
+            inputPosition.getVerticalDatum().ifPresent(verticalDatum ->
+                    point.setVerticalDatum(create(CodeVerticalDatumType.class, code -> code.setValue(verticalDatum))));
+            timeSlice.setARP(create(ElevatedPointPropertyType.class, property -> property.setElevatedPoint(point)));
+        });
+        aerodrome.getTimeSlice().add(create(AirportHeliportTimeSlicePropertyType.class, property -> property.setAirportHeliportTimeSlice(timeSlice)));
     }
 
 }
