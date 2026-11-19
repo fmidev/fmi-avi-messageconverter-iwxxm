@@ -5,25 +5,6 @@ This project provides conversions between the aviation weather message Java doma
 in [fmi-avi-messageconverter](https://github.com/fmidev/fmi-avi-messageconverter) and 
 the ICAO Meteorological Information Exchange Model (IWXXM) encoded XML documents.
 
-## TAF in IWXXM 2025-2
-
-IWXXM 2025-2 (TAF package 3.0.2) is available through IWXXMTAFConverter,
-also imported by IWXXMConverter. Existing IWXXM 2.1 and 3.0 conversions remain available.
-
-For individual TAF messages, use the TAF_POJO_TO_IWXXM2025_2_STRING/DOM and
-IWXXM2025_2_STRING/DOM_TO_TAF_POJO specifications. The corresponding Spring beans
-are tafIWXXM20252StringSerializer, tafIWXXM20252DOMSerializer,
-tafIWXXM20252StringParser, and tafIWXXM20252DOMParser.
-
-For WMO COLLECT 1.2 bulletins, use TAF_BULLETIN_POJO_TO_WMO_COLLECT_IWXXM2025_2_STRING/DOM
-and WMO_COLLECT_IWXXM2025_2_STRING/DOM_TO_TAF_BULLETIN_POJO. Their beans use the
-tafBulletinIWXXM20252 prefix. Register the desired specifications and beans with
-AviMessageConverter, following the example below.
-
-The output specifiers are "TAF, XML/IWXXM 2025-2" for individual messages and
-"XML/WMO COLLECT 1.2 + IWXXM 2025-2 TAF" for bulletins. Adding this dependency does
-not change an application's selected output format.
-
 ## Get started
 Release artifacts of project are available as maven dependencies in the FMI OS maven repository. To access them, 
 add this repository to your project pom, or in your settings:
